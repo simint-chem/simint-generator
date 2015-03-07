@@ -1,0 +1,6 @@
+#ifndef SIMINT_VECTORIZATION_H
+#define SIMINT_VECTORIZATION_H
+
+#define SIMD_LEN 4
+
+#endif

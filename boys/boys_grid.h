@@ -1,0 +1,9 @@
+#ifndef BOYS_GRID_H
+#define BOYS_GRID_H
+
+#define BOYS_GRID_MAXN 50
+#define BOYS_GRID_MAXX 45.0
+#define BOYS_GRID_NPOINT 181
+#define BOYS_GRID_LOOKUPFAC 4.0
+
+#endif
