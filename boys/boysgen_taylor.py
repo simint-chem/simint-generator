@@ -50,7 +50,7 @@ x = mp.mpf(0)
 F = []
 pts = []
 
-while x < maxx or mp.almosteq(x, maxx):
+while x < maxx or (x-maxx < inc):
   F2 = [None]*(maxn+1)  # Creates a list of maxn+1 elements
 
   x2 = 2*x                   # x2 = 2*x
@@ -111,7 +111,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("{\n")
 
   for p,x in zip(F,pts):
-    f.write("/* x = {:12}*/  {{".format(mp.nstr(x, 2)))
+    f.write("/* x = {:12}*/  {{".format(mp.nstr(x, 4)))
     for n in p:
       f.write("{:32}, ".format(mp.nstr(n, 18)))
     f.write("},\n")
