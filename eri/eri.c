@@ -3,9 +3,9 @@
 #include "constants.h"
 #include "shell.h"
 
-int create_shell_pair(struct gaussian_shell const * restrict A,
-                      struct gaussian_shell const * restrict B,
-                      struct shell_pair * restrict P)
+int create_ss_shell_pair(struct gaussian_shell const * restrict A,
+                         struct gaussian_shell const * restrict B,
+                         struct shell_pair * restrict P)
 {
     int i, j, idx;
     double Xab_tmp;
@@ -27,8 +27,7 @@ int create_shell_pair(struct gaussian_shell const * restrict A,
             const double p_ab = A->alpha[i] + B->alpha[j];
             const double ABalpha = A->alpha[i] * B->alpha[j];
     
-            P->prefac[idx] = FOUR_OVER_PI_25
-                           * A->coef[i] * B->coef[j]
+            P->prefac[idx] = A->coef[i] * B->coef[j]
                            * pow(ABalpha, 0.75)
                            * exp(-Xab * ABalpha / p_ab);
 

@@ -18,7 +18,7 @@ int eri_ssss(struct shell_pair const * restrict P,
             const double PQalpha_mul = P->alpha[i] * Q->alpha[j];
             const double PQalpha_sum = P->alpha[i] + Q->alpha[j];
  
-            const double pfac = P->prefac[i] * Q->prefac[j]
+            const double pfac = ONESIX_OVER_SQRT_PI * P->prefac[i] * Q->prefac[j]
                                 / (PQalpha_mul * sqrt(PQalpha_sum));
     
             /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */

@@ -112,8 +112,8 @@ int main(int argc, char ** argv)
     P.x = Px;  P.y = Py;  P.z = Pz;  P.alpha = Pa;  P.prefac = Pc;
     Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
 
-    create_shell_pair(&A, &B, &P);
-    create_shell_pair(&C, &D, &Q);
+    create_ss_shell_pair(&A, &B, &P);
+    create_ss_shell_pair(&C, &D, &Q);
 
     // Actually calculate
     eri_ssss(&P, &Q, res);
