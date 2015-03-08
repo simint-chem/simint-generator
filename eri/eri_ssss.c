@@ -1,14 +1,11 @@
 #include <math.h>
-#include <stdio.h>
 
-#include "eri/eri.h"
-#include "boys/boys.h"
-#include "valeev/valeev.h"
+#include "constants.h"
+#include "shell.h"
 
-
-int eri_ssss(const struct shell_pair * P,
-             const struct shell_pair * Q,
-             double * integrals)
+int eri_ssss(struct shell_pair const * restrict P,
+             struct shell_pair const * restrict Q,
+             double * restrict integrals)
 {
     int i, j, idx;
 
@@ -17,27 +14,26 @@ int eri_ssss(const struct shell_pair * P,
         for(j = 0; j < Q->n; ++j, ++idx)
         {
             double tmp;
-            double R2;
-            double F0;
-            double pfac;
-            double Rpq_x, Rpq_y, Rpq_z;
+   
+            const double PQalpha_mul = P->alpha[i] * Q->alpha[j];
+            const double PQalpha_sum = P->alpha[i] + Q->alpha[j];
+ 
+            const double pfac = P->prefac[i] * Q->prefac[j]
+                                / (PQalpha_mul * sqrt(PQalpha_sum));
     
-            pfac = 2 * P->prefac[i] * Q->prefac[j]
-                  / (P->alpha[i] * Q->alpha[j] * sqrt(P->alpha[i] + Q->alpha[j]));
-    
-            Rpq_x = P->x[i] - Q->x[j];
-            Rpq_y = P->y[i] - Q->y[j];
-            Rpq_z = P->z[i] - Q->z[j];
-            R2 = Rpq_x*Rpq_x + Rpq_y*Rpq_y + Rpq_z*Rpq_z;
-    
-            /* Same as above, but no more extra variables */
-            R2 = 0;
+            /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
+            double R2 = 0.0;
             tmp = P->x[i] - Q->x[j]; R2 += tmp * tmp;
             tmp = P->y[i] - Q->y[j]; R2 += tmp * tmp;
             tmp = P->z[i] - Q->z[j]; R2 += tmp * tmp;
     
-            Boys_F(&F0, 0, R2 * (P->alpha[i] * Q->alpha[j])/(P->alpha[i] + Q->alpha[j]));
-            integrals[idx] = pfac * F0;
+            //double F0;
+            //Boys_F(&F0, 0, R2 * (P->alpha[i] * Q->alpha[j])/(P->alpha[i] + Q->alpha[j]));
+            // F0 = K * erf(sqrt(x)) / sqrt(x)
+            //      with x = R2 * Palpha * Qalpha / (Palpha + Qalpha)
+            const double x2 = sqrt(R2 * PQalpha_mul/PQalpha_sum);
+
+            integrals[idx] = pfac * F0_KFAC * erf(x2) / x2;
         }
     }
 

@@ -1,15 +1,14 @@
 #include <math.h>
 
-#include "eri/eri.h"
+#include "constants.h"
+#include "shell.h"
 
-int create_shell_pair(const struct gaussian_shell * A,
-                      const struct gaussian_shell * B,
-                      struct shell_pair * P)
+int create_shell_pair(struct gaussian_shell const * restrict A,
+                      struct gaussian_shell const * restrict B,
+                      struct shell_pair * restrict P)
 {
     int i, j, idx;
     double Xab_tmp;
-
-    double AxAa, AyAa, AzAa;
 
     // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
     double Xab = 0;
@@ -19,31 +18,26 @@ int create_shell_pair(const struct gaussian_shell * A,
 
     for(i = 0, idx = 0; i < A->nprim; ++i)
     {
-        AxAa = A->x * A->alpha[i];
-        AyAa = A->y * A->alpha[i];
-        AzAa = A->z * A->alpha[i];
+        const double AxAa = A->x * A->alpha[i];
+        const double AyAa = A->y * A->alpha[i];
+        const double AzAa = A->z * A->alpha[i];
 
         for(j = 0; j < B->nprim; ++j, ++idx)
         {
-            double p_ab;
-            double pfac;
+            const double p_ab = A->alpha[i] + B->alpha[j];
+            const double ABalpha = A->alpha[i] * B->alpha[j];
     
-            p_ab = A->alpha[i] + B->alpha[j];
-    
-            // This accumulates the normalization and prefactors, coefficients, etc
-            // pi^1.25 is part of the normalization
-            pfac = A->coef[i]*B->coef[j] * pow(M_PI, 1.25);
-            pfac *= pow(2.0 * A->alpha[i] / M_PI, 0.75);
-            pfac *= pow(2.0 * B->alpha[j] / M_PI, 0.75);
-    
-            pfac *= exp(-((A->alpha[i] * B->alpha[j]) / (p_ab)) * Xab);
-    
+            P->prefac[idx] = FOUR_OVER_PI_25
+                           * A->coef[i] * B->coef[j]
+                           * pow(ABalpha, 0.75)
+                           * exp(-Xab * ABalpha / p_ab);
+
             P->x[idx] = (AxAa + B->alpha[j]*B->x)/p_ab;
             P->y[idx] = (AyAa + B->alpha[j]*B->y)/p_ab;
             P->z[idx] = (AzAa + B->alpha[j]*B->z)/p_ab;
             P->alpha[idx] = p_ab;
-            P->prefac[idx] = pfac;
         }
     }
+
     return idx; // should be na*nb 
 }

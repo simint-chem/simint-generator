@@ -3,18 +3,13 @@
 
 #include "shell.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+int create_shell_pair(struct gaussian_shell const * restrict A,
+                      struct gaussian_shell const * restrict B,
+                      struct shell_pair * restrict P);
 
 
-int create_shell_pair(const struct gaussian_shell * A,
-                      const struct gaussian_shell * B,
-                      struct shell_pair * P);
-
-
-int eri_ssss(const struct shell_pair * P,
-             const struct shell_pair * Q,
-             double * integrals);
+int eri_ssss(struct shell_pair const * restrict P,
+             struct shell_pair const * restrict Q,
+             double * restrict integrals);
 
 #endif
