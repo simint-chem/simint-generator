@@ -51,7 +51,8 @@ int main(int argc, char ** argv)
     double * Qc = (double *)malloc(ntest34 * sizeof(double));
 
 
-    double * res = (double *)malloc(ntest1234 * sizeof(double));
+    double * res1 = (double *)malloc(ntest1234 * sizeof(double));
+    double * res2 = (double *)malloc(ntest1234 * sizeof(double));
     double * vres = (double *)malloc(ntest1234 * sizeof(double));
 
     srand(time(NULL));
@@ -112,11 +113,12 @@ int main(int argc, char ** argv)
     P.x = Px;  P.y = Py;  P.z = Pz;  P.alpha = Pa;  P.prefac = Pc;
     Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
 
-    create_ss_shell_pair(&A, &B, &P);
-    create_ss_shell_pair(&C, &D, &Q);
+    create_ss_shell_pair(A, B, &P);
+    create_ss_shell_pair(C, D, &Q);
 
     // Actually calculate
-    eri_ssss(&P, &Q, res);
+    eri_1pair_ssss(A, B, Q, res1);
+    eri_2pair_ssss(P, Q, res2);
 
 
     // test with valeev
@@ -145,9 +147,11 @@ int main(int argc, char ** argv)
 
     for(int i = 0; i < ntest1234; i++)
     {
-        double diff = fabs(res[i] - vres[i]);
-        if(diff > 1e-14)
-          printf("%8.4e  %8.4e  %8.4e\n", res[i], vres[i], diff);
+        double diff1 = fabs(res1[i] - vres[i]);
+        double diff2 = fabs(res2[i] - vres[i]);
+        if(diff1 > 1e-10 || diff2 > 1e-10)
+          printf("%8.4e  %8.4e  %8.4e  %8.4e  %8.4e\n", res1[i], res2[i], 
+                                                        vres[i], diff1, diff2);
     }
 
 
@@ -159,7 +163,7 @@ int main(int argc, char ** argv)
     free(Px); free(Py); free(Pz); free(Pa); free(Pc);
     free(Qx); free(Qy); free(Qz); free(Qa); free(Qc);
 
-    free(res); free(vres);
+    free(res1); free(res2); free(vres);
 
     return 0;
 }

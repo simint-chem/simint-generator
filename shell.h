@@ -1,6 +1,9 @@
 #ifndef SIMINT_SHELL_H
 #define SIMINT_SHELL_H
 
+#define MAX_CONT 50
+#define MAX_CONT2 (MAX_CONT*MAX_CONT)
+
 struct gaussian_shell
 {
   int am;
