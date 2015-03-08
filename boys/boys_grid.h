@@ -5,5 +5,6 @@
 #define BOYS_GRID_MAXX 45.0
 #define BOYS_GRID_NPOINT 451
 #define BOYS_GRID_LOOKUPFAC 10.0
+#define BOYS_GRID_LOOKUPFAC2 0.05
 
 #endif

@@ -1,12 +1,20 @@
 #ifndef ERI_H
 #define ERI_H
 
-int eri_ssss(int n,
-             double * Ax, double * Ay, double * Az,
-             double * Bx, double * By, double * Bz,
-             double * Cx, double * Cy, double * Cz,
-             double * Dx, double * Dy, double * Dz,
-             double * Aexp, double * Bexp, double * Cexp, double * Dexp,
-             double * res);
+#include "shell.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+
+int create_shell_pair(const struct gaussian_shell * A,
+                      const struct gaussian_shell * B,
+                      struct shell_pair * P);
+
+
+int eri_ssss(const struct shell_pair * P,
+             const struct shell_pair * Q,
+             double * integrals);
 
 #endif

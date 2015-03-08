@@ -1,9 +1,10 @@
-add_executable(compare_f 
-                         compare_f.c
-              )
+macro(ADDTEST TNAME TFILES)
+  add_executable(${TNAME} ${TFILES}) 
+  target_link_libraries(${TNAME} simint_eri simint_boys simint_valeev)
+  set_target_properties(${TNAME} PROPERTIES INCLUDE_DIRECTORIES ${SIMINT_C_INCLUDES})
+  set_target_properties(${TNAME} PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
+  set_target_properties(${TNAME} PROPERTIES LINK_FLAGS ${SIMINT_LINK_FLAGS})
+endmacro() 
 
-target_link_libraries(compare_f simint_boys simint_valeev)
-
-set_target_properties(compare_f PROPERTIES INCLUDE_DIRECTORIES ${SIMINT_C_INCLUDES})
-set_target_properties(compare_f PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
-set_target_properties(compare_f PROPERTIES LINK_FLAGS ${SIMINT_LINK_FLAGS})
+ADDTEST(compare_f compare_f.c)
+ADDTEST(compare_eri compare_eri.c)

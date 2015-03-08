@@ -5,107 +5,160 @@
 
 #include "valeev/valeev.h"
 #include "eri/eri.h"
+#include "boys/boys.h"
 
 int main(int argc, char ** argv)
 {
+    int ntest1 = atoi(argv[1]);
+    int ntest2 = atoi(argv[2]);
+    int ntest3 = atoi(argv[3]);
+    int ntest4 = atoi(argv[4]);
 
-    // These are for valeev comparison
-    double A[3];
-    double B[3];
-    double C[3];
-    double D[3];
+    int ntest12 = ntest1*ntest2;
+    int ntest34 = ntest3*ntest4;
+    int ntest1234 = ntest12*ntest34;
 
-    int ntest = atoi(argv[1]); 
+    // for the shells
+    double Ax, Ay, Az;
+    double Bx, By, Bz;
+    double Cx, Cy, Cz;
+    double Dx, Dy, Dz;
 
-    double * Ax = (double *)malloc(ntest * sizeof(double));
-    double * Ay = (double *)malloc(ntest * sizeof(double));
-    double * Az = (double *)malloc(ntest * sizeof(double));
-    double * Aa = (double *)malloc(ntest * sizeof(double));
+    double * Aa = (double *)malloc(ntest1 * sizeof(double));
+    double * Ac = (double *)malloc(ntest1 * sizeof(double));
 
-    double * Bx = (double *)malloc(ntest * sizeof(double));
-    double * By = (double *)malloc(ntest * sizeof(double));
-    double * Bz = (double *)malloc(ntest * sizeof(double));
-    double * Ba = (double *)malloc(ntest * sizeof(double));
+    double * Ba = (double *)malloc(ntest2 * sizeof(double));
+    double * Bc = (double *)malloc(ntest2 * sizeof(double));
 
-    double * Cx = (double *)malloc(ntest * sizeof(double));
-    double * Cy = (double *)malloc(ntest * sizeof(double));
-    double * Cz = (double *)malloc(ntest * sizeof(double));
-    double * Ca = (double *)malloc(ntest * sizeof(double));
+    double * Ca = (double *)malloc(ntest3 * sizeof(double));
+    double * Cc = (double *)malloc(ntest3 * sizeof(double));
 
-    double * Dx = (double *)malloc(ntest * sizeof(double));
-    double * Dy = (double *)malloc(ntest * sizeof(double));
-    double * Dz = (double *)malloc(ntest * sizeof(double));
-    double * Da = (double *)malloc(ntest * sizeof(double));
+    double * Da = (double *)malloc(ntest4 * sizeof(double));
+    double * Dc = (double *)malloc(ntest4 * sizeof(double));
 
-    double * res = (double *)malloc(ntest * sizeof(double));
-    double * vres = (double *)malloc(ntest * sizeof(double));
+
+    // for shell pairs
+    double * Px = (double *)malloc(ntest12 * sizeof(double));
+    double * Py = (double *)malloc(ntest12 * sizeof(double));
+    double * Pz = (double *)malloc(ntest12 * sizeof(double));
+    double * Pa = (double *)malloc(ntest12 * sizeof(double));
+    double * Pc = (double *)malloc(ntest12 * sizeof(double));
+
+    double * Qx = (double *)malloc(ntest34 * sizeof(double));
+    double * Qy = (double *)malloc(ntest34 * sizeof(double));
+    double * Qz = (double *)malloc(ntest34 * sizeof(double));
+    double * Qa = (double *)malloc(ntest34 * sizeof(double));
+    double * Qc = (double *)malloc(ntest34 * sizeof(double));
+
+
+    double * res = (double *)malloc(ntest1234 * sizeof(double));
+    double * vres = (double *)malloc(ntest1234 * sizeof(double));
 
     srand(time(NULL));
     double rmax = RAND_MAX;
 
-    for(int i = 0; i < ntest; i++)
+    Ax = 1.0 * rand() / rmax - 0.5;
+    Ay = 1.0 * rand() / rmax - 0.5;
+    Az = 1.0 * rand() / rmax - 0.5;
+    Bx = 1.0 * rand() / rmax - 0.5;
+    By = 1.0 * rand() / rmax - 0.5;
+    Bz = 1.0 * rand() / rmax - 0.5;
+    Cx = 1.0 * rand() / rmax - 0.5;
+    Cy = 1.0 * rand() / rmax - 0.5;
+    Cz = 1.0 * rand() / rmax - 0.5;
+    Dx = 1.0 * rand() / rmax - 0.5;
+    Dy = 1.0 * rand() / rmax - 0.5;
+    Dz = 1.0 * rand() / rmax - 0.5;
+
+    for(int i = 0; i < ntest1; i++)
     {
-        Ax[i] = 1.0 * rand() / rmax - 0.5;
-        Ay[i] = 1.0 * rand() / rmax - 0.5;
-        Az[i] = 1.0 * rand() / rmax - 0.5;
         Aa[i] = 100.0 * rand() / rmax;
-
-        Bx[i] = 1.0 * rand() / rmax - 0.5;
-        By[i] = 1.0 * rand() / rmax - 0.5;
-        Bz[i] = 1.0 * rand() / rmax - 0.5;
-        Ba[i] = 100.0 * rand() / rmax;
-
-        Cx[i] = 1.0 * rand() / rmax - 0.5;
-        Cy[i] = 1.0 * rand() / rmax - 0.5;
-        Cz[i] = 1.0 * rand() / rmax - 0.5;
-        Ca[i] = 100.0 * rand() / rmax;
-
-        Dx[i] = 1.0 * rand() / rmax - 0.5;
-        Dy[i] = 1.0 * rand() / rmax - 0.5;
-        Dz[i] = 1.0 * rand() / rmax - 0.5;
-        Da[i] = 10.0 * rand() / rmax;
-    }     
-
-
-    eri_ssss(ntest,
-             Ax, Ay, Az,
-             Bx, By, Bz,
-             Cx, Cy, Cz,
-             Dx, Dy, Dz,
-             Aa, Ba, Ca, Da,
-             res);
-
-
-
-    Valeev_Init();
-
-    for(int i = 0; i < ntest; i++)
-    {
-        A[0] = Ax[i]; A[1] = Ay[i]; A[2] = Az[i];
-        B[0] = Bx[i]; B[1] = By[i]; B[2] = Bz[i];
-        C[0] = Cx[i]; C[1] = Cy[i]; C[2] = Cz[i];
-        D[0] = Dx[i]; D[1] = Dy[i]; D[2] = Dz[i];
-
-        vres[i] = Valeev_eri(0, 0, 0, Aa[i], A,
-                             0, 0, 0, Ba[i], B, 
-                             0, 0, 0, Ca[i], C, 
-                             0, 0, 0, Da[i], D, 1);
+        Ac[i] = 10.0 * rand() / rmax;
     }
 
+    for(int i = 0; i < ntest2; i++)
+    {
+        Ba[i] = 100.0 * rand() / rmax;
+        Bc[i] = 10.0 * rand() / rmax;
+    }
+
+    for(int i = 0; i < ntest3; i++)
+    {
+        Ca[i] = 100.0 * rand() / rmax;
+        Cc[i] = 10.0 * rand() / rmax;
+    }
+
+    for(int i = 0; i < ntest4; i++)
+    {
+        Da[i] = 100.0 * rand() / rmax;
+        Dc[i] = 10.0 * rand() / rmax;
+    }
+
+    Boys_Init();
+    Valeev_Init();
+
+    // set up gaussian hell structures
+    struct gaussian_shell A, B, C, D;
+    A.nprim = ntest1;  B.nprim = ntest2;  C.nprim = ntest3;  D.nprim = ntest4;
+    A.x = Ax;  A.y = Ay;  A.z = Az;  A.alpha = Aa;  A.coef = Ac;  A.am = 0;
+    B.x = Bx;  B.y = By;  B.z = Bz;  B.alpha = Ba;  B.coef = Bc;  B.am = 0;
+    C.x = Cx;  C.y = Cy;  C.z = Cz;  C.alpha = Ca;  C.coef = Cc;  C.am = 0;
+    D.x = Dx;  D.y = Dy;  D.z = Dz;  D.alpha = Da;  D.coef = Dc;  D.am = 0;
+
+    // set up the shell pairs
+    struct shell_pair P, Q;
+    P.n = ntest12;  P.n1 = ntest1;  P.n2 = ntest2;
+    Q.n = ntest34;  Q.n1 = ntest3;  Q.n2 = ntest4;
+    P.x = Px;  P.y = Py;  P.z = Pz;  P.alpha = Pa;  P.prefac = Pc;
+    Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
+
+    create_shell_pair(&A, &B, &P);
+    create_shell_pair(&C, &D, &Q);
+
+    // Actually calculate
+    eri_ssss(&P, &Q, res);
+
+
+    // test with valeev
+    double vA[3] = { Ax, Ay, Az };
+    double vB[3] = { Bx, By, Bz };
+    double vC[3] = { Cx, Cy, Cz };
+    double vD[3] = { Dx, Dy, Dz };
+
+    int idx = 0;
+    for(int i = 0; i < ntest1; i++)
+    for(int j = 0; j < ntest2; j++)
+    for(int k = 0; k < ntest3; k++)
+    for(int l = 0; l < ntest4; l++, idx++)
+    {
+
+        vres[idx] = Valeev_eri(0, 0, 0, Aa[i], vA,
+                               0, 0, 0, Ba[j], vB,
+                               0, 0, 0, Ca[k], vC,
+                               0, 0, 0, Da[l], vD, 1);
+        vres[idx] *= Ac[i] * Bc[j] * Cc[k] * Dc[l];
+    }
+
+    Boys_Finalize();
     Valeev_Finalize();
 
-    for(int i = 0; i < ntest; i++)
+
+    for(int i = 0; i < ntest1234; i++)
     {
         double diff = fabs(res[i] - vres[i]);
         if(diff > 1e-14)
-          printf("%20.15e  %20.15e  %20.15e\n", res[i], vres[i], res[i]-vres[i]);
+          printf("%8.4e  %8.4e  %8.4e\n", res[i], vres[i], diff);
     }
 
 
-    free(Ax); free(Ay); free(Az); free(Aa);
-    free(Bx); free(By); free(Bz); free(Ba);
-    free(Cx); free(Cy); free(Cz); free(Ca);
-    free(Dx); free(Dy); free(Dz); free(Da);
+    free(Aa); free(Ac);
+    free(Ba); free(Bc);
+    free(Ca); free(Cc);
+    free(Da); free(Dc);
+
+    free(Px); free(Py); free(Pz); free(Pa); free(Pc);
+    free(Qx); free(Qy); free(Qz); free(Qa); free(Qc);
+
     free(res); free(vres);
 
     return 0;

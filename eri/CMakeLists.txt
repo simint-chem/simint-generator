@@ -1,4 +1,5 @@
 add_library(simint_eri STATIC 
+                              eri.c
                               eri_ssss.c
            )
 

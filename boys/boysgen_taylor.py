@@ -125,5 +125,6 @@ with open(args.filename + ".h", 'w') as f:
   f.write("#define BOYS_GRID_MAXX {}\n".format(maxx))
   f.write("#define BOYS_GRID_NPOINT {}\n".format(npoints))
   f.write("#define BOYS_GRID_LOOKUPFAC {}\n".format(1.0/inc))
+  f.write("#define BOYS_GRID_LOOKUPFAC2 {}\n".format(0.5*inc))
   f.write("\n")
   f.write("#endif\n")

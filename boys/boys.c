@@ -23,7 +23,7 @@ void Boys_Init(void)
     dfac[2] = 3.0;   // ( 3)!!
     for(i = 3; i < BOYS_MAX_DFAC; ++i)
         dfac[i] = (2*i-1)*dfac[i-1];
-    
+
 }
 
 void Boys_Finalize(void)
@@ -48,7 +48,7 @@ void Boys_F(double * F, int n, double x)
 void Boys_F_short(double * F, int n, double x)
 {
     int i;
-    // rounding, assuming x is positive
+
     double fac = 1.0;
     const double ex = exp(-x);
     const double x2 = 2 * x;
@@ -56,16 +56,15 @@ void Boys_F_short(double * F, int n, double x)
     // The boys_grid is stored with x as the first index
     // therefore, the n index is contiguous
     // This lookup should be the only part that can't be vectorized
-    const int idx = (int)(BOYS_GRID_LOOKUPFAC*(x+1.0/(BOYS_GRID_LOOKUPFAC*2.0))); 
-    const double dx = (((double)idx / BOYS_GRID_LOOKUPFAC)-x);
+    const int idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
+    const double dx = ((double)idx / BOYS_GRID_LOOKUPFAC)-x;
     double const * fval = boys_grid[idx] + n;
 
     F[n] = 0;
-    for(i = 0; i <= BOYS_INTERP_ORDER; i++)
+    for(i = 0; i <= BOYS_INTERP_ORDER; i++, fval++)
     {
         F[n] += (*fval)*pow(dx, i)/fac;
         fac *= (i+1);
-        ++fval;
     }
 
     // recurse down
