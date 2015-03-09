@@ -3,7 +3,6 @@
 #include <time.h>
 #include <math.h>
 
-#include "valeev/valeev.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
 
@@ -101,7 +100,6 @@ int main(int argc, char ** argv)
     }
 
     Boys_Init();
-    Valeev_Init();
 
     // set up gaussian hell structures
     struct gaussian_shell A, B, C, D;
@@ -128,39 +126,16 @@ int main(int argc, char ** argv)
     eri_1pair_ssss(1, &A, 1, &B, Q, res1);
 
 
-    // test with valeev
-    double vA[3] = { Ax, Ay, Az };
-    double vB[3] = { Bx, By, Bz };
-    double vC[3] = { Cx, Cy, Cz };
-    double vD[3] = { Dx, Dy, Dz };
-
-    int idx = 0;
-    for(int i = 0; i < ntest1; i++)
-    for(int j = 0; j < ntest2; j++)
-    for(int k = 0; k < ntest3; k++)
-    for(int l = 0; l < ntest4; l++, idx++)
-    {
-
-        vres[idx] = Valeev_eri(0, 0, 0, Aa[i], vA,
-                               0, 0, 0, Ba[j], vB,
-                               0, 0, 0, Ca[k], vC,
-                               0, 0, 0, Da[l], vD, 1);
-        vres[idx] *= Ac[i] * Bc[j] * Cc[k] * Dc[l];
-    }
-
     Boys_Finalize();
-    Valeev_Finalize();
-
 
     for(int i = 0; i < ntest1234; i++)
     {
-        double diff0 = fabs(res0[i] - vres[i]);
-        double diff1 = fabs(res1[i] - vres[i]);
-        double diff2 = fabs(res2[i] - vres[i]);
-        if(diff0 > 1e-14 || diff1 > 1e-14 || diff2 > 1e-14)
-          printf("%8.4e  %8.4e  %8.4e  %8.4e --  %8.4e  %8.4e  %8.4e\n", 
-                                                        vres[i], res0[i], res1[i], res2[i],
-                                                        diff0, diff1, diff2);
+        double diff1 = fabs(res1[i] - res0[i]);
+        double diff2 = fabs(res2[i] - res0[i]);
+        if(diff1 > 1e-10 || diff2 > 1e-10)
+          printf("%8.4e  %8.4e  %8.4e --  %8.4e  %8.4e\n", 
+                                      res0[i], res1[i], res2[i],
+                                      diff1, diff2);
     }
 
 

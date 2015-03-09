@@ -8,3 +8,4 @@ endmacro()
 
 ADDTEST(compare_f compare_f.c)
 ADDTEST(compare_eri compare_eri.c)
+ADDTEST(benchmark_eri benchmark_eri.c)

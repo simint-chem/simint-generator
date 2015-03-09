@@ -20,10 +20,10 @@ int eri_0pair_ssss(int na, struct gaussian_shell const * const restrict A,
 {
     int i, j, k, l;
     int sa, sb, sc, sd;
-    int idx;
+    int idx = 0;
 
 
-    for(sa = 0, idx = 0; sa < na; ++sa)
+    for(sa = 0; sa < na; ++sa)
     {
         for(sb = 0; sb < nb; ++sb)
         {
@@ -72,7 +72,7 @@ int eri_0pair_ssss(int na, struct gaussian_shell const * const restrict A,
                                 const double CyCa = C[sc].y * C[sc].alpha[k];
                                 const double CzCa = C[sc].z * C[sc].alpha[k];
 
-                                for(l = 0; l < C[sc].nprim; ++l, ++idx)
+                                for(l = 0; l < D[sd].nprim; ++l)
                                 {
                                     const double p_cd = C[sc].alpha[k] + D[sd].alpha[l];
                                     const double alpha_cd = C[sc].alpha[k] * D[sd].alpha[l];
@@ -104,7 +104,7 @@ int eri_0pair_ssss(int na, struct gaussian_shell const * const restrict A,
                                     //      with x = R2 * Palpha * Qalpha / (Palpha + Qalpha)
                                     const double x2 = sqrt(R2 * PQalpha_mul/PQalpha_sum);
 
-                                    integrals[idx] = pfac * F0_KFAC * erf(x2) / x2;
+                                    integrals[idx++] = pfac * F0_KFAC * erf(x2) / x2;
                                 }
                             }
                         }
@@ -124,10 +124,10 @@ int eri_1pair_ssss(int na, struct gaussian_shell const * const restrict A,
                    struct shell_pair const Q,
                    double * restrict integrals)
 {
-    int i, j, k, sa, sb, idx;
+    int i, j, k, sa, sb;
+    int idx = 0;
 
-
-    for(sa = 0, idx = 0; sa < na; ++sa)
+    for(sa = 0; sa < na; ++sa)
     {
         for(sb = 0; sb < nb; ++sb)
         {
@@ -161,7 +161,7 @@ int eri_1pair_ssss(int na, struct gaussian_shell const * const restrict A,
                     const double Pz = (AzAa + B[sb].alpha[j]*B[sb].z)/p_ab;
 
 
-                    for(k = 0; k < Q.nprim; ++k, ++idx)
+                    for(k = 0; k < Q.nprim; ++k)
                     {
                         const double PQalpha_mul = p_ab * Q.alpha[k];
                         const double PQalpha_sum = p_ab + Q.alpha[k];
@@ -181,7 +181,7 @@ int eri_1pair_ssss(int na, struct gaussian_shell const * const restrict A,
                         //      with x = R2 * Palpha * Qalpha / (Palpha + Qalpha)
                         const double x2 = sqrt(R2 * PQalpha_mul/PQalpha_sum);
 
-                        integrals[idx] = pfac * F0_KFAC * erf(x2) / x2;
+                        integrals[idx++] = pfac * F0_KFAC * erf(x2) / x2;
                     }
                 }
             }
@@ -195,13 +195,14 @@ int eri_2pair_ssss(struct shell_pair const P,
                    struct shell_pair const Q,
                    double * restrict integrals)
 {
-    int i, j, idx;
+    int i, j;
+    int idx = 0;
 
-    for(i = 0, idx = 0; i < P.nprim; ++i)
+    for(i = 0; i < P.nprim; ++i)
     {
         const double pfac_p = ONESIX_OVER_SQRT_PI * P.prefac[i];
 
-        for(j = 0; j < Q.nprim; ++j, ++idx)
+        for(j = 0; j < Q.nprim; ++j)
         {
             const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
             const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
@@ -221,7 +222,7 @@ int eri_2pair_ssss(struct shell_pair const P,
             //      with x = R2 * Palpha * Qalpha / (Palpha + Qalpha)
             const double x2 = sqrt(R2 * PQalpha_mul/PQalpha_sum);
 
-            integrals[idx] = pfac * F0_KFAC * erf(x2) / x2;
+            integrals[idx++] = pfac * F0_KFAC * erf(x2) / x2;
         }
     }
 
