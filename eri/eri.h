@@ -3,9 +3,13 @@
 
 #include "shell.h"
 
-int create_ss_shell_pair(struct gaussian_shell const A,
-                         struct gaussian_shell const B,
-                         struct shell_pair * restrict P);
+void create_ss_shell_pair(struct gaussian_shell const A,
+                          struct gaussian_shell const B,
+                          struct shell_pair * restrict P);
+
+void create_ss_shell_pair_multi(int na, struct gaussian_shell const * const A,
+                                int nb, struct gaussian_shell const * const B,
+                                struct shell_pair * restrict P);
 
 int eri__ssss(struct gaussian_shell const A,
               struct gaussian_shell const B,
@@ -15,14 +19,14 @@ int eri__ssss(struct gaussian_shell const A,
               struct shell_pair * restrict Q_tmp,
               double * restrict integrals);
 
-int eri_0pair_ssss(struct gaussian_shell const A,
-                   struct gaussian_shell const B,
-                   struct gaussian_shell const C,
-                   struct gaussian_shell const D,
+int eri_0pair_ssss(int na, struct gaussian_shell const * const restrict A,
+                   int nb, struct gaussian_shell const * const restrict B,
+                   int nc, struct gaussian_shell const * const restrict C,
+                   int nd, struct gaussian_shell const * const restrict D,
                    double * restrict integrals);
 
-int eri_1pair_ssss(struct gaussian_shell const A,
-                   struct gaussian_shell const B,
+int eri_1pair_ssss(int na, struct gaussian_shell const * const restrict A,
+                   int nb, struct gaussian_shell const * const restrict B,
                    struct shell_pair const Q,
                    double * restrict integrals);
 

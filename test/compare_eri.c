@@ -43,12 +43,16 @@ int main(int argc, char ** argv)
     double * Pz = (double *)malloc(ntest12 * sizeof(double));
     double * Pa = (double *)malloc(ntest12 * sizeof(double));
     double * Pc = (double *)malloc(ntest12 * sizeof(double));
+    int * Pn1 = (int *)malloc(1 * sizeof(int));
+    int * Pn2 = (int *)malloc(1 * sizeof(int));
 
     double * Qx = (double *)malloc(ntest34 * sizeof(double));
     double * Qy = (double *)malloc(ntest34 * sizeof(double));
     double * Qz = (double *)malloc(ntest34 * sizeof(double));
     double * Qa = (double *)malloc(ntest34 * sizeof(double));
     double * Qc = (double *)malloc(ntest34 * sizeof(double));
+    int * Qn1 = (int *)malloc(1 * sizeof(int));
+    int * Qn2 = (int *)malloc(1 * sizeof(int));
 
 
     double * res1 = (double *)malloc(ntest1234 * sizeof(double));
@@ -108,16 +112,16 @@ int main(int argc, char ** argv)
 
     // set up the shell pairs
     struct shell_pair P, Q;
-    P.n = ntest12;  P.n1 = ntest1;  P.n2 = ntest2;
-    Q.n = ntest34;  Q.n1 = ntest3;  Q.n2 = ntest4;
+    P.nprim1 = Pn1;  P.nprim2 = Pn2;
     P.x = Px;  P.y = Py;  P.z = Pz;  P.alpha = Pa;  P.prefac = Pc;
+    Q.nprim1 = Qn1;  Q.nprim2 = Qn2;
     Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
 
     create_ss_shell_pair(A, B, &P);
     create_ss_shell_pair(C, D, &Q);
 
     // Actually calculate
-    eri_1pair_ssss(A, B, Q, res1);
+    eri_1pair_ssss(1, &A, 1, &B, Q, res1);
     eri_2pair_ssss(P, Q, res2);
 
 
@@ -149,7 +153,7 @@ int main(int argc, char ** argv)
     {
         double diff1 = fabs(res1[i] - vres[i]);
         double diff2 = fabs(res2[i] - vres[i]);
-        if(diff1 > 1e-10 || diff2 > 1e-10)
+        if(diff1 > 1e-14 || diff2 > 1e-14)
           printf("%8.4e  %8.4e  %8.4e  %8.4e  %8.4e\n", res1[i], res2[i], 
                                                         vres[i], diff1, diff2);
     }
@@ -160,8 +164,8 @@ int main(int argc, char ** argv)
     free(Ca); free(Cc);
     free(Da); free(Dc);
 
-    free(Px); free(Py); free(Pz); free(Pa); free(Pc);
-    free(Qx); free(Qy); free(Qz); free(Qa); free(Qc);
+    free(Px); free(Py); free(Pz); free(Pa); free(Pc); free(Pn1); free(Pn2);
+    free(Qx); free(Qy); free(Qz); free(Qa); free(Qc); free(Qn1); free(Qn2);
 
     free(res1); free(res2); free(vres);
 
