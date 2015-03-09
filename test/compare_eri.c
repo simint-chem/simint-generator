@@ -55,6 +55,7 @@ int main(int argc, char ** argv)
     int * Qn2 = (int *)malloc(1 * sizeof(int));
 
 
+    double * res0 = (double *)malloc(ntest1234 * sizeof(double));
     double * res1 = (double *)malloc(ntest1234 * sizeof(double));
     double * res2 = (double *)malloc(ntest1234 * sizeof(double));
     double * vres = (double *)malloc(ntest1234 * sizeof(double));
@@ -121,6 +122,7 @@ int main(int argc, char ** argv)
     create_ss_shell_pair(C, D, &Q);
 
     // Actually calculate
+    eri_0pair_ssss(1, &A, 1, &B, 1, &C, 1, &D, res0);
     eri_1pair_ssss(1, &A, 1, &B, Q, res1);
     eri_2pair_ssss(P, Q, res2);
 
@@ -151,11 +153,13 @@ int main(int argc, char ** argv)
 
     for(int i = 0; i < ntest1234; i++)
     {
+        double diff0 = fabs(res0[i] - vres[i]);
         double diff1 = fabs(res1[i] - vres[i]);
         double diff2 = fabs(res2[i] - vres[i]);
-        if(diff1 > 1e-14 || diff2 > 1e-14)
-          printf("%8.4e  %8.4e  %8.4e  %8.4e  %8.4e\n", res1[i], res2[i], 
-                                                        vres[i], diff1, diff2);
+        if(diff0 > 1e-14 || diff1 > 1e-14 || diff2 > 1e-14)
+          printf("%8.4e  %8.4e  %8.4e  %8.4e --  %8.4e  %8.4e  %8.4e\n", 
+                                                        vres[i], res0[i], res1[i], res2[i],
+                                                        diff0, diff1, diff2);
     }
 
 
@@ -167,7 +171,7 @@ int main(int argc, char ** argv)
     free(Px); free(Py); free(Pz); free(Pa); free(Pc); free(Pn1); free(Pn2);
     free(Qx); free(Qy); free(Qz); free(Qa); free(Qc); free(Qn1); free(Qn2);
 
-    free(res1); free(res2); free(vres);
+    free(res0); free(res1); free(res2); free(vres);
 
     return 0;
 }
