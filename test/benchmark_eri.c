@@ -54,10 +54,11 @@ int main(int argc, char ** argv)
     int * Qn2 = (int *)malloc(1 * sizeof(int));
 
 
-    double * res0 = (double *)malloc(ntest1234 * sizeof(double));
-    double * res1 = (double *)malloc(ntest1234 * sizeof(double));
-    double * res2 = (double *)malloc(ntest1234 * sizeof(double));
-    double * vres = (double *)malloc(ntest1234 * sizeof(double));
+    double * res1_s = (double *)malloc(1 * sizeof(double));
+    double * res1_m = (double *)malloc(1 * sizeof(double));
+    double * res2_s = (double *)malloc(1 * sizeof(double));
+    double * res2_m = (double *)malloc(1 * sizeof(double));
+    double * intwork = (double *)malloc(ntest1234 * sizeof(double));
 
     srand(time(NULL));
     double rmax = RAND_MAX;
@@ -116,25 +117,25 @@ int main(int argc, char ** argv)
     Q.nprim1 = Qn1;  Q.nprim2 = Qn2;
     Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
 
-    create_ss_shell_pair(A, B, &P);
-    create_ss_shell_pair(C, D, &Q);
+    fill_ss_shell_pair(1, &A, 1, &B, &P);
+    fill_ss_shell_pair(1, &C, 1, &D, &Q);
 
     // Actually calculate
-    eri_0pair_ssss(1, &A, 1, &B, 1, &C, 1, &D, res0);
-    eri_0pair_ssss(1, &A, 1, &B, 1, &C, 1, &D, res0);
-    eri_2pair_ssss(P, Q, res2);
-    eri_1pair_ssss(1, &A, 1, &B, Q, res1);
+    eri_1pair_ssss_multi(1, &A, 1, &B, Q, res1_m, intwork);
+    eri_1pair_ssss_single(A, B, Q, res1_s);
+    eri_2pair_ssss_multi(P, Q, res2_m, intwork);
+    eri_2pair_ssss_single(P, Q, res2_s);
 
 
     Boys_Finalize();
 
-    for(int i = 0; i < ntest1234; i++)
+    for(int i = 0; i < 1; i++)
     {
-        double diff1 = fabs(res1[i] - res0[i]);
-        double diff2 = fabs(res2[i] - res0[i]);
+        double diff1 = fabs(res1_m[i] - res1_s[i]);
+        double diff2 = fabs(res2_m[i] - res2_s[i]);
         if(diff1 > 1e-10 || diff2 > 1e-10)
-          printf("%8.4e  %8.4e  %8.4e --  %8.4e  %8.4e\n", 
-                                      res0[i], res1[i], res2[i],
+          printf("%8.4e  %8.4e  %8.4e  %8.4e  --  %8.4e  %8.4e\n", 
+                                      res1_s[i], res1_m[i], res2_s[i], res2_m[i],
                                       diff1, diff2);
     }
 
@@ -147,7 +148,7 @@ int main(int argc, char ** argv)
     free(Px); free(Py); free(Pz); free(Pa); free(Pc); free(Pn1); free(Pn2);
     free(Qx); free(Qy); free(Qz); free(Qa); free(Qc); free(Qn1); free(Qn2);
 
-    free(res0); free(res1); free(res2); free(vres);
+    free(res1_s); free(res1_m); free(res2_s); free(res2_m); free(intwork);
 
     return 0;
 }

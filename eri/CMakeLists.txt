@@ -1,5 +1,5 @@
 add_library(simint_eri STATIC 
-                              eri.c
+                              shell.c
                               eri_ssss.c
            )
 

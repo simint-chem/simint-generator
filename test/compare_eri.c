@@ -7,172 +7,178 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 
+#define MAX_SHELL 10
+
+struct gaussian_shell
+random_shell(int nprim)
+{
+    struct gaussian_shell G;
+    G.am = 0;
+    G.x = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    G.y = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    G.z = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+
+    G.nprim = nprim;
+
+    G.alpha = ALLOC(nprim * sizeof(double));
+    G.coef = ALLOC(nprim * sizeof(double));
+
+    for(int i = 0; i < nprim; i++)
+    {
+        G.alpha[i] = 10.0 * rand() / ((double)RAND_MAX);
+        G.coef[i] = 10.0 * rand() / ((double)RAND_MAX);
+    }
+
+    return G;
+         
+}
+
+void free_random_shell(struct gaussian_shell G)
+{
+    FREE(G.alpha);
+    FREE(G.coef);
+}
+
 int main(int argc, char ** argv)
 {
-    int ntest1 = atoi(argv[1]);
-    int ntest2 = atoi(argv[2]);
-    int ntest3 = atoi(argv[3]);
-    int ntest4 = atoi(argv[4]);
+    if(argc != 9)
+    {
+        printf("Give me 8 arguments! I got %d\n", argc-1);
+        return 1;
+    }
 
-    int ntest12 = ntest1*ntest2;
-    int ntest34 = ntest3*ntest4;
-    int ntest1234 = ntest12*ntest34;
-
-    // for the shells
-    double Ax, Ay, Az;
-    double Bx, By, Bz;
-    double Cx, Cy, Cz;
-    double Dx, Dy, Dz;
-
-    double * Aa = (double *)malloc(ntest1 * sizeof(double));
-    double * Ac = (double *)malloc(ntest1 * sizeof(double));
-
-    double * Ba = (double *)malloc(ntest2 * sizeof(double));
-    double * Bc = (double *)malloc(ntest2 * sizeof(double));
-
-    double * Ca = (double *)malloc(ntest3 * sizeof(double));
-    double * Cc = (double *)malloc(ntest3 * sizeof(double));
-
-    double * Da = (double *)malloc(ntest4 * sizeof(double));
-    double * Dc = (double *)malloc(ntest4 * sizeof(double));
+    int nshell1 = atoi(argv[1]);
+    int nshell2 = atoi(argv[2]);
+    int nshell3 = atoi(argv[3]);
+    int nshell4 = atoi(argv[4]);
+    int nprim1 = atoi(argv[5]);
+    int nprim2 = atoi(argv[6]);
+    int nprim3 = atoi(argv[7]);
+    int nprim4 = atoi(argv[8]);
 
 
-    // for shell pairs
-    double * Px = (double *)malloc(ntest12 * sizeof(double));
-    double * Py = (double *)malloc(ntest12 * sizeof(double));
-    double * Pz = (double *)malloc(ntest12 * sizeof(double));
-    double * Pa = (double *)malloc(ntest12 * sizeof(double));
-    double * Pc = (double *)malloc(ntest12 * sizeof(double));
-    int * Pn1 = (int *)malloc(1 * sizeof(int));
-    int * Pn2 = (int *)malloc(1 * sizeof(int));
+    int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+    int nprim1234 = nprim1 * nprim2 * nprim3 * nprim4;
 
-    double * Qx = (double *)malloc(ntest34 * sizeof(double));
-    double * Qy = (double *)malloc(ntest34 * sizeof(double));
-    double * Qz = (double *)malloc(ntest34 * sizeof(double));
-    double * Qa = (double *)malloc(ntest34 * sizeof(double));
-    double * Qc = (double *)malloc(ntest34 * sizeof(double));
-    int * Qn1 = (int *)malloc(1 * sizeof(int));
-    int * Qn2 = (int *)malloc(1 * sizeof(int));
-
-
-    double * res0 = (double *)malloc(ntest1234 * sizeof(double));
-    double * res1 = (double *)malloc(ntest1234 * sizeof(double));
-    double * res2 = (double *)malloc(ntest1234 * sizeof(double));
-    double * vres = (double *)malloc(ntest1234 * sizeof(double));
+    double * res1_s = ALLOC(nshell1234 * sizeof(double));
+    double * res1_m = ALLOC(nshell1234 * sizeof(double));
+    double * res2_s = ALLOC(nshell1234 * sizeof(double));
+    double * res2_m = ALLOC(nshell1234 * sizeof(double));
+    double * vres = ALLOC(nshell1234 * sizeof(double));
+    double * intwork = ALLOC(nprim1234 * nshell1234 * sizeof(double));
 
     srand(time(NULL));
-    double rmax = RAND_MAX;
 
-    Ax = 1.0 * rand() / rmax - 0.5;
-    Ay = 1.0 * rand() / rmax - 0.5;
-    Az = 1.0 * rand() / rmax - 0.5;
-    Bx = 1.0 * rand() / rmax - 0.5;
-    By = 1.0 * rand() / rmax - 0.5;
-    Bz = 1.0 * rand() / rmax - 0.5;
-    Cx = 1.0 * rand() / rmax - 0.5;
-    Cy = 1.0 * rand() / rmax - 0.5;
-    Cz = 1.0 * rand() / rmax - 0.5;
-    Dx = 1.0 * rand() / rmax - 0.5;
-    Dy = 1.0 * rand() / rmax - 0.5;
-    Dz = 1.0 * rand() / rmax - 0.5;
+    struct gaussian_shell A[MAX_SHELL];
+    struct gaussian_shell B[MAX_SHELL];
+    struct gaussian_shell C[MAX_SHELL];
+    struct gaussian_shell D[MAX_SHELL];
 
-    for(int i = 0; i < ntest1; i++)
-    {
-        Aa[i] = 100.0 * rand() / rmax;
-        Ac[i] = 10.0 * rand() / rmax;
-    }
+    for(int i = 0; i < nshell1; i++)
+        A[i] = random_shell(nprim1);
 
-    for(int i = 0; i < ntest2; i++)
-    {
-        Ba[i] = 100.0 * rand() / rmax;
-        Bc[i] = 10.0 * rand() / rmax;
-    }
+    for(int i = 0; i < nshell2; i++)
+        B[i] = random_shell(nprim2);
 
-    for(int i = 0; i < ntest3; i++)
-    {
-        Ca[i] = 100.0 * rand() / rmax;
-        Cc[i] = 10.0 * rand() / rmax;
-    }
+    for(int i = 0; i < nshell3; i++)
+        C[i] = random_shell(nprim3);
 
-    for(int i = 0; i < ntest4; i++)
-    {
-        Da[i] = 100.0 * rand() / rmax;
-        Dc[i] = 10.0 * rand() / rmax;
-    }
+    for(int i = 0; i < nshell4; i++)
+        D[i] = random_shell(nprim4);
+
 
     Boys_Init();
     Valeev_Init();
 
-    // set up gaussian hell structures
-    struct gaussian_shell A, B, C, D;
-    A.nprim = ntest1;  B.nprim = ntest2;  C.nprim = ntest3;  D.nprim = ntest4;
-    A.x = Ax;  A.y = Ay;  A.z = Az;  A.alpha = Aa;  A.coef = Ac;  A.am = 0;
-    B.x = Bx;  B.y = By;  B.z = Bz;  B.alpha = Ba;  B.coef = Bc;  B.am = 0;
-    C.x = Cx;  C.y = Cy;  C.z = Cz;  C.alpha = Ca;  C.coef = Cc;  C.am = 0;
-    D.x = Dx;  D.y = Dy;  D.z = Dz;  D.alpha = Da;  D.coef = Dc;  D.am = 0;
+    struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
+    struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
 
-    // set up the shell pairs
-    struct shell_pair P, Q;
-    P.nprim1 = Pn1;  P.nprim2 = Pn2;
-    P.x = Px;  P.y = Py;  P.z = Pz;  P.alpha = Pa;  P.prefac = Pc;
-    Q.nprim1 = Qn1;  Q.nprim2 = Qn2;
-    Q.x = Qx;  Q.y = Qy;  Q.z = Qz;  Q.alpha = Qa;  Q.prefac = Qc;
-
-    create_ss_shell_pair(A, B, &P);
-    create_ss_shell_pair(C, D, &Q);
 
     // Actually calculate
-    eri_0pair_ssss(1, &A, 1, &B, 1, &C, 1, &D, res0);
-    eri_0pair_ssss(1, &A, 1, &B, 1, &C, 1, &D, res0);
-    eri_2pair_ssss(P, Q, res2);
-    eri_1pair_ssss(1, &A, 1, &B, Q, res1);
+    eri_1pair_ssss_multi(nshell1, A, nshell2, B, Q, res1_m, intwork);
+    eri_2pair_ssss_multi(P, Q, res2_m, intwork);
+    free_shell_pair(P);
+    free_shell_pair(Q);
+
+
+    // do one single run
+    P = create_ss_shell_pair(1, A, 1, B);
+    Q = create_ss_shell_pair(1, C, 1, D);
+    eri_1pair_ssss_single(A[0], B[0], Q, res1_s);
+    eri_2pair_ssss_single(P, Q, res2_s);
+    free_shell_pair(P);
+    free_shell_pair(Q);
 
 
     // test with valeev
-    double vA[3] = { Ax, Ay, Az };
-    double vB[3] = { Bx, By, Bz };
-    double vC[3] = { Cx, Cy, Cz };
-    double vD[3] = { Dx, Dy, Dz };
-
     int idx = 0;
-    for(int i = 0; i < ntest1; i++)
-    for(int j = 0; j < ntest2; j++)
-    for(int k = 0; k < ntest3; k++)
-    for(int l = 0; l < ntest4; l++, idx++)
+    for(int i = 0; i < nshell1; i++)
+    for(int j = 0; j < nshell2; j++)
+    for(int k = 0; k < nshell3; k++)
+    for(int l = 0; l < nshell4; l++)
     {
+        double vA[3] = { A[i].x, A[i].y, A[i].z };
+        double vB[3] = { B[j].x, B[j].y, B[j].z };
+        double vC[3] = { C[k].x, C[k].y, C[k].z };
+        double vD[3] = { D[l].x, D[l].y, D[l].z };
 
-        vres[idx] = Valeev_eri(0, 0, 0, Aa[i], vA,
-                               0, 0, 0, Ba[j], vB,
-                               0, 0, 0, Ca[k], vC,
-                               0, 0, 0, Da[l], vD, 1);
-        vres[idx] *= Ac[i] * Bc[j] * Cc[k] * Dc[l];
+        vres[idx] = 0.0;
+
+        for(int m = 0; m < A[i].nprim; m++)
+        for(int n = 0; n < B[j].nprim; n++)
+        for(int o = 0; o < C[k].nprim; o++)
+        for(int p = 0; p < D[l].nprim; p++)
+        {
+            double val = Valeev_eri(0, 0, 0, A[i].alpha[m], vA,
+                                    0, 0, 0, B[j].alpha[n], vB,
+                                    0, 0, 0, C[k].alpha[o], vC,
+                                    0, 0, 0, D[l].alpha[p], vD, 1);
+            vres[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
+            /*
+            printf("IDX: %d\n", idx);
+            printf("VAL: %8.3e\n", val);
+            printf("%8.3e %8.3e %8.3e %8.3e\n", vA[0], vA[1], vA[2], A[i].alpha[m]);
+            printf("%8.3e %8.3e %8.3e %8.3e\n", vB[0], vB[1], vB[2], B[j].alpha[n]);
+            printf("%8.3e %8.3e %8.3e %8.3e\n", vC[0], vC[1], vC[2], C[k].alpha[o]);
+            printf("%8.3e %8.3e %8.3e %8.3e\n", vD[0], vD[1], vD[2], D[l].alpha[p]);
+            printf("%8.3e %8.3e %8.3e %8.3e\n", A[i].coef[m], B[j].coef[n], C[k].coef[o], D[l].coef[p]); 
+            */
+        }
+
+        idx++;
     }
 
     Boys_Finalize();
     Valeev_Finalize();
 
 
-    for(int i = 0; i < ntest1234; i++)
+    printf("%11s  %11s  %11s  %11s  %11s  --  %11s  %11s  %11s  %11s\n", "vres", "res1_s", "res1_m", "res2_s", "res2_m", 
+                                                                    "diff1_s", "diff1_m", "diff2_s", "diff2_m"); 
+    for(int i = 0; i < nshell1234; i++)
     {
-        double diff0 = fabs(res0[i] - vres[i]);
-        double diff1 = fabs(res1[i] - vres[i]);
-        double diff2 = fabs(res2[i] - vres[i]);
-        if(diff0 > 1e-14 || diff1 > 1e-14 || diff2 > 1e-14)
-          printf("%8.4e  %8.4e  %8.4e  %8.4e --  %8.4e  %8.4e  %8.4e\n", 
-                                                        vres[i], res0[i], res1[i], res2[i],
-                                                        diff0, diff1, diff2);
+        double diff1_s = fabs(res1_s[i] - vres[i]);
+        double diff1_m = fabs(res1_m[i] - vres[i]);
+        double diff2_s = fabs(res2_s[i] - vres[i]);
+        double diff2_m = fabs(res2_m[i] - vres[i]);
+        if(diff1_s > 1e-14 || diff1_m > 1e-14 || diff2_s > 1e-14 || diff2_m > 1e-14)
+          printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  --  %11.4e  %11.4e  %11.4e  %11.4e\n", 
+                                                        vres[i], res1_s[i], res1_m[i], res2_s[i], res2_m[i],
+                                                        diff1_s, diff1_m, diff2_s, diff2_m);
     }
 
+    for(int i = 0; i < nshell1; i++)
+        free_random_shell(A[i]);
 
-    free(Aa); free(Ac);
-    free(Ba); free(Bc);
-    free(Ca); free(Cc);
-    free(Da); free(Dc);
+    for(int j = 0; j < nshell2; j++)
+        free_random_shell(B[j]);
 
-    free(Px); free(Py); free(Pz); free(Pa); free(Pc); free(Pn1); free(Pn2);
-    free(Qx); free(Qy); free(Qz); free(Qa); free(Qc); free(Qn1); free(Qn2);
+    for(int k = 0; k < nshell3; k++)
+        free_random_shell(C[k]);
 
-    free(res0); free(res1); free(res2); free(vres);
+    for(int l = 0; l < nshell4; l++)
+        free_random_shell(D[l]);
+
+    FREE(res1_s); FREE(res1_m); FREE(res2_s); FREE(res2_m); FREE(vres); FREE(intwork);
 
     return 0;
 }
