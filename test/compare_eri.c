@@ -58,14 +58,15 @@ int main(int argc, char ** argv)
 
 
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-    int nprim1234 = nprim1 * nprim2 * nprim3 * nprim4;
 
     double * res1_s = ALLOC(nshell1234 * sizeof(double));
     double * res1_m = ALLOC(nshell1234 * sizeof(double));
     double * res2_s = ALLOC(nshell1234 * sizeof(double));
     double * res2_m = ALLOC(nshell1234 * sizeof(double));
     double * vres = ALLOC(nshell1234 * sizeof(double));
-    double * intwork = ALLOC(nprim1234 * nshell1234 * sizeof(double));
+
+    int wrksize = nprim1*nprim2*SIMD_ROUND_DBL(nprim3*nprim4);
+    double * intwork = ALLOC(nshell1234 * wrksize * sizeof(double));
 
     srand(time(NULL));
 
@@ -160,7 +161,7 @@ int main(int argc, char ** argv)
         double diff1_m = fabs(res1_m[i] - vres[i]);
         double diff2_s = fabs(res2_s[i] - vres[i]);
         double diff2_m = fabs(res2_m[i] - vres[i]);
-        if(diff1_s > 1e-14 || diff1_m > 1e-14 || diff2_s > 1e-14 || diff2_m > 1e-14)
+        //if(diff1_s > 1e-14 || diff1_m > 1e-14 || diff2_s > 1e-14 || diff2_m > 1e-14)
           printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  --  %11.4e  %11.4e  %11.4e  %11.4e\n", 
                                                         vres[i], res1_s[i], res1_m[i], res2_s[i], res2_m[i],
                                                         diff1_s, diff1_m, diff2_s, diff2_m);
