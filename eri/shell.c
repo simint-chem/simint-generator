@@ -10,13 +10,13 @@ allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
                     int nb, struct gaussian_shell const * const restrict B)
 {
     struct shell_pair P;
-    P.nprim = 0;
+    int nprim = 0;
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        P.nprim += A[i].nprim * B[j].nprim;
+        nprim += A[i].nprim * B[j].nprim;
 
     // round up to the nearest boundary
-    int size = P.nprim * sizeof(double);
+    int size = nprim * sizeof(double);
     int simd_size = SIMD_ROUND(size);
     int simd_per = simd_size / sizeof(double);
 

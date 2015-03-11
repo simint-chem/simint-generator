@@ -7,7 +7,7 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 
-#define MAX_SHELL 10
+#define MAX_SHELL 50
 
 struct gaussian_shell
 random_shell(int nprim)
@@ -38,6 +38,73 @@ void free_random_shell(struct gaussian_shell G)
     FREE(G.alpha);
     FREE(G.coef);
 }
+
+
+void test_eri_1pair_single(int na, struct gaussian_shell const * const restrict A,
+                           int nb, struct gaussian_shell const * const restrict B,
+                           int nc, struct gaussian_shell const * const restrict C,
+                           int nd, struct gaussian_shell const * const restrict D,
+                           double * const restrict res)
+{
+    int idx = 0;
+    for(int i = 0; i < na; ++i)
+    for(int j = 0; j < nb; ++j)
+    for(int k = 0; k < nc; ++k)
+    for(int l = 0; l < nd; ++l)
+    {
+        struct shell_pair Q = create_ss_shell_pair(1, C+k, 1, D+l);
+        eri_1pair_ssss_single(A[i], B[j], Q, res + idx);
+        idx++;
+        free_shell_pair(Q);
+    }
+}
+
+void test_eri_1pair_multi(int na, struct gaussian_shell const * const restrict A,
+                          int nb, struct gaussian_shell const * const restrict B,
+                          int nc, struct gaussian_shell const * const restrict C,
+                          int nd, struct gaussian_shell const * const restrict D,
+                          double * const restrict res, double * const restrict work)
+{
+    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
+    eri_1pair_ssss_multi(na, A, nb, B, Q, res, work);
+    free_shell_pair(Q);
+}
+
+
+void test_eri_2pair_single(int na, struct gaussian_shell const * const restrict A,
+                           int nb, struct gaussian_shell const * const restrict B,
+                           int nc, struct gaussian_shell const * const restrict C,
+                           int nd, struct gaussian_shell const * const restrict D,
+                           double * const restrict res)
+{
+    int idx = 0;
+    for(int i = 0; i < na; ++i)
+    for(int j = 0; j < nb; ++j)
+    for(int k = 0; k < nc; ++k)
+    for(int l = 0; l < nd; ++l)
+    {
+        struct shell_pair P = create_ss_shell_pair(1, A+i, 1, B+j);
+        struct shell_pair Q = create_ss_shell_pair(1, C+k, 1, D+l);
+        eri_2pair_ssss_single(P, Q, res + idx);
+        idx++;
+        free_shell_pair(P);
+        free_shell_pair(Q);
+    }
+}
+
+void test_eri_2pair_multi(int na, struct gaussian_shell const * const restrict A,
+                          int nb, struct gaussian_shell const * const restrict B,
+                          int nc, struct gaussian_shell const * const restrict C,
+                          int nd, struct gaussian_shell const * const restrict D,
+                          double * const restrict res, double * const restrict work)
+{
+    struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
+    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
+    eri_2pair_ssss_multi(P, Q, res, work);
+    free_shell_pair(P);
+    free_shell_pair(Q);
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -89,24 +156,11 @@ int main(int argc, char ** argv)
 
     Boys_Init();
 
-    struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
-    struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
-
-
     // Actually calculate
-    eri_1pair_ssss_multi(nshell1, A, nshell2, B, Q, res1_m, intwork);
-    eri_2pair_ssss_multi(P, Q, res2_m, intwork);
-    free_shell_pair(P);
-    free_shell_pair(Q);
-
-
-    // do one single run
-    P = create_ss_shell_pair(1, A, 1, B);
-    Q = create_ss_shell_pair(1, C, 1, D);
-    eri_1pair_ssss_single(A[0], B[0], Q, res1_s);
-    eri_2pair_ssss_single(P, Q, res2_s);
-    free_shell_pair(P);
-    free_shell_pair(Q);
+    test_eri_1pair_single(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res1_s);
+    test_eri_1pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res1_m, intwork);
+    test_eri_2pair_single(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_s);
+    test_eri_2pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_m, intwork);
 
 
     Boys_Finalize();
