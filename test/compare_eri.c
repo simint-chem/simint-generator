@@ -63,7 +63,8 @@ void test_eri_1pair_multi(int na, struct gaussian_shell const * const restrict A
                           int nb, struct gaussian_shell const * const restrict B,
                           int nc, struct gaussian_shell const * const restrict C,
                           int nd, struct gaussian_shell const * const restrict D,
-                          double * const restrict res, double * const restrict work)
+                          double * const restrict res,
+                          double * const restrict work)
 {
     struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
     eri_1pair_ssss_multi(na, A, nb, B, Q, res, work);
@@ -96,11 +97,27 @@ void test_eri_2pair_multi(int na, struct gaussian_shell const * const restrict A
                           int nb, struct gaussian_shell const * const restrict B,
                           int nc, struct gaussian_shell const * const restrict C,
                           int nd, struct gaussian_shell const * const restrict D,
-                          double * const restrict res, double * const restrict work)
+                          double * const restrict res,
+                          double * const restrict work)
 {
     struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
     struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
     eri_2pair_ssss_multi(P, Q, res, work);
+    free_shell_pair(P);
+    free_shell_pair(Q);
+}
+
+void test_eri_2pair_flat(int na, struct gaussian_shell const * const restrict A,
+                         int nb, struct gaussian_shell const * const restrict B,
+                         int nc, struct gaussian_shell const * const restrict C,
+                         int nd, struct gaussian_shell const * const restrict D,
+                         double * const restrict res, 
+                         double * const restrict work1,
+                         double * const restrict work2)
+{
+    struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
+    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
+    eri_2pair_ssss_flat(P, Q, res, work1, work2);
     free_shell_pair(P);
     free_shell_pair(Q);
 }
@@ -130,10 +147,12 @@ int main(int argc, char ** argv)
     double * res1_m = ALLOC(nshell1234 * sizeof(double));
     double * res2_s = ALLOC(nshell1234 * sizeof(double));
     double * res2_m = ALLOC(nshell1234 * sizeof(double));
+    double * res2_f = ALLOC(nshell1234 * sizeof(double));
     double * vres = ALLOC(nshell1234 * sizeof(double));
 
     int wrksize = nprim1*nprim2*SIMD_ROUND_DBL(nprim3*nprim4);
-    double * intwork = ALLOC(nshell1234 * wrksize * sizeof(double));
+    double * intwork1 = ALLOC(nshell1234 * wrksize * sizeof(double));
+    double * intwork2 = ALLOC(nshell1234 * wrksize * sizeof(double));
 
     srand(time(NULL));
 
@@ -160,9 +179,10 @@ int main(int argc, char ** argv)
 
     // Actually calculate
     test_eri_1pair_single(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res1_s);
-    test_eri_1pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res1_m, intwork);
+    test_eri_1pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res1_m, intwork1);
     test_eri_2pair_single(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_s);
-    test_eri_2pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_m, intwork);
+    test_eri_2pair_multi(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_m, intwork1);
+    test_eri_2pair_flat(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_f, intwork1, intwork2);
 
 
     // test with valeev
@@ -207,18 +227,19 @@ int main(int argc, char ** argv)
     Valeev_Finalize();
 
 
-    printf("%11s  %11s  %11s  %11s  %11s  --  %11s  %11s  %11s  %11s\n", "vres", "res1_s", "res1_m", "res2_s", "res2_m", 
-                                                                    "diff1_s", "diff1_m", "diff2_s", "diff2_m"); 
+    printf("%11s  %11s  %11s  %11s  %11s  %11s  --  %11s  %11s  %11s  %11s  %11s\n", "vres", "res1_s", "res1_m", "res2_s", "res2_m", "res2_f",
+                                                                                     "diff1_s", "diff1_m", "diff2_s", "diff2_m", "diff2_f"); 
     for(int i = 0; i < nshell1234; i++)
     {
         double diff1_s = fabs(res1_s[i] - vres[i]);
         double diff1_m = fabs(res1_m[i] - vres[i]);
         double diff2_s = fabs(res2_s[i] - vres[i]);
         double diff2_m = fabs(res2_m[i] - vres[i]);
+        double diff2_f = fabs(res2_f[i] - vres[i]);
         //if(diff1_s > 1e-14 || diff1_m > 1e-14 || diff2_s > 1e-14 || diff2_m > 1e-14)
-          printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  --  %11.4e  %11.4e  %11.4e  %11.4e\n", 
-                                                        vres[i], res1_s[i], res1_m[i], res2_s[i], res2_m[i],
-                                                        diff1_s, diff1_m, diff2_s, diff2_m);
+          printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  --  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", 
+                                                        vres[i], res1_s[i], res1_m[i], res2_s[i], res2_m[i], res2_f[i],
+                                                        diff1_s, diff1_m, diff2_s, diff2_m, diff2_f);
     }
 
     for(int i = 0; i < nshell1; i++)
@@ -233,7 +254,8 @@ int main(int argc, char ** argv)
     for(int l = 0; l < nshell4; l++)
         free_random_shell(D[l]);
 
-    FREE(res1_s); FREE(res1_m); FREE(res2_s); FREE(res2_m); FREE(vres); FREE(intwork);
+    FREE(res1_s); FREE(res1_m); FREE(res2_s); FREE(res2_m); FREE(res2_f); FREE(vres);
+    FREE(intwork1); FREE(intwork2);
 
     return 0;
 }

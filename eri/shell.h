@@ -19,7 +19,11 @@ struct shell_pair
     int * nprim2;  // number of primitives in shells (of length nshell2)
 
     int nshell12;
-    int * nprim12; // length nshell12;
+    int * nprim12;   // length nshell12;
+    int * primstart; // length nshell12
+                     // primstart[n] = start of shell pair n
+    int * primend;   // length nshell12
+                     // primend[n] = end (not inclusive)
 
     // these are all of length nprim
     double * x;
