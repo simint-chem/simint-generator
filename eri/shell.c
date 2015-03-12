@@ -4,11 +4,38 @@
 #include "vectorization.h"
 #include "eri/shell.h"
 
+
+// Allocate a gaussian shell with correct alignment
+struct gaussian_shell
+allocate_gaussian_shell(int nprim)
+{
+    struct gaussian_shell G;
+
+    const int prim_size = SIMD_ROUND_DBL(nprim);
+    const int size = prim_size * sizeof(double);   
+
+    double * mem = ALLOC(2*size);
+    G.alpha = mem;
+    G.coef = mem + prim_size;
+
+    return G;
+}
+
+void free_gaussian_shell(struct gaussian_shell G)
+{
+    // only need to free G.alpha since only one memory space was used
+    FREE(G.alpha);
+}
+
+
 // Allocates a shell pair with correct alignment
 struct shell_pair
 allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
                     int nb, struct gaussian_shell const * const restrict B)
 {
+    ASSUME_ALIGN(A);
+    ASSUME_ALIGN(B);
+
     struct shell_pair P;
     int prim_size = 0;
 
@@ -17,10 +44,10 @@ allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
         prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
 
     // round up to the nearest boundary
-    int size = prim_size * sizeof(double);
+    const int size = prim_size * sizeof(double);
 
     // allocate one large space
-    double * mem = ALLOC(simd_size * 5);   // 5 = x, y, z, alpha, prefac
+    double * mem = ALLOC(size * 5);   // 5 = x, y, z, alpha, prefac
     P.x = mem;
     P.y = mem + prim_size;
     P.z = mem + 2*prim_size;
@@ -54,11 +81,13 @@ void fill_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
                         int nb, struct gaussian_shell const * const restrict B,
                         struct shell_pair * const restrict P)
 {
-    ASSUME_ALIGN(P.x);
-    ASSUME_ALIGN(P.y);
-    ASSUME_ALIGN(P.z);
-    ASSUME_ALIGN(P.alpha);
-    ASSUME_ALIGN(P.prefac);
+    ASSUME_ALIGN(A);
+    ASSUME_ALIGN(B);
+    ASSUME_ALIGN(P->x);
+    ASSUME_ALIGN(P->y);
+    ASSUME_ALIGN(P->z);
+    ASSUME_ALIGN(P->alpha);
+    ASSUME_ALIGN(P->prefac);
 
     int i, j, sa, sb, sasb, idx;
 
@@ -91,7 +120,13 @@ void fill_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
 
-            ASSUME(idx%SIMD_ALIGN_DBL == 0)
+            ASSUME(idx%SIMD_ALIGN_DBL == 0);
+
+            ASSUME_ALIGN(A[sa].alpha);
+            ASSUME_ALIGN(A[sa].coef);
+            ASSUME_ALIGN(B[sb].alpha);
+            ASSUME_ALIGN(B[sb].coef);
+
             for(i = 0; i < A[sa].nprim; ++i)
             {
                 const double AxAa = A[sa].x * A[sa].alpha[i];
