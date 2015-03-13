@@ -85,6 +85,8 @@ while x < maxx or (x-maxx < inc):
       F2[m] = ((2*(m-1) + 1) * F2[m-1] - ex) / x2
       m += 1
 
+  # remove factor of constK
+  F2 = [ xi / constK for xi in F2 ]
   F.append(F2)
   pts.append(x)
   x += inc
