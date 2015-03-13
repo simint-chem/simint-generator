@@ -48,6 +48,21 @@ void test_eri_2pair_flat(int na, struct gaussian_shell const * const restrict A,
     free_shell_pair(Q);
 }
 
+void test_eri_2pair_split(int na, struct gaussian_shell const * const restrict A,
+                          int nb, struct gaussian_shell const * const restrict B,
+                          int nc, struct gaussian_shell const * const restrict C,
+                          int nd, struct gaussian_shell const * const restrict D,
+                          double * const restrict res,
+                          double * const restrict work1,
+                          double * const restrict work2)
+{
+    struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
+    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
+    eri_ssss_flat_split(P, Q, res, work1, work2);
+    free_shell_pair(P);
+    free_shell_pair(Q);
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -72,10 +87,11 @@ int main(int argc, char ** argv)
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     double * res2_f = ALLOC(nshell1234 * sizeof(double));
+    double * res2_fs = ALLOC(nshell1234 * sizeof(double));
 
-    int worksize = (nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
-    double * intwork1 = ALLOC(worksize * sizeof(double));
-    double * intwork2 = ALLOC(worksize * sizeof(double));
+    int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
+    double * intwork1 = ALLOC(2*worksize * sizeof(double));
+    double * intwork2 = ALLOC(2*worksize * sizeof(double));
 
     srand(time(NULL));
 
@@ -85,9 +101,9 @@ int main(int argc, char ** argv)
     struct gaussian_shell * D = ALLOC(nshell4 * sizeof(struct gaussian_shell));
     
     Boys_Init();
-    printf("%11s\n", "res2_f"); 
+    printf("%11s %11s\n", "res2_f", "res2_fs"); 
 
-    for(int i = 0; i < ntest; i++)
+    for(int n = 0; n < ntest; n++)
     {
         for(int i = 0; i < nshell1; i++)
             A[i] = random_shell(nprim1);
@@ -103,20 +119,21 @@ int main(int argc, char ** argv)
 
         // Actually calculate
         test_eri_2pair_flat(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_f, intwork1, intwork2);
+        test_eri_2pair_split(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_fs, intwork1, intwork2);
 
-        printf("%11e\n", res2_f[0]);
+        printf("%11e %11e\n", res2_f[0], res2_fs[0]);
 
-        for(int j = 0; j < nshell1; j++)
-            free_random_shell(A[j]);
+        for(int i = 0; i < nshell1; i++)
+            free_random_shell(A[i]);
 
-        for(int j = 0; j < nshell2; j++)
-            free_random_shell(B[j]);
+        for(int i = 0; i < nshell2; i++)
+            free_random_shell(B[i]);
 
-        for(int j = 0; j < nshell3; j++)
-            free_random_shell(C[j]);
+        for(int i = 0; i < nshell3; i++)
+            free_random_shell(C[i]);
 
-        for(int j = 0; j < nshell4; j++)
-            free_random_shell(D[j]);
+        for(int i = 0; i < nshell4; i++)
+            free_random_shell(D[i]);
 
     }
 
@@ -124,8 +141,9 @@ int main(int argc, char ** argv)
     Boys_Finalize();
 
 
-    FREE(res2_f);
+    FREE(res2_f); FREE(res2_fs);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
+
     return 0;
 }
