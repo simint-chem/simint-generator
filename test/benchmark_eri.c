@@ -12,9 +12,12 @@ random_shell(int nprim)
 {
     struct gaussian_shell G = allocate_gaussian_shell(nprim);
     G.am = 0;
-    G.x = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
-    G.y = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
-    G.z = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    //G.x = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    //G.y = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    //G.z = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
+    G.x = rand() / ((double)RAND_MAX) - 0.5;
+    G.y = rand() / ((double)RAND_MAX) - 0.5;
+    G.z = rand() / ((double)RAND_MAX) - 0.5;
 
     G.nprim = nprim;
 
@@ -30,37 +33,6 @@ random_shell(int nprim)
 void free_random_shell(struct gaussian_shell G)
 {
     free_gaussian_shell(G);
-}
-
-
-void test_eri_2pair_flat(int na, struct gaussian_shell const * const restrict A,
-                         int nb, struct gaussian_shell const * const restrict B,
-                         int nc, struct gaussian_shell const * const restrict C,
-                         int nd, struct gaussian_shell const * const restrict D,
-                         double * const restrict res,
-                         double * const restrict work1,
-                         double * const restrict work2)
-{
-    struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
-    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
-    eri_ssss_flat(P, Q, res, work1, work2);
-    free_shell_pair(P);
-    free_shell_pair(Q);
-}
-
-void test_eri_2pair_split(int na, struct gaussian_shell const * const restrict A,
-                          int nb, struct gaussian_shell const * const restrict B,
-                          int nc, struct gaussian_shell const * const restrict C,
-                          int nd, struct gaussian_shell const * const restrict D,
-                          double * const restrict res,
-                          double * const restrict work1,
-                          double * const restrict work2)
-{
-    struct shell_pair P = create_ss_shell_pair(na, A, nb, B);
-    struct shell_pair Q = create_ss_shell_pair(nc, C, nd, D);
-    eri_ssss_flat_split(P, Q, res, work1, work2);
-    free_shell_pair(P);
-    free_shell_pair(Q);
 }
 
 
@@ -86,12 +58,14 @@ int main(int argc, char ** argv)
 
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
-    double * res2_f = ALLOC(nshell1234 * sizeof(double));
-    double * res2_fs = ALLOC(nshell1234 * sizeof(double));
+    double * res_f = ALLOC(nshell1234 * sizeof(double));
+    double * res_fs = ALLOC(nshell1234 * sizeof(double));
+    double * res_ft = ALLOC(nshell1234 * sizeof(double));
+    double * res_fc = ALLOC(nshell1234 * sizeof(double));
 
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
-    double * intwork1 = ALLOC(2*worksize * sizeof(double));
-    double * intwork2 = ALLOC(2*worksize * sizeof(double));
+    double * intwork1 = ALLOC(3*worksize * sizeof(double));
+    double * intwork2 = ALLOC(3*worksize * sizeof(double));
 
     srand(time(NULL));
 
@@ -101,7 +75,7 @@ int main(int argc, char ** argv)
     struct gaussian_shell * D = ALLOC(nshell4 * sizeof(struct gaussian_shell));
     
     Boys_Init();
-    printf("%11s %11s\n", "res2_f", "res2_fs"); 
+    printf("%11s %11s %11s %11s\n", "res_f", "res_fs", "res_ft", "res_fc"); 
 
     for(int n = 0; n < ntest; n++)
     {
@@ -118,10 +92,16 @@ int main(int argc, char ** argv)
             D[i] = random_shell(nprim4);
 
         // Actually calculate
-        test_eri_2pair_flat(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_f, intwork1, intwork2);
-        test_eri_2pair_split(nshell1, A, nshell2, B, nshell3, C, nshell4, D, res2_fs, intwork1, intwork2);
+        struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
+        struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
+        eri_ssss_flat_combined(P, Q, res_fc, intwork1, intwork2);
+        eri_ssss_flat_taylor(P, Q, res_ft, intwork1, intwork2);
+        eri_ssss_flat_split(P, Q, res_fs, intwork1, intwork2);
+        eri_ssss_flat(P, Q, res_f, intwork1, intwork2);
+        free_shell_pair(P);
+        free_shell_pair(Q);
 
-        printf("%11e %11e\n", res2_f[0], res2_fs[0]);
+        printf("%11e %11e %11e %11e\n", res_f[0], res_fs[0], res_ft[0], res_fc[0]);
 
         for(int i = 0; i < nshell1; i++)
             free_random_shell(A[i]);
@@ -141,7 +121,8 @@ int main(int argc, char ** argv)
     Boys_Finalize();
 
 
-    FREE(res2_f); FREE(res2_fs);
+    FREE(res_f); FREE(res_fs);
+    FREE(res_ft); FREE(res_fc);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 
