@@ -10,7 +10,9 @@
 struct gaussian_shell
 random_shell(int nprim)
 {
-    struct gaussian_shell G = allocate_gaussian_shell(nprim);
+    struct gaussian_shell G;
+    allocate_gaussian_shell(nprim, &G);
+
     G.am = 0;
     //G.x = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
     //G.y = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
@@ -94,10 +96,10 @@ int main(int argc, char ** argv)
         // Actually calculate
         struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
         struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
-        eri_ssss_flat_combined(P, Q, res_fc, intwork1, intwork2);
-        eri_ssss_flat_taylor(P, Q, res_ft, intwork1, intwork2);
-        eri_ssss_flat_split(P, Q, res_fs, intwork1, intwork2);
-        eri_ssss_flat(P, Q, res_f, intwork1, intwork2);
+        eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
+        eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
+        eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
+        eri_ssss(P, Q, res_f, intwork1, intwork2);
         free_shell_pair(P);
         free_shell_pair(Q);
 

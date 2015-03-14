@@ -6,19 +6,14 @@
 
 
 // Allocate a gaussian shell with correct alignment
-struct gaussian_shell
-allocate_gaussian_shell(int nprim)
+void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
 {
-    struct gaussian_shell G;
-
     const int prim_size = SIMD_ROUND_DBL(nprim);
     const int size = prim_size * sizeof(double);   
 
     double * mem = ALLOC(2*size);
-    G.alpha = mem;
-    G.coef = mem + prim_size;
-
-    return G;
+    G->alpha = mem;
+    G->coef = mem + prim_size;
 }
 
 void free_gaussian_shell(struct gaussian_shell G)
@@ -29,39 +24,37 @@ void free_gaussian_shell(struct gaussian_shell G)
 
 
 // Allocates a shell pair with correct alignment
-struct shell_pair
-allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                    int nb, struct gaussian_shell const * const restrict B)
+void allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
+                         int nb, struct gaussian_shell const * const restrict B,
+                         struct shell_pair * const restrict P)
 {
     ASSUME_ALIGN(A);
     ASSUME_ALIGN(B);
 
-    struct shell_pair P;
     int prim_size = 0;
 
+    // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
         prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
 
-    // round up to the nearest boundary
     const int size = prim_size * sizeof(double);
 
     // allocate one large space
     double * mem = ALLOC(size * 5);   // 5 = x, y, z, alpha, prefac
-    P.x = mem;
-    P.y = mem + prim_size;
-    P.z = mem + 2*prim_size;
-    P.alpha = mem + 3*prim_size;
-    P.prefac = mem + 4*prim_size;
+    P->x = mem;
+    P->y = mem + prim_size;
+    P->z = mem + 2*prim_size;
+    P->alpha = mem + 3*prim_size;
+    P->prefac = mem + 4*prim_size;
 
     /* Should this be aligned? I don't think so */
     int * intmem = malloc((na+nb+3*na*nb)*sizeof(int));
-    P.nprim1 = intmem;
-    P.nprim2 = intmem + na;
-    P.nprim12 = intmem + na + nb;
-    P.primstart = intmem + na + nb + na*nb;
-    P.primend = intmem + na + nb + 2*na*nb;
-    return P; 
+    P->nprim1 = intmem;
+    P->nprim2 = intmem + na;
+    P->nprim12 = intmem + na + nb;
+    P->primstart = intmem + na + nb + na*nb;
+    P->primend = intmem + na + nb + 2*na*nb;
 }
 
 
@@ -166,7 +159,8 @@ struct shell_pair
 create_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
                      int nb, struct gaussian_shell const * const restrict B)
 {
-    struct shell_pair P = allocate_shell_pair(na, A, nb, B);
+    struct shell_pair P;
+    allocate_shell_pair(na, A, nb, B, &P);
     fill_ss_shell_pair(na, A, nb, B, &P);
     return P; 
 }

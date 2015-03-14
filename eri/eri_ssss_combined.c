@@ -12,7 +12,7 @@ extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
 
 #include <string.h> // for memset
 
-int eri_ssss(struct shell_pair const P,
+int eri_ssss_combined(struct shell_pair const P,
                   struct shell_pair const Q,
                   double * const restrict integrals,
                   double * const restrict integralwork1,
@@ -35,13 +35,13 @@ int eri_ssss(struct shell_pair const P,
 
     int i, j;
     int ab, cd;
-    int nint;
-    int idx = 0;
+    int nint = 0;
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
     // we don't want to align integralwork1,2 by shell quartet, etc, since
     // we just want to plow through then later in a 'flat' way
 
+    memset(integrals, 0, nshell1234*sizeof(double));
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
@@ -74,40 +74,12 @@ int eri_ssss(struct shell_pair const P,
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
                     // store the paremeter to the boys function in integralwork1
-                    integralwork1[idx] = R2 * PQalpha_mul/PQalpha_sum;
-
-                    // store the prefactors in integralwork2
-                    integralwork2[idx] = pfac * P.prefac[i] * Q.prefac[j];
-
-                    ++idx;
+                    const double F0param = sqrt(R2 * PQalpha_mul/PQalpha_sum);
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * erf(F0param) / F0param; 
                  }
             }
+            ++nint;
         }
-    }
-
-    // rip through the integral work arrays and store result back in integralwork1
-    // This is the loop that should be heavily vectorized
-    for(i = 0; i < idx; ++i)
-    {
-        const double x2 = sqrt(integralwork1[i]);
-        integralwork1[i] = integralwork2[i] * erf(x2) / x2;
-    }
-
-    // now sum them, forming the contracted integrals
-    memset(integrals, 0, nshell1234*sizeof(double));
-    idx = 0;
-    nint = 0;
-    for(ab = 0; ab < P.nshell12; ++ab)
-    for(cd = 0; cd < Q.nshell12; ++cd)
-    {
-        const int nprim1234 = P.nprim12[ab] * Q.nprim12[cd];
-        for(i = 0; i < nprim1234; ++i)
-        {
-            integrals[nint] += integralwork1[idx];
-            ++idx;
-        }
-
-        nint++;
     }
 
     // apply constants to integrals

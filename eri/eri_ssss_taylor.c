@@ -12,7 +12,7 @@ extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
 
 #include <string.h> // for memset
 
-int eri_ssss(struct shell_pair const P,
+int eri_ssss_taylor(struct shell_pair const P,
                   struct shell_pair const Q,
                   double * const restrict integrals,
                   double * const restrict integralwork1,
@@ -89,8 +89,35 @@ int eri_ssss(struct shell_pair const P,
     // This is the loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
     {
-        const double x2 = sqrt(integralwork1[i]);
-        integralwork1[i] = integralwork2[i] * erf(x2) / x2;
+        // lookup F7(xi) for xi nearest x
+        // 7 = interpolation order, so use the define
+        const double x = integralwork1[i];
+
+        const int lookup_idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
+        const double xi = ((double)lookup_idx / BOYS_GRID_LOOKUPFAC);
+        const double dx = xi-x;   // -delta x
+
+        const double f0xi = boys_grid[lookup_idx][0];
+        const double f1xi = boys_grid[lookup_idx][1];
+        const double f2xi = boys_grid[lookup_idx][2];
+        const double f3xi = boys_grid[lookup_idx][3];
+        const double f4xi = boys_grid[lookup_idx][4];
+        const double f5xi = boys_grid[lookup_idx][5];
+        const double f6xi = boys_grid[lookup_idx][6];
+        const double f7xi = boys_grid[lookup_idx][7];
+
+        integralwork1[i] = f0xi
+                         + dx * (                  f1xi
+                         + dx * ( (1.0/2.0   )   * f2xi
+                         + dx * ( (1.0/6.0   )   * f3xi
+                         + dx * ( (1.0/24.0  )   * f4xi
+                         + dx * ( (1.0/120.0 )   * f5xi
+                         + dx * ( (1.0/720.0 )   * f6xi
+                         + dx * ( (1.0/5040.0)   * f7xi 
+                         )))))));
+
+        // apply coefficients and prefactors
+        integralwork1[i] *= integralwork2[i];
     }
 
     // now sum them, forming the contracted integrals

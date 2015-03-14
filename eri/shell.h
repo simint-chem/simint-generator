@@ -34,15 +34,14 @@ struct shell_pair
 };
 
 
-struct gaussian_shell
-allocate_gaussian_shell(int nprim);
+void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G);
 
 void free_gaussian_shell(struct gaussian_shell G);
 
 
-struct shell_pair 
-allocate_shell_pair_from_shells(int na, struct gaussian_shell const * const restrict A,
-                                int nb, struct gaussian_shell const * const restrict B);
+void allocate_shell_pair_from_shells(int na, struct gaussian_shell const * const restrict A,
+                                     int nb, struct gaussian_shell const * const restrict B,
+                                     struct shell_pair * const restrict P);
 
 void free_shell_pair(struct shell_pair P);
 
