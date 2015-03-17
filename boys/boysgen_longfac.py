@@ -32,7 +32,7 @@ mp.dps = args.dps
 maxn = args.max_n
 
 print("------------------------------------")
-print("Options for Boys function Fn(x):")
+print("Options for long Boys function factor sqrt(pi)*(2n-1)!!/(2**(n+1)):")
 print("    Max n: {}".format(maxn))
 print("      DPS: {}".format(args.dps))
 print("------------------------------------")
@@ -40,9 +40,12 @@ print("------------------------------------")
 
 # Generate fac = sqrt(pi)*(2n-1)!!/(2**(n+1))
 
-longfac = [ mp.sqrt(mp.pi) * mp.fac2(2.0*n-1) / mp.power(2.0, n+1) for n in range(0, maxn+1) ]
-  
+longfac = [None] * (maxn+1)
+longfac[0] = mp.sqrt(mp.pi)/mp.mpf(2)
 
+# each iteration just adds a 1/2 and a (2n-1)
+for n in range(1, maxn+1):
+ longfac[n] = longfac[n-1] * 0.5 * (2.0*n - 1)
 
 # Output to file
 with open(args.filename + ".c", 'w') as f:
