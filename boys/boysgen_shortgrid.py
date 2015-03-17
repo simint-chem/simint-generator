@@ -85,8 +85,6 @@ while x < maxx or (x-maxx < inc):
       F2[m] = ((2*(m-1) + 1) * F2[m-1] - ex) / x2
       m += 1
 
-  # remove factor of constK
-  F2 = [ xi / constK for xi in F2 ]
   F.append(F2)
   pts.append(x)
   x += inc
@@ -109,7 +107,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
-  f.write("double boys_grid[{}][{}] = \n".format(npoints, maxn+1))
+  f.write("const double boys_shortgrid[{}][{}] = \n".format(npoints, maxn+1))
   f.write("{\n")
 
   for p,x in zip(F,pts):
@@ -123,10 +121,11 @@ with open(args.filename + ".h", 'w') as f:
   f.write("#ifndef {}_H\n".format(args.filename.upper()))
   f.write("#define {}_H\n".format(args.filename.upper()))
   f.write("\n")
-  f.write("#define BOYS_GRID_MAXN {}\n".format(maxn))
-  f.write("#define BOYS_GRID_MAXX {}\n".format(maxx))
-  f.write("#define BOYS_GRID_NPOINT {}\n".format(npoints))
-  f.write("#define BOYS_GRID_LOOKUPFAC {}\n".format(1.0/inc))
-  f.write("#define BOYS_GRID_LOOKUPFAC2 {}\n".format(0.5*inc))
+  f.write("#define BOYS_SHORTGRID_MAXN {}\n".format(maxn))
+  f.write("#define BOYS_SHORTGRID_MAXX {}\n".format(maxx))
+  f.write("#define BOYS_SHORTGRID_SPACE {}\n".format(inc))
+  f.write("#define BOYS_SHORTGRID_NPOINT {}\n".format(npoints))
+  f.write("#define BOYS_SHORTGRID_LOOKUPFAC {}\n".format(1.0/inc))
+  f.write("#define BOYS_SHORTGRID_LOOKUPFAC2 {}\n".format(0.5*inc))
   f.write("\n")
   f.write("#endif\n")

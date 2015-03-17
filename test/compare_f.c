@@ -6,7 +6,7 @@
 #include "valeev/valeev.h"
 #include "boys/boys.h"
 
-#define NN 5
+#define MAXN 5
 
 int main(int argc, char ** argv)
 {
@@ -14,25 +14,23 @@ int main(int argc, char ** argv)
     double maxx = atof(argv[1]); 
 
     Valeev_Init();
-    Boys_Init();
+    Boys_Init(maxx, MAXN+7);
 
     srand(time(NULL));
     //double rmax = RAND_MAX;
 
     double maxerror = 0.0;
 
-    double * my = (double *)malloc( (NN+1) * sizeof(double));
-    double * valeev = (double *)malloc( (NN+1) * sizeof(double));
+    double * my = (double *)malloc( (MAXN+1) * sizeof(double));
+    double * valeev = (double *)malloc( (MAXN+1) * sizeof(double));
     
 
-    for(double x = 0.0; x < maxx; x += 0.001)
+    for(double x = 0.0; x < maxx; x += 0.01)
     {
-        //x = 40.0 * (rand() / rmax);
+        Valeev_F(valeev, MAXN, x);
+        Boys_F(my, MAXN, x);
 
-        Valeev_F(valeev, NN, x);
-        Boys_F(my, NN, x);
-
-        for(int n = 0; n <= NN; n++)
+        for(int n = 0; n <= MAXN; n++)
         {
             double diff = fabs(my[n] - valeev[n]);
             if(diff > maxerror)

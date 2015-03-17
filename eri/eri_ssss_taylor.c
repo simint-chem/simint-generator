@@ -1,22 +1,22 @@
 #include <math.h>
+#include <string.h> // for memset
 
 #include "constants.h"
 #include "vectorization.h"
 
 #include "eri/shell.h"
-#include "boys/boys_grid.h"
+#include "boys/boys.h"
 
-#include <stdio.h>
+extern const double ** boys_grid;
+extern const double boys_grid_max_x;
+extern const int boys_grid_max_n;
 
-extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
-
-#include <string.h> // for memset
 
 int eri_ssss_taylor(struct shell_pair const P,
-                  struct shell_pair const Q,
-                  double * const restrict integrals,
-                  double * const restrict integralwork1,
-                  double * const restrict integralwork2)
+                    struct shell_pair const Q,
+                    double * const restrict integrals,
+                    double * const restrict integralwork1,
+                    double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -33,10 +33,11 @@ int eri_ssss_taylor(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
+    int nint = 0;
+    int idx = 0;
     int i, j;
     int ab, cd;
-    int nint;
-    int idx = 0;
+
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
     // we don't want to align integralwork1,2 by shell quartet, etc, since
@@ -89,12 +90,10 @@ int eri_ssss_taylor(struct shell_pair const P,
     // This is the loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
     {
-        // lookup F7(xi) for xi nearest x
-        // 7 = interpolation order, so use the define
         const double x = integralwork1[i];
 
         const int lookup_idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
-        const double xi = ((double)lookup_idx / BOYS_GRID_LOOKUPFAC);
+        const double xi = ((double)lookup_idx * BOYS_GRID_SPACE);
         const double dx = xi-x;   // -delta x
 
         const double f0xi = boys_grid[lookup_idx][0];
@@ -123,7 +122,6 @@ int eri_ssss_taylor(struct shell_pair const P,
     // now sum them, forming the contracted integrals
     memset(integrals, 0, nshell1234*sizeof(double));
     idx = 0;
-    nint = 0;
     for(ab = 0; ab < P.nshell12; ++ab)
     for(cd = 0; cd < Q.nshell12; ++cd)
     {
@@ -140,7 +138,7 @@ int eri_ssss_taylor(struct shell_pair const P,
     // apply constants to integrals
     // also heavily vectorized
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC * ONESIX_OVER_SQRT_PI;
+        integrals[i] *= ONESIX_OVER_SQRT_PI;
 
     return nshell1234;
 

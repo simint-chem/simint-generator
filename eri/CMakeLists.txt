@@ -3,6 +3,7 @@ add_library(simint_eri STATIC
                               eri_ssss.c
                               eri_ssss_combined.c
                               eri_ssss_taylor.c
+                              eri_ssss_taylorcombined.c
                               eri_ssss_split.c
            )
 

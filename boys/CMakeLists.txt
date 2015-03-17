@@ -1,6 +1,7 @@
 add_library(simint_boys STATIC 
                                boys.c
-                               boys_grid.c
+                               boys_shortgrid.c
+                               boys_longfac.c
            )
 
 set_target_properties(simint_boys PROPERTIES INCLUDE_DIRECTORIES ${SIMINT_C_INCLUDES})

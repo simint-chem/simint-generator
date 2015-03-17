@@ -1,22 +1,22 @@
 #include <math.h>
+#include <string.h> // for memset
 
 #include "constants.h"
 #include "vectorization.h"
 
 #include "eri/shell.h"
-#include "boys/boys_grid.h"
+#include "boys/boys.h"
 
-#include <stdio.h>
+extern const double ** boys_grid;
+extern const double boys_grid_max_x;
+extern const int boys_grid_max_n;
 
-extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
-
-#include <string.h> // for memset
 
 int eri_ssss_split(struct shell_pair const P,
-                        struct shell_pair const Q,
-                        double * const restrict integrals,
-                        double * const integralwork1,
-                        double * const integralwork2)
+                   struct shell_pair const Q,
+                   double * const restrict integrals,
+                   double * const integralwork1,
+                   double * const integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -33,7 +33,8 @@ int eri_ssss_split(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
-    // we need to split integralwork1 and integralwork2 into two separate spaces
+    // we need to split integralwork1 and integralwork2 into three separate spaces
+    // One holds the whole thing, one holds the short regime, and one holds the long regime
     const int nprim1234 = P.nprim * Q.nprim;
 
     double * const restrict integralwork1_init = integralwork1;
@@ -103,7 +104,7 @@ int eri_ssss_split(struct shell_pair const P,
         }
     }
 
-    // partition into the long and short regiemes 
+    // partition into the long and short regimes 
     int iblock = 0;
     idx = 0;
     for(ab = 0; ab < P.nshell12; ++ab)
@@ -116,7 +117,7 @@ int eri_ssss_split(struct shell_pair const P,
             {
                 const double Fparam = integralwork1_init[idx];
                 const double prefac = integralwork2_init[idx];
-                if(Fparam < BOYS_GRID_MAXX)
+                if(Fparam < BOYS_SHORTGRID_MAXX)
                 {
                     integralwork1_short[idx_short] = Fparam;
                     integralwork2_short[idx_short] = prefac;
@@ -149,12 +150,10 @@ int eri_ssss_split(struct shell_pair const P,
     // short x
     for(i = 0; i < idx_short; ++i)
     {
-        // lookup F7(xi) for xi nearest x
-        // 7 = interpolation order, so use the define
         const double x = integralwork1_short[i];
 
-        const int lookup_idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
-        const double xi = ((double)lookup_idx / BOYS_GRID_LOOKUPFAC);
+        const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+        const double xi = ((double)lookup_idx / BOYS_SHORTGRID_LOOKUPFAC);
         const double dx = xi-x;   // -delta x
 
         const double f0xi = boys_grid[lookup_idx][0];
@@ -192,6 +191,10 @@ int eri_ssss_split(struct shell_pair const P,
             integrals[i] += integralwork1_long[j];
     }
 
+    // apply factor, which isn't included above
+    for(i = 0; i < nshell1234; ++i)
+        integrals[i] *= F0_KFAC;
+
     // now short
     j = 0;
     for(i = 0; i < nshell1234; ++i)
@@ -206,7 +209,7 @@ int eri_ssss_split(struct shell_pair const P,
     // apply constants to integrals
     // also heavily vectorized
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC * ONESIX_OVER_SQRT_PI;
+        integrals[i] *= ONESIX_OVER_SQRT_PI;
 
     return nshell1234;
 

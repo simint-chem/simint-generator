@@ -1,93 +1,106 @@
-#include <stdlib.h>
 #include <math.h>
-#include <stdio.h>
+#include <string.h> // for memcpy
 
+#include "vectorization.h"
 #include "boys/boys.h"
-#include "boys/boys_grid.h"
+#include "boys/boys_longfac.h"
 
+extern const double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN + 1];
+extern const double boys_longfac[BOYS_LONGFAC_MAXN];
 
-#ifndef M_PI
+double * boys_grid_flat;
+double ** boys_grid;
+
+double boys_grid_max_x = 0;
+int boys_grid_max_n = 0;
+
 #define M_PI 3.14159265358979323846
-#endif
 
-extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
-
-double dfac[BOYS_MAX_DFAC]; // (2n-1)!!
-
-void Boys_Init(void)
+void Boys_Init(double max_x, int max_n)
 {
-    int i;
+    // max_x should fit in the 15 digits of precision. It should
+    // usually be less than 1e6 or so. If not, you've got some problems.
 
-    dfac[0] = 1.0;   // (-1)!!
-    dfac[1] = 1.0;   // ( 1)!!
-    dfac[2] = 3.0;   // ( 3)!!
-    for(i = 3; i < BOYS_MAX_DFAC; ++i)
-        dfac[i] = (2*i-1)*dfac[i-1];
+    // + 1 for fencepost
+    // + 2 for rounding error + safety
+    int nelements_x = 3 + (int)((max_x / BOYS_GRID_SPACE));
+    int nelements_n = SIMD_ROUND_DBL(max_n+1);
+    boys_grid_flat = ALLOC(nelements_x * nelements_n * sizeof(double));
 
+    // set up the pointers
+    boys_grid = ALLOC(nelements_x * sizeof(double*));
+
+    int ii = 0;
+    for(int i = 0; i < nelements_x; ++i, ii += nelements_n)
+        boys_grid[i] = boys_grid_flat + ii;
+    
+    // copy over the shortgrid elements for all n
+    // note that we may be requesting a shorter range on x than is provided
+    int shortend = (max_x > BOYS_SHORTGRID_MAXX ? BOYS_SHORTGRID_NPOINT : nelements_x);
+    for(int i = 0; i < shortend; ++i)
+        memcpy(boys_grid[i], boys_shortgrid[i], max_n * sizeof(double));
+
+    // calculate the rest with the asymptotic formula
+    // (won't run if nelements_x < BOYS_SHORTGRID_NPOINT)
+    double x = BOYS_SHORTGRID_MAXX + BOYS_GRID_SPACE;
+
+    // vectorize the outer loop
+    #ifdef SIMINT_SIMD
+    #pragma simd
+    #endif
+    for(int i = BOYS_SHORTGRID_NPOINT; i < nelements_x; ++i)
+    {
+        double powx = 1.0/sqrt(x);
+        for(int n = 0; n < max_n; ++n)
+        {
+            boys_grid[i][n] = boys_longfac[n] * powx;
+            powx /= x;
+        }
+        x += BOYS_GRID_SPACE;
+    }
+
+    boys_grid_max_x = max_x;
+    boys_grid_max_n = max_n;
 }
 
 void Boys_Finalize(void)
 {
+    FREE(boys_grid_flat);
+    FREE(boys_grid);
 }
 
 
-
-void Boys_F(double * F, int n, double x)
+void Boys_F(double * const restrict F, int n, double x)
 {
-    if(x < BOYS_GRID_MAXX)
-      Boys_F_short(F, n, x);
-    else
-      Boys_F_long(F, n, x);
-}
+    ASSUME_ALIGN(boys_grid);
 
+    const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+    const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
+    const double dx = xi-x;   // -delta x
 
+    double * gridpts = &(boys_grid[lookup_idx][0]);
 
-#ifdef SIMINT_SIMD
-  #pragma omp declare simd simdlen(SIMD_LEN)
-#endif
-void Boys_F_short(double * F, int n, double x)
-{
-    int i;
-
-    double fac = 1.0;
-    const double ex = exp(-x);
-    const double x2 = 2 * x;
-
-    // The boys_grid is stored with x as the first index
-    // therefore, the n index is contiguous
-    // This lookup should be the only part that can't be vectorized
-    const int idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
-    const double dx = ((double)idx / BOYS_GRID_LOOKUPFAC)-x;
-    double const * fval = boys_grid[idx] + n;
-
-    F[n] = 0;
-    for(i = 0; i <= BOYS_INTERP_ORDER; i++, fval++)
+    for(int i = 0; i <= n; ++i)
     {
-        F[n] += (*fval)*pow(dx, i)/fac;
-        fac *= (i+1);
+        const double f0xi = gridpts[i];
+        const double f1xi = gridpts[i+1];
+        const double f2xi = gridpts[i+2];
+        const double f3xi = gridpts[i+3];
+        const double f4xi = gridpts[i+4];
+        const double f5xi = gridpts[i+5];
+        const double f6xi = gridpts[i+6];
+        const double f7xi = gridpts[i+7];
+
+        F[i] = f0xi
+               + dx * (                  f1xi
+               + dx * ( (1.0/2.0   )   * f2xi
+               + dx * ( (1.0/6.0   )   * f3xi
+               + dx * ( (1.0/24.0  )   * f4xi
+               + dx * ( (1.0/120.0 )   * f5xi
+               + dx * ( (1.0/720.0 )   * f6xi
+               + dx * ( (1.0/5040.0)   * f7xi
+               )))))));
     }
-
-    // recurse down
-    for(i = n-1; i >= 0; --i)
-        F[i] = (x2* F[i+1] + ex)/(2*i + 1);
-}
-
-
-
-#ifdef SIMINT_SIMD
-  #pragma omp declare simd simdlen(SIMD_LEN)
-#endif
-void Boys_F_long(double * F, int n, double x)
-{
-    const double ex = exp(-x);
-    const double x2 = 2 * x;
-    int i;
-
-    F[n] = dfac[n] / (1<<(n+1)) * sqrt(M_PI / pow(x, 2*n+1));
-
-    // recurse down
-    for(i = n-1; i >= 0; --i)
-        F[i] = (x2 * F[i+1] + ex)/(2*i + 1);
 }
 
 

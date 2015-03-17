@@ -1,22 +1,16 @@
 #include <math.h>
+#include <string.h> // for memset
 
 #include "constants.h"
 #include "vectorization.h"
 
 #include "eri/shell.h"
-#include "boys/boys_grid.h"
-
-#include <stdio.h>
-
-extern double boys_grid[BOYS_GRID_NPOINT][BOYS_GRID_MAXN + 1];
-
-#include <string.h> // for memset
 
 int eri_ssss(struct shell_pair const P,
-                  struct shell_pair const Q,
-                  double * const restrict integrals,
-                  double * const restrict integralwork1,
-                  double * const restrict integralwork2)
+             struct shell_pair const Q,
+             double * const restrict integrals,
+             double * const restrict integralwork1,
+             double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -33,15 +27,15 @@ int eri_ssss(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
+    int nint = 0;
+    int idx = 0;
     int i, j;
     int ab, cd;
-    int nint;
-    int idx = 0;
+
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
     // we don't want to align integralwork1,2 by shell quartet, etc, since
     // we just want to plow through then later in a 'flat' way
-
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
@@ -96,7 +90,6 @@ int eri_ssss(struct shell_pair const P,
     // now sum them, forming the contracted integrals
     memset(integrals, 0, nshell1234*sizeof(double));
     idx = 0;
-    nint = 0;
     for(ab = 0; ab < P.nshell12; ++ab)
     for(cd = 0; cd < Q.nshell12; ++cd)
     {
@@ -116,6 +109,5 @@ int eri_ssss(struct shell_pair const P,
         integrals[i] *= F0_KFAC * ONESIX_OVER_SQRT_PI;
 
     return nshell1234;
-
 }
 

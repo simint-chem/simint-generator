@@ -7,6 +7,10 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 
+#define MAX_COORD 0.5
+#define MAX_EXP   100.0
+#define MAX_COEF  2.0
+
 struct gaussian_shell
 random_shell(int nprim)
 {
@@ -14,19 +18,16 @@ random_shell(int nprim)
     allocate_gaussian_shell(nprim, &G);
 
     G.am = 0;
-    //G.x = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
-    //G.y = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
-    //G.z = 4.0 * rand() / ((double)RAND_MAX) - 2.0;
-    G.x = rand() / ((double)RAND_MAX) - 0.5;
-    G.y = rand() / ((double)RAND_MAX) - 0.5;
-    G.z = rand() / ((double)RAND_MAX) - 0.5;
+    G.x = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
+    G.y = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
+    G.z = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
 
     G.nprim = nprim;
 
     for(int i = 0; i < nprim; i++)
     {
-        G.alpha[i] = 10.0 * rand() / ((double)RAND_MAX);
-        G.coef[i] = 10.0 * rand() / ((double)RAND_MAX);
+        G.alpha[i] = MAX_EXP * rand() / ((double)RAND_MAX);
+        G.coef[i] = MAX_COEF * rand() / ((double)RAND_MAX);
     }
 
     return G;
@@ -46,7 +47,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    const int ntest = 50;
+    const int ntest = 500;
 
     int nshell1 = atoi(argv[1]);
     int nshell2 = atoi(argv[2]);
@@ -64,6 +65,7 @@ int main(int argc, char ** argv)
     double * res_fs = ALLOC(nshell1234 * sizeof(double));
     double * res_ft = ALLOC(nshell1234 * sizeof(double));
     double * res_fc = ALLOC(nshell1234 * sizeof(double));
+    double * res_ftc = ALLOC(nshell1234 * sizeof(double));
 
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
     double * intwork1 = ALLOC(3*worksize * sizeof(double));
@@ -75,10 +77,17 @@ int main(int argc, char ** argv)
     struct gaussian_shell * B = ALLOC(nshell2 * sizeof(struct gaussian_shell));
     struct gaussian_shell * C = ALLOC(nshell3 * sizeof(struct gaussian_shell));
     struct gaussian_shell * D = ALLOC(nshell4 * sizeof(struct gaussian_shell));
-    
-    Boys_Init();
-    printf("%11s %11s %11s %11s\n", "res_f", "res_fs", "res_ft", "res_fc"); 
 
+    // find the maximum possible x value for the boys function
+    const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
+    const double max_x = maxR2 * (MAX_EXP*MAX_EXP) / (2.0 * MAX_EXP);
+    printf("Maximum parameter to boys: %12.8e\n", max_x);
+    //Boys_Init(max_x, 7); // need F0 + 7 for interpolation
+    Boys_Init(1e6, BOYS_GRID_MAXN); // need F0 + 7 for interpolation
+    printf("Boys grid generated\n");
+
+
+    printf("%11s %11s %11s %11s %11s\n", "res_f", "res_fs", "res_ft", "res_fc", "res_ftc");
     for(int n = 0; n < ntest; n++)
     {
         for(int i = 0; i < nshell1; i++)
@@ -96,14 +105,15 @@ int main(int argc, char ** argv)
         // Actually calculate
         struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
         struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
+        eri_ssss(P, Q, res_f, intwork1, intwork2);
         eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
         eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
         eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
-        eri_ssss(P, Q, res_f, intwork1, intwork2);
+        eri_ssss_taylorcombined(P, Q, res_ftc, intwork1, intwork2);
         free_shell_pair(P);
         free_shell_pair(Q);
 
-        printf("%11e %11e %11e %11e\n", res_f[0], res_fs[0], res_ft[0], res_fc[0]);
+        printf("%11e %11e %11e %11e %11e\n", res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0]);
 
         for(int i = 0; i < nshell1; i++)
             free_random_shell(A[i]);
@@ -125,6 +135,7 @@ int main(int argc, char ** argv)
 
     FREE(res_f); FREE(res_fs);
     FREE(res_ft); FREE(res_fc);
+    FREE(res_ftc);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 
