@@ -3,7 +3,7 @@
 #include <time.h>
 #include <math.h>
 
-#include "valeev/valeev.h"
+#include "liberd/erd_interface.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
 
@@ -66,6 +66,7 @@ int main(int argc, char ** argv)
     double * res_ft = ALLOC(nshell1234 * sizeof(double));
     double * res_fc = ALLOC(nshell1234 * sizeof(double));
     double * res_ftc = ALLOC(nshell1234 * sizeof(double));
+    double * res_e = ALLOC(nshell1234 * sizeof(double));
 
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
     double * intwork1 = ALLOC(3*worksize * sizeof(double));
@@ -118,8 +119,26 @@ int main(int argc, char ** argv)
         free_shell_pair(P);
         free_shell_pair(Q);
 
-        printf("%11e %11e %11e %11e %11e\n", res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0]);
+        // test with erd
+        int idx = 0;
+        ERD_Init(nshell1, A, nshell2, B,
+                 nshell3, C, nshell4, D);
+        for(int i = 0; i < nshell1; i++)
+        for(int j = 0; j < nshell2; j++)
+        for(int k = 0; k < nshell3; k++)
+        for(int l = 0; l < nshell4; l++)
+        {
+            res_e[idx] = 0.0;
+            ERD_Compute_shell(A[i], B[j], C[k], D[l], res_e + idx);
+            idx++;
+        }
+        ERD_Finalize();
 
+
+        // print some results
+        printf("%11e %11e %11e %11e %11e %11e\n", res_e[0], res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0]);
+
+        // free memory
         for(int i = 0; i < nshell1; i++)
             free_random_shell(A[i]);
 
@@ -132,12 +151,13 @@ int main(int argc, char ** argv)
         for(int i = 0; i < nshell4; i++)
             free_random_shell(D[i]);
 
+
     }
 
 
     Boys_Finalize();
 
-
+    FREE(res_e);
     FREE(res_f); FREE(res_fs);
     FREE(res_ft); FREE(res_fc);
     FREE(res_ftc);

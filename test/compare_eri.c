@@ -4,6 +4,8 @@
 #include <math.h>
 
 #include "valeev/valeev.h"
+#include "liberd/erd_interface.h"
+
 #include "eri/eri.h"
 #include "boys/boys.h"
 
@@ -64,7 +66,8 @@ int main(int argc, char ** argv)
     double * res_ft = ALLOC(nshell1234 * sizeof(double));
     double * res_fc = ALLOC(nshell1234 * sizeof(double));
     double * res_ftc = ALLOC(nshell1234 * sizeof(double));
-    double * vres = ALLOC(nshell1234 * sizeof(double));
+    double * res_e = ALLOC(nshell1234 * sizeof(double));
+    double * res_v = ALLOC(nshell1234 * sizeof(double));
 
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
     double * intwork1 = ALLOC(3*worksize * sizeof(double));
@@ -128,7 +131,7 @@ int main(int argc, char ** argv)
         double vC[3] = { C[k].x, C[k].y, C[k].z };
         double vD[3] = { D[l].x, D[l].y, D[l].z };
 
-        vres[idx] = 0.0;
+        res_v[idx] = 0.0;
 
         for(int m = 0; m < A[i].nprim; m++)
         for(int n = 0; n < B[j].nprim; n++)
@@ -139,7 +142,7 @@ int main(int argc, char ** argv)
                                     0, 0, 0, B[j].alpha[n], vB,
                                     0, 0, 0, C[k].alpha[o], vC,
                                     0, 0, 0, D[l].alpha[p], vD, 1);
-            vres[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
+            res_v[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
             /*
             printf("IDX: %d\n", idx);
             printf("VAL: %8.3e\n", val);
@@ -154,21 +157,40 @@ int main(int argc, char ** argv)
         idx++;
     }
 
+
+    // test with erd
+    ERD_Init(nshell1, A, nshell2, B,
+             nshell3, C, nshell4, D);
+
+    idx = 0;
+    for(int i = 0; i < nshell1; i++)
+    for(int j = 0; j < nshell2; j++)
+    for(int k = 0; k < nshell3; k++)
+    for(int l = 0; l < nshell4; l++)
+    {
+        res_e[idx] = 0.0;
+        ERD_Compute_shell(A[i], B[j], C[k], D[l], res_e + idx);
+        idx++;
+    }
+
+
     Boys_Finalize();
     Valeev_Finalize();
+    ERD_Finalize();
 
 
-    printf("%11s  %11s  %11s  %11s  %11s\n",
-                        "diff_f", "diff_fs", "diff_ft", "diff_fc", "diff_ftc");
+    printf("%11s  %11s  %11s  %11s  %11s  %11s\n",
+                        "diff_e", "diff_f", "diff_fs", "diff_ft", "diff_fc", "diff_ftc");
     for(int i = 0; i < nshell1234; i++)
     {
-        double diff_f = fabs(res_f[i] - vres[i]);
-        double diff_fs = fabs(res_fs[i] - vres[i]);
-        double diff_ft = fabs(res_ft[i] - vres[i]);
-        double diff_fc = fabs(res_fc[i] - vres[i]);
-        double diff_ftc = fabs(res_ftc[i] - vres[i]);
-        //if(diff1_s > 1e-14 || diff1_m > 1e-14 || diff_s > 1e-14 || diff_m > 1e-14)
-          printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_f,   diff_fs, diff_ft, diff_fc, diff_ftc);
+        double diff_e = fabs(res_e[i] - res_v[i]);
+        double diff_f = fabs(res_f[i] - res_v[i]);
+        double diff_fs = fabs(res_fs[i] - res_v[i]);
+        double diff_ft = fabs(res_ft[i] - res_v[i]);
+        double diff_fc = fabs(res_fc[i] - res_v[i]);
+        double diff_ftc = fabs(res_ftc[i] - res_v[i]);
+        //printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i]);
+        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc);
     }
 
     for(int i = 0; i < nshell1; i++)
@@ -183,7 +205,7 @@ int main(int argc, char ** argv)
     for(int l = 0; l < nshell4; l++)
         free_random_shell(D[l]);
 
-    FREE(vres);
+    FREE(res_v); FREE(res_e);
     FREE(res_f); FREE(res_fs);
     FREE(res_ft); FREE(res_fc);
     FREE(res_ftc);

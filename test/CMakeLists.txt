@@ -1,6 +1,6 @@
 macro(ADDTEST TNAME TFILES)
   add_executable(${TNAME} ${TFILES}) 
-  target_link_libraries(${TNAME} simint_eri simint_boys simint_valeev)
+  target_link_libraries(${TNAME} simint_eri simint_boys simint_valeev simint_erdinterface simint_erd)
   set_target_properties(${TNAME} PROPERTIES INCLUDE_DIRECTORIES ${SIMINT_C_INCLUDES})
   set_target_properties(${TNAME} PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
   set_target_properties(${TNAME} PROPERTIES LINK_FLAGS ${SIMINT_LINK_FLAGS})

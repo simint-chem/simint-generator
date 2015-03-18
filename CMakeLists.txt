@@ -50,11 +50,11 @@ add_subdirectory(test)
 # LibERD
 ##################################################
 if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-  list(APPEND LIBERD_F90_FLAGS "-Wall")
+  list(APPEND LIBERD_F90_FLAGS "-Wall -g")
 elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
-  list(APPEND LIBERD_F90_FLAGS "-warn all")
+  list(APPEND LIBERD_F90_FLAGS "-warn all -g")
 else()  
-  list(APPEND LIBERD_F90_FLAGS "-Wall")
+  list(APPEND LIBERD_F90_FLAGS "-Wall -g")
 endif() 
 
 list(APPEND LIBERD_F90_FLAGS "${OpenMP_CXX_FLAGS}")

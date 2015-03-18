@@ -12,5 +12,13 @@ string(REPLACE ";" " " LIBERD_F90_FLAGS "${LIBERD_F90_FLAGS}")
 set_target_properties(simint_erd PROPERTIES COMPILE_FLAGS ${LIBERD_F90_FLAGS})
 
 
+add_library(simint_erdinterface STATIC 
+                              erd_interface.c
+           )
+
+set_target_properties(simint_erdinterface PROPERTIES INCLUDE_DIRECTORIES ${SIMINT_C_INCLUDES})
+set_target_properties(simint_erdinterface PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
+
+
 # For now, install all header files
 #install(TARGETS simint_erd ARCHIVE DESTINATION lib)
