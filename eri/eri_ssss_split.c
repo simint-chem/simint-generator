@@ -61,9 +61,6 @@ int eri_ssss_split(struct shell_pair const P,
     int blockends_short[nshell1234];
     int blockends_long[nshell1234];
 
-    // we don't want to align integralwork1,2 by shell quartet, etc, since
-    // we just want to plow through then later in a 'flat' way
-
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
@@ -74,14 +71,14 @@ int eri_ssss_split(struct shell_pair const P,
 
         for(cd = 0; cd < Q.nshell12; ++cd)
         {
+            const int cdstart = Q.primstart[cd];
+            const int cdend = Q.primend[cd];
+
+            // this should have been set in fill_shell_pair or something else
+            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
+
             for(i = abstart; i < abend; ++i)
             {
-                const int cdstart = Q.primstart[cd];
-                const int cdend = Q.primend[cd];
-
-                // this should have been set in fill_shell_pair or something else
-                ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
-
                 for(j = cdstart; j < cdend; ++j)
                 {
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];

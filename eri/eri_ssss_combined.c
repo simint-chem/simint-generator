@@ -34,9 +34,6 @@ int eri_ssss_combined(struct shell_pair const P,
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
-    // we don't want to align integralwork1,2 by shell quartet, etc, since
-    // we just want to plow through then later in a 'flat' way
-
     memset(integrals, 0, nshell1234*sizeof(double));
     for(ab = 0; ab < P.nshell12; ++ab)
     {
@@ -48,14 +45,14 @@ int eri_ssss_combined(struct shell_pair const P,
 
         for(cd = 0; cd < Q.nshell12; ++cd)
         {
+            const int cdstart = Q.primstart[cd];
+            const int cdend = Q.primend[cd];
+
+            // this should have been set in fill_shell_pair or something else
+            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
+
             for(i = abstart; i < abend; ++i)
             {
-                const int cdstart = Q.primstart[cd];
-                const int cdend = Q.primend[cd];
-
-                // this should have been set in fill_shell_pair or something else
-                ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
-
                 for(j = cdstart; j < cdend; ++j)
                 {
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
