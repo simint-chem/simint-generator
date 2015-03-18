@@ -1,0 +1,6 @@
+#ifndef SHELL_CONSTANTS_H
+#define SHELL_CONSTANTS_H
+
+#define SHELL_PRIM_NORMFAC_MAXL 10
+
+#endif

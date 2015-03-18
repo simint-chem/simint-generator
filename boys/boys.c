@@ -6,7 +6,7 @@
 #include "boys/boys_longfac.h"
 
 extern const double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN + 1];
-extern const double boys_longfac[BOYS_LONGFAC_MAXN];
+extern const double boys_longfac[BOYS_LONGFAC_MAXN+1];
 
 double * boys_grid_flat;
 double ** boys_grid;

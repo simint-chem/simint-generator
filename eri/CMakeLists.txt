@@ -1,5 +1,6 @@
 add_library(simint_eri STATIC 
                               shell.c
+                              shell_constants.c
                               eri_ssss.c
                               eri_ssss_combined.c
                               eri_ssss_taylor.c

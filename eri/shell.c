@@ -3,7 +3,9 @@
 #include "constants.h"
 #include "vectorization.h"
 #include "eri/shell.h"
+#include "eri/shell_constants.h"
 
+extern double const prim_norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 // Allocate a gaussian shell with correct alignment
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
@@ -20,6 +22,42 @@ void free_gaussian_shell(struct gaussian_shell G)
 {
     // only need to free G.alpha since only one memory space was used
     FREE(G.alpha);
+}
+
+void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
+{
+    for(int i = 0; i < n; ++i)
+    {
+        const double am = (double)(G[i].am);
+        const double m = am + 1.5;
+
+        double sum = 0.0;
+
+        for(int j = 0; j < G[i].nprim; j++)
+        {
+            const double a1 = G[i].alpha[j];
+
+            for(int k = 0; k <= j; k++)
+            {
+                const double a2 = G[i].alpha[k];
+
+                double fac_jk = (G[i].coef[j] * G[i].coef[k]);
+                fac_jk *= pow(2.0 * sqrt(a1*a2)/(a1+a2), m);
+
+                sum += fac_jk;
+                if(j != k)
+                    sum = sum + fac_jk;
+            }
+        }
+
+        const double norm = 1.0 / sqrt(sum);
+        for (int j = 0; j < G[i].nprim; ++j)
+        {
+            // normalize the primitive
+            const double z = pow(2.0 * G[i].alpha[j], m);
+            G[i].coef[j] *= norm * sqrt(z) * prim_norm_fac[G[i].am];
+        }
+    }
 }
 
 

@@ -89,6 +89,11 @@ int main(int argc, char ** argv)
     for(int i = 0; i < nshell4; i++)
         D[i] = random_shell(nprim4);
 
+    // normalize the shells
+    normalize_gaussian_shells(nshell1, A);
+    normalize_gaussian_shells(nshell2, B);
+    normalize_gaussian_shells(nshell3, C);
+    normalize_gaussian_shells(nshell4, D);
 
     // find the maximum possible x value for the boys function
     const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
