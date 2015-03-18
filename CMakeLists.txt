@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(simint C)
+enable_language(Fortran) # for liberd
 
 set(SIMINT_SIMD FALSE CACHE BOOL "Enable SIMD")
 
@@ -19,12 +20,10 @@ endif()
 
 
 # Check for OpenMP for pragma omp simd lines
-if(SIMINT_SIMD)
-  find_package(OpenMP REQUIRED)
-  list(APPEND SIMINT_C_FLAGS "-DSIMINT_SIMD")
-  list(APPEND SIMINT_C_FLAGS "${OpenMP_C_FLAGS}")
-  list(APPEND SIMINT_LINK_FLAGS "${OpenMP_C_FLAGS}")
-endif()
+find_package(OpenMP REQUIRED)
+list(APPEND SIMINT_C_FLAGS "-DSIMINT_SIMD")
+list(APPEND SIMINT_C_FLAGS "${OpenMP_C_FLAGS}")
+list(APPEND SIMINT_LINK_FLAGS "${OpenMP_C_FLAGS}")
 
 
 # Turn lists into a string
@@ -42,3 +41,21 @@ add_subdirectory(boys)
 add_subdirectory(eri)
 add_subdirectory(valeev)
 add_subdirectory(test)
+
+
+
+
+
+##################################################
+# LibERD
+##################################################
+if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
+  list(APPEND LIBERD_F90_FLAGS "-Wall")
+elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
+  list(APPEND LIBERD_F90_FLAGS "-warn all")
+else()  
+  list(APPEND LIBERD_F90_FLAGS "-Wall")
+endif() 
+
+list(APPEND LIBERD_F90_FLAGS "${OpenMP_CXX_FLAGS}")
+add_subdirectory(liberd)
