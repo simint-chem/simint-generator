@@ -163,7 +163,7 @@ void ERD_Compute_shell(struct gaussian_shell const A,
     int ncgto4 = 1;
     int ncgto = ncgto1 + ncgto2 + ncgto3 + ncgto4;
     int ccbeg[4] = { 1, 1, 1, 1 };
-    int ccend[4] = { A.nprim, B.nprim, C.nprim, D.nprim };
+    int ccend[4] = { D.nprim, C.nprim, B.nprim, A.nprim };
 
     int offset_i = 0;
     int offset_j = offset_i + D.nprim; 
