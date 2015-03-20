@@ -78,14 +78,15 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
                     const double xi = ((double)lookup_idx / BOYS_GRID_LOOKUPFAC);
                     const double dx = xi-x;   // -delta x
             
-                    const double f0xi = boys_grid[lookup_idx][0];
-                    const double f1xi = boys_grid[lookup_idx][1];
-                    const double f2xi = boys_grid[lookup_idx][2];
-                    const double f3xi = boys_grid[lookup_idx][3];
-                    const double f4xi = boys_grid[lookup_idx][4];
-                    const double f5xi = boys_grid[lookup_idx][5];
-                    const double f6xi = boys_grid[lookup_idx][6];
-                    const double f7xi = boys_grid[lookup_idx][7];
+                    double const * const restrict fptr = boys_grid[lookup_idx];
+
+                    const double f0xi = fptr[0];
+                    const double f1xi = fptr[1];
+                    const double f2xi = fptr[2];
+                    const double f3xi = fptr[3];
+                    const double f4xi = fptr[4];
+                    const double f5xi = fptr[5];
+                    const double f6xi = fptr[6];
             
                     integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * (
                                                                f0xi
@@ -95,8 +96,8 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
                                      + dx * ( (1.0/24.0  )   * f4xi
                                      + dx * ( (1.0/120.0 )   * f5xi
                                      + dx * ( (1.0/720.0 )   * f6xi
-                                     + dx * ( (1.0/5040.0)   * f7xi 
-                                     ))))))));
+//                                     + dx * ( (1.0/5040.0)   * f7xi 
+                                     )))))));
                     
                  }
             }
