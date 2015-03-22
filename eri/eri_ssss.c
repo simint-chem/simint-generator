@@ -2,8 +2,7 @@
 #include <string.h> // for memset
 
 #include "constants.h"
-#include "vectorization.h"
-
+#include "boys/boys.h"
 #include "eri/shell.h"
 
 int eri_ssss(struct shell_pair const P,
@@ -80,10 +79,7 @@ int eri_ssss(struct shell_pair const P,
     // rip through the integral work arrays and store result back in integralwork1
     // This is the loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
-    {
-        const double x2 = sqrt(integralwork1[i]);
-        integralwork1[i] = integralwork2[i] * erf(x2) / x2;
-    }
+        integralwork1[i] = integralwork2[i] * Boys_F0_erf(integralwork1[i]);
 
     // now sum them, forming the contracted integrals
     memset(integrals, 0, nshell1234*sizeof(double));

@@ -2,8 +2,7 @@
 #include <string.h> // for memset
 
 #include "constants.h"
-#include "vectorization.h"
-
+#include "boys/boys.h"
 #include "eri/shell.h"
 
 
@@ -66,12 +65,14 @@ int eri_ssss_combined(struct shell_pair const P,
                     const double PQ_z = P.z[i] - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
-                    // store the paremeter to the boys function in integralwork1
-                    const double F0param = sqrt(R2 * PQalpha_mul/PQalpha_sum);
-                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * erf(F0param) / F0param; 
+                    // The paremeter to the boys function
+                    const double x = R2 * PQalpha_mul/PQalpha_sum;
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_erf(x);
                  }
             }
+
             ++nint;
+
         }
     }
 

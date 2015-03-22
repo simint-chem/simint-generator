@@ -2,27 +2,100 @@
 #define BOYS_H
 
 #include "vectorization.h"
-#include "boys_shortgrid.h"
+#include "boys/boys_param.h"
 
-// These don't only apply to the short-range grid
-// so sopy the definitions
-#define BOYS_GRID_MAXN       BOYS_SHORTGRID_MAXN
-#define BOYS_GRID_SPACE      BOYS_SHORTGRID_SPACE
-#define BOYS_GRID_LOOKUPFAC  BOYS_SHORTGRID_LOOKUPFAC
-#define BOYS_GRID_LOOKUPFAC2 BOYS_SHORTGRID_LOOKUPFAC2
-
-
-#define BOYS_INTERP_ORDER 7
+// For various Boys_F functions
+//extern double const * const restrict * const restrict boys_grid;
+extern double const * const restrict * const restrict boys_grid;
+extern const double boys_grid_max_x;
+extern const int boys_grid_max_n;
 
 
+// Prototypes
 void Boys_Init(double max_x, int max_n);
 void Boys_Finalize(void);
-
-void Boys_F(double* const restrict F, int n, double x);
 
 double Boys_Max(const int ncenter,
                 const double * X, const double * Y, const double * Z,
                 const int * n_prim_per_center, const double * alpha);
 
+
+
+// Inline functions
+
+// This includes F0_KFAC
+inline double Boys_F0_taylor(double x)
+{
+    ASSUME_ALIGN(boys_grid);
+
+    const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+    const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
+    const double dx = xi-x;   // -delta x
+
+    double const * const restrict gridpts = &(boys_grid[lookup_idx][0]);
+
+    const double f0xi = gridpts[0];
+    const double f1xi = gridpts[1];
+    const double f2xi = gridpts[2];
+    const double f3xi = gridpts[3];
+    const double f4xi = gridpts[4];
+    const double f5xi = gridpts[5];
+    const double f6xi = gridpts[6];
+    const double f7xi = gridpts[7];
+
+    return f0xi
+           + dx * (                  f1xi
+           + dx * ( (1.0/2.0   )   * f2xi
+           + dx * ( (1.0/6.0   )   * f3xi
+           + dx * ( (1.0/24.0  )   * f4xi
+           + dx * ( (1.0/120.0 )   * f5xi
+           + dx * ( (1.0/720.0 )   * f6xi
+           + dx * ( (1.0/5040.0)   * f7xi
+           )))))));
+}
+
+
+// Values from this are missing F0_KFAC
+inline double Boys_F0_erf(double x)
+{
+    const double x2 = sqrt(x);
+    return erf(x2) / x2;   
+}
+
+
+
+
+inline void Boys_F(double * const restrict F, int n, double x)
+{
+    ASSUME_ALIGN(boys_grid);
+
+    const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+    const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
+    const double dx = xi-x;   // -delta x
+
+    double const * const restrict gridpts = &(boys_grid[lookup_idx][0]);
+
+    for(int i = 0; i <= n; ++i)
+    {
+        const double f0xi = gridpts[i];
+        const double f1xi = gridpts[i+1];
+        const double f2xi = gridpts[i+2];
+        const double f3xi = gridpts[i+3];
+        const double f4xi = gridpts[i+4];
+        const double f5xi = gridpts[i+5];
+        const double f6xi = gridpts[i+6];
+        const double f7xi = gridpts[i+7];
+
+        F[i] = f0xi
+               + dx * (                  f1xi
+               + dx * ( (1.0/2.0   )   * f2xi
+               + dx * ( (1.0/6.0   )   * f3xi
+               + dx * ( (1.0/24.0  )   * f4xi
+               + dx * ( (1.0/120.0 )   * f5xi
+               + dx * ( (1.0/720.0 )   * f6xi
+               + dx * ( (1.0/5040.0)   * f7xi
+               )))))));
+    }
+}
 
 #endif

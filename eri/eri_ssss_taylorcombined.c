@@ -2,14 +2,8 @@
 #include <string.h> // for memset
 
 #include "constants.h"
-#include "vectorization.h"
-
-#include "eri/shell.h"
 #include "boys/boys.h"
-
-extern const double ** boys_grid;
-extern const double boys_grid_max_x;
-extern const int boys_grid_max_n;
+#include "eri/shell.h"
 
 
 int eri_ssss_taylorcombined(struct shell_pair const P,
@@ -71,34 +65,9 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
                     const double PQ_z = P.z[i] - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
-                    // store the paremeter to the boys function in integralwork1
+                    // The paremeter to the boys function
                     const double x = R2 * PQalpha_mul/PQalpha_sum;
-
-                    const int lookup_idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
-                    const double xi = ((double)lookup_idx / BOYS_GRID_LOOKUPFAC);
-                    const double dx = xi-x;   // -delta x
-            
-                    double const * const restrict fptr = boys_grid[lookup_idx];
-
-                    const double f0xi = fptr[0];
-                    const double f1xi = fptr[1];
-                    const double f2xi = fptr[2];
-                    const double f3xi = fptr[3];
-                    const double f4xi = fptr[4];
-                    const double f5xi = fptr[5];
-                    const double f6xi = fptr[6];
-            
-                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * (
-                                                               f0xi
-                                     + dx * (                  f1xi
-                                     + dx * ( (1.0/2.0   )   * f2xi
-                                     + dx * ( (1.0/6.0   )   * f3xi
-                                     + dx * ( (1.0/24.0  )   * f4xi
-                                     + dx * ( (1.0/120.0 )   * f5xi
-                                     + dx * ( (1.0/720.0 )   * f6xi
-//                                     + dx * ( (1.0/5040.0)   * f7xi 
-                                     )))))));
-                    
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_taylor(x);
                  }
             }
 

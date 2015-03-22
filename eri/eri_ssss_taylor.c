@@ -2,15 +2,8 @@
 #include <string.h> // for memset
 
 #include "constants.h"
-#include "vectorization.h"
-
-#include "eri/shell.h"
 #include "boys/boys.h"
-
-extern const double ** boys_grid;
-extern const double boys_grid_max_x;
-extern const int boys_grid_max_n;
-
+#include "eri/shell.h"
 
 int eri_ssss_taylor(struct shell_pair const P,
                     struct shell_pair const Q,
@@ -86,35 +79,7 @@ int eri_ssss_taylor(struct shell_pair const P,
     // rip through the integral work arrays and store result back in integralwork1
     // This is the loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
-    {
-        const double x = integralwork1[i];
-
-        const int lookup_idx = (int)(BOYS_GRID_LOOKUPFAC*(x+BOYS_GRID_LOOKUPFAC2));
-        const double xi = ((double)lookup_idx * BOYS_GRID_SPACE);
-        const double dx = xi-x;   // -delta x
-
-        const double f0xi = boys_grid[lookup_idx][0];
-        const double f1xi = boys_grid[lookup_idx][1];
-        const double f2xi = boys_grid[lookup_idx][2];
-        const double f3xi = boys_grid[lookup_idx][3];
-        const double f4xi = boys_grid[lookup_idx][4];
-        const double f5xi = boys_grid[lookup_idx][5];
-        const double f6xi = boys_grid[lookup_idx][6];
-        const double f7xi = boys_grid[lookup_idx][7];
-
-        integralwork1[i] = f0xi
-                         + dx * (                  f1xi
-                         + dx * ( (1.0/2.0   )   * f2xi
-                         + dx * ( (1.0/6.0   )   * f3xi
-                         + dx * ( (1.0/24.0  )   * f4xi
-                         + dx * ( (1.0/120.0 )   * f5xi
-                         + dx * ( (1.0/720.0 )   * f6xi
-                         + dx * ( (1.0/5040.0)   * f7xi 
-                         )))))));
-
-        // apply coefficients and prefactors
-        integralwork1[i] *= integralwork2[i];
-    }
+        integralwork1[i] = integralwork2[i] * Boys_F0_taylor(integralwork1[i]);
 
     // now sum them, forming the contracted integrals
     memset(integrals, 0, nshell1234*sizeof(double));
