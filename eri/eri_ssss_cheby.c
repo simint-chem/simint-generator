@@ -5,6 +5,7 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
+
 int eri_ssss_cheby(struct shell_pair const P,
                    struct shell_pair const Q,
                    double * const restrict integrals,
@@ -27,12 +28,12 @@ int eri_ssss_cheby(struct shell_pair const P,
     ASSUME_ALIGN(integralwork2);
 
     int nint = 0;
-    int idx = 0;
     int i, j;
     int ab, cd;
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
+    memset(integrals, 0, nshell1234*sizeof(double));
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
@@ -51,6 +52,7 @@ int eri_ssss_cheby(struct shell_pair const P,
 
             for(i = abstart; i < abend; ++i)
             {
+                #pragma simd
                 for(j = cdstart; j < cdend; ++j)
                 {
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
@@ -64,37 +66,36 @@ int eri_ssss_cheby(struct shell_pair const P,
                     const double PQ_z = P.z[i] - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
-                    // store the paremeter to the boys function in integralwork1
-                    integralwork1[idx] = R2 * PQalpha_mul/PQalpha_sum;
+                    // The paremeter to the boys function
+                    const double x = R2 * PQalpha_mul/PQalpha_sum;
+                    const unsigned int idx = cheby_idx(x);
 
-                    // store the prefactors in integralwork2
-                    integralwork2[idx] = pfac * P.prefac[i] * Q.prefac[j];
-
-                    ++idx;
+                    const double bshift = (int)( ((1<<idx)-1) + ((1<<(idx+1))-1) );
+                    const double x2 = x - (bshift * 0.5);
+   
+                    const double F =        boys_chebygrid_F0[idx][0]
+                                   + x2 * ( boys_chebygrid_F0[idx][1]
+                                   + x2 * ( boys_chebygrid_F0[idx][2]
+                                   + x2 * ( boys_chebygrid_F0[idx][3]
+                                   + x2 * ( boys_chebygrid_F0[idx][4]
+                                   + x2 * ( boys_chebygrid_F0[idx][5]
+                                   + x2 * ( boys_chebygrid_F0[idx][6]
+                                   + x2 * ( boys_chebygrid_F0[idx][7]
+                                   + x2 * ( boys_chebygrid_F0[idx][8]
+                                   + x2 * ( boys_chebygrid_F0[idx][9]
+                                   + x2 * ( boys_chebygrid_F0[idx][10]
+                                   + x2 * ( boys_chebygrid_F0[idx][11]
+                                   + x2 * ( boys_chebygrid_F0[idx][12]
+                                   + x2 * ( boys_chebygrid_F0[idx][13]
+                                   + x2 * ( boys_chebygrid_F0[idx][14]
+                                   ))))))))))))));
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * F;
                  }
             }
+
+            ++nint;
+
         }
-    }
-
-    // rip through the integral work arrays and store result back in integralwork1
-    // This is the loop that should be heavily vectorized
-    for(i = 0; i < idx; ++i)
-        integralwork1[i] = integralwork2[i] * Boys_F0_cheby(integralwork1[i]);
-
-    // now sum them, forming the contracted integrals
-    memset(integrals, 0, nshell1234*sizeof(double));
-    idx = 0;
-    for(ab = 0; ab < P.nshell12; ++ab)
-    for(cd = 0; cd < Q.nshell12; ++cd)
-    {
-        const int nprim1234 = P.nprim12[ab] * Q.nprim12[cd];
-        for(i = 0; i < nprim1234; ++i)
-        {
-            integrals[nint] += integralwork1[idx];
-            ++idx;
-        }
-
-        nint++;
     }
 
     // apply constants to integrals
@@ -103,5 +104,6 @@ int eri_ssss_cheby(struct shell_pair const P,
         integrals[i] *= ONESIX_OVER_SQRT_PI;
 
     return nshell1234;
+
 }
 

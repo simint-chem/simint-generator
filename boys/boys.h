@@ -30,23 +30,22 @@ double Boys_Max(const int ncenter,
 /////////////////////////
 
 // Calculates the index for cheby
-inline cheby_idx(double d)
+inline unsigned int cheby_idx(double d)
 {
-#ifdef SAFE_CHEBYIDX
+#ifdef ASM_CHEBYIDX
+    unsigned int i = (d+1.0);
+    unsigned int l = 0;
+    ASM("bsrl %1,%0" : "=r"(l) : "r"(i));
+    return l;
+#else
     unsigned int r = 0;
     unsigned int i = (d+1);
 
     while (i >>= 1)
         r++;
     return r;
-#else
-    unsigned int i = (d+1.0);
-    unsigned int l = 0;
-    ASM("bsrl %1,%0" : "=r"(l) : "r"(i));
-    return l;
 #endif
 }
-
 
 
 
@@ -84,25 +83,27 @@ inline double Boys_F0_taylor(double x)
 // Values include F0_KFAC
 inline double Boys_F0_cheby(double x)
 {
-    double polynomial[BOYS_CHEBY_ORDER+1];
-
     const unsigned int idx = cheby_idx(x);
 
     double bshift = (int)( ((1<<idx)-1) + ((1<<(idx+1))-1) );
     x -= (bshift * 0.5);
-    
-    memcpy(polynomial, boys_chebygrid_F0[idx], (BOYS_CHEBY_ORDER+1)*sizeof(double));
-
-    double F = polynomial[0];
-    double xpow = x;
-    for(int i = 1; i < BOYS_CHEBY_ORDER+1; i++)
-    {
-        F += polynomial[i]*xpow;
-        xpow *= x;
-    }
-
-    return F;
- 
+   
+    return         boys_chebygrid_F0[idx][0]
+           + x * ( boys_chebygrid_F0[idx][1]
+           + x * ( boys_chebygrid_F0[idx][2]
+           + x * ( boys_chebygrid_F0[idx][3]
+           + x * ( boys_chebygrid_F0[idx][4]
+           + x * ( boys_chebygrid_F0[idx][5]
+           + x * ( boys_chebygrid_F0[idx][6]
+           + x * ( boys_chebygrid_F0[idx][7]
+           + x * ( boys_chebygrid_F0[idx][8]
+           + x * ( boys_chebygrid_F0[idx][9]
+           + x * ( boys_chebygrid_F0[idx][10]
+           + x * ( boys_chebygrid_F0[idx][11]
+           + x * ( boys_chebygrid_F0[idx][12]
+           + x * ( boys_chebygrid_F0[idx][13]
+           + x * ( boys_chebygrid_F0[idx][14]
+           ))))))))))))));
 }
 
 
