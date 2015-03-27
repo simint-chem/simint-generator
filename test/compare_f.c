@@ -6,7 +6,7 @@
 #include "valeev/valeev.h"
 #include "boys/boys.h"
 
-#define MAXN 5
+#define MAXN 0
 
 int main(int argc, char ** argv)
 {
@@ -19,33 +19,40 @@ int main(int argc, char ** argv)
     srand(time(NULL));
     //double rmax = RAND_MAX;
 
-    double maxerror = 0.0;
+    double maxerr_taylor = 0.0;
+    double maxerr_cheby = 0.0;
 
-    double * my = (double *)malloc( (MAXN+1) * sizeof(double));
-    double * valeev = (double *)malloc( (MAXN+1) * sizeof(double));
+    double my_taylor = 0;
+    double my_cheby = 0;
+    double valeev = 0;
     
 
     for(double x = 0.0; x < maxx; x += 0.01)
     {
-        Valeev_F(valeev, MAXN, x);
-        Boys_F(my, MAXN, x);
+        Valeev_F(&valeev, MAXN, x);
+        my_taylor = Boys_F0_taylor(x);
+        my_cheby = Boys_F0_cheby(x);
 
         for(int n = 0; n <= MAXN; n++)
         {
-            double diff = fabs(my[n] - valeev[n]);
-            if(diff > maxerror)
-                maxerror = diff;
-            //printf("%3d %12.8f %12.8e  %12.8e     %12.8e\n", n, x, my[n], valeev[n], diff);
+            double diff_taylor = fabs(my_taylor - valeev);
+            double diff_cheby = fabs(my_cheby - valeev);
+            if(diff_taylor > maxerr_taylor)
+                maxerr_taylor = diff_taylor;
+            if(diff_cheby > maxerr_cheby)
+                maxerr_cheby = diff_cheby;
+            //printf("%3d %12.8f     %12.8e  %12.8e  %12.8e     %12.8e  %12.8e\n", n, x, my_taylor, my_cheby, valeev, diff_taylor, diff_cheby);
         }
         //printf("----------------------------\n");
     }
 
-    printf("\n***Max error: %12.8e\n", maxerror);
+    printf("\n");
+    printf("***Max error - taylor: %12.8e\n", maxerr_taylor);
+    printf("***Max error -  cheby: %12.8e\n", maxerr_cheby);
+    printf("\n");
 
     Valeev_Finalize();
     Boys_Finalize();
-    free(my);
-    free(valeev);
 
     return 0;
 }

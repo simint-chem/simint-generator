@@ -1,0 +1,8 @@
+#ifndef BOYS_CHEBY_H
+#define BOYS_CHEBY_H
+
+#define BOYS_CHEBY_NBIN 33
+#define BOYS_CHEBY_MAXX 8589934591.0
+#define BOYS_CHEBY_ORDER 14
+
+#endif

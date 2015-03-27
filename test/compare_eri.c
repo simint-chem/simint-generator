@@ -66,6 +66,7 @@ int main(int argc, char ** argv)
     double * res_ft = ALLOC(nshell1234 * sizeof(double));
     double * res_fc = ALLOC(nshell1234 * sizeof(double));
     double * res_ftc = ALLOC(nshell1234 * sizeof(double));
+    double * res_fch = ALLOC(nshell1234 * sizeof(double));
     double * res_e = ALLOC(nshell1234 * sizeof(double));
     double * res_v = ALLOC(nshell1234 * sizeof(double));
 
@@ -111,6 +112,7 @@ int main(int argc, char ** argv)
     struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
     struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
     eri_ssss(P, Q, res_f, intwork1, intwork2);
+    eri_ssss_cheby(P, Q, res_fch, intwork1, intwork2);
     eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
     eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
     eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
@@ -179,8 +181,8 @@ int main(int argc, char ** argv)
     ERD_Finalize();
 
 
-    printf("%11s  %11s  %11s  %11s  %11s  %11s\n",
-                        "diff_e", "diff_f", "diff_fs", "diff_ft", "diff_fc", "diff_ftc");
+    printf("%11s  %11s  %11s  %11s  %11s  %11s  %11s\n",
+                        "diff_e", "diff_f", "diff_fs", "diff_ft", "diff_fc", "diff_ftc", "diff_fch");
     for(int i = 0; i < nshell1234; i++)
     {
         double diff_e = fabs(res_e[i] - res_v[i]);
@@ -188,9 +190,10 @@ int main(int argc, char ** argv)
         double diff_fs = fabs(res_fs[i] - res_v[i]);
         double diff_ft = fabs(res_ft[i] - res_v[i]);
         double diff_fc = fabs(res_fc[i] - res_v[i]);
+        double diff_fch = fabs(res_fch[i] - res_v[i]);
         double diff_ftc = fabs(res_ftc[i] - res_v[i]);
         //printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i]);
-        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc);
+        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc, diff_fch);
     }
 
     for(int i = 0; i < nshell1; i++)
@@ -208,7 +211,7 @@ int main(int argc, char ** argv)
     FREE(res_v); FREE(res_e);
     FREE(res_f); FREE(res_fs);
     FREE(res_ft); FREE(res_fc);
-    FREE(res_ftc);
+    FREE(res_ftc); FREE(res_fch);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 

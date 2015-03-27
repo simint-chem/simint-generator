@@ -7,6 +7,7 @@
 
 import argparse
 import sys
+from boys_common.boys import *
 from mpmath import mp # arbitrary-precision math
 
 # Note that types are being stored as a string. This is so mpmath
@@ -55,35 +56,8 @@ while x < maxx or (x-maxx < inc):
 
   x2 = 2*x                   # x2 = 2*x
   ex = mp.exp(-x)
-  
-  # For small x
-  if x < 32.0:
-    n2 = 2*maxn                # n2 = 2*n
-    num = mp.fac2(n2-1)        # num = (2*n - 1)!!
-    s = 1/(n2+1)
-    term1 = 1.0 # just start at some number
-    i = 0
-
-    while mp.fabs(term1) > eps:
-      i += 1
-      num *= x2
-      term1 = num / mp.fac2(n2 + 2*i + 1)
-      s += term1
-
-    # Downward recursion
-    F2[maxn] = s * ex
-    m = maxn - 1
-    while m >= 0:
-      F2[m] = (x2 * F2[m+1] + ex) / (2 * m + 1)
-      m -= 1
-
-  else: # For large x
-    sqx = mp.sqrt(x)
-    F2[0] = constK * mp.erf(sqx) / sqx
-    m = 1
-    while m <= maxn:
-      F2[m] = ((2*(m-1) + 1) * F2[m-1] - ex) / x2
-      m += 1
+ 
+  F2 = BoysValue(maxn, x) 
 
   F.append(F2)
   pts.append(x)

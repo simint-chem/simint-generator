@@ -66,6 +66,7 @@ int main(int argc, char ** argv)
     double * res_ft = ALLOC(nshell1234 * sizeof(double));
     double * res_fc = ALLOC(nshell1234 * sizeof(double));
     double * res_ftc = ALLOC(nshell1234 * sizeof(double));
+    double * res_fch = ALLOC(nshell1234 * sizeof(double));
     double * res_e = ALLOC(nshell1234 * sizeof(double));
 
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
@@ -112,6 +113,7 @@ int main(int argc, char ** argv)
         struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
         struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
         eri_ssss(P, Q, res_f, intwork1, intwork2);
+        eri_ssss_cheby(P, Q, res_fch, intwork1, intwork2);
         eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
         eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
         eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
@@ -136,7 +138,7 @@ int main(int argc, char ** argv)
 
 
         // print some results
-        printf("%11e %11e %11e %11e %11e %11e\n", res_e[0], res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0]);
+        printf("%11e %11e %11e %11e %11e %11e %11e\n", res_e[0], res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0], res_fch[0]);
 
         // free memory
         for(int i = 0; i < nshell1; i++)
@@ -160,7 +162,7 @@ int main(int argc, char ** argv)
     FREE(res_e);
     FREE(res_f); FREE(res_fs);
     FREE(res_ft); FREE(res_fc);
-    FREE(res_ftc);
+    FREE(res_ftc); FREE(res_fch);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 

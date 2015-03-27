@@ -3,6 +3,7 @@
 
 // include parameters from here as well
 #include "boys_shortgrid.h"
+#include "boys_cheby.h"
 
 // These don't only apply to the short-range grid
 // so sopy the definitions

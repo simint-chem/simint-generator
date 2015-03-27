@@ -1,8 +1,11 @@
 #ifndef BOYS_H
 #define BOYS_H
 
+#include <string.h> // for memcpy
 #include "vectorization.h"
 #include "boys/boys_param.h"
+
+#define ASM __asm
 
 // For various Boys_F functions
 //extern double const * const restrict * const restrict boys_grid;
@@ -10,6 +13,8 @@ extern double const * const restrict * const restrict boys_grid;
 extern const double boys_grid_max_x;
 extern const int boys_grid_max_n;
 
+//extern double const * const restrict * const restrict boys_chebygrid_F0; // size [BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1]
+extern double const boys_chebygrid_F0[BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1];
 
 // Prototypes
 void Boys_Init(double max_x, int max_n);
@@ -20,8 +25,30 @@ double Boys_Max(const int ncenter,
                 const int * n_prim_per_center, const double * alpha);
 
 
-
+/////////////////////////
 // Inline functions
+/////////////////////////
+
+// Calculates the index for cheby
+inline cheby_idx(double d)
+{
+#ifdef SAFE_CHEBYIDX
+    unsigned int r = 0;
+    unsigned int i = (d+1);
+
+    while (i >>= 1)
+        r++;
+    return r;
+#else
+    unsigned int i = (d+1.0);
+    unsigned int l = 0;
+    ASM("bsrl %1,%0" : "=r"(l) : "r"(i));
+    return l;
+#endif
+}
+
+
+
 
 // This includes F0_KFAC
 inline double Boys_F0_taylor(double x)
@@ -54,6 +81,30 @@ inline double Boys_F0_taylor(double x)
            )))))));
 }
 
+// Values include F0_KFAC
+inline double Boys_F0_cheby(double x)
+{
+    double polynomial[BOYS_CHEBY_ORDER+1];
+
+    const unsigned int idx = cheby_idx(x);
+
+    double bshift = (int)( ((1<<idx)-1) + ((1<<(idx+1))-1) );
+    x -= (bshift * 0.5);
+    
+    memcpy(polynomial, boys_chebygrid_F0[idx], (BOYS_CHEBY_ORDER+1)*sizeof(double));
+
+    double F = polynomial[0];
+    double xpow = x;
+    for(int i = 1; i < BOYS_CHEBY_ORDER+1; i++)
+    {
+        F += polynomial[i]*xpow;
+        xpow *= x;
+    }
+
+    return F;
+ 
+}
+
 
 // Values from this are missing F0_KFAC
 inline double Boys_F0_erf(double x)
@@ -64,8 +115,7 @@ inline double Boys_F0_erf(double x)
 
 
 
-
-inline void Boys_F(double * const restrict F, int n, double x)
+inline void Boys_F_taylor(double * const restrict F, int n, double x)
 {
     ASSUME_ALIGN(boys_grid);
 
@@ -97,5 +147,6 @@ inline void Boys_F(double * const restrict F, int n, double x)
                )))))));
     }
 }
+
 
 #endif
