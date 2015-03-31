@@ -192,8 +192,9 @@ int main(int argc, char ** argv)
         double diff_fc = fabs(res_fc[i] - res_v[i]);
         double diff_fch = fabs(res_fch[i] - res_v[i]);
         double diff_ftc = fabs(res_ftc[i] - res_v[i]);
-        //printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i]);
+        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i], res_fch[i], res_v[i]);
         printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc, diff_fch);
+        printf("\n");
     }
 
     for(int i = 0; i < nshell1; i++)

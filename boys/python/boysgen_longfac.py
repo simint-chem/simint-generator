@@ -4,13 +4,13 @@
 # Generates an array for the constant
 # used in the long-range formula
 #
-# Eqn. 9.8.9 from Helgaker et al:
+# Eqn. 9.8.9 from Helgaker et al (with normalization)
 # 
-# Fn(x) = (2n-1)!!/(2**(n+1)) sqrt(pi/(x**(2n+1)))
+# Fn(x) = 16/sqrt(pi) * (2n-1)!!/(2**(n+1)) sqrt(pi/(x**(2n+1)))
 #
 # So we can pre-compute (2n-1)!!/(2**(n+1)) sqrt(pi) for
 # all n that we might need
-# After that, Fn(x) = fac * 1/sqrt(x**(2n+1))
+# After that, Fn(x) = longfac[n] * 1/sqrt(x**(2n+1))
 #######################################
 
 import argparse

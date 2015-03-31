@@ -42,10 +42,6 @@ print("      EPS: 10^({})".format(-args.eps))
 print("         = {}".format(eps))
 print("------------------------------------")
 
-# we need sqrt(pi)/2
-constK = mp.sqrt(mp.pi)/2
-
-
 # Start at x=0 and increment up
 x = mp.mpf(0)
 F = []

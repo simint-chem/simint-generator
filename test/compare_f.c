@@ -3,6 +3,7 @@
 #include <time.h>
 #include <math.h>
 
+#include "constants.h"
 #include "valeev/valeev.h"
 #include "boys/boys.h"
 
@@ -12,6 +13,8 @@ int main(int argc, char ** argv)
 {
 
     double maxx = atof(argv[1]); 
+
+    //const double kfac = F0_KFAC * ONESIX_OVER_SQRT_PI;
 
     Valeev_Init();
     Boys_Init(maxx, MAXN+7);
@@ -30,6 +33,7 @@ int main(int argc, char ** argv)
     for(double x = 0.0; x < maxx; x += 0.01)
     {
         Valeev_F(&valeev, MAXN, x);
+
         my_taylor = Boys_F0_taylor(x);
         my_cheby = Boys_F0_cheby(x);
 
@@ -41,7 +45,7 @@ int main(int argc, char ** argv)
                 maxerr_taylor = diff_taylor;
             if(diff_cheby > maxerr_cheby)
                 maxerr_cheby = diff_cheby;
-            //printf("%3d %12.8f     %12.8e  %12.8e  %12.8e     %12.8e  %12.8e\n", n, x, my_taylor, my_cheby, valeev, diff_taylor, diff_cheby);
+            printf("%3d %12.8f     %12.8e  %12.8e  %12.8e     %12.8e  %12.8e\n", n, x, my_taylor, my_cheby, valeev, diff_taylor, diff_cheby);
         }
         //printf("----------------------------\n");
     }

@@ -5,6 +5,7 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
+#define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
 
 int eri_ssss_combined(struct shell_pair const P,
                       struct shell_pair const Q,

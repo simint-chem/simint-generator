@@ -49,7 +49,7 @@ inline unsigned int cheby_idx(double d)
 
 
 
-// This includes F0_KFAC
+// This includes F0_KFAC and 16/sqrt(pi)
 inline double Boys_F0_taylor(double x)
 {
     ASSUME_ALIGN(boys_grid);
@@ -80,7 +80,7 @@ inline double Boys_F0_taylor(double x)
            )))))));
 }
 
-// Values include F0_KFAC
+// Values include F0_KFAC and 16/sqrt(pi)
 inline double Boys_F0_cheby(double x)
 {
     const unsigned int idx = cheby_idx(x);
@@ -107,7 +107,7 @@ inline double Boys_F0_cheby(double x)
 }
 
 
-// Values from this are missing F0_KFAC
+// Values from this are missing F0_KFAC and 16/sqrt(pi)
 inline double Boys_F0_erf(double x)
 {
     const double x2 = sqrt(x);
@@ -116,6 +116,7 @@ inline double Boys_F0_erf(double x)
 
 
 
+// Values include F0_KFAC and 16/sqrt(pi)
 inline void Boys_F_taylor(double * const restrict F, int n, double x)
 {
     ASSUME_ALIGN(boys_grid);

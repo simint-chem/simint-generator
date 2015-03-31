@@ -5,6 +5,8 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
+#define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
+
 int eri_ssss(struct shell_pair const P,
              struct shell_pair const Q,
              double * const restrict integrals,
@@ -100,7 +102,7 @@ int eri_ssss(struct shell_pair const P,
     // apply constants to integrals
     // also heavily vectorized
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC * ONESIX_OVER_SQRT_PI;
+        integrals[i] *= F0_KFAC * TWO_PI_52;
 
     return nshell1234;
 }

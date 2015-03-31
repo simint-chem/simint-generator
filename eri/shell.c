@@ -5,7 +5,7 @@
 #include "eri/shell.h"
 #include "eri/shell_constants.h"
 
-extern double const prim_norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
+extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 // Allocate a gaussian shell with correct alignment
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
@@ -26,6 +26,7 @@ void free_gaussian_shell(struct gaussian_shell G)
 
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
 {
+/*
     for(int i = 0; i < n; ++i)
     {
         const double am = (double)(G[i].am);
@@ -51,13 +52,41 @@ void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
         }
 
         const double norm = 1.0 / sqrt(sum);
+        printf("Norm: %11.4e\n", norm);
         for (int j = 0; j < G[i].nprim; ++j)
         {
-            // normalize the primitive
-            const double z = pow(2.0 * G[i].alpha[j], m);
+            // normalize the primitive as well
+            const double z = pow(G[i].alpha[j], m);
             G[i].coef[j] *= norm * sqrt(z) * prim_norm_fac[G[i].am];
         }
     }
+*/
+    for(int i = 0; i < n; ++i)
+    {
+        const double am = (double)(G[i].am);
+        const double m = am + 1.5;
+
+        double sum = 0.0;
+
+        for(int j = 0; j < G[i].nprim; j++)
+        {
+            const double a1 = G[i].alpha[j];
+
+            for(int k = 0; k < G[i].nprim; k++)
+            {
+                const double a2 = G[i].alpha[k];
+                const double s = (G[i].coef[j] * G[i].coef[k]) / pow(a1+a2, m);
+                sum += s;
+            }
+        }
+
+        const double norm = 1.0 / sqrt(sum * norm_fac[G[i].am]);
+
+        // apply the normalization
+        for (int j = 0; j < G[i].nprim; ++j)
+            G[i].coef[j] *= norm; 
+    }
+
 }
 
 

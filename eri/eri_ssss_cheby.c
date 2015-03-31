@@ -101,7 +101,7 @@ int eri_ssss_cheby(struct shell_pair const P,
     // apply constants to integrals
     // also heavily vectorized
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= ONESIX_OVER_SQRT_PI;
+        integrals[i] *= 16;
 
     return nshell1234;
 

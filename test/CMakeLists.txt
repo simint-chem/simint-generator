@@ -6,6 +6,7 @@ macro(ADDTEST TNAME TFILES)
   set_target_properties(${TNAME} PROPERTIES LINK_FLAGS ${SIMINT_LINK_FLAGS})
 endmacro() 
 
+ADDTEST(test_norm test_norm.c)
 ADDTEST(compare_f compare_f.c)
 ADDTEST(compare_eri compare_eri.c)
 ADDTEST(benchmark_eri benchmark_eri.c)

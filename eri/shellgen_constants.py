@@ -30,17 +30,15 @@ print("      DPS: {}".format(args.dps))
 print("------------------------------------")
 
 
-# For primitive normalization
-# c = sqrt(2**l / (pi*sqrt(pi) * (2l-1)!!) )
-# afterwards, primitive normalization = c * sqrt(alpha)
+# For normalization
+# c = pi**(3/2) * (2L-1)!! / 2**L 
 
-pi34 = mp.power(mp.pi, -0.75)
 normfac = [None] * (maxl+1)
 
-normfac[0] = pi34;
+normfac[0] = mp.power(mp.pi, 1.5)
 
 for l in range(1, maxl+1):
-  normfac[l] = normfac[l-1] * mp.sqrt(2.0/(2*l-1))
+  normfac[l] = normfac[l-1] * mp.sqrt(2*l-1) / mp.mpf(2.0)
   
 
 # Output to file
@@ -56,7 +54,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
-  f.write("const double prim_norm_fac[{}] = \n".format(maxl+1))
+  f.write("const double norm_fac[{}] = \n".format(maxl+1))
   f.write("{\n")
 
   for i,n in enumerate(normfac):

@@ -5,7 +5,6 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
-
 int eri_ssss_split(struct shell_pair const P,
                    struct shell_pair const Q,
                    double * const restrict integrals,
@@ -133,16 +132,13 @@ int eri_ssss_split(struct shell_pair const P,
     // large x
     for(i = 0; i < idx_long; ++i)
     {
-        // will multiply by F0_KFAC later
         // but apply coefficients and prefactors here
         integralwork1_long[i] = integralwork2_long[i] / sqrt(integralwork1_long[i]); 
     }
 
     // short x
     for(i = 0; i < idx_short; ++i)
-    {
         integralwork1_short[i] = integralwork2_short[i] * Boys_F0_taylor(integralwork1_short[i]);
-    }
 
     // now sum them, forming the contracted integrals
     memset(integrals, 0, nshell1234*sizeof(double));
@@ -156,23 +152,16 @@ int eri_ssss_split(struct shell_pair const P,
             integrals[i] += integralwork1_long[j];
     }
 
-    // apply factor, which isn't included above
-    for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC;
-
     // now short
     j = 0;
     for(i = 0; i < nshell1234; ++i)
     {
         const int iend = blockends_short[i];
         for(; j < iend; ++j)
-        {
             integrals[i] += integralwork1_short[j];
-        }
     }
 
-    // apply constants to integrals
-    // also heavily vectorized
+    // apply factors, which aren't included above
     for(i = 0; i < nshell1234; ++i)
         integrals[i] *= ONESIX_OVER_SQRT_PI;
 
