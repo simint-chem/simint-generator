@@ -7,6 +7,7 @@
 
 #define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
 
+/* Calculates an (ss|ss) integral using the erf function */
 int eri_ssss(struct shell_pair const P,
              struct shell_pair const Q,
              double * const restrict integrals,
@@ -28,19 +29,18 @@ int eri_ssss(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
-    int nint = 0;
-    int idx = 0;
-    int i, j;
-    int ab, cd;
-
     const int nshell1234 = P.nshell12 * Q.nshell12;
+
+    int ab, cd;
+    int i, j;
+    int idx = 0;
 
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
         const int abend = P.primend[ab];
 
-        // this should have been set in fill_shell_pair or something else
+        // this should have been set/aligned in fill_shell_pair or something else
         ASSUME(abstart%SIMD_ALIGN_DBL == 0);
 
         for(cd = 0; cd < Q.nshell12; ++cd)
@@ -48,7 +48,7 @@ int eri_ssss(struct shell_pair const P,
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
-            // this should have been set in fill_shell_pair or something else
+            // this should have been set/aligned in fill_shell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
 
             for(i = abstart; i < abend; ++i)
@@ -79,7 +79,8 @@ int eri_ssss(struct shell_pair const P,
     }
 
     // rip through the integral work arrays and store result back in integralwork1
-    // This is the loop that should be heavily vectorized
+    // This loop that should be heavily vectorized
+    int nint = 0;
     for(i = 0; i < idx; ++i)
         integralwork1[i] = integralwork2[i] * Boys_F0_erf(integralwork1[i]);
 
@@ -99,11 +100,10 @@ int eri_ssss(struct shell_pair const P,
         nint++;
     }
 
-    // apply constants to integrals
-    // also heavily vectorized
+    // apply constant to integrals
+    // also heavily vectorized, but should be short
     for(i = 0; i < nshell1234; ++i)
         integrals[i] *= F0_KFAC * TWO_PI_52;
 
     return nshell1234;
 }
-

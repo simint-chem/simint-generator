@@ -8,7 +8,7 @@
 #include "boys/boys.h"
 
 #define MAX_COORD 0.5
-#define MAX_EXP   100.0
+#define MAX_EXP   50.0
 #define MAX_COEF  2.0
 
 struct gaussian_shell

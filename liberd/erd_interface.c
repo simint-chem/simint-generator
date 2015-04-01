@@ -4,6 +4,8 @@
 
 #include "eri/shell.h"
 
+// 2 * pi**(2.5) * sqrt(pi) / 16
+#define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683
 
 void erd__gener_eri_batch_(const int *imax, const int *zmax, const int *nalpha, const int *ncoeff,
                            const int *ncsum, const int *ncgto1, const int *ncgto2,
@@ -181,13 +183,6 @@ void ERD_Compute_shell(struct gaussian_shell const A,
     memcpy(cc + offset_k, B.coef, B.nprim * sizeof(double));
     memcpy(cc + offset_l, A.coef, A.nprim * sizeof(double));
 
-    // fix normalization
-    // TODO - only works for s right now
-    for(int i = 0; i < npgto; ++i)
-    {
-        cc[i] *= pow(alpha[i], 0.75);
-    }
-
     int nbatch = 0;
     int spheric = 0;
     int screen = 0;
@@ -208,7 +203,13 @@ void ERD_Compute_shell(struct gaussian_shell const A,
     // remember, fortran has 1-based indexing
     //printf("ERD: %d integrals computed\n", nbatch); 
     //printf("Offset: %d\n", buffer_offset-1); 
+
+        
     memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
+
+    // fix normalization
+    for(int i = 0; i < nbatch; i++)
+        integrals[i] *= ERD_NORM_FIX;
 }
 
 

@@ -10,7 +10,7 @@
 #include "boys/boys.h"
 
 #define MAX_COORD 0.5
-#define MAX_EXP   100.0
+#define MAX_EXP   50.0
 #define MAX_COEF  2.0
 
 struct gaussian_shell
@@ -143,7 +143,7 @@ int main(int argc, char ** argv)
             double val = Valeev_eri(0, 0, 0, A[i].alpha[m], vA,
                                     0, 0, 0, B[j].alpha[n], vB,
                                     0, 0, 0, C[k].alpha[o], vC,
-                                    0, 0, 0, D[l].alpha[p], vD, 1);
+                                    0, 0, 0, D[l].alpha[p], vD, 0);
             res_v[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
             /*
             printf("IDX: %d\n", idx);
@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
         double diff_fc = fabs(res_fc[i] - res_v[i]);
         double diff_fch = fabs(res_fch[i] - res_v[i]);
         double diff_ftc = fabs(res_ftc[i] - res_v[i]);
-        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i], res_fch[i], res_v[i]);
+        //printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i], res_fch[i], res_v[i]);
         printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc, diff_fch);
         printf("\n");
     }

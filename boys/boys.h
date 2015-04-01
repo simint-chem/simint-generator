@@ -8,10 +8,11 @@
 #define ASM __asm
 
 // For various Boys_F functions
-//extern double const * const restrict * const restrict boys_grid;
 extern double const * const restrict * const restrict boys_grid;
 extern const double boys_grid_max_x;
 extern const int boys_grid_max_n;
+
+extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
 //extern double const * const restrict * const restrict boys_chebygrid_F0; // size [BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1]
 extern double const boys_chebygrid_F0[BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1];
@@ -49,7 +50,6 @@ inline unsigned int cheby_idx(double d)
 
 
 
-// This includes F0_KFAC and 16/sqrt(pi)
 inline double Boys_F0_taylor(double x)
 {
     ASSUME_ALIGN(boys_grid);
@@ -80,7 +80,6 @@ inline double Boys_F0_taylor(double x)
            )))))));
 }
 
-// Values include F0_KFAC and 16/sqrt(pi)
 inline double Boys_F0_cheby(double x)
 {
     const unsigned int idx = cheby_idx(x);
@@ -107,16 +106,18 @@ inline double Boys_F0_cheby(double x)
 }
 
 
-// Values from this are missing F0_KFAC and 16/sqrt(pi)
+// Values from this are missing F0_KFAC
 inline double Boys_F0_erf(double x)
 {
     const double x2 = sqrt(x);
     return erf(x2) / x2;   
 }
 
+inline double Boys_F0_long(double x)
+{
+    return boys_longfac[0] / sqrt(x);
+}
 
-
-// Values include F0_KFAC and 16/sqrt(pi)
 inline void Boys_F_taylor(double * const restrict F, int n, double x)
 {
     ASSUME_ALIGN(boys_grid);

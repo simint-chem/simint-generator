@@ -27,19 +27,18 @@ int eri_ssss_cheby(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
-    int nint = 0;
-    int i, j;
-    int ab, cd;
-
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
-    memset(integrals, 0, nshell1234*sizeof(double));
+    int ab, cd;
+    int i, j;
+    int idx = 0;
+
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
         const int abend = P.primend[ab];
 
-        // this should have been set in fill_shell_pair or something else
+        // this should have been set/aligned in fill_shell_pair or something else
         ASSUME(abstart%SIMD_ALIGN_DBL == 0);
 
         for(cd = 0; cd < Q.nshell12; ++cd)
@@ -47,12 +46,11 @@ int eri_ssss_cheby(struct shell_pair const P,
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
-            // this should have been set in fill_shell_pair or something else
+            // this should have been set/aligned in fill_shell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
 
             for(i = abstart; i < abend; ++i)
             {
-                #pragma simd
                 for(j = cdstart; j < cdend; ++j)
                 {
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
@@ -66,44 +64,44 @@ int eri_ssss_cheby(struct shell_pair const P,
                     const double PQ_z = P.z[i] - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
-                    // The paremeter to the boys function
-                    const double x = R2 * PQalpha_mul/PQalpha_sum;
-                    const unsigned int idx = cheby_idx(x);
+                    // store the paremeter to the boys function in integralwork1
+                    integralwork1[idx] = R2 * PQalpha_mul/PQalpha_sum;
 
-                    const double bshift = (int)( ((1<<idx)-1) + ((1<<(idx+1))-1) );
-                    const double x2 = x - (bshift * 0.5);
-   
-                    const double F =        boys_chebygrid_F0[idx][0]
-                                   + x2 * ( boys_chebygrid_F0[idx][1]
-                                   + x2 * ( boys_chebygrid_F0[idx][2]
-                                   + x2 * ( boys_chebygrid_F0[idx][3]
-                                   + x2 * ( boys_chebygrid_F0[idx][4]
-                                   + x2 * ( boys_chebygrid_F0[idx][5]
-                                   + x2 * ( boys_chebygrid_F0[idx][6]
-                                   + x2 * ( boys_chebygrid_F0[idx][7]
-                                   + x2 * ( boys_chebygrid_F0[idx][8]
-                                   + x2 * ( boys_chebygrid_F0[idx][9]
-                                   + x2 * ( boys_chebygrid_F0[idx][10]
-                                   + x2 * ( boys_chebygrid_F0[idx][11]
-                                   + x2 * ( boys_chebygrid_F0[idx][12]
-                                   + x2 * ( boys_chebygrid_F0[idx][13]
-                                   + x2 * ( boys_chebygrid_F0[idx][14]
-                                   ))))))))))))));
-                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * F;
+                    // store the prefactors in integralwork2
+                    integralwork2[idx] = pfac * P.prefac[i] * Q.prefac[j];
+
+                    ++idx;
                  }
             }
-
-            ++nint;
-
         }
     }
 
-    // apply constants to integrals
-    // also heavily vectorized
+    // rip through the integral work arrays and store result back in integralwork1
+    // This loop that should be heavily vectorized
+    int nint = 0;
+    for(i = 0; i < idx; ++i)
+        integralwork1[i] = integralwork2[i] * Boys_F0_cheby(integralwork1[i]);
+
+    // now sum them, forming the contracted integrals
+    memset(integrals, 0, nshell1234*sizeof(double));
+    idx = 0;
+    for(ab = 0; ab < P.nshell12; ++ab)
+    for(cd = 0; cd < Q.nshell12; ++cd)
+    {
+        const int nprim1234 = P.nprim12[ab] * Q.nprim12[cd];
+        for(i = 0; i < nprim1234; ++i)
+        {
+            integrals[nint] += integralwork1[idx];
+            ++idx;
+        }
+
+        nint++;
+    }
+
+    // apply constant to integrals
+    // also heavily vectorized, but should be short
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= 16;
+        integrals[i] *= TWO_PI_52;
 
     return nshell1234;
-
 }
-

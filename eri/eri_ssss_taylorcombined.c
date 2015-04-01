@@ -27,19 +27,20 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
-    int nint = 0;
-    int i, j;
-    int ab, cd;
-
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
     memset(integrals, 0, nshell1234*sizeof(double));
+
+    int ab, cd;
+    int i, j;
+    int nint = 0;
+
     for(ab = 0; ab < P.nshell12; ++ab)
     {
         const int abstart = P.primstart[ab];
         const int abend = P.primend[ab];
 
-        // this should have been set in fill_shell_pair or something else
+        // this should have been set/aligned in fill_shell_pair or something else
         ASSUME(abstart%SIMD_ALIGN_DBL == 0);
 
         for(cd = 0; cd < Q.nshell12; ++cd)
@@ -47,7 +48,7 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
-            // this should have been set in fill_shell_pair or something else
+            // this should have been set/aligned in fill_shell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
 
             for(i = abstart; i < abend; ++i)
@@ -76,12 +77,10 @@ int eri_ssss_taylorcombined(struct shell_pair const P,
         }
     }
 
-    // apply constants to integrals
-    // also heavily vectorized
+    // apply constant to integrals
+    // also heavily vectorized, but should be short
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= ONESIX_OVER_SQRT_PI;
+        integrals[i] *= TWO_PI_52;
 
     return nshell1234;
-
 }
-

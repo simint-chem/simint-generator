@@ -26,6 +26,8 @@ int eri_ssss_split(struct shell_pair const P,
     ASSUME_ALIGN(integralwork1);
     ASSUME_ALIGN(integralwork2);
 
+    const int nshell1234 = P.nshell12 * Q.nshell12;
+
     // we need to split integralwork1 and integralwork2 into three separate spaces
     // One holds the whole thing, one holds the short regime, and one holds the long regime
     const int nprim1234 = P.nprim * Q.nprim;
@@ -45,12 +47,11 @@ int eri_ssss_split(struct shell_pair const P,
     ASSUME_ALIGN(integralwork2_long);
 
 
-    int i, j;
     int ab, cd;
+    int i, j;
     int idx = 0;
     int idx_short = 0;
     int idx_long = 0;
-    const int nshell1234 = P.nshell12 * Q.nshell12;
     int blockends_short[nshell1234];
     int blockends_long[nshell1234];
 
@@ -59,7 +60,7 @@ int eri_ssss_split(struct shell_pair const P,
         const int abstart = P.primstart[ab];
         const int abend = P.primend[ab];
 
-        // this should have been set in fill_shell_pair or something else
+        // this should have been set/aligned in fill_shell_pair or something else
         ASSUME(abstart%SIMD_ALIGN_DBL == 0);
 
         for(cd = 0; cd < Q.nshell12; ++cd)
@@ -67,7 +68,7 @@ int eri_ssss_split(struct shell_pair const P,
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
-            // this should have been set in fill_shell_pair or something else
+            // this should have been set/aligned in fill_shell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
 
             for(i = abstart; i < abend; ++i)
@@ -107,6 +108,7 @@ int eri_ssss_split(struct shell_pair const P,
             {
                 const double Fparam = integralwork1_init[idx];
                 const double prefac = integralwork2_init[idx];
+
                 if(Fparam < BOYS_SHORTGRID_MAXX)
                 {
                     integralwork1_short[idx_short] = Fparam;
@@ -132,8 +134,8 @@ int eri_ssss_split(struct shell_pair const P,
     // large x
     for(i = 0; i < idx_long; ++i)
     {
-        // but apply coefficients and prefactors here
-        integralwork1_long[i] = integralwork2_long[i] / sqrt(integralwork1_long[i]); 
+        // but apply coefficients here
+        integralwork1_long[i] = integralwork2_long[i] * Boys_F0_long(integralwork1_long[i]); 
     }
 
     // short x
@@ -163,8 +165,7 @@ int eri_ssss_split(struct shell_pair const P,
 
     // apply factors, which aren't included above
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= ONESIX_OVER_SQRT_PI;
+        integrals[i] *= TWO_PI_52;
 
     return nshell1234;
-
 }
