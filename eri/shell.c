@@ -77,6 +77,8 @@ void allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
     for(int j = 0; j < nb; ++j)
         prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
 
+    P->nprim_length = prim_size;
+
     const int size = prim_size * sizeof(double);
 
     // allocate one large space
