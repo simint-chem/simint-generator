@@ -44,10 +44,7 @@ void Boys_Init(double max_x, int max_n)
     // (won't run if nelements_x < BOYS_SHORTGRID_NPOINT)
     double x = BOYS_SHORTGRID_MAXX + BOYS_GRID_SPACE;
 
-    // vectorize the outer loop
-    #ifdef SIMINT_SIMD
-    #pragma simd
-    #endif
+    //! \todo vectorize the outer loop
     for(int i = BOYS_SHORTGRID_NPOINT; i < nelements_x; ++i)
     {
         double powx = 1.0/sqrt(x);

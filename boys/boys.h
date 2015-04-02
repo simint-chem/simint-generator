@@ -60,6 +60,7 @@ inline double Boys_F0_taylor(double x)
 
     double const * const restrict gridpts = &(boys_grid[lookup_idx][0]);
 
+/*
     const double f0xi = gridpts[0];
     const double f1xi = gridpts[1];
     const double f2xi = gridpts[2];
@@ -78,6 +79,23 @@ inline double Boys_F0_taylor(double x)
            + dx * ( (1.0/720.0 )   * f6xi
            + dx * ( (1.0/5040.0)   * f7xi
            )))))));
+*/
+    const double f0xi = gridpts[0];
+    const double f1xi = gridpts[1];
+    const double f2xi = gridpts[2];
+    const double f3xi = gridpts[3];
+    const double f4xi = gridpts[4];
+    const double f5xi = gridpts[5];
+    const double f6xi = gridpts[6];
+
+    return f0xi
+           + dx * (                  f1xi
+           + dx * ( (1.0/2.0   )   * f2xi
+           + dx * ( (1.0/6.0   )   * f3xi
+           + dx * ( (1.0/24.0  )   * f4xi
+           + dx * ( (1.0/120.0 )   * f5xi
+           + dx * ( (1.0/720.0 )   * f6xi
+           ))))));
 }
 
 inline double Boys_F0_cheby(double x)
