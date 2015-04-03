@@ -10,7 +10,7 @@ struct gaussian_shell
     double * coef;
 };
 
-struct shell_pair
+struct multishell_pair
 {
     int am1, am2;          // angular momentum.
     int nprim;             // Total number of primitives
@@ -35,28 +35,55 @@ struct shell_pair
 };
 
 
+struct shell_pair
+{
+    int am1, am2;          // angular momentum of each shell
+    int nprim;             // Total number of primitives
+    int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
+    int nprim1, nprim2;    // number of primitives in each shell
+
+    // these are all of length nprim
+    double * x;
+    double * y;
+    double * z;
+    double * alpha;
+    double * prefac;
+};
+
+
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G);
-
 void free_gaussian_shell(struct gaussian_shell G);
-
-
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G);
 
-void allocate_shell_pair_from_shells(int na, struct gaussian_shell const * const restrict A,
-                                     int nb, struct gaussian_shell const * const restrict B,
+
+void allocate_shell_pair_from_shells(struct gaussian_shell const A,
+                                     struct gaussian_shell const B,
                                      struct shell_pair * const restrict P);
 
+void allocate_multishell_pair_from_shells(int na, struct gaussian_shell const * const restrict A,
+                                          int nb, struct gaussian_shell const * const restrict B,
+                                          struct multishell_pair * const restrict P);
+
 void free_shell_pair(struct shell_pair P);
+void free_multishell_pair(struct multishell_pair P);
 
 
 
-void fill_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                        int nb, struct gaussian_shell const * const restrict B,
+void fill_ss_shell_pair(struct gaussian_shell const A,
+                        struct gaussian_shell const B,
                         struct shell_pair * const restrict P);
 
+void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+                             int nb, struct gaussian_shell const * const restrict B,
+                             struct multishell_pair * const restrict P);
+
 struct shell_pair
-create_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                     int nb, struct gaussian_shell const * const restrict B);
+create_ss_shell_pair(struct gaussian_shell const A,
+                     struct gaussian_shell const B);
+
+struct multishell_pair
+create_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+                          int nb, struct gaussian_shell const * const restrict B);
 
 #endif
 

@@ -109,16 +109,16 @@ int main(int argc, char ** argv)
     Valeev_Init();
 
     // Actually calculate
-    struct shell_pair P = create_ss_shell_pair(nshell1, A, nshell2, B);
-    struct shell_pair Q = create_ss_shell_pair(nshell3, C, nshell4, D);
+    struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
+    struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
     eri_ssss(P, Q, res_f, intwork1, intwork2);
     eri_ssss_cheby(P, Q, res_fch, intwork1, intwork2);
     eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
     eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
     eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
     eri_ssss_taylorcombined(P, Q, res_ftc, intwork1, intwork2);
-    free_shell_pair(P);
-    free_shell_pair(Q);
+    free_multishell_pair(P);
+    free_multishell_pair(Q);
 
 
     // test with valeev

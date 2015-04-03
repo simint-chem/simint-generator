@@ -5,8 +5,8 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
-int eri_ssss_split(struct shell_pair const P,
-                   struct shell_pair const Q,
+int eri_ssss_split(struct multishell_pair const P,
+                   struct multishell_pair const Q,
                    double * const restrict integrals,
                    double * const integralwork1,
                    double * const integralwork2)
@@ -60,7 +60,7 @@ int eri_ssss_split(struct shell_pair const P,
         const int abstart = P.primstart[ab];
         const int abend = P.primend[ab];
 
-        // this should have been set/aligned in fill_shell_pair or something else
+        // this should have been set/aligned in fill_multishell_pair or something else
         ASSUME(abstart%SIMD_ALIGN_DBL == 0);
 
         for(cd = 0; cd < Q.nshell12; ++cd)
@@ -68,7 +68,7 @@ int eri_ssss_split(struct shell_pair const P,
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
-            // this should have been set/aligned in fill_shell_pair or something else
+            // this should have been set/aligned in fill_multishell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
 
             for(i = abstart; i < abend; ++i)

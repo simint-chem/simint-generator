@@ -63,9 +63,31 @@ void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
 
 
 // Allocates a shell pair with correct alignment
-void allocate_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                         int nb, struct gaussian_shell const * const restrict B,
+// Only fills in nprim_length member
+void allocate_shell_pair(struct gaussian_shell const A,
+                         struct gaussian_shell const B,
                          struct shell_pair * const restrict P)
+{
+    const int prim_size = SIMD_ROUND_DBL(A.nprim * B.nprim);
+    P->nprim_length = prim_size;
+
+    const int size = prim_size * sizeof(double);
+
+    // allocate one large space
+    double * mem = ALLOC(size * 5);   // 5 = x, y, z, alpha, prefac
+    P->x = mem;
+    P->y = mem + prim_size;
+    P->z = mem + 2*prim_size;
+    P->alpha = mem + 3*prim_size;
+    P->prefac = mem + 4*prim_size;
+}
+
+
+// Allocates a shell pair with correct alignment
+// Only fills in nprim_length member
+void allocate_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+                              int nb, struct gaussian_shell const * const restrict B,
+                              struct multishell_pair * const restrict P)
 {
     ASSUME_ALIGN(A);
     ASSUME_ALIGN(B);
@@ -103,6 +125,13 @@ void free_shell_pair(struct shell_pair P)
 {
    // Only need to free P.x since that points to the beginning of mem
    FREE(P.x);
+}
+
+
+void free_multishell_pair(struct multishell_pair P)
+{
+   // Only need to free P.x since that points to the beginning of mem
+   FREE(P.x);
 
    // similar with nprim1 and nprim2
    free(P.nprim1);
@@ -110,10 +139,61 @@ void free_shell_pair(struct shell_pair P)
 
 
 
-
-void fill_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                        int nb, struct gaussian_shell const * const restrict B,
+void fill_ss_shell_pair(struct gaussian_shell const A,
+                        struct gaussian_shell const B,
                         struct shell_pair * const restrict P)
+{
+    ASSUME_ALIGN(A.alpha);
+    ASSUME_ALIGN(A.coef);
+
+    ASSUME_ALIGN(B.alpha);
+    ASSUME_ALIGN(B.coef);
+
+    ASSUME_ALIGN(P->x);
+    ASSUME_ALIGN(P->y);
+    ASSUME_ALIGN(P->z);
+    ASSUME_ALIGN(P->alpha);
+    ASSUME_ALIGN(P->prefac);
+
+    int i, j;
+
+    P->nprim = A.nprim * B.nprim;
+
+    // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
+    const double Xab_x = A.x - B.x;
+    const double Xab_y = A.y - B.y;
+    const double Xab_z = A.z - B.z;
+    const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
+
+    int idx = 0;
+    for(i = 0; i < A.nprim; ++i)
+    {
+        const double AxAa = A.x * A.alpha[i];
+        const double AyAa = A.y * A.alpha[i];
+        const double AzAa = A.z * A.alpha[i];
+
+        for(j = 0; j < B.nprim; ++j)
+        {
+            const double p_ab = A.alpha[i] + B.alpha[j];
+            const double ABalpha = A.alpha[i] * B.alpha[j];
+
+            P->prefac[idx] = A.coef[i] * B.coef[j]
+                           * exp(-Xab * ABalpha / p_ab);
+
+            P->x[idx] = (AxAa + B.alpha[j]*B.x)/p_ab;
+            P->y[idx] = (AyAa + B.alpha[j]*B.y)/p_ab;
+            P->z[idx] = (AzAa + B.alpha[j]*B.z)/p_ab;
+            P->alpha[idx] = p_ab;
+            ++idx;
+        }
+
+    }
+}
+
+
+void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+                             int nb, struct gaussian_shell const * const restrict B,
+                             struct multishell_pair * const restrict P)
 {
     ASSUME_ALIGN(A);
     ASSUME_ALIGN(B);
@@ -194,13 +274,22 @@ void fill_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
     }
 }
 
-
 struct shell_pair
-create_ss_shell_pair(int na, struct gaussian_shell const * const restrict A,
-                     int nb, struct gaussian_shell const * const restrict B)
+create_ss_shell_pair(struct gaussian_shell const A,
+                     struct gaussian_shell const B)
 {
     struct shell_pair P;
-    allocate_shell_pair(na, A, nb, B, &P);
-    fill_ss_shell_pair(na, A, nb, B, &P);
+    allocate_shell_pair(A, B, &P);
+    fill_ss_shell_pair(A, B, &P);
+    return P; 
+}
+
+struct multishell_pair
+create_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+                     int nb, struct gaussian_shell const * const restrict B)
+{
+    struct multishell_pair P;
+    allocate_multishell_pair(na, A, nb, B, &P);
+    fill_ss_multishell_pair(na, A, nb, B, &P);
     return P; 
 }
