@@ -61,14 +61,16 @@ int main(int argc, char ** argv)
 
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
-    double * res_f = ALLOC(nshell1234 * sizeof(double));
-    double * res_fs = ALLOC(nshell1234 * sizeof(double));
-    double * res_ft = ALLOC(nshell1234 * sizeof(double));
-    double * res_fc = ALLOC(nshell1234 * sizeof(double));
-    double * res_ftc = ALLOC(nshell1234 * sizeof(double));
-    double * res_fch = ALLOC(nshell1234 * sizeof(double));
-    double * res_e = ALLOC(nshell1234 * sizeof(double));
+    /* Storage of test results */
+    double * res_erf         = ALLOC(nshell1234 * sizeof(double));
+    double * res_split       = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylor      = ALLOC(nshell1234 * sizeof(double));
+    double * res_erf_comb    = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylor_comb = ALLOC(nshell1234 * sizeof(double));
+    double * res_cheby       = ALLOC(nshell1234 * sizeof(double));
+    double * res_liberd      = ALLOC(nshell1234 * sizeof(double));
 
+    // no need to round each pair
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
     double * intwork1 = ALLOC(3*worksize * sizeof(double));
     double * intwork2 = ALLOC(3*worksize * sizeof(double));
@@ -89,7 +91,10 @@ int main(int argc, char ** argv)
     printf("Boys grid generated\n");
 
 
-    printf("%11s %11s %11s %11s %11s\n", "res_f", "res_fs", "res_ft", "res_fc", "res_ftc");
+    printf("%17s %17s %17s %17s %17s %17s %17s\n",
+                "res_liberd", "res_erf", "res_split", "res_taylor",
+                "res_erf_comb", "res_taylor_comb", "res_cheby");
+
     for(int n = 0; n < ntest; n++)
     {
         for(int i = 0; i < nshell1; i++)
@@ -112,12 +117,12 @@ int main(int argc, char ** argv)
         // Actually calculate
         struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
         struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
-        eri_ssss(P, Q, res_f, intwork1, intwork2);
-        eri_ssss_cheby(P, Q, res_fch, intwork1, intwork2);
-        eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
-        eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
-        eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
-        eri_ssss_taylorcombined(P, Q, res_ftc, intwork1, intwork2);
+        eri_ssss_multi(          P, Q, res_erf,         intwork1, intwork2);
+        eri_ssss_cheby(          P, Q, res_cheby,       intwork1, intwork2);
+        eri_ssss_split(          P, Q, res_split,       intwork1, intwork2);
+        eri_ssss_taylor(         P, Q, res_taylor,      intwork1, intwork2);
+        eri_ssss_combined(       P, Q, res_erf_comb,    intwork1, intwork2);
+        eri_ssss_taylorcombined( P, Q, res_taylor_comb, intwork1, intwork2);
         free_multishell_pair(P);
         free_multishell_pair(Q);
 
@@ -130,15 +135,17 @@ int main(int argc, char ** argv)
         for(int k = 0; k < nshell3; k++)
         for(int l = 0; l < nshell4; l++)
         {
-            res_e[idx] = 0.0;
-            ERD_Compute_shell(A[i], B[j], C[k], D[l], res_e + idx);
+            res_liberd[idx] = 0.0;
+            ERD_Compute_shell(A[i], B[j], C[k], D[l], res_liberd + idx);
             idx++;
         }
         ERD_Finalize();
 
 
         // print some results
-        printf("%11e %11e %11e %11e %11e %11e %11e\n", res_e[0], res_f[0], res_fs[0], res_ft[0], res_fc[0], res_ftc[0], res_fch[0]);
+        printf("%17e %17e %17e %17e %17e %17e %17e\n",
+                    res_liberd[0], res_erf[0], res_split[0], res_taylor[0],
+                    res_erf_comb[0], res_taylor_comb[0], res_cheby[0]);
 
         // free memory
         for(int i = 0; i < nshell1; i++)
@@ -159,10 +166,13 @@ int main(int argc, char ** argv)
 
     Boys_Finalize();
 
-    FREE(res_e);
-    FREE(res_f); FREE(res_fs);
-    FREE(res_ft); FREE(res_fc);
-    FREE(res_ftc); FREE(res_fch);
+    FREE(res_liberd);
+    FREE(res_erf);
+    FREE(res_split);
+    FREE(res_taylor);
+    FREE(res_erf_comb);
+    FREE(res_taylor_comb);
+    FREE(res_cheby);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 

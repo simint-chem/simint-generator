@@ -3,11 +3,17 @@
 
 #include "shell.h"
 
-int eri_ssss(struct multishell_pair const P,
-             struct multishell_pair const Q,
+int eri_ssss(struct shell_pair const P,
+             struct shell_pair const Q,
              double * const restrict integrals,
              double * const restrict integralwork1,
              double * const restrict integralwork2);
+
+int eri_ssss_multi(struct multishell_pair const P,
+                   struct multishell_pair const Q,
+                   double * const restrict integrals,
+                   double * const restrict integralwork1,
+                   double * const restrict integralwork2);
 
 int eri_ssss_cheby(struct multishell_pair const P,
                    struct multishell_pair const Q,

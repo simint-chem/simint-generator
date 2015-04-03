@@ -8,11 +8,78 @@
 #define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
 
 /* Calculates an (ss|ss) integral using the erf function */
-int eri_ssss(struct multishell_pair const P,
-             struct multishell_pair const Q,
+int eri_ssss(struct shell_pair const P,
+             struct shell_pair const Q,
              double * const restrict integrals,
              double * const restrict integralwork1,
              double * const restrict integralwork2)
+{
+    ASSUME_ALIGN(P.x);
+    ASSUME_ALIGN(P.y);
+    ASSUME_ALIGN(P.z);
+    ASSUME_ALIGN(P.alpha);
+    ASSUME_ALIGN(P.prefac);
+    ASSUME_ALIGN(Q.x);
+    ASSUME_ALIGN(Q.y);
+    ASSUME_ALIGN(Q.z);
+    ASSUME_ALIGN(Q.alpha);
+    ASSUME_ALIGN(Q.prefac);
+
+    ASSUME_ALIGN(integrals);
+    ASSUME_ALIGN(integralwork1);
+    ASSUME_ALIGN(integralwork2);
+
+    int i, j;
+    int idx = 0;
+
+    for(i = 0; i < P.nprim; ++i)
+    {
+        for(j = 0; j < Q.nprim; ++j)
+        {
+            const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
+            const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
+
+            const double pfac = 1.0 / (PQalpha_mul * sqrt(PQalpha_sum));
+
+            /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
+            const double PQ_x = P.x[i] - Q.x[j];
+            const double PQ_y = P.y[i] - Q.y[j];
+            const double PQ_z = P.z[i] - Q.z[j];
+            const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
+
+            // store the paremeter to the boys function in integralwork1
+            integralwork1[idx] = R2 * PQalpha_mul/PQalpha_sum;
+
+            // store the prefactors in integralwork2
+            integralwork2[idx] = pfac * P.prefac[i] * Q.prefac[j];
+
+            ++idx;
+         }
+    }
+
+    // rip through the integral work arrays and store result back in integralwork1
+    // This loop that should be heavily vectorized
+    for(i = 0; i < idx; ++i)
+        integralwork1[i] = integralwork2[i] * Boys_F0_erf(integralwork1[i]);
+
+    // now sum them, forming the contracted integrals
+    integrals[0] = 0.0;
+    for(i = 0; i < P.nprim; ++i)
+        integrals[0] += integralwork1[i];
+
+    // apply constant to integrals
+    integrals[0] *= F0_KFAC * TWO_PI_52;
+
+    return 1;
+}
+
+
+/* Calculates an (ss|ss) integral using the erf function */
+int eri_ssss_multi(struct multishell_pair const P,
+                   struct multishell_pair const Q,
+                   double * const restrict integrals,
+                   double * const restrict integralwork1,
+                   double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);

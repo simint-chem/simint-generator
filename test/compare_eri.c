@@ -61,15 +61,17 @@ int main(int argc, char ** argv)
 
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
-    double * res_f = ALLOC(nshell1234 * sizeof(double));
-    double * res_fs = ALLOC(nshell1234 * sizeof(double));
-    double * res_ft = ALLOC(nshell1234 * sizeof(double));
-    double * res_fc = ALLOC(nshell1234 * sizeof(double));
-    double * res_ftc = ALLOC(nshell1234 * sizeof(double));
-    double * res_fch = ALLOC(nshell1234 * sizeof(double));
-    double * res_e = ALLOC(nshell1234 * sizeof(double));
-    double * res_v = ALLOC(nshell1234 * sizeof(double));
+    /* Storage of test results */
+    double * res_erf         = ALLOC(nshell1234 * sizeof(double));
+    double * res_split       = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylor      = ALLOC(nshell1234 * sizeof(double));
+    double * res_erf_comb    = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylor_comb = ALLOC(nshell1234 * sizeof(double));
+    double * res_cheby       = ALLOC(nshell1234 * sizeof(double));
+    double * res_liberd      = ALLOC(nshell1234 * sizeof(double));
+    double * res_valeev      = ALLOC(nshell1234 * sizeof(double));
 
+    // no need to round each pair
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
     double * intwork1 = ALLOC(3*worksize * sizeof(double));
     double * intwork2 = ALLOC(3*worksize * sizeof(double));
@@ -111,12 +113,12 @@ int main(int argc, char ** argv)
     // Actually calculate
     struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
     struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
-    eri_ssss(P, Q, res_f, intwork1, intwork2);
-    eri_ssss_cheby(P, Q, res_fch, intwork1, intwork2);
-    eri_ssss_split(P, Q, res_fs, intwork1, intwork2);
-    eri_ssss_taylor(P, Q, res_ft, intwork1, intwork2);
-    eri_ssss_combined(P, Q, res_fc, intwork1, intwork2);
-    eri_ssss_taylorcombined(P, Q, res_ftc, intwork1, intwork2);
+    eri_ssss_multi(          P, Q, res_erf,         intwork1, intwork2);
+    eri_ssss_cheby(          P, Q, res_cheby,       intwork1, intwork2);
+    eri_ssss_split(          P, Q, res_split,       intwork1, intwork2);
+    eri_ssss_taylor(         P, Q, res_taylor,      intwork1, intwork2);
+    eri_ssss_combined(       P, Q, res_erf_comb,    intwork1, intwork2);
+    eri_ssss_taylorcombined( P, Q, res_taylor_comb, intwork1, intwork2);
     free_multishell_pair(P);
     free_multishell_pair(Q);
 
@@ -133,7 +135,7 @@ int main(int argc, char ** argv)
         double vC[3] = { C[k].x, C[k].y, C[k].z };
         double vD[3] = { D[l].x, D[l].y, D[l].z };
 
-        res_v[idx] = 0.0;
+        res_valeev[idx] = 0.0;
 
         for(int m = 0; m < A[i].nprim; m++)
         for(int n = 0; n < B[j].nprim; n++)
@@ -144,7 +146,7 @@ int main(int argc, char ** argv)
                                     0, 0, 0, B[j].alpha[n], vB,
                                     0, 0, 0, C[k].alpha[o], vC,
                                     0, 0, 0, D[l].alpha[p], vD, 0);
-            res_v[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
+            res_valeev[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
             /*
             printf("IDX: %d\n", idx);
             printf("VAL: %8.3e\n", val);
@@ -170,8 +172,8 @@ int main(int argc, char ** argv)
     for(int k = 0; k < nshell3; k++)
     for(int l = 0; l < nshell4; l++)
     {
-        res_e[idx] = 0.0;
-        ERD_Compute_shell(A[i], B[j], C[k], D[l], res_e + idx);
+        res_liberd[idx] = 0.0;
+        ERD_Compute_shell(A[i], B[j], C[k], D[l], res_liberd + idx);
         idx++;
     }
 
@@ -181,19 +183,30 @@ int main(int argc, char ** argv)
     ERD_Finalize();
 
 
-    printf("%11s  %11s  %11s  %11s  %11s  %11s  %11s\n",
-                        "diff_e", "diff_f", "diff_fs", "diff_ft", "diff_fc", "diff_ftc", "diff_fch");
+    printf("%17s  %17s  %17s  %17s  %17s  %17s  %17s\n",
+                        "diff_liberd", "diff_erf", "diff_split", "diff_taylor",
+                        "diff_erf_comb", "diff_taylor_comb", "diff_cheby");
     for(int i = 0; i < nshell1234; i++)
     {
-        double diff_e = fabs(res_e[i] - res_v[i]);
-        double diff_f = fabs(res_f[i] - res_v[i]);
-        double diff_fs = fabs(res_fs[i] - res_v[i]);
-        double diff_ft = fabs(res_ft[i] - res_v[i]);
-        double diff_fc = fabs(res_fc[i] - res_v[i]);
-        double diff_fch = fabs(res_fch[i] - res_v[i]);
-        double diff_ftc = fabs(res_ftc[i] - res_v[i]);
-        //printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", res_e[i], res_f[i], res_fs[i], res_ft[i], res_fc[i], res_ftc[i], res_fch[i], res_v[i]);
-        printf("%11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e  %11.4e\n", diff_e, diff_f, diff_fs, diff_ft, diff_fc, diff_ftc, diff_fch);
+        const double v = res_valeev[i];
+
+        double diff_liberd      = fabs(res_liberd[i]      - v);
+        double diff_erf         = fabs(res_erf[i]         - v);
+        double diff_split       = fabs(res_split[i]       - v);
+        double diff_taylor      = fabs(res_taylor[i]      - v);
+        double diff_erf_comb    = fabs(res_erf_comb[i]    - v);
+        double diff_cheby       = fabs(res_cheby[i]       - v);
+        double diff_taylor_comb = fabs(res_taylor_comb[i] - v);
+
+        //printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
+        //                          res_liberd[i], res_erf[i], res_split[i], res_taylor[i],
+        //                          res_erf_comb[i], res_taylor_comb[i], res_cheby[i],
+        //                          res_valeev[i]);
+
+        printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
+                                  diff_liberd, diff_erf, diff_split, diff_taylor,
+                                  diff_erf_comb, diff_taylor_comb, diff_cheby);
+
         printf("\n");
     }
 
@@ -209,10 +222,14 @@ int main(int argc, char ** argv)
     for(int l = 0; l < nshell4; l++)
         free_random_shell(D[l]);
 
-    FREE(res_v); FREE(res_e);
-    FREE(res_f); FREE(res_fs);
-    FREE(res_ft); FREE(res_fc);
-    FREE(res_ftc); FREE(res_fch);
+    FREE(res_valeev);
+    FREE(res_liberd);
+    FREE(res_erf);
+    FREE(res_split);
+    FREE(res_taylor);
+    FREE(res_erf_comb);
+    FREE(res_taylor_comb);
+    FREE(res_cheby);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 
