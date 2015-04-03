@@ -1,2 +1,5 @@
 build
+build-mic
+build-avx
+*/__pycache__
 *.swp
