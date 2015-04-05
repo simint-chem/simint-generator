@@ -4,9 +4,9 @@
 # Generates an array for the constant
 # used in the long-range formula
 #
-# Eqn. 9.8.9 from Helgaker et al (with normalization)
+# Eqn. 9.8.9 from Helgaker et al
 # 
-# Fn(x) = 16/sqrt(pi) * (2n-1)!!/(2**(n+1)) sqrt(pi/(x**(2n+1)))
+# Fn(x) = (2n-1)!!/(2**(n+1)) sqrt(pi/(x**(2n+1)))
 #
 # So we can pre-compute (2n-1)!!/(2**(n+1)) sqrt(pi) for
 # all n that we might need

@@ -21,12 +21,20 @@ parser.add_argument("-s",         type=str, required=False,               help="
 parser.add_argument("-b",         type=int, required=False, default=1,    help="Number of bins")
 parser.add_argument("-p",         action="store_true",                    help="Make the plot")
 parser.add_argument("-t",         type=int, required=False, default=200,  help="Number of test points (per bin)")
-parser.add_argument("-f",         type=str, required=False, default="1",  help="Base factor (ie 1 = base 2, etc)")
 parser.add_argument("--dps",      type=int, required=False, default=256,  help="Decimal precision/sig figs to use/calculate")
 args = parser.parse_args()
 
 # Set the dps option
 mp.dps = args.dps
+
+
+# Calculate the interval at a given point
+def CalcInterval(x):
+  if x < 20.0:
+    return mp.mpf(0.25)
+  else:
+    return x-19.75
+
 
 
 test_fx = []    # holds value of boys function at test points
@@ -39,11 +47,11 @@ max_abserr = []
 max_relerr = []
 
 # split the interval into bins
-fact = mp.mpf(args.f)
-binpoints = [mp.mpf(0.0), mp.mpf(1.0)]
+binpoints = [mp.mpf(0.0)]
 
 for i in range(0, args.b):
-  binpoints.append(binpoints[-1]+fact*binpoints[-1]+1)
+  binpoints.append(binpoints[-1]+CalcInterval(binpoints[-1]))
+
 binpoints = list(zip(binpoints[:-1], binpoints[1:]))
 
 olst = [args.o] * (args.b+1)
