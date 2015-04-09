@@ -79,6 +79,7 @@ int eri_ssss_cheby(struct multishell_pair const P,
     // rip through the integral work arrays and store result back in integralwork1
     // This loop that should be heavily vectorized
     int nint = 0;
+    #pragma simd
     for(i = 0; i < idx; ++i)
         integralwork1[i] = integralwork2[i] * Boys_F0_cheby(integralwork1[i]);
 

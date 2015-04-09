@@ -69,7 +69,7 @@ int eri_ssss_combined(struct multishell_pair const P,
 
                     // The paremeter to the boys function
                     const double x = R2 * PQalpha_mul/PQalpha_sum;
-                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_erf(x);
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_FO(x);
                  }
             }
 
@@ -81,7 +81,7 @@ int eri_ssss_combined(struct multishell_pair const P,
     // apply constant to integrals
     // also heavily vectorized, but should be short
     for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC * TWO_PI_52;
+        integrals[i] *= TWO_PI_52;
 
     return nshell1234;
 }

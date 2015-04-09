@@ -60,7 +60,7 @@ int eri_ssss(struct shell_pair const P,
     // rip through the integral work arrays and store result back in integralwork1
     // This loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
-        integralwork1[i] = integralwork2[i] * Boys_F0_erf(integralwork1[i]);
+        integralwork1[i] = integralwork2[i] * Boys_F0_FO(integralwork1[i]);
 
     // now sum them, forming the contracted integrals
     integrals[0] = 0.0;
