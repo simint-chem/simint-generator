@@ -43,9 +43,10 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
               int nc, struct gaussian_shell const * const restrict C,
               int nd, struct gaussian_shell const * const restrict D)
 {
+    int maxam = 0;
+
     // get scratch requirements
     int npgto1 = 0;
-    int maxam1 = 0;
     int sh1 = 0;
     for(int i = 0; i < na; ++i)
     {
@@ -54,12 +55,11 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto1 = A[i].nprim;
             sh1 = i;
         }
-        if(maxam1 < A[i].am)
-            maxam1 = A[i].am;
+        if(maxam < A[i].am)
+            maxam = A[i].am;
     }
 
     int npgto2 = 0;
-    int maxam2 = 0;
     int sh2 = 0;
     for(int i = 0; i < nb; ++i)
     {
@@ -68,12 +68,11 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto2 = B[i].nprim;
             sh2 = i;
         }
-        if(maxam2 < B[i].am)
-            maxam2 = B[i].am;
+        if(maxam < B[i].am)
+            maxam = B[i].am;
     }
 
     int npgto3 = 0;
-    int maxam3 = 0;
     int sh3 = 0;
     for(int i = 0; i < nc; ++i)
     {
@@ -82,12 +81,11 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto3 = C[i].nprim;
             sh3 = i;
         }
-        if(maxam3 < C[i].am)
-            maxam3 = C[i].am;
+        if(maxam < C[i].am)
+            maxam = C[i].am;
     }
 
     int npgto4 = 0;
-    int maxam4 = 0;
     int sh4 = 0;
     for(int i = 0; i < nd; ++i)
     {
@@ -96,11 +94,10 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto4 = D[i].nprim;
             sh4 = i;
         }
-        if(maxam4 < D[i].am)
-            maxam4 = D[i].am;
+        if(maxam < D[i].am)
+            maxam = D[i].am;
     }
-   
-
+  
     cc    = malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
     alpha = malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
     
@@ -130,13 +127,13 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
     int npgto = npgto1 + npgto2 + npgto3 + npgto4;
 
     erd__memory_eri_batch_(&npgto, &npgto,
-                           &ncgto1, &ncgto2, &ncgto3, &ncgto4,
-                           &npgto1, &npgto2, &npgto3, &npgto4,
-                           &maxam1, &maxam2, &maxam3, &maxam4,
-                           &X[0], &Y[0], &Z[0],
-                           &X[1], &Y[1], &Z[1],
-                           &X[2], &Y[2], &Z[2],
+                           &ncgto4, &ncgto3, &ncgto2, &ncgto1,
+                           &npgto4, &npgto3, &npgto2, &npgto1,
+                           &maxam, &maxam, &maxam, &maxam,
                            &X[3], &Y[3], &Z[3],
+                           &X[2], &Y[2], &Z[2],
+                           &X[1], &Y[1], &Z[1],
+                           &X[0], &Y[0], &Z[0],
                            alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
                              
 
