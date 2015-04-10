@@ -39,7 +39,7 @@ int eri_ssss(struct shell_pair const P,
             const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
             const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
 
-            const double pfac = 1.0 / (PQalpha_mul * sqrt(PQalpha_sum));
+            const double pfac = (F0_KFAC * TWO_PI_52) / (PQalpha_mul * sqrt(PQalpha_sum));
 
             /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
             const double PQ_x = P.x[i] - Q.x[j];
@@ -66,9 +66,6 @@ int eri_ssss(struct shell_pair const P,
     integrals[0] = 0.0;
     for(i = 0; i < P.nprim; ++i)
         integrals[0] += integralwork1[i];
-
-    // apply constant to integrals
-    integrals[0] *= F0_KFAC * TWO_PI_52;
 
     return 1;
 }
@@ -125,7 +122,7 @@ int eri_ssss_multi(struct multishell_pair const P,
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
                     const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
 
-                    const double pfac = 1.0 / (PQalpha_mul * sqrt(PQalpha_sum));
+                    const double pfac = (F0_KFAC * TWO_PI_52) / (PQalpha_mul * sqrt(PQalpha_sum));
 
                     /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
                     const double PQ_x = P.x[i] - Q.x[j];
@@ -166,11 +163,6 @@ int eri_ssss_multi(struct multishell_pair const P,
 
         nint++;
     }
-
-    // apply constant to integrals
-    // also heavily vectorized, but should be short
-    for(i = 0; i < nshell1234; ++i)
-        integrals[i] *= F0_KFAC * TWO_PI_52;
 
     return nshell1234;
 }

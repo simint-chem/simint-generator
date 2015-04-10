@@ -95,6 +95,11 @@ int main(int argc, char ** argv)
     for(int i = 0; i < nshell4; i++)
         D[i] = random_shell(nprim4);
 
+    // test psss
+    //for(int i = 0; i < nshell1; i++)
+    //    A[i].am = 1;
+    
+
     // normalize the shells
     normalize_gaussian_shells(nshell1, A);
     normalize_gaussian_shells(nshell2, B);
@@ -119,6 +124,7 @@ int main(int argc, char ** argv)
     eri_ssss_taylor(         P, Q, res_taylor,      intwork1, intwork2);
     eri_ssss_combined(       P, Q, res_erf_comb,    intwork1, intwork2);
     eri_ssss_taylorcombined( P, Q, res_taylor_comb, intwork1, intwork2);
+    //eri_psss_os1_taylorcombined( P, Q, res_taylor_comb, intwork1, intwork2);
     free_multishell_pair(P);
     free_multishell_pair(Q);
 
@@ -172,8 +178,9 @@ int main(int argc, char ** argv)
     for(int k = 0; k < nshell3; k++)
     for(int l = 0; l < nshell4; l++)
     {
-        res_liberd[idx] = 0.0;
-        ERD_Compute_shell(A[i], B[j], C[k], D[l], res_liberd + idx);
+        double erdval[3] = {0,0,0};
+        ERD_Compute_shell(A[i], B[j], C[k], D[l], erdval);
+        res_liberd[idx] = erdval[0];
         idx++;
     }
 
@@ -198,10 +205,10 @@ int main(int argc, char ** argv)
         double diff_cheby       = fabs(res_cheby[i]       - v);
         double diff_taylor_comb = fabs(res_taylor_comb[i] - v);
 
-        //printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
-        //                          res_liberd[i], res_erf[i], res_split[i], res_taylor[i],
-        //                          res_erf_comb[i], res_taylor_comb[i], res_cheby[i],
-        //                          res_valeev[i]);
+        printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
+                                  res_liberd[i], res_erf[i], res_split[i], res_taylor[i],
+                                  res_erf_comb[i], res_taylor_comb[i], res_cheby[i],
+                                  res_valeev[i]);
 
         printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
                                   diff_liberd, diff_erf, diff_split, diff_taylor,

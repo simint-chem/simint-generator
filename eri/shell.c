@@ -74,12 +74,15 @@ void allocate_shell_pair(struct gaussian_shell const A,
     const int size = prim_size * sizeof(double);
 
     // allocate one large space
-    double * mem = ALLOC(size * 5);   // 5 = x, y, z, alpha, prefac
-    P->x = mem;
-    P->y = mem + prim_size;
-    P->z = mem + 2*prim_size;
-    P->alpha = mem + 3*prim_size;
-    P->prefac = mem + 4*prim_size;
+    double * mem = ALLOC(size * 8);   // 8 = x, y, z, PA_x, PA_y, PA_z, alpha, prefac
+    P->x      = mem;
+    P->y      = mem + prim_size;
+    P->z      = mem + 2*prim_size;
+    P->PA_x   = mem + 3*prim_size;
+    P->PA_y   = mem + 4*prim_size;
+    P->PA_z   = mem + 5*prim_size;
+    P->alpha  = mem + 6*prim_size;
+    P->prefac = mem + 7*prim_size;
 }
 
 
@@ -104,12 +107,15 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     const int size = prim_size * sizeof(double);
 
     // allocate one large space
-    double * mem = ALLOC(size * 5);   // 5 = x, y, z, alpha, prefac
-    P->x = mem;
-    P->y = mem + prim_size;
-    P->z = mem + 2*prim_size;
-    P->alpha = mem + 3*prim_size;
-    P->prefac = mem + 4*prim_size;
+    double * mem = ALLOC(size * 8);   // 5 = x, y, z, PA_x, PA_y, PA_z, alpha, prefac
+    P->x      = mem;
+    P->y      = mem + prim_size;
+    P->z      = mem + 2*prim_size;
+    P->PA_x   = mem + 3*prim_size;
+    P->PA_y   = mem + 4*prim_size;
+    P->PA_z   = mem + 5*prim_size;
+    P->alpha  = mem + 6*prim_size;
+    P->prefac = mem + 7*prim_size;
 
     /* Should this be aligned? I don't think so */
     int * intmem = malloc((na+nb+3*na*nb)*sizeof(int));
@@ -152,6 +158,9 @@ void fill_ss_shell_pair(struct gaussian_shell const A,
     ASSUME_ALIGN(P->x);
     ASSUME_ALIGN(P->y);
     ASSUME_ALIGN(P->z);
+    ASSUME_ALIGN(P->PA_x);
+    ASSUME_ALIGN(P->PA_y);
+    ASSUME_ALIGN(P->PA_z);
     ASSUME_ALIGN(P->alpha);
     ASSUME_ALIGN(P->prefac);
 
@@ -183,6 +192,9 @@ void fill_ss_shell_pair(struct gaussian_shell const A,
             P->x[idx] = (AxAa + B.alpha[j]*B.x)/p_ab;
             P->y[idx] = (AyAa + B.alpha[j]*B.y)/p_ab;
             P->z[idx] = (AzAa + B.alpha[j]*B.z)/p_ab;
+            P->PA_x[idx] = P->x[idx] - A.x;
+            P->PA_y[idx] = P->y[idx] - A.y;
+            P->PA_z[idx] = P->z[idx] - A.z;
             P->alpha[idx] = p_ab;
             ++idx;
         }
@@ -200,6 +212,9 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
     ASSUME_ALIGN(P->x);
     ASSUME_ALIGN(P->y);
     ASSUME_ALIGN(P->z);
+    ASSUME_ALIGN(P->PA_x);
+    ASSUME_ALIGN(P->PA_y);
+    ASSUME_ALIGN(P->PA_z);
     ASSUME_ALIGN(P->alpha);
     ASSUME_ALIGN(P->prefac);
 
@@ -258,6 +273,9 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
                     P->x[idx] = (AxAa + B[sb].alpha[j]*B[sb].x)/p_ab;
                     P->y[idx] = (AyAa + B[sb].alpha[j]*B[sb].y)/p_ab;
                     P->z[idx] = (AzAa + B[sb].alpha[j]*B[sb].z)/p_ab;
+                    P->PA_x[idx] = P->x[idx] - A[sa].x;
+                    P->PA_y[idx] = P->y[idx] - A[sa].y;
+                    P->PA_z[idx] = P->z[idx] - A[sa].z;
                     P->alpha[idx] = p_ab;
                     ++idx;
                 }

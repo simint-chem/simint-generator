@@ -30,6 +30,9 @@ struct multishell_pair
     double * x;
     double * y;
     double * z;
+    double * PA_x;
+    double * PA_y;
+    double * PA_z;
     double * alpha;
     double * prefac;
 };
@@ -46,6 +49,9 @@ struct shell_pair
     double * x;
     double * y;
     double * z;
+    double * PA_x;
+    double * PA_y;
+    double * PA_z;
     double * alpha;
     double * prefac;
 };

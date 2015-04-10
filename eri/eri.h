@@ -33,6 +33,12 @@ int eri_ssss_taylorcombined(struct multishell_pair const P,
                             double * const restrict integralwork1,
                             double * const restrict integralwork2);
 
+int eri_psss_os1_taylorcombined(struct multishell_pair const P,
+                                struct multishell_pair const Q,
+                                double * const restrict integrals,
+                                double * const restrict integralwork1,
+                                double * const restrict integralwork2);
+
 int eri_ssss_taylor(struct multishell_pair const P,
                     struct multishell_pair const Q,
                     double * const restrict integrals,
