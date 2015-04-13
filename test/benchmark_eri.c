@@ -117,12 +117,12 @@ int main(int argc, char ** argv)
         // Actually calculate
         struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
         struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
-        eri_ssss_multi(          P, Q, res_erf,         intwork1, intwork2);
-        eri_ssss_cheby(          P, Q, res_cheby,       intwork1, intwork2);
-        eri_ssss_split(          P, Q, res_split,       intwork1, intwork2);
-        eri_ssss_taylor(         P, Q, res_taylor,      intwork1, intwork2);
-        eri_ssss_combined(       P, Q, res_erf_comb,    intwork1, intwork2);
-        eri_ssss_taylorcombined( P, Q, res_taylor_comb, intwork1, intwork2);
+        eri_erf_multi_ssss(           P, Q, res_erf,         intwork1, intwork2);
+        eri_erf_split_ssss(           P, Q, res_split,       intwork1, intwork2);
+        eri_erf_combined_ssss(        P, Q, res_erf_comb,    intwork1, intwork2);
+        eri_cheby_ssss(               P, Q, res_cheby,       intwork1, intwork2);
+        eri_taylor_ssss(              P, Q, res_taylor,      intwork1, intwork2);
+        eri_taylorcombined_ssss(      P, Q, res_taylor_comb, intwork1, intwork2);
         free_multishell_pair(P);
         free_multishell_pair(Q);
 

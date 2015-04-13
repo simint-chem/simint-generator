@@ -8,11 +8,11 @@
 #define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
 
 /* Calculates an (ss|ss) integral using the erf function */
-int eri_ssss(struct shell_pair const P,
-             struct shell_pair const Q,
-             double * const restrict integrals,
-             double * const restrict integralwork1,
-             double * const restrict integralwork2)
+int eri_erf_ssss(struct shell_pair const P,
+                 struct shell_pair const Q,
+                 double * const restrict integrals,
+                 double * const restrict integralwork1,
+                 double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -60,7 +60,7 @@ int eri_ssss(struct shell_pair const P,
     // rip through the integral work arrays and store result back in integralwork1
     // This loop that should be heavily vectorized
     for(i = 0; i < idx; ++i)
-        integralwork1[i] = integralwork2[i] * Boys_F0_FO(integralwork1[i]);
+        integralwork1[i] = integralwork2[i] * Boys_F0_erf(integralwork1[i]);
 
     // now sum them, forming the contracted integrals
     integrals[0] = 0.0;
@@ -72,11 +72,11 @@ int eri_ssss(struct shell_pair const P,
 
 
 /* Calculates an (ss|ss) integral using the erf function */
-int eri_ssss_multi(struct multishell_pair const P,
-                   struct multishell_pair const Q,
-                   double * const restrict integrals,
-                   double * const restrict integralwork1,
-                   double * const restrict integralwork2)
+int eri_erf_multi_ssss(struct multishell_pair const P,
+                       struct multishell_pair const Q,
+                       double * const restrict integrals,
+                       double * const restrict integralwork1,
+                       double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);

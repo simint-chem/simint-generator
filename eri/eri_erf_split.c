@@ -5,11 +5,11 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
-int eri_ssss_split(struct multishell_pair const P,
-                   struct multishell_pair const Q,
-                   double * const restrict integrals,
-                   double * const integralwork1,
-                   double * const integralwork2)
+int eri_erf_split_ssss(struct multishell_pair const P,
+                       struct multishell_pair const Q,
+                       double * const restrict integrals,
+                       double * const integralwork1,
+                       double * const integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);

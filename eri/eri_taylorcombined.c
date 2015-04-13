@@ -6,11 +6,11 @@
 #include "eri/shell.h"
 #include <stdio.h>
 
-int eri_ssss_taylorcombined(struct multishell_pair const P,
-                  struct multishell_pair const Q,
-                  double * const restrict integrals,
-                  double * const restrict integralwork1,
-                  double * const restrict integralwork2)
+int eri_taylorcombined_ssss(struct multishell_pair const P,
+                            struct multishell_pair const Q,
+                            double * const restrict integrals,
+                            double * const restrict integralwork1,
+                            double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -81,11 +81,11 @@ int eri_ssss_taylorcombined(struct multishell_pair const P,
 }
 
 
-int eri_psss_os1_taylorcombined(struct multishell_pair const P,
-                                struct multishell_pair const Q,
-                                double * const restrict integrals,
-                                double * const restrict integralwork1,
-                                double * const restrict integralwork2)
+int eri_taylorcombined_psss(struct multishell_pair const P,
+                            struct multishell_pair const Q,
+                            double * const restrict integrals,
+                            double * const restrict integralwork1,
+                            double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);

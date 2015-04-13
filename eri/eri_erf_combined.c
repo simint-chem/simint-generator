@@ -7,11 +7,11 @@
 
 #define F0_KFAC 0.88622692545275801364908374  // sqrt(pi)/2
 
-int eri_ssss_combined(struct multishell_pair const P,
-                      struct multishell_pair const Q,
-                      double * const restrict integrals,
-                      double * const restrict integralwork1,
-                      double * const restrict integralwork2)
+int eri_erf_combined_ssss(struct multishell_pair const P,
+                          struct multishell_pair const Q,
+                          double * const restrict integrals,
+                          double * const restrict integralwork1,
+                          double * const restrict integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -59,7 +59,7 @@ int eri_ssss_combined(struct multishell_pair const P,
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
                     const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
 
-                    const double pfac = TWO_PI_52 / (PQalpha_mul * sqrt(PQalpha_sum));
+                    const double pfac = (F0_KFAC*TWO_PI_52) / (PQalpha_mul * sqrt(PQalpha_sum));
 
                     /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
                     const double PQ_x = P.x[i] - Q.x[j];
@@ -69,7 +69,7 @@ int eri_ssss_combined(struct multishell_pair const P,
 
                     // The paremeter to the boys function
                     const double x = R2 * PQalpha_mul/PQalpha_sum;
-                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_FO(x);
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_erf(x);
                  }
             }
 

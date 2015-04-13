@@ -5,7 +5,7 @@
 #include "boys/boys.h"
 #include "eri/shell.h"
 
-int eri_ssss_taylor(struct multishell_pair const P,
+int eri_taylor_ssss(struct multishell_pair const P,
                     struct multishell_pair const Q,
                     double * const restrict integrals,
                     double * const restrict integralwork1,

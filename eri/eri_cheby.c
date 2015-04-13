@@ -6,7 +6,7 @@
 #include "eri/shell.h"
 
 
-int eri_ssss_cheby(struct multishell_pair const P,
+int eri_cheby_ssss(struct multishell_pair const P,
                    struct multishell_pair const Q,
                    double * const restrict integrals,
                    double * const restrict integralwork1,
