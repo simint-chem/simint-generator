@@ -5,10 +5,11 @@ class Quartet:
 
 
 
-  def __init__(self, bra, ket):
+  def __init__(self, bra, ket, m):
     self.am = bra.am + ket.am
     self.bra = bra
     self.ket = ket
+    self.m = m
 
 
 
@@ -21,7 +22,8 @@ class Quartet:
     if isinstance(other, self.__class__):
       return (self.bra == other.bra and 
               self.ket == other.ket and 
-              self.am == other.am)
+              self.am == other.am and
+              self.m == other.m)
     else:
       return False
 
@@ -35,6 +37,9 @@ class Quartet:
       elif self.bra == other.bra:
         if self.ket < other.ket:
           return True
+        elif self.ket == other.ket:
+          if self.m < other.m:
+            return True
 
     return False
 
@@ -48,6 +53,9 @@ class Quartet:
       elif self.bra == other.bra:
         if self.ket > other.ket:
           return True
+        elif self.ket == other.ket:
+          if self.m > other.m:
+            return True
 
     return False
 
@@ -55,3 +63,14 @@ class Quartet:
 
   def __ne__(self, other):
     return not self.__eq__(other)
+
+
+
+
+  def Code_variable(self):
+    return "{}_{}{}{}_{}{}{}_{}{}{}_{}{}{}_{}".format("Q",
+                                                      self.bra.left.ix,  self.bra.left.iy,  self.bra.left.iz,
+                                                      self.bra.right.ix, self.bra.right.iy, self.bra.right.iz,
+                                                      self.ket.left.ix,  self.ket.left.iy,  self.ket.left.iz,
+                                                      self.ket.right.ix, self.ket.right.iy, self.ket.right.iz,
+                                                      self.m)

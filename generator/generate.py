@@ -8,14 +8,9 @@ import argparse
 ###################################
 
 parser = argparse.ArgumentParser()
-parser.add_argument("q",         type=str,                help="AM quartet string")
-#parser.add_argument("--filename", type=str, required=True,                help="Output file name base (no extension)")
-#parser.add_argument("-o",         type=int, required=True,                help="Order of polynomial")
-#parser.add_argument("-s",         type=str, required=False,               help="Starting order list")
-#parser.add_argument("-b",         type=int, required=False, default=1,    help="Number of bins")
-#parser.add_argument("-t",         type=int, required=False, default=200,  help="Number of test points (per bin)")
-#parser.add_argument("-f",         type=str, required=False, default="1",  help="Base factor (ie 1 = base 2, etc)")
-#parser.add_argument("--dps",      type=int, required=False, default=256,  help="Decimal precision/sig figs to use/calculate")
+parser.add_argument("q",          type=str,                               help="AM quartet string (comma separated)")
+#parser.add_argument("--output",   type=str, required=True,                help="Base output directory")
+parser.add_argument("-c",         action='store_true', default=False,     help="Print code lines")
 args = parser.parse_args()
 
 
@@ -26,13 +21,18 @@ for q in inittargets:
   print(q)
 
 
-# list of steps
+###################################################
+# Working backwards
+###################################################
+###################################################
+# 1.) Horizaontal recurrance
+#     ( a+b 0 | c+d  ) -> ( a b | c d )
+###################################################
 hrrlst = tg.Makowski_HRR(inittargets)
-
-# sanity
-tg.SanityCheck(inittargets, hrrlst)
+tg.HRRSanityCheck(inittargets, hrrlst)
 
 # Now print out the main requirements
+# from the HRR step
 solvedtargets = []
 for h in hrrlst:
   solvedtargets.append(h.target)
@@ -55,10 +55,36 @@ for t in topreq:
 
 print()
 print("---------------------------------------------")
-print("Steps: {} steps".format(len(hrrlst)))
+print("Steps: {}".format(len(hrrlst)))
+print("FLOPS: {}".format(2*len(hrrlst)))
 print("---------------------------------------------")
 for h in hrrlst:
   print(h)
 
 print()
 
+if args.c:
+  print("---------------------------------------------")
+  print("HRR Code")
+  print("---------------------------------------------")
+  for h in hrrlst:
+    print(h.Code_line())
+
+
+
+###################################################
+# 2.) Electron Transfer
+#     ( a+b+c+d 0 | 0 0 ) -> ( a+b 0 | c+d 0 )
+###################################################
+
+
+
+###################################################
+# 3.) Initial generation
+#     ( 0 0 | 0 0 ) > ( a+b+c+d 0 | 0 0 )
+###################################################
+
+
+
+
+print()

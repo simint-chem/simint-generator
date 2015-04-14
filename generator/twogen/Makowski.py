@@ -46,11 +46,11 @@ def Makowski_HRR_doublet(t, quartet):
    src2d = Doublet(t, g1, g2)
 
    if t == 'bra':
-     src1q = Quartet(src1d, quartet.ket)
-     src2q = Quartet(src2d, quartet.ket)
+     src1q = Quartet(src1d, quartet.ket, quartet.m)
+     src2q = Quartet(src2d, quartet.ket, quartet.m)
    else:
-     src1q = Quartet(quartet.bra, src1d)
-     src2q = Quartet(quartet.bra, src2d)
+     src1q = Quartet(quartet.bra, src1d, quartet.m)
+     src2q = Quartet(quartet.bra, src2d, quartet.m)
 
    xyz = xyzcomp[i]
 

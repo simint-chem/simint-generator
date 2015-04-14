@@ -27,7 +27,7 @@ def MakeInitialTargetQuartets(amlst):
 
           for l in range(0, nam4):
             ket = Doublet("ket", cur3, cur4)
-            targets.append(Quartet(bra, ket))
+            targets.append(Quartet(bra, ket, 0))
 
             cur4 = cur4.Iterate()
 
@@ -41,12 +41,12 @@ def MakeInitialTargetQuartets(amlst):
 
 
 ##################################################################
-# Sanity checks
+# HRR Sanity checks
+# To be run after all HRR has been done
 # 1.) All requirements are in the list or are in the form (X s|
 # 2.) Everything that is solved for is actually used
 ##################################################################
-
-def SanityCheck(inittargets, hrrlst):
+def HRRSanityCheck(inittargets, hrrlst):
     allreq = [ x for x in inittargets if (x.bra.right.am > 0 or x.ket.right.am > 0) ]
     solvedtargets = []
     for h in hrrlst:
