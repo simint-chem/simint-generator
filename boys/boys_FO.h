@@ -1,6 +1,8 @@
 #ifndef BOYS_FO_H
 #define BOYS_FO_H
 
+#include <math.h>
+
 inline double Boys_F0_FO(double x)
 {
     const double num =
