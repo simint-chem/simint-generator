@@ -3,6 +3,7 @@
 #include <time.h>
 #include <math.h>
 
+#include "vectorization.h"
 #include "liberd/erd_interface.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
@@ -48,6 +49,7 @@ int main(int argc, char ** argv)
     }
 
     const int ntest = 500;
+    srand(time(NULL));
 
     int nshell1 = atoi(argv[1]);
     int nshell2 = atoi(argv[2]);
@@ -62,21 +64,20 @@ int main(int argc, char ** argv)
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     /* Storage of test results */
-    double * res_erf         = ALLOC(nshell1234 * sizeof(double));
-    double * res_split       = ALLOC(nshell1234 * sizeof(double));
-    double * res_taylor      = ALLOC(nshell1234 * sizeof(double));
-    double * res_erf_comb    = ALLOC(nshell1234 * sizeof(double));
-    double * res_taylor_comb = ALLOC(nshell1234 * sizeof(double));
-    double * res_cheby       = ALLOC(nshell1234 * sizeof(double));
-    double * res_liberd      = ALLOC(nshell1234 * sizeof(double));
+    double * res_split           = ALLOC(nshell1234 * sizeof(double));
+    double * res_splitcombined   = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylorcombined  = ALLOC(nshell1234 * sizeof(double));
+    double * res_FOcombined      = ALLOC(nshell1234 * sizeof(double));
 
+    double * res_liberd          = ALLOC(nshell1234 * sizeof(double));
+
+    // for split
     // no need to round each pair
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
-    double * intwork1 = ALLOC(3*worksize * sizeof(double));
-    double * intwork2 = ALLOC(3*worksize * sizeof(double));
+    double * intwork1 = ALLOC(3 * worksize * sizeof(double));
+    double * intwork2 = ALLOC(3 * worksize * sizeof(double));
 
-    srand(time(NULL));
-
+    // allocate gaussian shell memory
     struct gaussian_shell * A = ALLOC(nshell1 * sizeof(struct gaussian_shell));
     struct gaussian_shell * B = ALLOC(nshell2 * sizeof(struct gaussian_shell));
     struct gaussian_shell * C = ALLOC(nshell3 * sizeof(struct gaussian_shell));
@@ -87,13 +88,12 @@ int main(int argc, char ** argv)
     const double max_x = maxR2 * (MAX_EXP*MAX_EXP) / (2.0 * MAX_EXP);
     printf("Maximum parameter to boys: %12.8e\n", max_x);
     //Boys_Init(max_x, 7); // need F0 + 7 for interpolation
-    Boys_Init(1e6, BOYS_GRID_MAXN); // need F0 + 7 for interpolation
-    printf("Boys grid generated\n");
+    Boys_Init(1e6, 10); // need F0 + 7 for interpolation
+    printf("Boys initialized\n");
 
 
-    printf("%17s %17s %17s %17s %17s %17s %17s\n",
-                "res_liberd", "res_erf", "res_split", "res_taylor",
-                "res_erf_comb", "res_taylor_comb", "res_cheby");
+    printf("%22s %22s %22s %22s %22s\n",
+           "liberd", "split", "splitcombined", "taylorcombined", "FOcombined");
 
     for(int n = 0; n < ntest; n++)
     {
@@ -117,12 +117,10 @@ int main(int argc, char ** argv)
         // Actually calculate
         struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
         struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
-        eri_erf_multi_ssss(           P, Q, res_erf,         intwork1, intwork2);
-        eri_erf_split_ssss(           P, Q, res_split,       intwork1, intwork2);
-        eri_erf_combined_ssss(        P, Q, res_erf_comb,    intwork1, intwork2);
-        eri_cheby_ssss(               P, Q, res_cheby,       intwork1, intwork2);
-        eri_taylor_ssss(              P, Q, res_taylor,      intwork1, intwork2);
-        eri_taylorcombined_ssss(      P, Q, res_taylor_comb, intwork1, intwork2);
+        eri_taylorcombined_ssss(  P, Q, res_taylorcombined                      );
+        eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );
+        eri_splitcombined_ssss(   P, Q, res_splitcombined                       );
+        eri_FOcombined_ssss(      P, Q, res_FOcombined                          );
         free_multishell_pair(P);
         free_multishell_pair(Q);
 
@@ -143,9 +141,9 @@ int main(int argc, char ** argv)
 
 
         // print some results
-        printf("%17e %17e %17e %17e %17e %17e %17e\n",
-                    res_liberd[0], res_erf[0], res_split[0], res_taylor[0],
-                    res_erf_comb[0], res_taylor_comb[0], res_cheby[0]);
+        printf("%22e %22e %22e %22e %22e\n",
+                    res_liberd[0], res_split[0], res_splitcombined[0], 
+                    res_taylorcombined[0], res_FOcombined[0]);
 
         // free memory
         for(int i = 0; i < nshell1; i++)
@@ -167,12 +165,10 @@ int main(int argc, char ** argv)
     Boys_Finalize();
 
     FREE(res_liberd);
-    FREE(res_erf);
     FREE(res_split);
-    FREE(res_taylor);
-    FREE(res_erf_comb);
-    FREE(res_taylor_comb);
-    FREE(res_cheby);
+    FREE(res_splitcombined);
+    FREE(res_taylorcombined);
+    FREE(res_FOcombined);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 

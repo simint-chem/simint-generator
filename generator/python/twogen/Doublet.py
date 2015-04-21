@@ -13,7 +13,7 @@ class Doublet:
 
 
 
-  def __str__(self):
+  de __str__(self):
     if self.t == "bra":
       return "( {} {} |".format(str(self.left), str(self.right)) 
     elif self.t == "ket":
@@ -22,15 +22,18 @@ class Doublet:
       raise RuntimeError("Unknown doublet type \"{}\"".format(self.t))
 
 
+  def __hash__(self):
+    return hash((self.left, self.right, self.t))  # am isn't really unique
+
 
   def __eq__(self, other):
-    if isinstance(other, self.__class__):
+    #if isinstance(other, self.__class__):
       return (self.left == other.left and 
               self.right == other.right and 
               self.t == other.t and
               self.am == other.am)
-    else:
-      return False
+    #else:
+    #  return False
 
 
 

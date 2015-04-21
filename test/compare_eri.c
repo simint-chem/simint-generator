@@ -3,11 +3,12 @@
 #include <time.h>
 #include <math.h>
 
-#include "valeev/valeev.h"
+#include "vectorization.h"
 #include "liberd/erd_interface.h"
-
 #include "eri/eri.h"
 #include "boys/boys.h"
+
+#include "valeev/valeev.h"
 
 #define MAX_COORD 0.5
 #define MAX_EXP   50.0
@@ -49,6 +50,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    srand(time(NULL));
     int nshell1 = atoi(argv[1]);
     int nshell2 = atoi(argv[2]);
     int nshell3 = atoi(argv[3]);
@@ -62,22 +64,21 @@ int main(int argc, char ** argv)
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     /* Storage of test results */
-    double * res_erf         = ALLOC(nshell1234 * sizeof(double));
-    double * res_split       = ALLOC(nshell1234 * sizeof(double));
-    double * res_taylor      = ALLOC(nshell1234 * sizeof(double));
-    double * res_erf_comb    = ALLOC(nshell1234 * sizeof(double));
-    double * res_taylor_comb = ALLOC(nshell1234 * sizeof(double));
-    double * res_cheby       = ALLOC(nshell1234 * sizeof(double));
-    double * res_liberd      = ALLOC(nshell1234 * sizeof(double));
+    double * res_split           = ALLOC(nshell1234 * sizeof(double));
+    double * res_splitcombined   = ALLOC(nshell1234 * sizeof(double));
+    double * res_taylorcombined  = ALLOC(nshell1234 * sizeof(double));
+    double * res_FOcombined      = ALLOC(nshell1234 * sizeof(double));
+
+    double * res_liberd          = ALLOC(nshell1234 * sizeof(double));
     double * res_valeev      = ALLOC(nshell1234 * sizeof(double));
 
+    // for split
     // no need to round each pair
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
-    double * intwork1 = ALLOC(3*worksize * sizeof(double));
-    double * intwork2 = ALLOC(3*worksize * sizeof(double));
+    double * intwork1 = ALLOC(3 * worksize * sizeof(double));
+    double * intwork2 = ALLOC(3 * worksize * sizeof(double));
 
-    srand(time(NULL));
-
+    // allocate gaussian shell memory
     struct gaussian_shell * A = ALLOC(nshell1 * sizeof(struct gaussian_shell));
     struct gaussian_shell * B = ALLOC(nshell2 * sizeof(struct gaussian_shell));
     struct gaussian_shell * C = ALLOC(nshell3 * sizeof(struct gaussian_shell));
@@ -94,11 +95,6 @@ int main(int argc, char ** argv)
 
     for(int i = 0; i < nshell4; i++)
         D[i] = random_shell(nprim4);
-
-    // test psss
-    //for(int i = 0; i < nshell1; i++)
-    //    A[i].am = 1;
-    
 
     // normalize the shells
     normalize_gaussian_shells(nshell1, A);
@@ -118,12 +114,10 @@ int main(int argc, char ** argv)
     // Actually calculate
     struct multishell_pair P = create_ss_multishell_pair(nshell1, A, nshell2, B);
     struct multishell_pair Q = create_ss_multishell_pair(nshell3, C, nshell4, D);
-    eri_erf_multi_ssss(          P, Q, res_erf,         intwork1, intwork2);
-    eri_erf_split_ssss(          P, Q, res_split,       intwork1, intwork2);
-    eri_erf_combined_ssss(       P, Q, res_erf_comb,    intwork1, intwork2);
-    eri_cheby_ssss(              P, Q, res_cheby,       intwork1, intwork2);
-    eri_taylor_ssss(             P, Q, res_taylor,      intwork1, intwork2);
-    eri_taylorcombined_ssss(     P, Q, res_taylor_comb, intwork1, intwork2);
+    eri_taylorcombined_ssss(  P, Q, res_taylorcombined                      );
+    eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );
+    eri_splitcombined_ssss(   P, Q, res_splitcombined                       );
+    eri_FOcombined_ssss(      P, Q, res_FOcombined                          );
     free_multishell_pair(P);
     free_multishell_pair(Q);
 
@@ -189,29 +183,27 @@ int main(int argc, char ** argv)
     ERD_Finalize();
 
 
-    printf("%17s  %17s  %17s  %17s  %17s  %17s  %17s\n",
-                        "diff_liberd", "diff_erf", "diff_split", "diff_taylor",
-                        "diff_erf_comb", "diff_taylor_comb", "diff_cheby");
+    printf("%22s %22s %22s %22s %22s %22s\n",
+           "liberd", "split", "splitcombined", "taylorcombined", "FOcombined", "valeev");
+
     for(int i = 0; i < nshell1234; i++)
     {
         const double v = res_valeev[i];
 
-        double diff_liberd      = fabs(res_liberd[i]      - v);
-        double diff_erf         = fabs(res_erf[i]         - v);
-        double diff_split       = fabs(res_split[i]       - v);
-        double diff_taylor      = fabs(res_taylor[i]      - v);
-        double diff_erf_comb    = fabs(res_erf_comb[i]    - v);
-        double diff_cheby       = fabs(res_cheby[i]       - v);
-        double diff_taylor_comb = fabs(res_taylor_comb[i] - v);
+        double diff_liberd         = fabs(res_liberd[i]         - v);
+        double diff_split          = fabs(res_split[i]          - v);
+        double diff_splitcombined  = fabs(res_splitcombined[i]  - v);
+        double diff_taylorcombined = fabs(res_taylorcombined[i] - v);
+        double diff_FOcombined     = fabs(res_FOcombined[i]     - v);
 
-        printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
-                                  res_liberd[i], res_erf[i], res_split[i], res_taylor[i],
-                                  res_erf_comb[i], res_taylor_comb[i], res_cheby[i],
+        printf("%22.4e  %22.4e  %22.4e  %22.4e  %22.4e  %22.4e\n",
+                                  res_liberd[i], res_split[i], res_splitcombined[i],
+                                  res_taylorcombined[i], res_FOcombined[i],
                                   res_valeev[i]);
 
-        printf("%17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e  %17.4e\n",
-                                  diff_liberd, diff_erf, diff_split, diff_taylor,
-                                  diff_erf_comb, diff_taylor_comb, diff_cheby);
+        printf("%22.4e  %22.4e  %22.4e  %22.4e  %22.4e\n",
+                                  diff_liberd, diff_split, diff_splitcombined,
+                                  diff_taylorcombined, diff_FOcombined);
 
         printf("\n");
     }
@@ -230,12 +222,10 @@ int main(int argc, char ** argv)
 
     FREE(res_valeev);
     FREE(res_liberd);
-    FREE(res_erf);
     FREE(res_split);
-    FREE(res_taylor);
-    FREE(res_erf_comb);
-    FREE(res_taylor_comb);
-    FREE(res_cheby);
+    FREE(res_splitcombined);
+    FREE(res_taylorcombined);
+    FREE(res_FOcombined);
     FREE(A); FREE(B); FREE(C); FREE(D);
     FREE(intwork1); FREE(intwork2);
 

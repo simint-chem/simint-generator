@@ -1,15 +1,14 @@
 #include <math.h>
 #include <string.h> // for memset
 
+#include "vectorization.h"
 #include "constants.h"
-#include "boys/boys.h"
 #include "eri/shell.h"
+#include "boys/boys_FO.h"
 
-int eri_taylor_ssss(struct multishell_pair const P,
-                    struct multishell_pair const Q,
-                    double * const restrict integrals,
-                    double * const restrict integralwork1,
-                    double * const restrict integralwork2)
+int eri_FOcombined_ssss(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict integrals)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);
@@ -23,14 +22,14 @@ int eri_taylor_ssss(struct multishell_pair const P,
     ASSUME_ALIGN(Q.prefac);
 
     ASSUME_ALIGN(integrals);
-    ASSUME_ALIGN(integralwork1);
-    ASSUME_ALIGN(integralwork2);
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
+    memset(integrals, 0, nshell1234*sizeof(double));
+
     int ab, cd;
     int i, j;
-    int idx = 0;
+    int nint = 0;
 
     for(ab = 0; ab < P.nshell12; ++ab)
     {
@@ -63,39 +62,18 @@ int eri_taylor_ssss(struct multishell_pair const P,
                     const double PQ_z = P.z[i] - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
-                    // store the paremeter to the boys function in integralwork1
-                    integralwork1[idx] = R2 * PQalpha_mul/PQalpha_sum;
-
-                    // store the prefactors in integralwork2
-                    integralwork2[idx] = pfac * P.prefac[i] * Q.prefac[j];
-
-                    ++idx;
+                    // The paremeter to the boys function
+                    const double x = R2 * PQalpha_mul/PQalpha_sum;
+                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_FO(x);
                  }
             }
+
+            ++nint;
+
         }
-    }
-
-    // rip through the integral work arrays and store result back in integralwork1
-    // This loop that should be heavily vectorized
-    int nint = 0;
-    for(i = 0; i < idx; ++i)
-        integralwork1[i] = integralwork2[i] * Boys_F0_taylor(integralwork1[i]);
-
-    // now sum them, forming the contracted integrals
-    memset(integrals, 0, nshell1234*sizeof(double));
-    idx = 0;
-    for(ab = 0; ab < P.nshell12; ++ab)
-    for(cd = 0; cd < Q.nshell12; ++cd)
-    {
-        const int nprim1234 = P.nprim12[ab] * Q.nprim12[cd];
-        for(i = 0; i < nprim1234; ++i)
-        {
-            integrals[nint] += integralwork1[idx];
-            ++idx;
-        }
-
-        nint++;
     }
 
     return nshell1234;
 }
+
+

@@ -1,15 +1,16 @@
 #include <math.h>
 #include <string.h> // for memset
 
+#include "vectorization.h"
 #include "constants.h"
-#include "boys/boys.h"
 #include "eri/shell.h"
+#include "boys/boys_split.h"
 
-int eri_erf_split_ssss(struct multishell_pair const P,
-                       struct multishell_pair const Q,
-                       double * const restrict integrals,
-                       double * const integralwork1,
-                       double * const integralwork2)
+int eri_split_ssss(struct multishell_pair const P,
+                   struct multishell_pair const Q,
+                   double * const restrict integrals,
+                   double * const integralwork1,
+                   double * const integralwork2)
 {
     ASSUME_ALIGN(P.x);
     ASSUME_ALIGN(P.y);

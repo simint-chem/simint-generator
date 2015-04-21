@@ -16,16 +16,15 @@ class HRRStep:
     return "{} = {} + {}{}".format(str(self.target), str(self.src1), str(self.xyz), str(self.src2))
 
 
-
   def __eq__(self, other):
-    if isinstance(other, self.__class__):
+    #if isinstance(other, self.__class__):
       return (self.target == other.target and 
               self.src1 == other.src1 and 
               self.src2 == other.src2 and
               self.xyz == other.xyz and
               self.t == other.t)
-    else:
-      return False
+    #else:
+    #  return False
 
 
 

@@ -18,14 +18,18 @@ class Quartet:
                                       str(self.ket.left), str(self.ket.right))
 
 
+  def __hash__(self):
+    return hash((self.bra, self.ket, self.m)) # am is not really unique
+
+
   def __eq__(self, other):
-    if isinstance(other, self.__class__):
+    #if isinstance(other, self.__class__):
       return (self.bra == other.bra and 
               self.ket == other.ket and 
               self.am == other.am and
               self.m == other.m)
-    else:
-      return False
+    #else:
+    #  return False
 
 
   def __lt__(self, other):

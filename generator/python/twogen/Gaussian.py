@@ -20,15 +20,18 @@ class Gaussian:
     return "{}_{}{}{}".format(amchar[self.am], self.ix, self.iy, self.iz)
 
 
+  def __hash__(self):
+    return hash((self.ix, self.iy, self.iz)) # am is not really unique
+
     
   def __eq__(self, other):
-    if isinstance(other, self.__class__):
+    #if isinstance(other, self.__class__):
       return (self.am == other.am and 
               self.ix == other.ix and 
               self.iy == other.iy and
               self.iz == other.iz)
-    else:
-      return False
+    #else:
+    #  return False
 
 
 

@@ -6,15 +6,21 @@
 #include "constants.h"
 #include "valeev/valeev.h"
 #include "boys/boys.h"
+#include "boys/boys_split.h"
+#include "boys/boys_FO.h"
 
-#define MAXN 0
+#define MAXN 2
 
 int main(int argc, char ** argv)
 {
+    int nval = atoi(argv[1]);
+    double maxx = atof(argv[2]);
 
-    double maxx = atof(argv[1]); 
-
-    //const double kfac = F0_KFAC * ONESIX_OVER_SQRT_PI;
+    if(nval > MAXN)
+    {
+        printf("\nError - N value too high!\n");
+        return 1;
+    }
 
     Valeev_Init();
     Boys_Init(maxx, MAXN+7);
@@ -23,51 +29,47 @@ int main(int argc, char ** argv)
     //double rmax = RAND_MAX;
 
     double maxerr_taylor = 0.0;
-    double maxerr_cheby = 0.0;
     double maxerr_FO = 0.0;
-    double maxerr_FO2 = 0.0;
 
-    double my_taylor = 0.0;
-    double my_cheby = 0.0;
-    double my_FO = 0.0;
-    double my_FO2 = 0.0;
-    double valeev = 0.0;
-    
+    double maxrelerr_taylor = 0.0;
+    double maxrelerr_FO = 0.0;
 
-    for(double x = 0.0; x < maxx; x += 0.01)
+    double valeev[MAXN+1];
+    double my_taylor[MAXN+1];
+    double my_FO[MAXN+1];
+
+    for(double x = 0.0; x < maxx; x += 0.0001)
     {
-        Valeev_F(&valeev, MAXN, x);
+        Valeev_F(valeev, nval, x);
+        Boys_F_taylor(my_taylor, nval, x);
+        Boys_F_FO(my_FO, nval, x);
 
-        my_taylor = Boys_F0_taylor(x);
-        my_cheby = Boys_F0_cheby(x);
-        my_FO = Boys_F0_FO(x);
-        my_FO2 = Boys_F0_FO2(x);
+        double diff_taylor = fabs(my_taylor[nval] - valeev[nval]);
+        double diff_FO     = fabs(my_FO[nval]     - valeev[nval]);
+        double rel_taylor = diff_taylor / valeev[nval];
+        double rel_FO = diff_FO / valeev[nval];
 
-        for(int n = 0; n <= MAXN; n++)
-        {
-            double diff_taylor = fabs(my_taylor - valeev);
-            double diff_cheby  = fabs(my_cheby  - valeev);
-            double diff_FO     = fabs(my_FO     - valeev);
-            double diff_FO2    = fabs(my_FO2    - valeev);
+        if(diff_FO > maxerr_FO)
+            maxerr_FO = diff_FO;
+        if(diff_taylor > maxerr_taylor)
+            maxerr_taylor = diff_taylor;
 
-            if(diff_taylor > maxerr_taylor)
-                maxerr_taylor = diff_taylor;
-            if(diff_cheby > maxerr_cheby)
-                maxerr_cheby = diff_cheby;
-            if(diff_FO > maxerr_FO)
-                maxerr_FO = diff_FO;
-            if(diff_FO2 > maxerr_FO2)
-                maxerr_FO2 = diff_FO2;
-            //printf("%3d %12.8f     %12.8e  %12.8e  %12.8e     %12.8e  %12.8e\n", n, x, my_taylor, my_cheby, valeev, diff_taylor, diff_cheby);
-        }
-        //printf("----------------------------\n");
+        if(rel_taylor > maxrelerr_taylor)
+            maxrelerr_taylor = rel_taylor; 
+        if(rel_FO > maxrelerr_FO)
+            maxrelerr_FO = rel_FO; 
+
+        //printf("%12.8f     %25.17e  %25.17e  %25.17e\n", x, valeev[nval], my_taylor[nval], my_FO[nval]);
     }
 
     printf("\n");
-    printf("***Max error - taylor: %12.8e\n", maxerr_taylor);
-    printf("***Max error -  cheby: %12.8e\n", maxerr_cheby);
-    printf("***Max error -     FO: %12.8e\n", maxerr_FO);
-    printf("***Max error -    FO2: %12.8e\n", maxerr_FO2);
+    printf("***Max abserr - taylor: %12.8e\n", maxerr_taylor);
+    printf("***Max relerr - taylor: %12.7e\n", maxrelerr_taylor);
+    printf("\n");
+    printf("***Max abserr -     FO: %12.8e\n", maxerr_FO);
+    printf("***Max relerr -     FO: %12.8e\n", maxrelerr_FO);
+    printf("\n");
+
     printf("\n");
 
     Valeev_Finalize();

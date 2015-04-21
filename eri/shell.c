@@ -1,7 +1,7 @@
 #include <math.h>
 
-#include "constants.h"
 #include "vectorization.h"
+#include "constants.h"
 #include "eri/shell.h"
 #include "eri/shell_constants.h"
 
