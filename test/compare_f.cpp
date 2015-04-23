@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
 #include "constants.h"
@@ -25,9 +23,6 @@ int main(int argc, char ** argv)
 
     Valeev_Init();
     Boys_Init(maxx, MAXN+7);
-
-    srand(time(NULL));
-    //double rmax = RAND_MAX;
 
     double maxerr_taylor = 0.0;
     double maxerr_FO = 0.0;
