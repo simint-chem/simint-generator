@@ -8,8 +8,9 @@
 
 #include "valeev.hpp"
 
+#ifdef TESTS_USE_LIBINT2
 #include <boys.h> // this is from libint
-
+#endif
 
 #define MAXN 2
 
