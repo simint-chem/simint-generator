@@ -1,6 +1,10 @@
 #ifndef BOYS_LONG_H
 #define BOYS_LONG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <math.h>
 #include "boys/boys_longfac.h"
 
@@ -22,5 +26,10 @@ inline void Boys_F_long(double * const restrict F, int n, double x)
         x2 *= x1;
     }
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

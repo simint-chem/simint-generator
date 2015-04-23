@@ -1,6 +1,10 @@
 #ifndef SIMINT_SHELL_H
 #define SIMINT_SHELL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct gaussian_shell
 {
     int am;
@@ -90,6 +94,10 @@ create_ss_shell_pair(struct gaussian_shell const A,
 struct multishell_pair
 create_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                           int nb, struct gaussian_shell const * const restrict B);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

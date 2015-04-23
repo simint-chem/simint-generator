@@ -5,6 +5,13 @@ macro(ADDTESTS TNAME TFILES)
 
   target_link_libraries(${TNAME} simint_eri simint_boys
                                  ${LIBERD_LIBRARY} ${LIBINT2_LIBRARY})
+                                 
+  if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+    target_link_libraries(${TNAME} ifcore)
+  else()
+    target_link_libraries(${TNAME} gfortran)
+  endif()
+    
 
   # Add extra libraries for native MIC
   if(SIMINT_MIC)
@@ -31,7 +38,9 @@ list(APPEND TESTS_CXX_FLAGS "-ggdb")
 list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397")
+  list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397 -restrict")
+else()
+  list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397 -Drestrict=__restrict__")
 endif()
 
 

@@ -1,6 +1,10 @@
 #ifndef BOYS_TAYLOR_H
 #define BOYS_TAYLOR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vectorization.h"
 #include "boys/boys_taylorgrid.h"
 
@@ -90,5 +94,9 @@ inline void Boys_F_taylor(double * const restrict F, int n, double x)
     }
 }
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -7,6 +7,8 @@
 // 2 * pi**(2.5) * sqrt(pi) / 16
 #define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683
 
+extern "C" {
+
 void erd__gener_eri_batch_(const int *imax, const int *zmax, const int *nalpha, const int *ncoeff,
                            const int *ncsum, const int *ncgto1, const int *ncgto2,
                            const int *ncgto3, const int *ncgto4, const int *npgto1,
@@ -27,7 +29,7 @@ void erd__memory_eri_batch_(const int *nalpha, const int *ncoeff,
                             const double *z2, const double *x3, const double *y3, const double *z3, const double *x4,
                             const double *y4, const double *z4, const double *alpha, const double *cc, const int *spheric,
                             int *imin, int *iopt, int *zmin, int *zopt);
-
+}
 
 double * dscratch;
 int * iscratch;
@@ -98,8 +100,8 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             maxam = D[i].am;
     }
   
-    cc    = malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
-    alpha = malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
+    cc    = (double *)malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
+    alpha = (double *)malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
     
     memcpy(cc                           , A[sh1].coef, A[sh1].nprim * sizeof(double)); 
     memcpy(cc + npgto1                  , B[sh2].coef, B[sh2].nprim * sizeof(double)); 
@@ -137,8 +139,8 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
                            alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
                              
 
-    iscratch = malloc(iopt * sizeof(int)); 
-    dscratch = malloc(zopt * sizeof(double)); 
+    iscratch = (int *)malloc(iopt * sizeof(int)); 
+    dscratch = (double *)malloc(zopt * sizeof(double)); 
 
     i_buffer_size = iopt;
     d_buffer_size = zopt;

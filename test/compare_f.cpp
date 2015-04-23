@@ -4,10 +4,11 @@
 #include <math.h>
 
 #include "constants.h"
-#include "valeev/valeev.h"
 #include "boys/boys.h"
 #include "boys/boys_split.h"
 #include "boys/boys_FO.h"
+
+#include "valeev.hpp"
 
 #define MAXN 2
 

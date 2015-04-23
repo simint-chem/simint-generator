@@ -48,6 +48,10 @@ with open(args.filename + ".h", 'w') as f:
   f.write("#ifndef {}_H\n".format(args.filename.upper()))
   f.write("#define {}_H\n".format(args.filename.upper()))
   f.write("\n")
+  f.write("#ifdef __cplusplus\n")
+  f.write("extern \"C\" {\n");
+  f.write("#endif\n")
+  f.write("\n")
 
   f.write("#define BOYS_FO_MAXN {}\n".format(len(fdat)-1))
   f.write("\n")
@@ -99,5 +103,9 @@ with open(args.filename + ".h", 'w') as f:
   f.write("    const double frac = num / den;\n")
   f.write("    return sqrt(frac);\n".format(dat['v']))
   f.write("}\n")
+  f.write("\n")
+  f.write("#ifdef __cplusplus\n")
+  f.write("}\n");
+  f.write("#endif\n")
   f.write("\n")
   f.write("#endif")

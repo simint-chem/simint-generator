@@ -9,7 +9,7 @@ void Valeev_Init(void);
 void Valeev_Finalize(void);
 
 // As original as can be
-inline void Valeev_F(double *F, int n, double x);
+void Valeev_F(double *F, int n, double x);
 
 double Valeev_eri(int l1, int m1, int n1, double alpha1,
                   const double* A, int l2, int m2, int n2,

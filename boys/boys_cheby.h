@@ -1,6 +1,10 @@
 #ifndef BOYS_CHEBY_H
 #define BOYS_CHEBY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "boys/boys_chebygrid.h"
 
 //extern double const * const restrict * const restrict boys_chebygrid_F0; // size [BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1]
@@ -30,5 +34,9 @@ inline double Boys_F0_cheby(double x)
            + x * ( boys_chebygrid_F0[idx][14]
            ))))))))))))));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -13,6 +13,10 @@ Dat files:
 #ifndef BOYS_FO_H
 #define BOYS_FO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define BOYS_FO_MAXN 2
 
 inline void Boys_F_FO(double * const restrict F, int n, double x)
@@ -176,5 +180,9 @@ inline double Boys_F0_FO(double x)
     const double frac = num / den;
     return sqrt(frac);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

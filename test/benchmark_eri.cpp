@@ -4,9 +4,10 @@
 #include <math.h>
 
 #include "vectorization.h"
-#include "liberd/erd_interface.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
+
+#include "erd_interface.hpp"
 
 #define MAX_COORD 0.5
 #define MAX_EXP   50.0
@@ -64,24 +65,24 @@ int main(int argc, char ** argv)
     int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     /* Storage of test results */
-    double * res_split           = ALLOC(nshell1234 * sizeof(double));
-    double * res_splitcombined   = ALLOC(nshell1234 * sizeof(double));
-    double * res_taylorcombined  = ALLOC(nshell1234 * sizeof(double));
-    double * res_FOcombined      = ALLOC(nshell1234 * sizeof(double));
+    double * res_split           = (double *)ALLOC(nshell1234 * sizeof(double));
+    double * res_splitcombined   = (double *)ALLOC(nshell1234 * sizeof(double));
+    double * res_taylorcombined  = (double *)ALLOC(nshell1234 * sizeof(double));
+    double * res_FOcombined      = (double *)ALLOC(nshell1234 * sizeof(double));
 
-    double * res_liberd          = ALLOC(nshell1234 * sizeof(double));
+    double * res_liberd          = (double *)ALLOC(nshell1234 * sizeof(double));
 
     // for split
     // no need to round each pair
     int worksize = SIMD_ROUND_DBL(nshell1*nprim1 * nshell2*nprim2 * nshell3*nprim3 * nshell4*nprim4);
-    double * intwork1 = ALLOC(3 * worksize * sizeof(double));
-    double * intwork2 = ALLOC(3 * worksize * sizeof(double));
+    double * intwork1 = (double *)ALLOC(3 * worksize * sizeof(double));
+    double * intwork2 = (double *)ALLOC(3 * worksize * sizeof(double));
 
     // allocate gaussian shell memory
-    struct gaussian_shell * A = ALLOC(nshell1 * sizeof(struct gaussian_shell));
-    struct gaussian_shell * B = ALLOC(nshell2 * sizeof(struct gaussian_shell));
-    struct gaussian_shell * C = ALLOC(nshell3 * sizeof(struct gaussian_shell));
-    struct gaussian_shell * D = ALLOC(nshell4 * sizeof(struct gaussian_shell));
+    struct gaussian_shell * A = (struct gaussian_shell *)ALLOC(nshell1 * sizeof(struct gaussian_shell));
+    struct gaussian_shell * B = (struct gaussian_shell *)ALLOC(nshell2 * sizeof(struct gaussian_shell));
+    struct gaussian_shell * C = (struct gaussian_shell *)ALLOC(nshell3 * sizeof(struct gaussian_shell));
+    struct gaussian_shell * D = (struct gaussian_shell *)ALLOC(nshell4 * sizeof(struct gaussian_shell));
 
     // find the maximum possible x value for the boys function
     const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
