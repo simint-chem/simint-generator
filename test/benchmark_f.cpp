@@ -108,8 +108,11 @@ int main(int argc, char ** argv)
     FREE(res_split);
     FREE(res_taylor);
     FREE(res_FO);
+
+    #ifdef TESTS_USE_LIBINT2
     FREE(res_libint_cheby);
     FREE(res_libint_taylor);
+    #endif
 
     return 0;
 }
