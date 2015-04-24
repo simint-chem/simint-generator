@@ -95,5 +95,6 @@ set_target_properties(compare_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 
 ADDTESTS(compare_f compare_f.cpp)
+ADDTESTS(benchmark_f benchmark_f.cpp)
 ADDTESTS(compare_eri compare_eri.cpp)
 ADDTESTS(benchmark_eri benchmark_eri.cpp)
