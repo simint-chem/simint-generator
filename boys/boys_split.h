@@ -13,8 +13,6 @@ extern "C" {
 /////////////////////////
 inline double Boys_F0_split(double x)
 {
-    ASSUME_ALIGN(boys_grid);
-
     if(x < BOYS_SHORTGRID_MAXX)
         return Boys_F0_taylor(x);
     else

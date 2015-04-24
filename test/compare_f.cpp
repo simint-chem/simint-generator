@@ -28,14 +28,14 @@ int main(int argc, char ** argv)
     Valeev_Init();
     Boys_Init(maxx, MAXN+7);
 
-    double maxerr_taylor = 0.0;
+    double maxerr_split = 0.0;
     double maxerr_FO = 0.0;
 
-    double maxrelerr_taylor = 0.0;
+    double maxrelerr_split = 0.0;
     double maxrelerr_FO = 0.0;
 
     double valeev[MAXN+1];
-    double my_taylor[MAXN+1];
+    double my_split[MAXN+1];
     double my_FO[MAXN+1];
 
     #ifdef TESTS_USE_LIBINT2
@@ -54,21 +54,21 @@ int main(int argc, char ** argv)
     for(double x = 0.0; x < maxx; x += 0.00005)
     {
         Valeev_F(valeev, nval, x);
-        Boys_F_taylor(my_taylor, nval, x);
+        Boys_F_split(my_split, nval, x);
         Boys_F_FO(my_FO, nval, x);
 
-        double diff_taylor = fabs(my_taylor[nval] - valeev[nval]);
+        double diff_split = fabs(my_split[nval] - valeev[nval]);
         double diff_FO     = fabs(my_FO[nval]     - valeev[nval]);
-        double rel_taylor = diff_taylor / valeev[nval];
+        double rel_split = diff_split / valeev[nval];
         double rel_FO = diff_FO / valeev[nval];
 
         if(diff_FO > maxerr_FO)
             maxerr_FO = diff_FO;
-        if(diff_taylor > maxerr_taylor)
-            maxerr_taylor = diff_taylor;
+        if(diff_split > maxerr_split)
+            maxerr_split = diff_split;
 
-        if(rel_taylor > maxrelerr_taylor)
-            maxrelerr_taylor = rel_taylor; 
+        if(rel_split > maxrelerr_split)
+            maxrelerr_split = rel_split; 
         if(rel_FO > maxrelerr_FO)
             maxrelerr_FO = rel_FO; 
 
@@ -97,8 +97,8 @@ int main(int argc, char ** argv)
     }
 
     printf("\n");
-    printf("***Max abserr - taylor: %12.8e\n", maxerr_taylor);
-    printf("***Max relerr - taylor: %12.7e\n", maxrelerr_taylor);
+    printf("***Max abserr - split: %12.8e\n", maxerr_split);
+    printf("***Max relerr - split: %12.7e\n", maxrelerr_split);
     printf("\n");
     printf("***Max abserr -     FO: %12.8e\n", maxerr_FO);
     printf("***Max relerr -     FO: %12.8e\n", maxrelerr_FO);

@@ -1,17 +1,9 @@
-// in Boys_taylorgrid.c
-void Boys_taylorgrid_Init(double max_x, int max_n);
-void Boys_taylorgrid_Finalize(void);
-
-
-
 void Boys_Init(double max_x, int max_n)
 {
-    Boys_taylorgrid_Init(max_x, max_n);
 }
 
 void Boys_Finalize(void)
 {
-    Boys_taylorgrid_Finalize();
 }
 
 

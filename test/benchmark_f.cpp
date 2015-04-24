@@ -13,7 +13,7 @@
 #define MAXN 2
 #define NTEST 500
 
-#define MAXX 1e5
+#define MAXX 1e12
 
 int main(int argc, char ** argv)
 {
@@ -31,7 +31,6 @@ int main(int argc, char ** argv)
     double * xval = (double *)ALLOC(ncount*sizeof(double));
 
     double * res_split = (double *)ALLOC(ncount*sizeof(double));
-    double * res_taylor = (double *)ALLOC(ncount*sizeof(double));
     double * res_FO = (double *)ALLOC(ncount*sizeof(double));
 
     #ifdef TESTS_USE_LIBINT2
@@ -52,7 +51,6 @@ int main(int argc, char ** argv)
         for(int j = 0; j < ncount; j++)
             xval[j] = dist(gen);
 
-        #pragma simd
         for(int j = 0; j < ncount; j++)
         {
             double tmp[MAXN+1];
@@ -60,15 +58,6 @@ int main(int argc, char ** argv)
             res_split[j] = tmp[nval]; 
         }
 
-        #pragma simd
-        for(int j = 0; j < ncount; j++)
-        {
-            double tmp[MAXN+1];
-            Boys_F_taylor(tmp, nval, xval[j]);
-            res_taylor[j] = tmp[nval]; 
-        }
-
-        #pragma simd
         for(int j = 0; j < ncount; j++)
         {
             double tmp[MAXN+1];
@@ -92,7 +81,7 @@ int main(int argc, char ** argv)
         }
         #endif
 
-        printf("%8.4e %8.4e %8.4e", res_split[0], res_taylor[0], res_FO[0]);
+        printf("%8.4e %8.4e", res_split[0], res_FO[0]);
 
         #ifdef TESTS_USE_LIBINT2
         printf(" %8.4e %8.4e", res_libint_cheby[0], res_libint_taylor[0]);
@@ -106,7 +95,6 @@ int main(int argc, char ** argv)
     Boys_Finalize();
 
     FREE(res_split);
-    FREE(res_taylor);
     FREE(res_FO);
 
     #ifdef TESTS_USE_LIBINT2

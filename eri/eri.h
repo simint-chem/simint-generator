@@ -17,10 +17,6 @@ int eri_splitcombined_ssss(struct multishell_pair const P,
                            struct multishell_pair const Q,
                            double * const restrict integrals);
 
-int eri_taylorcombined_ssss(struct multishell_pair const P,
-                            struct multishell_pair const Q,
-                            double * const restrict integrals);
-
 int eri_FOcombined_ssss(struct multishell_pair const P,
                         struct multishell_pair const Q,
                         double * const restrict integrals);

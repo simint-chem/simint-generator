@@ -26,7 +26,6 @@ int main(int argc, char ** argv)
     /* Storage of test results */
     double * res_split           = (double *)ALLOC(nshell1234 * sizeof(double));
     double * res_splitcombined   = (double *)ALLOC(nshell1234 * sizeof(double));
-    double * res_taylorcombined  = (double *)ALLOC(nshell1234 * sizeof(double));
     double * res_FOcombined      = (double *)ALLOC(nshell1234 * sizeof(double));
 
     double * res_liberd          = (double *)ALLOC(nshell1234 * sizeof(double));
@@ -45,12 +44,11 @@ int main(int argc, char ** argv)
     // find the maximum possible x value for the boys function
     const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
     const double max_x = maxR2 * (MAX_EXP*MAX_EXP) / (2.0 * MAX_EXP);
-    printf("Maximum parameter to boys: %12.8e\n", max_x);
     Boys_Init(max_x, 7); // need F0 + 7 for interpolation
 
 
-    printf("%22s %22s %22s %22s %22s\n",
-           "liberd", "split", "splitcombined", "taylorcombined", "FOcombined");
+    printf("%22s %22s %22s %22s\n",
+           "liberd", "split", "splitcombined", "FOcombined");
 
     for(int n = 0; n < NTEST; n++)
     {
@@ -62,7 +60,6 @@ int main(int argc, char ** argv)
         struct multishell_pair Q = create_ss_multishell_pair(nshell[2], gshells[2].data(),
                                                              nshell[3], gshells[3].data());
 
-        eri_taylorcombined_ssss(  P, Q, res_taylorcombined                      );
         eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );
         eri_splitcombined_ssss(   P, Q, res_splitcombined                       );
         eri_FOcombined_ssss(      P, Q, res_FOcombined                          );
@@ -73,9 +70,9 @@ int main(int argc, char ** argv)
         ERDIntegrals(gshells, res_liberd);
 
         // print some results
-        printf("%22e %22e %22e %22e %22e\n",
+        printf("%22e %22e %22e %22e\n",
                     res_liberd[0], res_split[0], res_splitcombined[0], 
-                    res_taylorcombined[0], res_FOcombined[0]);
+                    res_FOcombined[0]);
 
         // free memory
         FreeRandomQuartets(gshells);
@@ -88,7 +85,6 @@ int main(int argc, char ** argv)
     FREE(res_liberd);
     FREE(res_split);
     FREE(res_splitcombined);
-    FREE(res_taylorcombined);
     FREE(res_FOcombined);
     FREE(intwork1); FREE(intwork2);
 

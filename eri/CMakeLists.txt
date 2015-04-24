@@ -3,7 +3,6 @@ add_library(simint_eri STATIC
                               shell_constants.c
                               eri_split.c
                               eri_splitcombined.c
-                              eri_taylorcombined.c
                               eri_FOcombined.c
            )
 
