@@ -43,6 +43,7 @@ message(STATUS "     Simint C_FLAGS: ${SIMINT_C_FLAGS}")
 
 
 # Add the subdirectories with the libraries test executables
+add_subdirectory(generator)
 add_subdirectory(boys)
 add_subdirectory(eri)
 add_subdirectory(test)
