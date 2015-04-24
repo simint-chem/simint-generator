@@ -62,10 +62,10 @@ void HRRLoop(HRRList & hrrlist,
 int main(void)
 {
     // generate initial targets
-    QuartetSet targets = GenerateInitialTargets({0,2,0,0});
+    QuartetSet inittargets = GenerateInitialTargets({0,0,0,1});
 
-    cout << "Initial targets: " << targets.size() << "\n";
-    for(auto & it : targets)
+    cout << "Initial targets: " << inittargets.size() << "\n";
+    for(auto & it : inittargets)
         cout << "    " << it << "\n";
     cout << "\n";
 
@@ -76,31 +76,85 @@ int main(void)
     HRRList hrrlist;
 
     // bras
+    QuartetSet targets = inittargets;
+    PruneRight(targets, DoubletType::BRA);
+
+    cout << "BRA Initial targets: " << targets.size() << "\n";
+    for(auto & it : targets)
+        cout << "    " << it << "\n";
+    cout << "\n";
+
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::BRA, hrralgo);
 
+
+
     // now do kets
-    // targets are what has been "solved" by the bra step, pruned on the ket side
-    targets = solvedquartets;
+    // targets are src1 and src2 of hrrlist, pruned on the ket side
+    // and include any init targets that weren't solved
+    targets.clear();
+    for(const auto & it : hrrlist)
+    {
+        if(solvedquartets.count(it.src1) == 0)
+            targets.insert(it.src1);
+        if(solvedquartets.count(it.src2) == 0)
+            targets.insert(it.src2);
+    }
+    
+    if(targets.size() == 0)
+        targets = inittargets; // might be some there? ie  ( ss | ps )
+
     PruneRight(targets, DoubletType::KET);
+
+
+    cout << "KET Initial targets: " << targets.size() << "\n";
+    for(auto & it : targets)
+        cout << "    " << it << "\n";
+    cout << "\n";
+
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::KET, hrralgo);
+
+    // find top-level requirements
+    // these are src1 and src2 that are not solved
+    QuartetSet topreq;
+
+    for(const auto & it : hrrlist)
+    {
+        if(solvedquartets.count(it.src1) == 0)
+            topreq.insert(it.src1);
+        if(solvedquartets.count(it.src2) == 0)
+            topreq.insert(it.src2);
+    }
+
+
+
+    // reverse
+    std::reverse(hrrlist.begin(), hrrlist.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
     cout << "HRR step done. Solution is " << hrrlist.size() << " steps\n";
-
-    // reverse
-    std::reverse(hrrlist.begin(), hrrlist.end());
     cout << "--------------------------------------------------------------------------------\n";
     for(auto & it : hrrlist)
         cout << it << "\n";
+
+    /*
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
     cout << " CODE\n";
     cout << "--------------------------------------------------------------------------------\n";
     for(auto & it : hrrlist)
         cout << it.code_line() << "\n";
-    cout << "--------------------------------------------------------------------------------\n";
+    */
 
+    cout << "\n\n";
+    cout << "--------------------------------------------------------------------------------\n";
+    cout << " TOP LEVEL REQ\n";
+    cout << "--------------------------------------------------------------------------------\n";
+    for(auto & it : topreq)
+        cout << "    " << it << "\n"; 
+
+    
+    cout << "\n\n";
     
 
     return 0;
