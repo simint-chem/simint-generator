@@ -74,9 +74,9 @@ void allocate_shell_pair(struct gaussian_shell const A,
     const int size = prim_size * sizeof(double);
 
     // allocate one large space
-    double * mem = ALLOC(size * 8);   // 8 = x, y, z, PA_x, PA_y, PA_z, alpha, prefac
+    double * mem = ALLOC(size * 8);
     P->x      = mem;
-    P->y      = mem + prim_size;
+    P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
     P->PA_x   = mem + 3*prim_size;
     P->PA_y   = mem + 4*prim_size;
@@ -102,20 +102,27 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     for(int j = 0; j < nb; ++j)
         prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
 
+    const int shell12_size = na*nb;
+
     P->nprim_length = prim_size;
 
     const int size = prim_size * sizeof(double);
+    const int size2 = shell12_size*sizeof(double); // for holding Xab, etc
 
     // allocate one large space
-    double * mem = ALLOC(size * 8);   // 5 = x, y, z, PA_x, PA_y, PA_z, alpha, prefac
+    double * mem = ALLOC(size * 8 + size2 * 3 ); 
     P->x      = mem;
-    P->y      = mem + prim_size;
+    P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
     P->PA_x   = mem + 3*prim_size;
     P->PA_y   = mem + 4*prim_size;
     P->PA_z   = mem + 5*prim_size;
     P->alpha  = mem + 6*prim_size;
     P->prefac = mem + 7*prim_size;
+
+    P->AB_x   = mem + 8*prim_size;
+    P->AB_y   = mem + 8*prim_size + shell12_size;
+    P->AB_z   = mem + 8*prim_size + 2*shell12_size;
 
     /* Should this be aligned? I don't think so */
     int * intmem = malloc((na+nb+3*na*nb)*sizeof(int));
@@ -124,6 +131,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->nprim12 = intmem + na + nb;
     P->primstart = intmem + na + nb + na*nb;
     P->primend = intmem + na + nb + 2*na*nb;
+
 }
 
 
@@ -198,8 +206,11 @@ void fill_ss_shell_pair(struct gaussian_shell const A,
             P->alpha[idx] = p_ab;
             ++idx;
         }
-
     }
+
+    P->AB_x = Xab_x;
+    P->AB_y = Xab_y;
+    P->AB_z = Xab_z;
 }
 
 
@@ -226,7 +237,6 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
     P->nprim = 0;
 
     sasb = 0;
-
     idx = 0;
     for(sa = 0; sa < na; ++sa)
     {
@@ -287,6 +297,11 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
 
             P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
             P->nprim += A[sa].nprim*B[sb].nprim;
+
+            P->AB_x[sasb] = Xab_x;
+            P->AB_y[sasb] = Xab_y;
+            P->AB_z[sasb] = Xab_z;
+
             sasb++;
         }
     }

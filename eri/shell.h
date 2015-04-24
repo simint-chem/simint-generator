@@ -30,6 +30,11 @@ struct multishell_pair
     int * primend;   // length nshell12
                      // primend[n] = end (not inclusive)
 
+    // length nshell12
+    double * AB_x;
+    double * AB_y;
+    double * AB_z;
+
     // these are all of length nprim
     double * x;
     double * y;
@@ -48,6 +53,10 @@ struct shell_pair
     int nprim;             // Total number of primitives
     int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
     int nprim1, nprim2;    // number of primitives in each shell
+
+    double AB_x;
+    double AB_y;
+    double AB_z;
 
     // these are all of length nprim
     double * x;
