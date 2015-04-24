@@ -1,22 +1,18 @@
 #include <iostream>
 
 #include "Classes.h"
+#include "Algorithms.h"
+#include "Helpers.h"
 
 using namespace std;
 
 int main(void)
 {
-    cout << "Here\n";
-    Gaussian g1{2,0,0};
-    Gaussian g2{1,0,2};
-    cout << "g1: " << g1.str() << "\n";
-    cout << "g2: " << g2.str() << "\n";
-    cout << " <: " << bool(g1 < g2) << "\n";
-    cout << "==: " << bool(g1 == g2) << "\n";
-//    cout << "!=: " << bool(g1 != g2) << "\n";
+    // generate initial targets
+    QuartetSet inittargets = GenerateInitialTargets({2,2,0,0});
 
-    Doublet d{DoubletType::BRA, g1, g2};
-    cout << "d: " << d.str() << "\n"; 
+    for(auto & it : inittargets)
+        cout << it << "\n";
 
     return 0;
 }
