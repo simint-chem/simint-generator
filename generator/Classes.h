@@ -156,6 +156,11 @@ struct Quartet
 
     int am(void) const { return bra.am() + ket.am(); }
 
+    Doublet get(DoubletType type) const
+    {
+        return (type == DoubletType::BRA ? bra : ket);
+    }
+
     std::string str(void) const
     {
         std::stringstream ss;

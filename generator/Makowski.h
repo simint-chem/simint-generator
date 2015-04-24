@@ -9,41 +9,35 @@
 class Makowski_HRR : public HRR_Algorithm_Base
 {
     public:
-        virtual HRRStep operator() (const Quartet & target, DoubletType steptype)
+        virtual HRRStep step(const Quartet & target, DoubletType steptype)
         {
             //Makowski: Recurse in the lowest non-zero angular
             //component of the second function
-            Doublet const * dptr;
+            Doublet d = target.get(steptype);
 
-            if(steptype == DoubletType::BRA)
-                dptr = &target.bra;
-            else
-                dptr = &target.ket;
-
-            if(dptr->am() == 0)
+            if(d.am() == 0)
                 throw std::runtime_error("Cannot HRR step to an s doublet!");
 
             // idx is the xyz index
-            std::array<int, 3> ijk = dptr->right.ijk;
+            std::array<int, 3> ijk = d.right.ijk;
             std::sort(ijk.begin(), ijk.end());
             auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
-            auto it = std::find(dptr->right.ijk.rbegin(), dptr->right.ijk.rend(), *v); 
-            int idx = 2 - std::distance(dptr->right.ijk.rbegin(), it);  // remember we are working with reverse iterators
+            auto it = std::find(d.right.ijk.rbegin(), d.right.ijk.rend(), *v); 
+            int idx = 2 - std::distance(d.right.ijk.rbegin(), it);  // remember we are working with reverse iterators
 
             // gaussian common to both src1 and src2
-            Gaussian common(dptr->right);
+            Gaussian common(d.right);
             common.ijk[idx] -= 1;
 
             // the left for src1
-            Gaussian src1g(dptr->left);
+            Gaussian src1g(d.left);
             src1g.ijk[idx] += 1;
 
             // create new doublets
             Doublet src1d{steptype, src1g, common};
-            Doublet src2d{steptype, dptr->left, common};
+            Doublet src2d{steptype, d.left, common};
            
             XYZStep xyzstep = IdxToXYZStep(idx);
-            std::cout << "IDX: " << idx << "\n";
 
             // Create the HRR step
             if(steptype == DoubletType::BRA)
