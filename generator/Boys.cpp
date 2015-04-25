@@ -1,5 +1,6 @@
 #include <fstream>
 #include <stdexcept>
+#include <sstream>
 
 #include "generator/Boys.hpp"
 
@@ -32,6 +33,28 @@ BoysFit::BoysFit(const std::string & filepath)
     f.close();
 }
 
+std::string BoysFit::code_line(void) const
+{
+    std::stringstream ss;
+    ss << "    const double F" << v << " = pow(\n";
+    ss << "                            (\n";
+    ss << "                              (\n";
+    ss << "                                          " << a[0] << "\n";
+    for(int i = 1; i < a.size(); i++)
+        ss << "                                + F_x * ( " << a[i] << "\n";
+    ss << "                                        " << std::string(a.size()-1, ')') << "\n";
+    ss << "                              )\n";
+    ss << "                              /\n";
+    ss << "                              (\n";
+    ss << "                                          " << b[0] << "\n";
+    for(int i = 1; i < b.size(); i++)
+        ss << "                                + F_x * ( " << b[i] << "\n";
+    ss << "                                        " << std::string(b.size()-1, ')') << "\n";
+    ss << "                              )\n";
+    ss << "                            ), " << v << ".0+0.5);";
+    return ss.str();  
+}
+
 BoysMap ReadBoysInfo(std::string dir)
 {
     if(dir.back() == '/')
@@ -57,3 +80,4 @@ BoysMap ReadBoysInfo(std::string dir)
     return bm;
 
 }
+

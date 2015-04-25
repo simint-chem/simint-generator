@@ -117,6 +117,9 @@ int main(void)
 
     // read information about the boys function
     BoysMap bm = ReadBoysInfo("/home/ben/programming/simint/generator/dat");
+    cout << "\n\n" << bm[0].code_line() << "\n\n";
+    cout << "\n\n" << bm[1].code_line() << "\n\n";
+    cout << "\n\n" << bm[2].code_line() << "\n\n";
 
     // all HRR steps
     HRRList hrrlist;

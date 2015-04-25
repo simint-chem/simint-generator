@@ -19,6 +19,8 @@ struct BoysFit
     // let the compiler generate these
     BoysFit(const BoysFit & rhs) = default;
     BoysFit() = default;
+
+    std::string code_line(void) const;
 };
 
 
