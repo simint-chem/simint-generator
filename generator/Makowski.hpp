@@ -1,5 +1,5 @@
-#ifndef MAKOWSKI_H
-#define MAKOWSKI_H
+#ifndef MAKOWSKI_HPP
+#define MAKOWSKI_HPP
 
 #include <stdexcept>
 #include <algorithm>

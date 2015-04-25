@@ -55,7 +55,7 @@ std::string BoysFit::code_line(void) const
     return ss.str();  
 }
 
-BoysMap ReadBoysInfo(std::string dir)
+BoysMap ReadBoysFitInfo(std::string dir)
 {
     if(dir.back() == '/')
         dir = dir.substr(0, dir.size()-1);
@@ -73,8 +73,8 @@ BoysMap ReadBoysInfo(std::string dir)
 
     while(std::getline(f, fline).good())
     {
-        BoysFit bf(dir + "/" + fline);
-        bm[bf.v] = bf;
+        BoysGenPtr bf(new BoysFit(dir + "/" + fline));
+        bm[bf->v] = bf;
     }
 
     return bm;

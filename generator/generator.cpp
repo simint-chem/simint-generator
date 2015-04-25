@@ -5,6 +5,7 @@
 #include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Boys.hpp"
+#include "generator/Writer.hpp"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ void PruneRight(QuartetSet & qs, DoubletType type)
 }
 
 
-void HRRLoop(HRRList & hrrlist,
+void HRRLoop(HRRStepList & hrrlist,
              const QuartetSet & inittargets,
              QuartetSet & solvedquartets,
              DoubletType type,
@@ -116,13 +117,10 @@ int main(void)
     try {
 
     // read information about the boys function
-    BoysMap bm = ReadBoysInfo("/home/ben/programming/simint/generator/dat");
-    cout << "\n\n" << bm[0].code_line() << "\n\n";
-    cout << "\n\n" << bm[1].code_line() << "\n\n";
-    cout << "\n\n" << bm[2].code_line() << "\n\n";
+    BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
 
     // all HRR steps
-    HRRList hrrlist;
+    HRRStepList hrrlist;
 
     // holds all the 'solved' quartets
     QuartetSet solvedquartets;
@@ -205,6 +203,17 @@ int main(void)
 
     
     cout << "\n\n";
+
+    // write out
+    HRRInfo hrrinfo{hrrlist, topreq};
+
+    Write_Generic(cout,
+                  {1,1,1,1},
+                  "FOcombined",
+                  bm,
+                  InitStepList(),
+                  ETStepList(),
+                  hrrinfo);
 
 
     }

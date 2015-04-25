@@ -1,13 +1,21 @@
-#ifndef BOYS_H
-#define BOYS_H
+#ifndef BOYS_HPP
+#define BOYS_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
 
-struct BoysFit
+struct BoysGen
 {
     int v; // order of the boys function
+
+    virtual ~BoysGen() { };
+    virtual std::string code_line(void) const = 0;
+};
+
+struct BoysFit : public BoysGen
+{
     int n; // order of the numerator polynomial
     int m; // order of the denominator polynomial
 
@@ -20,14 +28,15 @@ struct BoysFit
     BoysFit(const BoysFit & rhs) = default;
     BoysFit() = default;
 
-    std::string code_line(void) const;
+    virtual std::string code_line(void) const;
 };
 
 
-typedef std::map<int, BoysFit> BoysMap;
+typedef std::shared_ptr<BoysGen> BoysGenPtr;
+typedef std::map<int, BoysGenPtr> BoysMap;
 
 
-BoysMap ReadBoysInfo(std::string dir);
+BoysMap ReadBoysFitInfo(std::string dir);
 
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef ALGORITHMS_H
-#define ALGORITHMS_H
+#ifndef ALGORITHMS_HPP
+#define ALGORITHMS_HPP
 
 #include "generator/Makowski.hpp"
 

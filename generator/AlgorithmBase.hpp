@@ -1,5 +1,5 @@
-#ifndef ALGORITHMBASE_H
-#define ALGORITHMBASE_H
+#ifndef ALGORITHMBASE_HPP
+#define ALGORITHMBASE_HPP
 
 #include "generator/Classes.hpp"
 

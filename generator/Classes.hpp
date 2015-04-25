@@ -1,5 +1,5 @@
-#ifndef GENERATOR_CLASSES_H
-#define GENERATOR_CLASSES_H
+#ifndef GENERATOR_CLASSES_HPP
+#define GENERATOR_CLASSES_HPP
 
 #include <array>
 #include <string>
@@ -260,15 +260,52 @@ struct HRRStep
 };
 
 
+struct ETStep
+{
+    std::string str(void) const
+    {
+        return "TOTO";
+    } 
+};
+
+
+struct InitStep
+{
+    std::string str(void) const
+    {
+        return "TOTO";
+    } 
+};
+
 inline std::ostream & operator<<(std::ostream & os, const HRRStep & hrr)
 {
     os << hrr.str();
     return os;
 }
 
+inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
+{
+    os << et.str();
+    return os;
+}
 
-typedef std::vector<HRRStep> HRRList;
+inline std::ostream & operator<<(std::ostream & os, const InitStep & is)
+{
+    os << is.str();
+    return os;
+}
+
+typedef std::vector<HRRStep> HRRStepList;
+typedef std::vector<ETStep> ETStepList;
+typedef std::vector<InitStep> InitStepList;
 typedef std::set<Quartet> QuartetSet;
+
+
+struct HRRInfo
+{
+    HRRStepList hrrlist;
+    QuartetSet topreq;
+};
 
 
 
