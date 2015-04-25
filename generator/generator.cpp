@@ -1,9 +1,11 @@
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
-#include "Classes.h"
-#include "Algorithms.h"
-#include "Helpers.h"
+#include "generator/Classes.hpp"
+#include "generator/Algorithms.hpp"
+#include "generator/Helpers.hpp"
+#include "generator/Boys.hpp"
 
 using namespace std;
 
@@ -61,6 +63,13 @@ void HRRLoop(HRRList & hrrlist,
 
 int main(void)
 {
+    try {
+
+    // read information about the boys function
+    BoysMap bm = ReadBoysInfo("/home/ben/programming/simint/generator/dat");
+
+
+
     // generate initial targets
     QuartetSet inittargets = GenerateInitialTargets({0,0,0,1});
 
@@ -155,7 +164,15 @@ int main(void)
 
     
     cout << "\n\n";
-    
 
+
+    }
+    catch(std::exception & ex)
+    {
+        cout << "\n\n";
+        cout << "Caught exception\n";
+        cout << "What = " << ex.what() << "\n\n";
+        return 100;
+    }
     return 0;
 }

@@ -1,4 +1,4 @@
-#include "Helpers.h"
+#include "generator/Helpers.hpp"
 
 
 QuartetSet GenerateInitialTargets(std::array<int, 4> amlst)

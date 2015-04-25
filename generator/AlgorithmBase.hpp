@@ -1,7 +1,7 @@
 #ifndef ALGORITHMBASE_H
 #define ALGORITHMBASE_H
 
-#include "Classes.h"
+#include "generator/Classes.hpp"
 
 class HRR_Algorithm_Base
 {
