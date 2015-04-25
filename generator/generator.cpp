@@ -4,10 +4,51 @@
 
 #include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
-#include "generator/Helpers.hpp"
 #include "generator/Boys.hpp"
 
 using namespace std;
+
+
+QuartetSet GenerateInitialTargets(std::array<int, 4> amlst)
+{
+    QuartetSet qs;
+    int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;
+    int nam2 = ((amlst[1] + 1) * (amlst[1] + 2)) / 2;
+    int nam3 = ((amlst[2] + 1) * (amlst[2] + 2)) / 2;
+    int nam4 = ((amlst[3] + 1) * (amlst[3] + 2)) / 2;
+
+    Gaussian cur1 = Gaussian{amlst[0], 0, 0};
+    for(int i = 0; i < nam1; i++)
+    {
+        Gaussian cur2 = Gaussian{amlst[1], 0, 0};
+        for(int j = 0; j < nam2; j++)
+        {
+            Doublet bra{DoubletType::BRA, cur1, cur2};
+            Gaussian cur3 = Gaussian{amlst[2], 0, 0};
+            for(int k = 0; k < nam3; k++)
+            {
+                Gaussian cur4 = Gaussian{amlst[3], 0, 0};
+                for(int l = 0; l < nam4; l++)
+                {
+                    Doublet ket{DoubletType::KET, cur3, cur4};
+                    qs.insert(Quartet{bra, ket, 0});
+                    cur4.Iterate();
+                }
+
+                cur3.Iterate();
+            }
+
+            cur2.Iterate(); 
+        }
+
+        cur1.Iterate();
+    }
+
+    return qs;
+}
+
+
+
 
 void PruneRight(QuartetSet & qs, DoubletType type)
 {
@@ -60,6 +101,15 @@ void HRRLoop(HRRList & hrrlist,
 }
                
 
+void PrintQuartetSet(const QuartetSet & q,
+                     const std::string & title)
+{
+    cout << title << ": " << q.size() << "\n";
+    for(auto & it : q)
+        cout << "    " << it << "\n";
+    cout << "\n";
+}
+
 
 int main(void)
 {
@@ -68,34 +118,27 @@ int main(void)
     // read information about the boys function
     BoysMap bm = ReadBoysInfo("/home/ben/programming/simint/generator/dat");
 
+    // all HRR steps
+    HRRList hrrlist;
+
+    // holds all the 'solved' quartets
+    QuartetSet solvedquartets;
+
+    // The algorithm we are using
+    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
 
     // generate initial targets
     QuartetSet inittargets = GenerateInitialTargets({0,0,0,1});
+    PrintQuartetSet(inittargets, "Initial Targets");
 
-    cout << "Initial targets: " << inittargets.size() << "\n";
-    for(auto & it : inittargets)
-        cout << "    " << it << "\n";
-    cout << "\n";
-
-
-    QuartetSet solvedquartets;
-
-    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
-    HRRList hrrlist;
-
-    // bras
+    // Inital bra targets
     QuartetSet targets = inittargets;
     PruneRight(targets, DoubletType::BRA);
+    PrintQuartetSet(targets, "Inital bra targets");
 
-    cout << "BRA Initial targets: " << targets.size() << "\n";
-    for(auto & it : targets)
-        cout << "    " << it << "\n";
-    cout << "\n";
-
+    // Solve the bra part
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::BRA, hrralgo);
-
-
 
     // now do kets
     // targets are src1 and src2 of hrrlist, pruned on the ket side
@@ -113,16 +156,12 @@ int main(void)
         targets = inittargets; // might be some there? ie  ( ss | ps )
 
     PruneRight(targets, DoubletType::KET);
+    PrintQuartetSet(targets, "Initial ket targets");
 
-
-    cout << "KET Initial targets: " << targets.size() << "\n";
-    for(auto & it : targets)
-        cout << "    " << it << "\n";
-    cout << "\n";
-
+    // Solve the ket part
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::KET, hrralgo);
 
-    // find top-level requirements
+    // find top-level requirements at the end of HRR
     // these are src1 and src2 that are not solved
     QuartetSet topreq;
 
@@ -133,7 +172,6 @@ int main(void)
         if(solvedquartets.count(it.src2) == 0)
             topreq.insert(it.src2);
     }
-
 
 
     // reverse
@@ -157,7 +195,7 @@ int main(void)
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
-    cout << " TOP LEVEL REQ\n";
+    cout << " HRR TOP LEVEL REQ\n";
     cout << "--------------------------------------------------------------------------------\n";
     for(auto & it : topreq)
         cout << "    " << it << "\n"; 
