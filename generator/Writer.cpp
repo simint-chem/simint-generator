@@ -10,15 +10,22 @@ const char * amlist = "spdfghijklmnoqrtuvwxyzabe";
 
 
 // This is split out to allow for future optimization
-void Write_BoysFunction(std::ostream & os,
-                        const BoysMap & bm,
-                        int maxv)
+static void Write_BoysFunction(std::ostream & os,
+                               const BoysMap & bm,
+                               int maxv)
 {
     for(int i = 0; i <= maxv; i++)
         os << bm.at(i)->code_line() << "\n";
 }
 
 
+static void Write_HRR(std::ostream & os,
+                      const HRRStepList & hrr)
+{
+    const std::string indent(4, ' ');
+    for(const auto & h : hrr)
+        os << indent << h.code_line() << "\n";    
+}
 
 
 void Write_Generic(std::ostream & os,
@@ -66,7 +73,7 @@ void Write_Generic(std::ostream & os,
     os << "\n";
     os << "    memset(integrals, 0, nshell1234*sizeof(double));\n";
     os << "\n";
-    os << "    int ab, cd;\n";
+    os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
     os << "    int nint = 0;\n";
     os << "\n";
@@ -76,10 +83,11 @@ void Write_Generic(std::ostream & os,
     {
         os << "    double " << it.code_var() << "[nshell1234];\n";
         os << "    memset(" << it.code_var() << ", 0, nshell1234 * sizeof(double));\n";
+        os << "\n";
     }
 
     os << "\n";
-    os << "    for(ab = 0; ab < P.nshell12; ++ab)\n";
+    os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
     os << "    {\n";
     os << "        const int abstart = P.primstart[ab];\n";
     os << "        const int abend = P.primend[ab];\n";
@@ -87,7 +95,7 @@ void Write_Generic(std::ostream & os,
     os << "        // this should have been set/aligned in fill_multishell_pair or something else\n";
     os << "        ASSUME(abstart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
-    os << "        for(cd = 0; cd < Q.nshell12; ++cd)\n";
+    os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
     os << "            const int cdstart = Q.primstart[cd];\n";
     os << "            const int cdend = Q.primend[cd];\n";
@@ -112,6 +120,7 @@ void Write_Generic(std::ostream & os,
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
+    os << "                    // Maximum v value: " << vrrinfo.maxv << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // The paremeter to the boys function\n";
     os << "                    const double F_x = R2 * PQalpha_mul/PQalpha_sum;\n";
@@ -130,11 +139,25 @@ void Write_Generic(std::ostream & os,
     os << "                    //////////////////////////////////////////////\n";
     os << "                 }\n";
     os << "            }\n";
-    os << "\n";
-    os << "            ++nint;\n";
-    os << "\n";
     os << "        }\n";
     os << "    }\n";
+    os << "\n";
+    os << "\n";
+    os << "    //////////////////////////////////////////////\n";
+    os << "    // Contracted integrals: Horizontal recurrance\n";
+    os << "    // Steps: " << hrrinfo.hrrlist.size() << "\n";
+    os << "    //////////////////////////////////////////////\n";
+    os << "\n";
+    os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
+    os << "    {\n";
+    os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
+    os << "        {\n";
+    os << "        }\n";
+    os << "    }\n";
+    os << "\n";
+    os << "\n";
+    Write_HRR(os, hrrinfo.hrrlist);
+    os << "\n";
     os << "\n";
     os << "    return nshell1234;\n";
     os << "}\n";
