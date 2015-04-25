@@ -269,7 +269,7 @@ struct ETStep
 };
 
 
-struct InitStep
+struct VRRStep
 {
     std::string str(void) const
     {
@@ -289,7 +289,7 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
     return os;
 }
 
-inline std::ostream & operator<<(std::ostream & os, const InitStep & is)
+inline std::ostream & operator<<(std::ostream & os, const VRRStep & is)
 {
     os << is.str();
     return os;
@@ -297,7 +297,7 @@ inline std::ostream & operator<<(std::ostream & os, const InitStep & is)
 
 typedef std::vector<HRRStep> HRRStepList;
 typedef std::vector<ETStep> ETStepList;
-typedef std::vector<InitStep> InitStepList;
+typedef std::vector<VRRStep> VRRStepList;
 typedef std::set<Quartet> QuartetSet;
 
 
@@ -307,6 +307,15 @@ struct HRRInfo
     QuartetSet topreq;
 };
 
+struct ETInfo
+{
+    ETStepList etlist;
+};
 
+struct VRRInfo
+{
+    int maxv; // highest order of Boys function
+    VRRStepList vrrlist;
+};
 
 #endif

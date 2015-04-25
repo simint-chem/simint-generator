@@ -35,23 +35,24 @@ BoysFit::BoysFit(const std::string & filepath)
 
 std::string BoysFit::code_line(void) const
 {
+    const std::string indent(20, ' ');
     std::stringstream ss;
-    ss << "    const double F" << v << " = pow(\n";
-    ss << "                            (\n";
-    ss << "                              (\n";
-    ss << "                                          " << a[0] << "\n";
+    ss << indent << "const double F" << v << " = pow(\n";
+    ss << indent << "                        (\n";
+    ss << indent << "                          (\n";
+    ss << indent << "                                      " << a[0] << "\n";
     for(int i = 1; i < a.size(); i++)
-        ss << "                                + F_x * ( " << a[i] << "\n";
-    ss << "                                        " << std::string(a.size()-1, ')') << "\n";
-    ss << "                              )\n";
-    ss << "                              /\n";
-    ss << "                              (\n";
-    ss << "                                          " << b[0] << "\n";
+        ss << indent << "                            + F_x * ( " << a[i] << "\n";
+    ss << indent << "                                    " << std::string(a.size()-1, ')') << "\n";
+    ss << indent << "                          )\n";
+    ss << indent << "                          /\n";
+    ss << indent << "                          (\n";
+    ss << indent << "                                      " << b[0] << "\n";
     for(int i = 1; i < b.size(); i++)
-        ss << "                                + F_x * ( " << b[i] << "\n";
-    ss << "                                        " << std::string(b.size()-1, ')') << "\n";
-    ss << "                              )\n";
-    ss << "                            ), " << v << ".0+0.5);";
+        ss << indent << "                            + F_x * ( " << b[i] << "\n";
+    ss << indent << "                                    " << std::string(b.size()-1, ')') << "\n";
+    ss << indent << "                          )\n";
+    ss << indent << "                        ), " << v << ".0+0.5);\n";
     return ss.str();  
 }
 

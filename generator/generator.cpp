@@ -211,8 +211,8 @@ int main(void)
                   {1,1,1,1},
                   "FOcombined",
                   bm,
-                  InitStepList(),
-                  ETStepList(),
+                  VRRInfo{2, {}},
+                  ETInfo(),
                   hrrinfo);
 
 
