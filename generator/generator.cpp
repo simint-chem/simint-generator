@@ -114,9 +114,22 @@ void PrintQuartetSet(const QuartetSet & q,
 }
 
 
-int main(void)
+int main(int argc, char ** argv)
 {
     try {
+
+    if(argc != 5)
+    {
+        printf("Need 4 arguments\n");
+        return 1;
+    }
+
+    std::array<int, 4> amlist{
+                               atoi(argv[1]),
+                               atoi(argv[2]),
+                               atoi(argv[3]),
+                               atoi(argv[4])
+                             };
 
     // read information about the boys function
     BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
@@ -132,7 +145,7 @@ int main(void)
 
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialTargets({1,1,1,1});
+    QuartetSet inittargets = GenerateInitialTargets(amlist);
     PrintQuartetSet(inittargets, "Initial Targets");
 
     // Inital bra targets
@@ -221,14 +234,15 @@ int main(void)
     // write out
     HRRInfo hrrinfo{hrrlist, topreq};
 
+    /*
     Write_Generic(cout,
-                  {1,1,1,1},
+                  amlist,
                   "FOcombined",
                   bm,
                   VRRInfo{2, {}},
                   ETInfo(),
                   hrrinfo);
-
+    */
 
     }
     catch(std::exception & ex)
