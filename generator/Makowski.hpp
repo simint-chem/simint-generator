@@ -43,19 +43,19 @@ class Makowski_HRR : public HRR_Algorithm_Base
             if(steptype == DoubletType::BRA)
             {
                 HRRStep hrr{target, 
-                           {src1d, target.ket, target.m},   // src1 quartet
-                           {src2d, target.ket, target.m},   // src2 quartet
-                           steptype,                        // bra or ket being stepped
-                           xyzstep};                        // cartesian direction being stepped
+                           {src1d, target.ket, target.m, 0, 0},   // src1 quartet
+                           {src2d, target.ket, target.m, 0, 0},   // src2 quartet
+                           steptype,                              // bra or ket being stepped
+                           xyzstep};                              // cartesian direction being stepped
                 return hrr;
             }
             else
             {
                 HRRStep hrr{target, 
-                           {target.bra, src1d, target.m},   // src1 quartet
-                           {target.bra, src2d, target.m},   // src2 quartet
-                           steptype,                        // bra or ket being stepped
-                           xyzstep};                        // cartesian direction being stepped
+                           {target.bra, src1d, target.m, 0, 0},   // src1 quartet
+                           {target.bra, src2d, target.m, 0, 0},   // src2 quartet
+                           steptype,                              // bra or ket being stepped
+                           xyzstep};                              // cartesian direction being stepped
                 return hrr;
             }
         }

@@ -6,6 +6,8 @@
 #include "generator/Classes.hpp"
 #include "generator/Boys.hpp"
 
+#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
+
 const char * amlist = "spdfghijklmnoqrtuvwxyzabe";
 
 
@@ -22,7 +24,7 @@ static void Write_BoysFunction(std::ostream & os,
 static void Write_HRR(std::ostream & os,
                       const HRRStepList & hrr)
 {
-    const std::string indent(4, ' ');
+    const std::string indent(8, ' ');
     for(const auto & h : hrr)
         os << indent << h.code_line() << "\n";    
 }
@@ -36,6 +38,7 @@ void Write_Generic(std::ostream & os,
                    const ETInfo & etinfo,
                    const HRRInfo & hrrinfo)
 {
+    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // set up the function to make it look pretty
     std::stringstream ss;
@@ -47,6 +50,9 @@ void Write_Generic(std::ostream & os,
     std::string indent(funcline.length(), ' ');
 
     // start output to the file
+    os << "#include <string.h>\n";
+    os << "#include <math.h>\n";
+    os << "\n";
     os << "#include \"vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
     os << "#include \"eri/shell.h\"\n";
@@ -73,9 +79,13 @@ void Write_Generic(std::ostream & os,
     os << "\n";
     os << "    memset(integrals, 0, nshell1234*sizeof(double));\n";
     os << "\n";
+    os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
+    os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
+    os << "    double AB_y[nshell1234];  double CD_y[nshell1234];\n";
+    os << "    double AB_z[nshell1234];  double CD_z[nshell1234];\n";
+    os << "\n";
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
-    os << "    int nint = 0;\n";
     os << "\n";
     os << "    // Top level HRR requirements. Contracted integrals are accumulated here\n";
 
@@ -102,6 +112,11 @@ void Write_Generic(std::ostream & os,
     os << "\n";
     os << "            // this should have been set/aligned in fill_multishell_pair or something else\n";
     os << "            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);\n";
+    os << "\n";
+    os << "            // Store for later\n";
+    os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = P.AB_x[cd];\n";
+    os << "            AB_y[abcd] = P.AB_y[ab];  CD_x[abcd] = P.AB_y[cd];\n";
+    os << "            AB_z[abcd] = P.AB_z[ab];  CD_x[abcd] = P.AB_z[cd];\n";
     os << "\n";
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
@@ -148,15 +163,13 @@ void Write_Generic(std::ostream & os,
     os << "    // Steps: " << hrrinfo.hrrlist.size() << "\n";
     os << "    //////////////////////////////////////////////\n";
     os << "\n";
-    os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
+    os << "    int startidx = 0;\n";
+    os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
     os << "    {\n";
-    os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
-    os << "        {\n";
-    os << "        }\n";
-    os << "    }\n";
-    os << "\n";
-    os << "\n";
     Write_HRR(os, hrrinfo.hrrlist);
+    os << "\n";
+    os << "        startidx += " << ncart << ";\n";
+    os << "    }\n";
     os << "\n";
     os << "\n";
     os << "    return nshell1234;\n";

@@ -19,6 +19,7 @@ QuartetSet GenerateInitialTargets(std::array<int, 4> amlst)
     int nam4 = ((amlst[3] + 1) * (amlst[3] + 2)) / 2;
 
     Gaussian cur1 = Gaussian{amlst[0], 0, 0};
+    int ijkl = 0;
     for(int i = 0; i < nam1; i++)
     {
         Gaussian cur2 = Gaussian{amlst[1], 0, 0};
@@ -32,8 +33,9 @@ QuartetSet GenerateInitialTargets(std::array<int, 4> amlst)
                 for(int l = 0; l < nam4; l++)
                 {
                     Doublet ket{DoubletType::KET, cur3, cur4};
-                    qs.insert(Quartet{bra, ket, 0});
+                    qs.insert(Quartet{bra, ket, 0, QUARTET_INITIAL, ijkl});
                     cur4.Iterate();
+                    ijkl++;
                 }
 
                 cur3.Iterate();
@@ -77,9 +79,9 @@ void HRRLoop(HRRStepList & hrrlist,
     {
         QuartetSet newtargets;
 
-        for(const auto & it : targets)
+        for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
-            HRRStep hrr = hrralgo->step(it, type);
+            HRRStep hrr = hrralgo->step(*it, type);
             hrrlist.push_back(hrr);
 
             if(solvedquartets.count(hrr.src1) == 0)
@@ -87,7 +89,7 @@ void HRRLoop(HRRStepList & hrrlist,
             if(solvedquartets.count(hrr.src2) == 0)
                 newtargets.insert(hrr.src2);
             
-            solvedquartets.insert(it);
+            solvedquartets.insert(*it);
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
@@ -130,7 +132,7 @@ int main(void)
 
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialTargets({0,0,0,1});
+    QuartetSet inittargets = GenerateInitialTargets({1,1,1,1});
     PrintQuartetSet(inittargets, "Initial Targets");
 
     // Inital bra targets
@@ -164,18 +166,30 @@ int main(void)
 
     // find top-level requirements at the end of HRR
     // these are src1 and src2 that are not solved
+    // also set this in the hrrstep members
     QuartetSet topreq;
 
-    for(const auto & it : hrrlist)
+    for(auto & it : hrrlist)
     {
         if(solvedquartets.count(it.src1) == 0)
+        {
             topreq.insert(it.src1);
+            it.src1.flags |= QUARTET_HRRTOPLEVEL;
+        }
+        else
+            it.src1.flags &= ~(QUARTET_HRRTOPLEVEL);
+            
         if(solvedquartets.count(it.src2) == 0)
+        {
             topreq.insert(it.src2);
+            it.src2.flags |= QUARTET_HRRTOPLEVEL;
+        }
+        else
+            it.src2.flags &= ~(QUARTET_HRRTOPLEVEL);
     }
 
 
-    // reverse
+    // reverse the steps
     std::reverse(hrrlist.begin(), hrrlist.end());
 
     cout << "\n\n";
