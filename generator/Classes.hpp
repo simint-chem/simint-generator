@@ -16,6 +16,9 @@ int GaussianOrder(const std::array<int, 3> & ijk);
 #define QUARTET_INITIAL     1  // what we are looking for at the end
 #define QUARTET_HRRTOPLEVEL 2
 
+#define DOUBLET_INITIAL     1  // what we are looking for at the end
+#define DOUBLET_HRRTOPLEVEL 2
+
 
 enum class DoubletType
 {
@@ -117,6 +120,7 @@ struct Doublet
     DoubletType type;
     Gaussian left;
     Gaussian right;
+    int flag;
 
     int am(void) const { return left.am() + right.am(); }    
     int idx(void) const { return left.idx() * right.ncart() + right.idx(); }

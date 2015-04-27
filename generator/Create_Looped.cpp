@@ -62,7 +62,7 @@ void Create_Looped(std::array<int, 4> amlist,
     QuartetSet solvedquartets;
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialTargets({amlist[0], amlist[1], amlist[2] + amlist[3], 0}, false);
+    QuartetSet inittargets = GenerateInitialQuartetTargets({amlist[0], amlist[1], amlist[2] + amlist[3], 0}, false);
     PrintQuartetSet_Arr(inittargets, "Initial Targets");
 
     // Inital bra targets

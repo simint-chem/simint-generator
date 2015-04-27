@@ -7,7 +7,7 @@ using std::cout;
 
 static std::map<std::array<int, 3>, int> ordermap_;
 
-QuartetSet GenerateInitialTargets(std::array<int, 4> amlst, bool initial)
+QuartetSet GenerateInitialQuartetTargets(std::array<int, 4> amlst, bool initial)
 {
     int flag = (initial ? QUARTET_INITIAL : 0);
 
@@ -18,7 +18,6 @@ QuartetSet GenerateInitialTargets(std::array<int, 4> amlst, bool initial)
     int nam4 = ((amlst[3] + 1) * (amlst[3] + 2)) / 2;
 
     Gaussian cur1 = Gaussian{amlst[0], 0, 0};
-    int ijkl = 0;
     for(int i = 0; i < nam1; i++)
     {
         Gaussian cur2 = Gaussian{amlst[1], 0, 0};
@@ -34,7 +33,6 @@ QuartetSet GenerateInitialTargets(std::array<int, 4> amlst, bool initial)
                     Doublet ket{DoubletType::KET, cur3, cur4};
                     qs.insert(Quartet{bra, ket, 0, flag});
                     cur4.Iterate();
-                    ijkl++;
                 } 
 
                 cur3.Iterate();
@@ -47,6 +45,29 @@ QuartetSet GenerateInitialTargets(std::array<int, 4> amlst, bool initial)
     }
                 
     return qs;
+}
+
+DoubletSet GenerateInitialDoubletTargets(std::array<int, 2> amlst, DoubletType type, bool initial)
+{
+    int flag = (initial ? DOUBLET_INITIAL : 0);
+
+    DoubletSet ds;
+    int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;
+    int nam2 = ((amlst[1] + 1) * (amlst[1] + 2)) / 2;
+
+    Gaussian cur1 = Gaussian{amlst[0], 0, 0};
+    for(int i = 0; i < nam1; i++)
+    {
+        Gaussian cur2 = Gaussian{amlst[1], 0, 0};
+        for(int j = 0; j < nam2; j++)
+        {
+            ds.insert(Doublet{type, cur1, cur2, flag});
+            cur2.Iterate();
+        }
+        cur1.Iterate();
+    }
+                
+    return ds;
 }
 
 

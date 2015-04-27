@@ -61,7 +61,7 @@ void Create_Unrolled(std::array<int, 4> amlist,
     QuartetSet solvedquartets;
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialTargets(amlist, true);
+    QuartetSet inittargets = GenerateInitialQuartetTargets(amlist, true);
     PrintQuartetSet(inittargets, "Initial Targets");
 
     // Inital bra targets

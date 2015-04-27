@@ -3,7 +3,8 @@
 
 #include "generator/Classes.hpp"
 
-QuartetSet GenerateInitialTargets(std::array<int, 4> amlst, bool initial);
+QuartetSet GenerateInitialQuartetTargets(std::array<int, 4> amlst, bool initial);
+DoubletSet GenerateInitialDoubletTargets(std::array<int, 2> amlst, DoubletType type, bool initial);
 
 void PruneRight(QuartetSet & qs, DoubletType type);
 

@@ -28,8 +28,8 @@ int main(int argc, char ** argv)
                              };
 
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
-    Create_Unrolled(amlist, hrralgo, cout);
-    //Create_Looped(amlist, hrralgo, cout);
+    //Create_Unrolled(amlist, hrralgo, cout);
+    Create_Looped(amlist, hrralgo, cout);
 
 
     }
