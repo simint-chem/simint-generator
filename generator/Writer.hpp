@@ -7,12 +7,20 @@
 
 #include "generator/Classes.hpp"
 
-void Write_Unrolled(std::ostream & os,
+void Writer_Unrolled(std::ostream & os,
                     const std::array<int, 4> & am,
                     const std::string & nameappend,
                     const BoysMap & bm,
                     const VRRInfo & vrinfo,
                     const ETInfo & etinfo,
-                    const HRRInfo & hrrinfo);
+                    const HRRQuartetStepInfo & hrrinfo);
+
+void Writer_Looped(std::ostream & os,
+                  const std::array<int, 4> & am,
+                  const std::string & nameappend,
+                  const BoysMap & bm,
+                  const VRRInfo & vrinfo,
+                  const ETInfo & etinfo,
+                  const HRRQuartetStepInfo & hrrinfo);
 
 #endif

@@ -30,13 +30,13 @@ static void Write_HRRQuartetStepList(std::ostream & os,
 }
 
 
-void Writer_Unrolled(std::ostream & os,
-                     const std::array<int, 4> & am,
-                     const std::string & nameappend,
-                     const BoysMap & bm,
-                     const VRRInfo & vrrinfo,
-                     const ETInfo & etinfo,
-                     const HRRQuartetStepInfo & hrrinfo)
+void Writer_Looped(std::ostream & os,
+                   const std::array<int, 4> & am,
+                   const std::string & nameappend,
+                   const BoysMap & bm,
+                   const VRRInfo & vrrinfo,
+                   const ETInfo & etinfo,
+                   const HRRQuartetStepInfo & hrrinfo)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 

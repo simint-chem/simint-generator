@@ -8,6 +8,10 @@
 #include <vector>
 #include <set>
 
+//#include "generator/Helpers.hpp"
+int GaussianOrder(const std::array<int, 3> & ijk);
+
+
 // some flags
 #define QUARTET_INITIAL     1  // what we are looking for at the end
 #define QUARTET_HRRTOPLEVEL 2
@@ -55,6 +59,8 @@ struct Gaussian
     std::array<int, 3> ijk;
 
     int am(void) const { return ijk[0] + ijk[1] + ijk[2]; }
+    int idx(void) const { return GaussianOrder(ijk); } 
+    int ncart(void) const { return ((am()+1)*(am()+2))/2; }
 
     std::string str(void) const
     {
@@ -83,12 +89,16 @@ struct Gaussian
         return (ijk == rhs.ijk);
     }
 
-    void Iterate(void)
+    bool Iterate(void)
     {
+        if(ijk[2] == am())  // at the end
+            return false;
+
         if(ijk[2] < (am() - ijk[0]))
             ijk = std::array<int, 3>{ijk[0],   ijk[1]-1,      ijk[2]+1 };
         else
             ijk = std::array<int, 3>{ijk[0]-1, am()-ijk[0]+1, 0        };
+        return true;
     }
 };
 
@@ -109,6 +119,8 @@ struct Doublet
     Gaussian right;
 
     int am(void) const { return left.am() + right.am(); }    
+    int idx(void) const { return left.idx() * right.ncart() + right.idx(); }
+    int ncart(void) const { return left.ncart() * right.ncart(); }
 
     std::string str(void) const
     {
@@ -158,9 +170,10 @@ struct Quartet
     Doublet ket;
     int m;
     int flags; // is an HRR top-level quartet, etc
-    int shellidx; // index within a shell quartet (if initial)
 
     int am(void) const { return bra.am() + ket.am(); }
+    int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
+    int ncart(void) const { return bra.ncart() * ket.ncart(); }
 
     Doublet get(DoubletType type) const
     {
@@ -197,7 +210,7 @@ struct Quartet
     {
         std::stringstream ss;
         if(flags & QUARTET_INITIAL)
-            ss << "integrals[startidx + " << shellidx << "]";
+            ss << "integrals[startidx + " << idx() << "]";
         else
         {
             ss << "Q_" 
@@ -209,6 +222,23 @@ struct Quartet
 
             if(flags & QUARTET_HRRTOPLEVEL)
                 ss << "[abcd]";
+        }
+        return ss.str();
+    }
+
+    std::string array_var(void) const
+    {
+        std::stringstream ss;
+        if(flags & QUARTET_INITIAL)
+            ss << "integrals[startidx + " << idx() << "]";
+        else
+        {
+            ss << "Q_" 
+               << bra.left.am()  << "_"
+               << bra.right.am() << "_"
+               << ket.left.am()  << "_"
+               << ket.right.am() << "_"
+               << m << "[startidx + " << idx() << "]";
         }
         return ss.str();
     }
@@ -251,7 +281,32 @@ inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
 }
 
 
-struct HRRStep
+struct HRRDoubletStep
+{
+    Doublet target;
+    Doublet src1;
+    Doublet src2;
+    XYZStep xyz;    
+
+    std::string str(void) const
+    {
+        const char * xyztype = (target.type == DoubletType::BRA ? "ab" : "cd");
+        std::stringstream ss;
+        ss << target << " = " << src1 << " + " << xyz << "_" << xyztype << " * " << src2;
+        return ss.str();
+    }
+
+    bool operator==(const HRRDoubletStep & rhs) const
+    {
+        return (target == rhs.target &&
+                src1 == rhs.src1 &&
+                src2 == rhs.src2 &&
+                xyz == rhs.xyz);
+    }
+};
+
+
+struct HRRQuartetStep
 {
     Quartet target;
     Quartet src1;
@@ -268,7 +323,7 @@ struct HRRStep
         return ss.str();
     }
 
-    bool operator==(const HRRStep & rhs) const
+    bool operator==(const HRRQuartetStep & rhs) const
     {
         return (target == rhs.target &&
                 src1 == rhs.src1 &&
@@ -278,7 +333,7 @@ struct HRRStep
     }
 
 
-    std::string code_line(void) const
+    std::string code_line_full(void) const
     {
         // determine P,Q, etc, for AB_x, AB_y, AB_z
         const char * xyztype = (steptype == DoubletType::BRA ? "AB_" : "CD_");
@@ -291,6 +346,25 @@ struct HRRStep
                                 << " + (" << xyztype << xyz
                                 << "[abcd]"
                                 << " * " << src2.code_var() << ");";
+        if(target.flags & QUARTET_INITIAL)
+            ss << "    // " << target.str();
+
+        return ss.str();
+    }
+
+    std::string code_line_arr(void) const
+    {
+        // determine P,Q, etc, for AB_x, AB_y, AB_z
+        const char * xyztype = (steptype == DoubletType::BRA ? "AB_" : "CD_");
+        
+
+        std::stringstream ss;
+        if(!(target.flags & QUARTET_INITIAL))
+            ss << "const double ";
+        ss << target.array_var() << " = " << src1.array_var() 
+                                 << " + (" << xyztype << xyz
+                                 << "[abcd]"
+                                 << " * " << src2.array_var() << ");";
         if(target.flags & QUARTET_INITIAL)
             ss << "    // " << target.str();
 
@@ -316,7 +390,13 @@ struct VRRStep
     } 
 };
 
-inline std::ostream & operator<<(std::ostream & os, const HRRStep & hrr)
+inline std::ostream & operator<<(std::ostream & os, const HRRDoubletStep & hrr)
+{
+    os << hrr.str();
+    return os;
+}
+
+inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
 {
     os << hrr.str();
     return os;
@@ -334,15 +414,23 @@ inline std::ostream & operator<<(std::ostream & os, const VRRStep & is)
     return os;
 }
 
-typedef std::vector<HRRStep> HRRStepList;
+typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
+typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
 typedef std::vector<VRRStep> VRRStepList;
 typedef std::set<Quartet> QuartetSet;
+typedef std::set<Doublet> DoubletSet;
 
 
-struct HRRInfo
+struct HRRDoubletStepInfo
 {
-    HRRStepList hrrlist;
+    HRRDoubletStepList hrrlist;
+    DoubletSet topreq;
+};
+
+struct HRRQuartetStepInfo
+{
+    HRRQuartetStepList hrrlist;
     QuartetSet topreq;
 };
 

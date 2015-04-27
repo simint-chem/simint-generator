@@ -10,6 +10,7 @@
 using namespace std;
 
 
+
 static void HRRLoop(HRRQuartetStepList & hrrlist,
                     const QuartetSet & inittargets,
                     QuartetSet & solvedquartets,
@@ -47,9 +48,9 @@ static void HRRLoop(HRRQuartetStepList & hrrlist,
 }
                
 
-void Create_Unrolled(std::array<int, 4> amlist,
-                     std::unique_ptr<HRR_Algorithm_Base> & hrralgo,
-                     std::ostream & out)
+void Create_Looped(std::array<int, 4> amlist,
+                   std::unique_ptr<HRR_Algorithm_Base> & hrralgo,
+                   std::ostream & out)
 {
     // read information about the boys function
     BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
@@ -61,17 +62,17 @@ void Create_Unrolled(std::array<int, 4> amlist,
     QuartetSet solvedquartets;
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialTargets(amlist, true);
-    PrintQuartetSet(inittargets, "Initial Targets");
+    QuartetSet inittargets = GenerateInitialTargets({amlist[0], amlist[1], amlist[2] + amlist[3], 0}, false);
+    PrintQuartetSet_Arr(inittargets, "Initial Targets");
 
     // Inital bra targets
     QuartetSet targets = inittargets;
     PruneRight(targets, DoubletType::BRA);
-    PrintQuartetSet(targets, "Inital bra targets");
+    PrintQuartetSet_Arr(targets, "Inital bra targets");
 
     // Solve the bra part
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::BRA, hrralgo);
-
+/*
     // now do kets
     // targets are src1 and src2 of hrrlist, pruned on the ket side
     // and include any init targets that weren't solved
@@ -88,11 +89,11 @@ void Create_Unrolled(std::array<int, 4> amlist,
         targets = inittargets; // might be some there? ie  ( ss | ps )
 
     PruneRight(targets, DoubletType::KET);
-    PrintQuartetSet(targets, "Initial ket targets");
+    PrintQuartetSet_Arr(targets, "Initial ket targets");
 
     // Solve the ket part
     HRRLoop(hrrlist, targets, solvedquartets, DoubletType::KET, hrralgo);
-
+*/
     // find top-level requirements at the end of HRR
     // these are src1 and src2 that are not solved
     // also set this in the hrrstep members
@@ -141,19 +142,22 @@ void Create_Unrolled(std::array<int, 4> amlist,
     cout << "--------------------------------------------------------------------------------\n";
     cout << " HRR TOP LEVEL REQ\n";
     cout << "--------------------------------------------------------------------------------\n";
-    PrintQuartetSet(topreq, "Top level req");
+    for(auto & it : topreq)
+        cout << "    " << it << "\n"; 
 
     
     cout << "\n\n";
 
+    /*
     // write out
     HRRQuartetStepInfo hrrinfo{hrrlist, topreq};
 
-    Writer_Unrolled(out,
-                    amlist,
-                    "FOcombined",
-                    bm,
-                    VRRInfo{2, {}},
-                    ETInfo(),
-                    hrrinfo);
+    Write_Looped(out,
+                 amlist,
+                 "FOcombined",
+                 bm,
+                 VRRInfo{2, {}},
+                 ETInfo(),
+                 hrrinfo);
+    */
 }
