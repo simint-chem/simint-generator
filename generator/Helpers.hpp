@@ -6,11 +6,11 @@
 QuartetSet GenerateInitialQuartetTargets(std::array<int, 4> amlst, bool initial);
 DoubletSet GenerateInitialDoubletTargets(std::array<int, 2> amlst, DoubletType type, bool initial);
 
+void PruneRight(DoubletSet & ds);
 void PruneRight(QuartetSet & qs, DoubletType type);
 
+void PrintDoubletSet(const DoubletSet & d, const std::string & title);
 void PrintQuartetSet(const QuartetSet & q, const std::string & title);
-
-void PrintQuartetSet_Arr(const QuartetSet & q, const std::string & title);
 
 int GaussianOrder(const std::array<int, 4> & ijk);
 

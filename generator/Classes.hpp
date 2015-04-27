@@ -120,11 +120,27 @@ struct Doublet
     DoubletType type;
     Gaussian left;
     Gaussian right;
-    int flag;
+    int flags;
 
     int am(void) const { return left.am() + right.am(); }    
     int idx(void) const { return left.idx() * right.ncart() + right.idx(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
+
+    std::string flagstr(void) const
+    {
+        if(flags == 0)
+            return std::string();
+
+        std::stringstream ss;
+        ss << "_{";
+        if(flags & DOUBLET_INITIAL)
+            ss << "i";
+        if(flags & DOUBLET_HRRTOPLEVEL)
+            ss << "t";
+        ss << "}";
+        
+        return ss.str();
+    }
 
     std::string str(void) const
     {
@@ -133,6 +149,8 @@ struct Doublet
           ss << "(" << left << " " << right << "|";
         else
           ss << "|" << left << " " << right << ")";
+        ss << flagstr();
+
         return ss.str(); 
     }
 

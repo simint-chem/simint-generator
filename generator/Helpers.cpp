@@ -72,6 +72,19 @@ DoubletSet GenerateInitialDoubletTargets(std::array<int, 2> amlst, DoubletType t
 
 
 
+void PruneRight(DoubletSet & ds)
+{
+    DoubletSet dsnew;
+
+    for(auto & it : ds)
+    {
+        if(it.right.am() != 0)
+            dsnew.insert(it);
+    }
+
+    ds = dsnew; 
+}
+
 void PruneRight(QuartetSet & qs, DoubletType type)
 {
     QuartetSet qsnew;
@@ -91,18 +104,16 @@ void PrintQuartetSet(const QuartetSet & q, const std::string & title)
 {
     cout << title << ": " << q.size() << "\n";
     for(auto & it : q)
-        cout << "    " << it << "       ->      " << it.code_var() << "\n";
+        cout << "    " << it << "\n";
     cout << "\n";
 }
 
 
-
-
-void PrintQuartetSet_Arr(const QuartetSet & q, const std::string & title)
+void PrintDoubletSet(const DoubletSet & d, const std::string & title)
 {
-    cout << title << ": " << q.size() << "\n";
-    for(auto & it : q)
-        cout << "    " << it << "       ->      " << it.array_var() << "\n";
+    cout << title << ": " << d.size() << "\n";
+    for(auto & it : d)
+        cout << "    " << it << "\n";
     cout << "\n";
 }
 
