@@ -21,8 +21,8 @@ static void Write_BoysFunction(std::ostream & os,
 }
 
 
-static void Write_HRR(std::ostream & os,
-                      const HRRStepList & hrr)
+static void Write_HRRStepList(std::ostream & os,
+                              const HRRStepList & hrr)
 {
     const std::string indent(8, ' ');
     for(const auto & h : hrr)
@@ -166,7 +166,7 @@ void Write_Generic(std::ostream & os,
     os << "    int startidx = 0;\n";
     os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
     os << "    {\n";
-    Write_HRR(os, hrrinfo.hrrlist);
+    Write_HRRStepList(os, hrrinfo.hrrlist);
     os << "\n";
     os << "        startidx += " << ncart << ";\n";
     os << "    }\n";
