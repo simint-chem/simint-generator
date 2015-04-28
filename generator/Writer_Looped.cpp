@@ -21,29 +21,17 @@ static void Write_BoysFunction(std::ostream & os,
 }
 
 
-static std::string QuartetVarString(const Quartet & q)
+static std::string ShellQuartetVarString(const ShellQuartet & q)
 {
     std::stringstream ss;
-    if(q.flags & QUARTET_INITIAL)
-        ss << "integrals[startidx + " << q.idx() << "]";
-    else
-    {
-        ss << "Q_" 
-           << q.bra.left.ijk[0] << q.bra.left.ijk[1] << q.bra.left.ijk[2]      << "_"
-           << q.bra.right.ijk[0] << q.bra.right.ijk[1] << q.bra.right.ijk[2]   << "_"
-           << q.ket.left.ijk[0] << q.ket.left.ijk[1] << q.ket.left.ijk[2]      << "_"
-           << q.ket.right.ijk[0] << q.ket.right.ijk[1] << q.ket.right.ijk[2]   << "_"
-           << q.m;
-
-        if(q.flags & QUARTET_HRRTOPLEVEL)
-            ss << "[abcd]";
-    }
+    ss << "SQ_"  << q.amlist[0] << "_" << q.amlist[1] << "_"
+                 << q.amlist[2] << "_" << q.amlist[3] << "_" << q.m;
 
     return ss.str();
 
 }
 
-
+/*
 static std::string HRRQuartetStepString(const HRRQuartetStep & hrr)
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
@@ -71,7 +59,7 @@ static void Write_HRRQuartetStepList(std::ostream & os,
     for(const auto & h : hrr)
         os << indent << HRRQuartetStepString(h) << "\n";    
 }
-
+*/
 
 void Writer_Looped(std::ostream & os,
                    const std::array<int, 4> & am,
@@ -79,7 +67,7 @@ void Writer_Looped(std::ostream & os,
                    const BoysMap & bm,
                    const VRRInfo & vrrinfo,
                    const ETInfo & etinfo,
-                   const HRRQuartetStepInfo & hrrinfo)
+                   const HRRDoubletStepInfo & hrrinfo)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
@@ -132,12 +120,9 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "    // Top level HRR requirements. Contracted integrals are accumulated here\n";
 
-    for(auto & it : hrrinfo.topreq)
-    {
-        os << "    double " << QuartetVarString(it) << "[nshell1234];\n";
-        os << "    memset(" << QuartetVarString(it) << ", 0, nshell1234 * sizeof(double));\n";
-        os << "\n";
-    }
+    // HRR top level stuff
+    for(const auto & it : hrrinfo.topreq)
+        os << "    " << ShellQuartetVarString(it) << "[" << NCART(it.amlist[0]+it.amlist[1])*NCART(it.amlist[2]+it.amlist[3]) << " * nshell1234];\n";
 
     os << "\n";
     os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
@@ -201,15 +186,16 @@ void Writer_Looped(std::ostream & os,
     os << "    }\n";
     os << "\n";
     os << "\n";
+
     os << "    //////////////////////////////////////////////\n";
     os << "    // Contracted integrals: Horizontal recurrance\n";
-    os << "    // Steps: " << hrrinfo.hrrlist.size() << "\n";
+//    os << "    // Steps: " << hrrinfo.hrrlist.size() << "\n";
     os << "    //////////////////////////////////////////////\n";
     os << "\n";
     os << "    int startidx = 0;\n";
     os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
     os << "    {\n";
-    Write_HRRQuartetStepList(os, hrrinfo.hrrlist);
+//    Write_HRRQuartetStepList(os, hrrinfo.hrrlist);
     os << "\n";
     os << "        startidx += " << ncart << ";\n";
     os << "    }\n";

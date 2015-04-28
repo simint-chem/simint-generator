@@ -58,19 +58,19 @@ void Create_Looped(std::array<int, 4> amlist,
     HRRDoubletStepList bralist;
 
     // holds all the 'solved' doublets
-    DoubletSet solveddoublets;
+    DoubletSet solvedbras;
 
     // generate initial targets
-    DoubletSet inittargets = GenerateInitialDoubletTargets({amlist[0],amlist[1]}, DoubletType::BRA, true);
-    PrintDoubletSet(inittargets, "Initial Targets");
+    DoubletSet initbras = GenerateInitialDoubletTargets({amlist[0],amlist[1]}, DoubletType::BRA, true);
+    PrintDoubletSet(initbras, "Initial Targets");
 
     // Inital bra targets
-    DoubletSet targets = inittargets;
+    DoubletSet targets = initbras;
     PruneRight(targets);
     PrintDoubletSet(targets, "Inital bra targets");
 
     // Solve the bra part
-    HRRLoop(bralist, targets, solveddoublets, hrralgo);
+    HRRLoop(bralist, targets, solvedbras, hrralgo);
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
@@ -79,71 +79,91 @@ void Create_Looped(std::array<int, 4> amlist,
     for(auto & it : bralist)
         cout << it << "\n";
     
-/*
-    // now do kets
-    // targets are src1 and src2 of hrrlist, pruned on the ket side
-    // and include any init targets that weren't solved
-    targets.clear();
-    for(const auto & it : hrrlist)
-    {
-        if(solvedquartets.count(it.src1) == 0)
-            targets.insert(it.src1);
-        if(solvedquartets.count(it.src2) == 0)
-            targets.insert(it.src2);
-    }
-    
-    if(targets.size() == 0)
-        targets = inittargets; // might be some there? ie  ( ss | ps )
 
-    PruneRight(targets, DoubletType::KET);
-    PrintQuartetSet(targets, "Initial ket targets");
+    // now do kets
+    // we only need the bras from the original targets
+    HRRDoubletStepList ketlist;
+    DoubletSet solvedkets;
+    DoubletSet initkets = GenerateInitialDoubletTargets({amlist[2],amlist[3]}, DoubletType::KET, true);
+    targets = initkets;
+    PruneRight(targets);
+
+
+    cout << "\n\n";
+    PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
-    HRRLoop(hrrlist, targets, solvedquartets, DoubletType::KET, hrralgo);
+    HRRLoop(ketlist, targets, solvedkets, hrralgo);
+
+    cout << "\n\n";
+    cout << "--------------------------------------------------------------------------------\n";
+    cout << "KET HRR step done. Solution is " << ketlist.size() << " steps\n";
+    cout << "--------------------------------------------------------------------------------\n";
+    for(auto & it : ketlist)
+        cout << it << "\n";
+
 
     // find top-level requirements at the end of HRR
     // these are src1 and src2 that are not solved
     // also set this in the hrrstep members
-    QuartetSet topreq;
+    DoubletSet topbras, topkets;
 
-    for(auto & it : hrrlist)
+    for(auto & it : bralist)
     {
-        if(solvedquartets.count(it.src1) == 0)
+        if(solvedbras.count(it.src1) == 0)
         {
-            topreq.insert(it.src1);
-            it.src1.flags |= QUARTET_HRRTOPLEVEL;
+            it.src1.flags |= DOUBLET_HRRTOPLEVEL;
+            topbras.insert(it.src1);
         }
         else
-            it.src1.flags &= ~(QUARTET_HRRTOPLEVEL);
+            it.src1.flags &= ~(DOUBLET_HRRTOPLEVEL);
             
-        if(solvedquartets.count(it.src2) == 0)
+        if(solvedbras.count(it.src2) == 0)
         {
-            topreq.insert(it.src2);
-            it.src2.flags |= QUARTET_HRRTOPLEVEL;
+            it.src2.flags |= DOUBLET_HRRTOPLEVEL;
+            topbras.insert(it.src2);
         }
         else
-            it.src2.flags &= ~(QUARTET_HRRTOPLEVEL);
+            it.src2.flags &= ~(DOUBLET_HRRTOPLEVEL);
     }
 
+    if(topbras.size() == 0)
+        topbras.insert({DoubletType::BRA, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
+
+    for(auto & it : ketlist)
+    {
+        if(solvedkets.count(it.src1) == 0)
+        {
+            it.src1.flags |= DOUBLET_HRRTOPLEVEL;
+            topkets.insert(it.src1);
+        }
+        else
+            it.src1.flags &= ~(DOUBLET_HRRTOPLEVEL);
+            
+        if(solvedkets.count(it.src2) == 0)
+        {
+            it.src2.flags |= DOUBLET_HRRTOPLEVEL;
+            topkets.insert(it.src2);
+        }
+        else
+            it.src2.flags &= ~(DOUBLET_HRRTOPLEVEL);
+    }
+
+    if(topkets.size() == 0)
+        topkets.insert({DoubletType::KET, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
+
+    ShellQuartetSet topreq;
+    for(const auto & it : topbras)
+    {
+        for(const auto & it2 : topkets)
+        {
+            topreq.insert({it, it2});
+        }
+    }
 
     // reverse the steps
-    std::reverse(hrrlist.begin(), hrrlist.end());
-
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << "HRR step done. Solution is " << hrrlist.size() << " steps\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : hrrlist)
-        cout << it << "\n";
-
-
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << " CODE\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : hrrlist)
-        cout << it.code_line() << "\n";
-
+    std::reverse(bralist.begin(), bralist.end());
+    std::reverse(ketlist.begin(), ketlist.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
@@ -155,16 +175,16 @@ void Create_Looped(std::array<int, 4> amlist,
     
     cout << "\n\n";
 
-
     // write out
-    HRRQuartetStepInfo hrrinfo{hrrlist, topreq};
 
-    Write_Looped(out,
-                 amlist,
-                 "FOcombined",
-                 bm,
-                 VRRInfo{2, {}},
-                 ETInfo(),
-                 hrrinfo);
-    */
+    HRRDoubletStepInfo hrrinfo{bralist, ketlist, topreq};
+
+    Writer_Looped(out,
+                  amlist,
+                  "FOcombined",
+                  bm,
+                  VRRInfo{2, {}},
+                  ETInfo(),
+                  hrrinfo);
+
 }

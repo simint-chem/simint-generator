@@ -21,6 +21,6 @@ void Writer_Looped(std::ostream & os,
                   const BoysMap & bm,
                   const VRRInfo & vrinfo,
                   const ETInfo & etinfo,
-                  const HRRQuartetStepInfo & hrrinfo);
+                  const HRRDoubletStepInfo & hrrinfo);
 
 #endif

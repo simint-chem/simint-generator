@@ -34,9 +34,6 @@ static std::string QuartetVarString(const Quartet & q)
            << q.ket.left.ijk[0] << q.ket.left.ijk[1] << q.ket.left.ijk[2]      << "_"
            << q.ket.right.ijk[0] << q.ket.right.ijk[1] << q.ket.right.ijk[2]   << "_"
            << q.m;
-
-        if(q.flags & QUARTET_HRRTOPLEVEL)
-            ss << "[abcd]";
     }
 
     return ss.str();
@@ -81,7 +78,11 @@ void Writer_Unrolled(std::ostream & os,
                      const ETInfo & etinfo,
                      const HRRQuartetStepInfo & hrrinfo)
 {
-    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    int nam1 = NCART(am[0]);
+    int nam2 = NCART(am[1]);
+    int nam3 = NCART(am[2]);
+    int nam4 = NCART(am[3]);
+    int ncart = nam1 * nam2 * nam3 * nam4;
 
     // set up the function to make it look pretty
     std::stringstream ss;
@@ -132,7 +133,7 @@ void Writer_Unrolled(std::ostream & os,
     os << "\n";
     os << "    // Top level HRR requirements. Contracted integrals are accumulated here\n";
 
-    for(auto & it : hrrinfo.topreq)
+    for(const auto & it : hrrinfo.topreq)
     {
         os << "    double " << QuartetVarString(it) << "[nshell1234];\n";
         os << "    memset(" << QuartetVarString(it) << ", 0, nshell1234 * sizeof(double));\n";

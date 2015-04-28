@@ -88,6 +88,8 @@ void Create_Unrolled(std::array<int, 4> amlist,
         targets = inittargets; // might be some there? ie  ( ss | ps )
 
     PruneRight(targets, DoubletType::KET);
+
+    cout << "\n\n";
     PrintQuartetSet(targets, "Initial ket targets");
 
     // Solve the ket part
@@ -102,16 +104,16 @@ void Create_Unrolled(std::array<int, 4> amlist,
     {
         if(solvedquartets.count(it.src1) == 0)
         {
-            topreq.insert(it.src1);
             it.src1.flags |= QUARTET_HRRTOPLEVEL;
+            topreq.insert(it.src1);
         }
         else
             it.src1.flags &= ~(QUARTET_HRRTOPLEVEL);
             
         if(solvedquartets.count(it.src2) == 0)
         {
-            topreq.insert(it.src2);
             it.src2.flags |= QUARTET_HRRTOPLEVEL;
+            topreq.insert(it.src2);
         }
         else
             it.src2.flags &= ~(QUARTET_HRRTOPLEVEL);
@@ -127,15 +129,6 @@ void Create_Unrolled(std::array<int, 4> amlist,
     cout << "--------------------------------------------------------------------------------\n";
     for(auto & it : hrrlist)
         cout << it << "\n";
-
-    /*
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << " CODE\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : hrrlist)
-        cout << it.code_line() << "\n";
-    */
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";

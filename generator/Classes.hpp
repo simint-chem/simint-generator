@@ -222,7 +222,7 @@ struct Quartet
     {
         std::stringstream ss;
         ss << "( " << bra.left << " " << bra.right << " | "
-                   << ket.left << " " << ket.right << " )^"
+                   << ket.left << " " << ket.right << " )"
                    << m << flagstr();
         return ss.str();
     }
@@ -258,7 +258,91 @@ struct Quartet
 
 };
 
+
 inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
+{
+    os << q.str();
+    return os;
+}
+
+
+struct ShellQuartet
+{
+    std::array<int, 4> amlist;
+    int m;
+    int flags; // is an HRR top-level quartet, etc
+
+    int am(void) const { return amlist[0] + amlist[1] + amlist[2] + amlist[3]; }
+
+
+    std::string flagstr(void) const
+    {
+        if(flags == 0)
+            return std::string();
+
+        std::stringstream ss;
+        ss << "_{";
+        if(flags & QUARTET_INITIAL)
+            ss << "i";
+        if(flags & QUARTET_HRRTOPLEVEL)
+            ss << "t";
+        ss << "}";
+        
+        return ss.str();
+    }
+
+    std::string str(void) const
+    {
+        std::stringstream ss;
+        ss << "< " << amlist[0] << " " << amlist[1] << " | "
+                   << amlist[2] << " " << amlist[3] << " >"
+                   << "^" << m << flagstr();
+        return ss.str();
+    }
+
+
+    bool operator<(const ShellQuartet & rhs) const
+    {
+        if(am() < rhs.am())
+            return true;
+        else if(am() == rhs.am())
+        {
+            
+            if(amlist < rhs.amlist)
+                return true;
+            else if(amlist == rhs.amlist)
+            {
+                if(m < rhs.m)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool operator==(const ShellQuartet & rhs) const
+    {
+        return (amlist == rhs.amlist && m == rhs.m);
+    }
+
+    ShellQuartet(const Quartet & q)
+    {
+        amlist = { q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am() };
+        m = q.m;
+    }
+    
+    ShellQuartet(const Doublet & bra, const Doublet & ket, int mval = 0)
+    {
+        amlist = { bra.left.am(), bra.right.am(), ket.left.am(), ket.right.am() };
+        m = mval;
+    }
+
+    ShellQuartet(const ShellQuartet & q) = default;
+
+};
+
+
+inline std::ostream & operator<<(std::ostream & os, const ShellQuartet & q)
 {
     os << q.str();
     return os;
@@ -363,20 +447,22 @@ typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
 typedef std::vector<VRRStep> VRRStepList;
+typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 
-
-struct HRRDoubletStepInfo
-{
-    HRRDoubletStepList hrrlist;
-    DoubletSet topreq;
-};
 
 struct HRRQuartetStepInfo
 {
     HRRQuartetStepList hrrlist;
     QuartetSet topreq;
+};
+
+struct HRRDoubletStepInfo
+{
+    HRRDoubletStepList bralist;
+    HRRDoubletStepList ketlist;
+    ShellQuartetSet topreq;
 };
 
 struct ETInfo
