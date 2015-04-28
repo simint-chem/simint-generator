@@ -5,13 +5,10 @@
 #include <array>
 
 class HRR_Algorithm_Base;
+typedef std::array<int, 4> QAMList;
 
-void Create_Unrolled(std::array<int, 4> amlist,
-                     std::unique_ptr<HRR_Algorithm_Base> & hrralgo,
-                     std::ostream & out);
+HRRBraKetStepList Create_DoubletStepLists(QAMList amlist, std::unique_ptr<HRR_Algorithm_Base> & hrralgo);
 
-void Create_Looped(std::array<int, 4> amlist,
-                   std::unique_ptr<HRR_Algorithm_Base> & hrralgo,
-                   std::ostream & out);
+HRRQuartetStepList Create_QuartetStepList(QAMList amlist, std::unique_ptr<HRR_Algorithm_Base> & hrralg);
 
 #endif

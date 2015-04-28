@@ -7,9 +7,8 @@
 #include <ostream>
 #include <vector>
 #include <set>
+#include <utility>
 
-//#include "generator/Helpers.hpp"
-int GaussianOrder(const std::array<int, 3> & ijk);
 
 
 // some flags
@@ -19,6 +18,13 @@ int GaussianOrder(const std::array<int, 3> & ijk);
 #define DOUBLET_INITIAL     1  // what we are looking for at the end
 #define DOUBLET_HRRTOPLEVEL 2
 
+
+typedef std::array<int, 2> DAMList;
+typedef std::array<int, 4> QAMList;
+typedef std::array<int, 3> ExpList;
+
+// In Helpers.cpp
+int GaussianOrder(const ExpList & ijk);
 
 enum class DoubletType
 {
@@ -59,7 +65,7 @@ inline XYZStep IdxToXYZStep(int xyz)
 
 struct Gaussian
 {
-    std::array<int, 3> ijk;
+    ExpList ijk;
 
     int am(void) const { return ijk[0] + ijk[1] + ijk[2]; }
     int idx(void) const { return GaussianOrder(ijk); } 
@@ -74,6 +80,7 @@ struct Gaussian
     }
 
 
+    // notice the reversing of the exponents
     bool operator<(const Gaussian & rhs) const
     {
         if(am() < rhs.am())
@@ -98,9 +105,9 @@ struct Gaussian
             return false;
 
         if(ijk[2] < (am() - ijk[0]))
-            ijk = std::array<int, 3>{ijk[0],   ijk[1]-1,      ijk[2]+1 };
+            ijk = {ijk[0],   ijk[1]-1,      ijk[2]+1 };
         else
-            ijk = std::array<int, 3>{ijk[0]-1, am()-ijk[0]+1, 0        };
+            ijk = {ijk[0]-1, am()-ijk[0]+1, 0        };
         return true;
     }
 };
@@ -114,7 +121,7 @@ inline std::ostream & operator<<(std::ostream & os, const Gaussian & g)
 
 
 
-
+// A single bra or ket, containing two gaussians
 struct Doublet
 {
     DoubletType type;
@@ -166,6 +173,11 @@ struct Doublet
             {
                 if(right < rhs.right)
                     return true;
+                else if(right == rhs.right)
+                {
+                    if(flags > rhs.flags)
+                        return true;
+                }
             }
         }
         return false;
@@ -175,7 +187,8 @@ struct Doublet
     {
         return (left == rhs.left &&
                 right == rhs.right &&
-                type == rhs.type);
+                type == rhs.type &&
+                flags == rhs.flags);
     }
 };
 
@@ -191,7 +204,7 @@ struct Quartet
     Doublet bra;
     Doublet ket;
     int m;
-    int flags; // is an HRR top-level quartet, etc
+    int flags;
 
     int am(void) const { return bra.am() + ket.am(); }
     int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
@@ -244,6 +257,11 @@ struct Quartet
                 {
                     if(m < rhs.m)
                         return true;
+                    else if(m == rhs.m)
+                    {
+                        if(flags > rhs.flags)
+                            return true;
+                    }
                 }
             }
         }
@@ -253,7 +271,7 @@ struct Quartet
 
     bool operator==(const Quartet & rhs) const
     {
-        return (bra == rhs.bra && ket == rhs.ket && m == rhs.m);
+        return (bra == rhs.bra && ket == rhs.ket && m == rhs.m && flags == rhs.flags);
     }
 
 };
@@ -266,9 +284,10 @@ inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
 }
 
 
+
 struct ShellQuartet
 {
-    std::array<int, 4> amlist;
+    QAMList amlist;
     int m;
     int flags; // is an HRR top-level quartet, etc
 
@@ -314,6 +333,11 @@ struct ShellQuartet
             {
                 if(m < rhs.m)
                     return true;
+                else if(m == rhs.m)
+                {
+                    if(flags > rhs.flags)
+                        return true;
+                }
             }
         }
 
@@ -331,11 +355,13 @@ struct ShellQuartet
         m = q.m;
     }
     
-    ShellQuartet(const Doublet & bra, const Doublet & ket, int mval = 0)
+    ShellQuartet(const Doublet & bra, const Doublet & ket, int m = 0)
+              : amlist{bra.left.am(), bra.right.am(), ket.left.am(), ket.right.am()}, m(m)
     {
-        amlist = { bra.left.am(), bra.right.am(), ket.left.am(), ket.right.am() };
-        m = mval;
     }
+
+    ShellQuartet(const QAMList & amlist, int m, int flags)
+              : amlist(amlist), m(m), flags(flags) { }
 
     ShellQuartet(const ShellQuartet & q) = default;
 
@@ -374,6 +400,14 @@ struct HRRDoubletStep
 };
 
 
+
+inline std::ostream & operator<<(std::ostream & os, const HRRDoubletStep & hrr)
+{
+    os << hrr.str();
+    return os;
+}
+
+
 struct HRRQuartetStep
 {
     Quartet target;
@@ -401,6 +435,14 @@ struct HRRQuartetStep
     }
 };
 
+inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
+{
+    os << hrr.str();
+    return os;
+}
+
+
+
 
 struct ETStep
 {
@@ -409,6 +451,13 @@ struct ETStep
         return "TOTO";
     } 
 };
+
+inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
+{
+    os << et.str();
+    return os;
+}
+
 
 
 struct VRRStep
@@ -419,61 +468,24 @@ struct VRRStep
     } 
 };
 
-inline std::ostream & operator<<(std::ostream & os, const HRRDoubletStep & hrr)
-{
-    os << hrr.str();
-    return os;
-}
-
-inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
-{
-    os << hrr.str();
-    return os;
-}
-
-inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
-{
-    os << et.str();
-    return os;
-}
-
 inline std::ostream & operator<<(std::ostream & os, const VRRStep & is)
 {
     os << is.str();
     return os;
 }
 
+
+
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
+typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
+
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
 typedef std::vector<VRRStep> VRRStepList;
+
 typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 
-
-struct HRRQuartetStepInfo
-{
-    HRRQuartetStepList hrrlist;
-    QuartetSet topreq;
-};
-
-struct HRRDoubletStepInfo
-{
-    HRRDoubletStepList bralist;
-    HRRDoubletStepList ketlist;
-    ShellQuartetSet topreq;
-};
-
-struct ETInfo
-{
-    ETStepList etlist;
-};
-
-struct VRRInfo
-{
-    int maxv; // highest order of Boys function
-    VRRStepList vrrlist;
-};
 
 #endif

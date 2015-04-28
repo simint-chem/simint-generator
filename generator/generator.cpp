@@ -6,6 +6,7 @@
 #include "generator/Algorithms.hpp"
 #include "generator/Boys.hpp"
 #include "generator/Create.hpp"
+#include "generator/Writer.hpp"
 
 using namespace std;
 
@@ -20,16 +21,33 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    std::array<int, 4> amlist{
-                               atoi(argv[1]),
-                               atoi(argv[2]),
-                               atoi(argv[3]),
-                               atoi(argv[4])
-                             };
+    QAMList amlist{
+                    atoi(argv[1]),
+                    atoi(argv[2]),
+                    atoi(argv[3]),
+                    atoi(argv[4])
+                  };
 
+
+    // Read in the boys map
+    BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
+
+    // algorithm used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
-    //Create_Unrolled(amlist, hrralgo, cout);
-    Create_Looped(amlist, hrralgo, cout);
+
+    /*
+    // Create the quartet list
+    HRRQuartetStepList hqsl = Create_QuartetStepList(amlist, hrralgo);
+
+    // Write it out
+    Writer_Unrolled(cout, amlist, "FOCombined", bm, hqsl);
+    */
+
+    // Create the step lists
+    HRRBraKetStepList bksl = Create_DoubletStepLists(amlist, hrralgo);
+
+    // Write it out
+    Writer_Looped(cout, amlist, "FOCombined", bm, bksl);
 
 
     }

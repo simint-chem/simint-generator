@@ -5,9 +5,9 @@
 
 using std::cout;
 
-static std::map<std::array<int, 3>, int> ordermap_;
+static std::map<ExpList, int> ordermap_;
 
-QuartetSet GenerateInitialQuartetTargets(std::array<int, 4> amlst, bool initial)
+QuartetSet GenerateInitialQuartetTargets(QAMList amlst, bool initial)
 {
     int flag = (initial ? QUARTET_INITIAL : 0);
 
@@ -47,7 +47,7 @@ QuartetSet GenerateInitialQuartetTargets(std::array<int, 4> amlst, bool initial)
     return qs;
 }
 
-DoubletSet GenerateInitialDoubletTargets(std::array<int, 2> amlst, DoubletType type, bool initial)
+DoubletSet GenerateInitialDoubletTargets(DAMList amlst, DoubletType type, bool initial)
 {
     int flag = (initial ? DOUBLET_INITIAL : 0);
 
@@ -118,7 +118,7 @@ void PrintDoubletSet(const DoubletSet & d, const std::string & title)
 }
 
 
-int GaussianOrder(const std::array<int, 3> & ijk)
+int GaussianOrder(const ExpList & ijk)
 {
     if(!ordermap_.size())
     {

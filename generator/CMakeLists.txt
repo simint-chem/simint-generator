@@ -12,10 +12,9 @@ list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 add_executable(generator generator.cpp
                          Helpers.cpp
                          Boys.cpp
+                         Create.cpp
                          Writer_Unrolled.cpp
-                         Create_Unrolled.cpp
                          Writer_Looped.cpp
-                         Create_Looped.cpp
               )
 
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")

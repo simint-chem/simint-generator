@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
@@ -11,45 +12,9 @@ using namespace std;
 
 
 
-static void HRRLoop(HRRDoubletStepList & hrrlist,
-                    const DoubletSet & inittargets,
-                    DoubletSet & solveddoublets,
+std::pair<HRRDoubletStepList, HRRDoubletStepList>
+Create_DoubletLists(QAMList amlist,
                     std::unique_ptr<HRR_Algorithm_Base> & hrralgo)
-{
-    DoubletSet targets = inittargets;
-
-    while(targets.size())
-    {
-        DoubletSet newtargets;
-
-        for(auto it = targets.rbegin(); it != targets.rend(); ++it)
-        {
-            HRRDoubletStep hrr = hrralgo->doubletstep(*it);
-            hrrlist.push_back(hrr);
-
-            if(solveddoublets.count(hrr.src1) == 0)
-                newtargets.insert(hrr.src1);
-            if(solveddoublets.count(hrr.src2) == 0)
-                newtargets.insert(hrr.src2);
-            
-            solveddoublets.insert(*it);
-        }
-
-        cout << "Generated " << newtargets.size() << " new targets\n";
-
-        PruneRight(newtargets);
-        cout << "After pruning: " << newtargets.size() << " new targets\n";
-        for(const auto & it : newtargets)
-            cout << "    " << it << "\n";
-
-        targets = newtargets;
-    } 
-}
-               
-
-void Create_Looped(std::array<int, 4> amlist,
-                   std::unique_ptr<HRR_Algorithm_Base> & hrralgo,
-                   std::ostream & out)
 {
     // read information about the boys function
     BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
@@ -116,7 +81,9 @@ void Create_Looped(std::array<int, 4> amlist,
             topbras.insert(it.src1);
         }
         else
+        {
             it.src1.flags &= ~(DOUBLET_HRRTOPLEVEL);
+        }
             
         if(solvedbras.count(it.src2) == 0)
         {
@@ -124,7 +91,9 @@ void Create_Looped(std::array<int, 4> amlist,
             topbras.insert(it.src2);
         }
         else
+        {
             it.src2.flags &= ~(DOUBLET_HRRTOPLEVEL);
+        }
     }
 
     if(topbras.size() == 0)
@@ -152,14 +121,15 @@ void Create_Looped(std::array<int, 4> amlist,
     if(topkets.size() == 0)
         topkets.insert({DoubletType::KET, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
 
-    ShellQuartetSet topreq;
+    ShellQuartetSet topreq, bratargets;
     for(const auto & it : topbras)
     {
         for(const auto & it2 : topkets)
-        {
             topreq.insert({it, it2});
-        }
     }
+
+    for(const auto & it : topkets)
+        bratargets.insert({{amlist[0], amlist[1], it.left.am(), it.right.am()}, 0, DOUBLET_HRRTOPLEVEL});
 
     // reverse the steps
     std::reverse(bralist.begin(), bralist.end());
@@ -177,7 +147,7 @@ void Create_Looped(std::array<int, 4> amlist,
 
     // write out
 
-    HRRDoubletStepInfo hrrinfo{bralist, ketlist, topreq};
+    HRRDoubletStepInfo hrrinfo{bralist, ketlist, bratargets, topreq};
 
     Writer_Looped(out,
                   amlist,

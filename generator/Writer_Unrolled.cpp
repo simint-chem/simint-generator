@@ -1,6 +1,3 @@
-#include <ostream>
-#include <array>
-#include <string>
 #include <sstream>
 
 #include "generator/Classes.hpp"
@@ -24,10 +21,13 @@ static void Write_BoysFunction(std::ostream & os,
 static std::string QuartetVarString(const Quartet & q)
 {
     std::stringstream ss;
+
+    // is this one of the final integrals
     if(q.flags & QUARTET_INITIAL)
         ss << "integrals[startidx + " << q.idx() << "]";
     else
     {
+        // if not, it's a temp variable
         ss << "Q_" 
            << q.bra.left.ijk[0] << q.bra.left.ijk[1] << q.bra.left.ijk[2]      << "_"
            << q.bra.right.ijk[0] << q.bra.right.ijk[1] << q.bra.right.ijk[2]   << "_"
@@ -37,7 +37,6 @@ static std::string QuartetVarString(const Quartet & q)
     }
 
     return ss.str();
-
 }
 
 
@@ -48,41 +47,50 @@ static std::string HRRQuartetStepString(const HRRQuartetStep & hrr)
 
 
     std::stringstream ss;
+
+    // target is a temp variable
     if(!(hrr.target.flags & QUARTET_INITIAL))
-        ss << "const double "; 
+        ss << "const double ";  
+
     ss << QuartetVarString(hrr.target) 
        << " = " << QuartetVarString(hrr.src1)
-       << " + (" << xyztype << hrr.xyz
-       << "[abcd]" 
+       << " + (" << xyztype << hrr.xyz << "[abcd]" 
        << " * " << QuartetVarString(hrr.src2) << ");";
+
+    // is it one of the final integrals?
+    // if so, add a comment about which one it is
     if(hrr.target.flags & QUARTET_INITIAL)
         ss << "    // " << hrr.target.str();
 
     return ss.str();
 }
 
-static void Write_HRRQuartetStepList(std::ostream & os,
-                              const HRRQuartetStepList & hrr)
-{
-    const std::string indent(8, ' ');
-    for(const auto & h : hrr)
-        os << indent << HRRQuartetStepString(h) << "\n";    
-}
-
 
 void Writer_Unrolled(std::ostream & os,
-                     const std::array<int, 4> & am,
+                     const QAMList & am,
                      const std::string & nameappend,
                      const BoysMap & bm,
-                     const VRRInfo & vrrinfo,
-                     const ETInfo & etinfo,
-                     const HRRQuartetStepInfo & hrrinfo)
+                     const HRRQuartetStepList & hrrsteps)
 {
     int nam1 = NCART(am[0]);
     int nam2 = NCART(am[1]);
     int nam3 = NCART(am[2]);
     int nam4 = NCART(am[3]);
     int ncart = nam1 * nam2 * nam3 * nam4;
+
+    // todo - calculate the max v needed for the boys function
+    int maxv = 2;
+
+    // calculate the top requirements for the HRR steps
+    QuartetSet hrrtopreq;
+    for(const auto & it : hrrsteps)
+    {
+        if(it.src1.flags & QUARTET_HRRTOPLEVEL)
+            hrrtopreq.insert(it.src1);
+        if(it.src2.flags & QUARTET_HRRTOPLEVEL)
+            hrrtopreq.insert(it.src2);
+    }
+
 
     // set up the function to make it look pretty
     std::stringstream ss;
@@ -133,7 +141,7 @@ void Writer_Unrolled(std::ostream & os,
     os << "\n";
     os << "    // Top level HRR requirements. Contracted integrals are accumulated here\n";
 
-    for(const auto & it : hrrinfo.topreq)
+    for(const auto & it : hrrtopreq)
     {
         os << "    double " << QuartetVarString(it) << "[nshell1234];\n";
         os << "    memset(" << QuartetVarString(it) << ", 0, nshell1234 * sizeof(double));\n";
@@ -179,13 +187,13 @@ void Writer_Unrolled(std::ostream & os,
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
-    os << "                    // Maximum v value: " << vrrinfo.maxv << "\n";
+    os << "                    // Maximum v value: " << maxv << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // The paremeter to the boys function\n";
     os << "                    const double F_x = R2 * PQalpha_mul/PQalpha_sum;\n";
     os << "\n";
 
-    Write_BoysFunction(os, bm, vrrinfo.maxv);
+    Write_BoysFunction(os, bm, maxv);
 
     os << "\n\n";
     os << "\n";
@@ -204,13 +212,14 @@ void Writer_Unrolled(std::ostream & os,
     os << "\n";
     os << "    //////////////////////////////////////////////\n";
     os << "    // Contracted integrals: Horizontal recurrance\n";
-    os << "    // Steps: " << hrrinfo.hrrlist.size() << "\n";
+    os << "    // Steps: " << hrrsteps.size() << "\n";
     os << "    //////////////////////////////////////////////\n";
     os << "\n";
     os << "    int startidx = 0;\n";
     os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
     os << "    {\n";
-    Write_HRRQuartetStepList(os, hrrinfo.hrrlist);
+    for(const auto & h : hrrsteps)
+        os << "        " << HRRQuartetStepString(h) << "\n";    
     os << "\n";
     os << "        startidx += " << ncart << ";\n";
     os << "    }\n";

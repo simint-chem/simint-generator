@@ -15,7 +15,7 @@ class Makowski_HRR : public HRR_Algorithm_Base
                 throw std::runtime_error("Cannot HRR step to an s doublet!");
 
             // idx is the xyz index
-            std::array<int, 3> ijk = target.right.ijk;
+            ExpList ijk = target.right.ijk;
             std::sort(ijk.begin(), ijk.end());
             auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
             auto it = std::find(target.right.ijk.rbegin(), target.right.ijk.rend(), *v); 
