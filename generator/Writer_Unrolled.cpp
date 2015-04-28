@@ -21,12 +21,55 @@ static void Write_BoysFunction(std::ostream & os,
 }
 
 
+static std::string QuartetVarString(const Quartet & q)
+{
+    std::stringstream ss;
+    if(q.flags & QUARTET_INITIAL)
+        ss << "integrals[startidx + " << q.idx() << "]";
+    else
+    {
+        ss << "Q_" 
+           << q.bra.left.ijk[0] << q.bra.left.ijk[1] << q.bra.left.ijk[2]      << "_"
+           << q.bra.right.ijk[0] << q.bra.right.ijk[1] << q.bra.right.ijk[2]   << "_"
+           << q.ket.left.ijk[0] << q.ket.left.ijk[1] << q.ket.left.ijk[2]      << "_"
+           << q.ket.right.ijk[0] << q.ket.right.ijk[1] << q.ket.right.ijk[2]   << "_"
+           << q.m;
+
+        if(q.flags & QUARTET_HRRTOPLEVEL)
+            ss << "[abcd]";
+    }
+
+    return ss.str();
+
+}
+
+
+static std::string HRRQuartetStepString(const HRRQuartetStep & hrr)
+{
+    // determine P,Q, etc, for AB_x, AB_y, AB_z
+    const char * xyztype = (hrr.steptype == DoubletType::BRA ? "AB_" : "CD_");
+
+
+    std::stringstream ss;
+    if(!(hrr.target.flags & QUARTET_INITIAL))
+        ss << "const double "; 
+    ss << QuartetVarString(hrr.target) 
+       << " = " << QuartetVarString(hrr.src1)
+       << " + (" << xyztype << hrr.xyz
+       << "[abcd]" 
+       << " * " << QuartetVarString(hrr.src2) << ");";
+    if(hrr.target.flags & QUARTET_INITIAL)
+        ss << "    // " << hrr.target.str();
+
+    return ss.str();
+}
+
 static void Write_HRRQuartetStepList(std::ostream & os,
                               const HRRQuartetStepList & hrr)
 {
     const std::string indent(8, ' ');
     for(const auto & h : hrr)
-        os << indent << h.code_line_full() << "\n";    
+        os << indent << HRRQuartetStepString(h) << "\n";    
 }
 
 
@@ -91,8 +134,8 @@ void Writer_Unrolled(std::ostream & os,
 
     for(auto & it : hrrinfo.topreq)
     {
-        os << "    double " << it.code_var() << "[nshell1234];\n";
-        os << "    memset(" << it.code_var() << ", 0, nshell1234 * sizeof(double));\n";
+        os << "    double " << QuartetVarString(it) << "[nshell1234];\n";
+        os << "    memset(" << QuartetVarString(it) << ", 0, nshell1234 * sizeof(double));\n";
         os << "\n";
     }
 

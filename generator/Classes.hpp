@@ -228,44 +228,6 @@ struct Quartet
     }
 
 
-    std::string code_var(void) const
-    {
-        std::stringstream ss;
-        if(flags & QUARTET_INITIAL)
-            ss << "integrals[startidx + " << idx() << "]";
-        else
-        {
-            ss << "Q_" 
-               << bra.left.ijk[0] << bra.left.ijk[1] << bra.left.ijk[2]      << "_"
-               << bra.right.ijk[0] << bra.right.ijk[1] << bra.right.ijk[2]   << "_"
-               << ket.left.ijk[0] << ket.left.ijk[1] << ket.left.ijk[2]      << "_"
-               << ket.right.ijk[0] << ket.right.ijk[1] << ket.right.ijk[2]   << "_"
-               << m;
-
-            if(flags & QUARTET_HRRTOPLEVEL)
-                ss << "[abcd]";
-        }
-        return ss.str();
-    }
-
-    std::string array_var(void) const
-    {
-        std::stringstream ss;
-        if(flags & QUARTET_INITIAL)
-            ss << "integrals[startidx + " << idx() << "]";
-        else
-        {
-            ss << "Q_" 
-               << bra.left.am()  << "_"
-               << bra.right.am() << "_"
-               << ket.left.am()  << "_"
-               << ket.right.am() << "_"
-               << m << "[startidx + " << idx() << "]";
-        }
-        return ss.str();
-    }
-
-
     bool operator<(const Quartet & rhs) const
     {
         if(am() < rhs.am())
@@ -352,45 +314,6 @@ struct HRRQuartetStep
                 src2 == rhs.src2 &&
                 steptype == rhs.steptype &&
                 xyz == rhs.xyz);
-    }
-
-
-    std::string code_line_full(void) const
-    {
-        // determine P,Q, etc, for AB_x, AB_y, AB_z
-        const char * xyztype = (steptype == DoubletType::BRA ? "AB_" : "CD_");
-        
-
-        std::stringstream ss;
-        if(!(target.flags & QUARTET_INITIAL))
-            ss << "const double ";
-        ss << target.code_var() << " = " << src1.code_var() 
-                                << " + (" << xyztype << xyz
-                                << "[abcd]"
-                                << " * " << src2.code_var() << ");";
-        if(target.flags & QUARTET_INITIAL)
-            ss << "    // " << target.str();
-
-        return ss.str();
-    }
-
-    std::string code_line_arr(void) const
-    {
-        // determine P,Q, etc, for AB_x, AB_y, AB_z
-        const char * xyztype = (steptype == DoubletType::BRA ? "AB_" : "CD_");
-        
-
-        std::stringstream ss;
-        if(!(target.flags & QUARTET_INITIAL))
-            ss << "const double ";
-        ss << target.array_var() << " = " << src1.array_var() 
-                                 << " + (" << xyztype << xyz
-                                 << "[abcd]"
-                                 << " * " << src2.array_var() << ");";
-        if(target.flags & QUARTET_INITIAL)
-            ss << "    // " << target.str();
-
-        return ss.str();
     }
 };
 
