@@ -14,7 +14,7 @@ list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 list(APPEND SIMINT_C_FLAGS "-std=c99")
 list(APPEND SIMINT_C_FLAGS "-O3")
 list(APPEND SIMINT_C_FLAGS "-Wall -Wunused-variable -pedantic")
-#list(APPEND SIMINT_C_FLAGS " -Werror -pedantic-errors")
+list(APPEND SIMINT_C_FLAGS " -Werror -pedantic-errors")
 list(APPEND SIMINT_C_FLAGS "-ggdb")
 
 
