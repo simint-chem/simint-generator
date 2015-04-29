@@ -142,7 +142,7 @@ static std::string HRRBraStepString(const HRRDoubletStep & hrr, const ShellDoubl
 static std::string HRRKetStepString(const HRRDoubletStep & hrr, const ShellDoublet & bra)
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
-    const char * xyztype = "AB_";
+    const char * xyztype = "CD_";
 
     std::stringstream ss;
     ss << std::string(12, ' ');
@@ -279,6 +279,16 @@ void Writer_Looped(std::ostream & os,
         os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
 
     os << "\n";
+    os << "    // Holds boys function values (times prefactors)\n";
+    os << "    double AUX_0[" << maxv+1 << "];\n";
+    os << "\n";
+    os << "    // Holds the auxiliary integrals ( i 0| 0 0 )^m in the primitive basis\n";
+    for(int i = 1; i <= maxv; i++)
+        os << "    double AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
+    os << "\n\n";
+    os << "    ////////////////////////////////////////\n";
+    os << "    // Loop over shells and primitives\n";
+    os << "    ////////////////////////////////////////\n";
     os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
     os << "    {\n";
     os << "        const int abstart = P.primstart[ab];\n";
@@ -315,21 +325,54 @@ void Writer_Looped(std::ostream & os,
     os << "                    const double PQ_z = P.z[i] - Q.z[j];\n";
     os << "                    const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
     os << "\n";
+    os << "                    // collected prefactors\n";
+    os << "                    const double allprefac =  pfac * P.prefac[i] * Q.prefac[j];\n";
+    os << "\n";
+    os << "                    // various factors\n";
+    os << "                    const double alpha = PQlpha_mul/PQalpha_sum;   // alpha from MEST\n";
+    os << "                    const double aoverp =  alpha / P.alpha[i];     // a/p from MEST\n";
+    os << "                    const double one_over_2p = 1.0/(2.0 * P.alpha[i]);  // gets multiplied by i in VRR\n";
+    os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
     os << "                    // Maximum v value: " << maxv << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // The paremeter to the boys function\n";
-    os << "                    const double F_x = R2 * PQalpha_mul/PQalpha_sum;\n";
+    os << "                    const double F_x = R2 * alpha;\n";
+    os << "\n";
     os << "\n";
 
     Write_BoysFunction(os, bm, maxv);
 
-    os << "\n\n";
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Primitive integrals: Vertical recurrance\n";
     os << "                    //////////////////////////////////////////////\n";
+    os << "\n";
+    os << "                    int idx = 0;\n";
+    os << "\n";
+    for(int i = 1; i <= maxv; i++)
+    {
+        os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
+        os << "                    idx = 0;\n";
+        os << "                    for(int j = 0; j < " << (maxv-i+1) << "; j++)\n";
+        os << "                    {\n";
+        os << "                        // increment x on all previous\n";
+        os << "                        for(int k = 0; k < " << NCART(i-1) << "; k++)\n";
+        os << "                        {\n";
+        os << "                            AUX_" << i << "[idx++] = XPA * AUX_" << (i-1) << "[j] - aoverp * XPQ * AUX_" << (i-1) << "[j+1]\n";
+        os << "                                         + " << (i-1) << " * one_over_2p * ( AUX_" << (i-2) << "[j] - aoverp*AUX_" << (i-2) << "[j+1] );\n";
+        os << "                        }\n";
+        os << "\n";
+        os << "                        // increment y\n";
+        os << "                        for(int k = 0; k < " << NCART(i-2) << "; k++)\n";
+        os << "                        {\n";
+        os << "                            AUX_" << i << "[idx++] = XPA * AUX_" << (i-1) << "[j] - aoverp * XPQ * AUX_" << (i-1) << "[j+1]\n";
+        os << "                                         + " << (i-1) << " * one_over_2p * ( AUX_" << (i-2) << "[j] - aoverp*AUX_" << (i-2) << "[j+1] );\n";
+        os << "                        }\n";
+        os << "                    }\n";
+        os << "\n\n";
+    }
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Primitive integrals: Electron transfer\n";
@@ -340,7 +383,6 @@ void Writer_Looped(std::ostream & os,
     os << "    }\n";
     os << "\n";
     os << "\n";
-
     os << "    //////////////////////////////////////////////\n";
     os << "    // Contracted integrals: Horizontal recurrance\n";
     os << "    // Bra part\n";
@@ -379,24 +421,28 @@ void Writer_Looped(std::ostream & os,
     os << "    // Forming final integrals\n";
     os << "    //////////////////////////////////////////////\n";
     os << "\n";
-    os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
-    os << "    {\n";
-    os << "        for(int abi = 0; abi < " << NCART(am[0]) * NCART(am[1]) << "; ++abi)\n"; 
-    os << "        {\n"; 
+    if(hrrsteps.second.size() == 0)
+        os << "    //Nothing to do.....\n";
+    else
+    { 
+        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
+        os << "    {\n";
+        os << "        for(int abi = 0; abi < " << NCART(am[0]) * NCART(am[1]) << "; ++abi)\n"; 
+        os << "        {\n"; 
 
-    ShellDoublet initbra{DoubletType::BRA, {am[0], am[1]}, DOUBLET_INITIAL};
-    for(const auto & hit : hrrsteps.second)
-    {
-        os << std::string(12, ' ') << "// " << hit << "\n";
-        os << HRRKetStepString(hit, initbra) << "\n\n";
+        ShellDoublet initbra{DoubletType::BRA, {am[0], am[1]}, DOUBLET_INITIAL};
+        for(const auto & hit : hrrsteps.second)
+        {
+            os << std::string(12, ' ') << "// " << hit << "\n";
+            os << HRRKetStepString(hit, initbra) << "\n\n";
+        }
+        os << "        }\n"; 
+        os << "    }\n";
     }
-    os << "        }\n"; 
-    os << "    }\n";
     os << "\n";
     os << "\n";
     os << "    return nshell1234;\n";
     os << "}\n";
     os << "\n";
 
-    //os << "                    integrals[nint] += pfac * P.prefac[i] * Q.prefac[j] * Boys_F0_FO(x);\n";
 }
