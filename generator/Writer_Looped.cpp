@@ -52,7 +52,8 @@ static std::string HRRBraStepVariable(const Doublet & d, const ShellDoublet & ke
     if(d.flags & DOUBLET_HRRTOPLEVEL && ket.flags & DOUBLET_HRRTOPLEVEL)
     {
         ShellQuartet sq(d, ket, 0);
-        ss << ShellQuartetVarString(sq) << "[HRRmath]";
+        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * ket.ncart() 
+                                        << " + " << d.idx() << " * " << ket.ncart() << " + ni]";
     }
 
     /*
@@ -68,7 +69,8 @@ static std::string HRRBraStepVariable(const Doublet & d, const ShellDoublet & ke
         // this is a 'bra target'
         // determine the shell quartet
         ShellQuartet sq(d, ket, 0);
-        ss << ShellQuartetVarString(sq) << "[idxmath]";
+        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * ket.ncart() 
+                                        << " + " << d.idx() << " * " << ket.ncart() << " + ni]";
     }
     else
     {
@@ -138,7 +140,7 @@ void Writer_Looped(std::ostream & os,
                    const BoysMap & bm,
                    const HRRBraKetStepList & hrrsteps)
 {
-    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // todo - calculate the max v needed for the boys function
     int maxv = 2;
@@ -326,7 +328,6 @@ void Writer_Looped(std::ostream & os,
         os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
 
     os << "\n";    
-    os << "    int startidx = 0;\n";
     os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
     os << "    {\n";
 
@@ -344,7 +345,6 @@ void Writer_Looped(std::ostream & os,
         os << "\n";
     }
     os << "\n";
-    os << "        startidx += " << ncart << ";\n";
     os << "    }\n";
     os << "\n";
     os << "\n";
