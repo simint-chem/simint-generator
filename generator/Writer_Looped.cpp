@@ -20,8 +20,8 @@ static void Write_BoysFunction(std::ostream & os,
 static std::string ShellQuartetVarString(const ShellQuartet & q)
 {
     std::stringstream ss;
-    ss << "SQ_"  << q.amlist[0] << "_" << q.amlist[1] << "_"
-                 << q.amlist[2] << "_" << q.amlist[3] << "_" << q.m;
+    ss << "SQ_"  << q.bra.amlist[0] << "_" << q.bra.amlist[1] << "_"
+                 << q.ket.amlist[0] << "_" << q.ket.amlist[1] << "_" << q.m;
 
     return ss.str();
 }
@@ -42,14 +42,61 @@ static std::string DoubletVarString(const Doublet & d, DoubletType type)
 
     return ss.str();
 }
+*/
 
-static std::string HRRBraetStepString(const HRRDoubletStep & hrr, int ketam)
+
+static std::string HRRBraStepVariable(const Doublet & d, const ShellDoublet & ket, bool istarget)
+{
+    std::stringstream ss;
+
+    if(d.flags & DOUBLET_HRRTOPLEVEL && ket.flags & DOUBLET_HRRTOPLEVEL)
+    {
+        ShellQuartet sq(d, ket, 0);
+        ss << ShellQuartetVarString(sq) << "[HRRmath]";
+    }
+
+    /*
+    else if(d.flags & DOUBLET_INITIAL & ket.flags & DOUBLET_INITIAL)
+    {
+        ShellQuartet sq(d, ket, 0);
+        ss << ShellQuartetVarString(sq) << "[INITmath]";
+    }
+    */
+
+    else if(d.flags & DOUBLET_INITIAL)
+    {
+        // this is a 'bra target'
+        // determine the shell quartet
+        ShellQuartet sq(d, ket, 0);
+        ss << ShellQuartetVarString(sq) << "[idxmath]";
+    }
+    else
+    {
+        if(istarget)
+            ss << "const double ";
+        ss << "BRA_" << d.left.ijk[0] << d.left.ijk[1] << d.left.ijk[2]
+           << "_" <<  d.right.ijk[0] << d.right.ijk[1] << d.right.ijk[2];
+    }
+    return ss.str();
+}
+
+
+static std::string HRRBraStepString(const HRRDoubletStep & hrr, const ShellDoublet & ket)
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
     const char * xyztype = "AB_";
 
     std::stringstream ss;
     ss << std::string(12, ' ');
+
+    ss << HRRBraStepVariable(hrr.target, ket, true);
+
+    ss << " = ";
+    ss << HRRBraStepVariable(hrr.src1, ket, false);
+    ss << " + ( " << xyztype << hrr.xyz << " * ";
+    ss << HRRBraStepVariable(hrr.src2, ket, false);
+    ss << " );";
+/*
     if(hrr.target.flags & DOUBLET_INITIAL || hrr.target.flags & DOUBLET_HRRTOPLEVEL)
     {
         ShellQuartet tshellq{{hrr.target.left.am(), hrr.target.right.am(), ketam, 0}, 0, 0};  // don't think I need to set flags
@@ -78,12 +125,11 @@ static std::string HRRBraetStepString(const HRRDoubletStep & hrr, int ketam)
     }
     else
         ss << DoubletVarString(hrr.src2, DoubletType::BRA);
-
-    ss << ");";
+*/
 
     return ss.str();
+
 }
-*/
 
 
 void Writer_Looped(std::ostream & os,
@@ -101,7 +147,6 @@ void Writer_Looped(std::ostream & os,
     // I need:
     // 1.) HRR Top level Doublets
     DoubletSet hrrtopbras, hrrtopkets;
-    ShellQuartetSet hrrtop;
     for(const auto & it : hrrsteps.first)
     {
         if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
@@ -128,7 +173,14 @@ void Writer_Looped(std::ostream & os,
     ShellQuartetSet hrrtopshells;
     for(const auto & it : hrrtopbras)
         for(const auto & it2 : hrrtopkets)
-            hrrtopshells.insert({it, it2});
+        {
+            int flag = 0;
+            if(it.flags & DOUBLET_INITIAL && it2.flags & DOUBLET_INITIAL)
+                flag |= QUARTET_INITIAL;
+            if(it.flags & DOUBLET_HRRTOPLEVEL && it2.flags & DOUBLET_HRRTOPLEVEL)
+                flag |= QUARTET_HRRTOPLEVEL;
+            hrrtopshells.insert({it, it2, 0});
+        }
 
 
     // 3.) Targets for the HRR bra-generation step
@@ -136,7 +188,13 @@ void Writer_Looped(std::ostream & os,
     //     hrr top kets, combined with the final integral bra
     ShellQuartetSet hrrbratargets;
     for(const auto & it : hrrtopkets)
-        hrrbratargets.insert({{am[0], am[1], it.left.am(), it.right.am()}, 0, 0});
+        hrrbratargets.insert(
+                             {
+                                {DoubletType::BRA, {am[0], am[1]}, DOUBLET_INITIAL}, // initial bra
+                                it, // this ket
+                                0   // m = 0 at this point
+                             }
+                            );
     
 
 
@@ -192,7 +250,7 @@ void Writer_Looped(std::ostream & os,
 
     // HRR top level stuff
     for(const auto & it : hrrtopshells)
-        os << "    double " << ShellQuartetVarString(it) << "[" << NCART(it.amlist[0]+it.amlist[1])*NCART(it.amlist[2]+it.amlist[3]) << " * nshell1234];\n";
+        os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
 
     os << "\n";
     os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
@@ -265,7 +323,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "    // Bra targets\n";
     for(const auto & it : hrrbratargets)
-        os << "    double " << ShellQuartetVarString(it) << "[" << NCART(it.amlist[0]+it.amlist[1])*NCART(it.amlist[2]+it.amlist[3]) << " * nshell1234];\n";
+        os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
 
     os << "\n";    
     os << "    int startidx = 0;\n";
@@ -275,10 +333,13 @@ void Writer_Looped(std::ostream & os,
     for(const auto & it : hrrbratargets)
     {
         os << "        // form " << it << "\n";
-        os << "        for(int ni = 0; ni < " << NCART(it.amlist[2]) << "; ++ni)\n";
+        os << "        for(int ni = 0; ni < " << NCART(it.ket.amlist[0]) << "; ++ni)\n";
         os << "        {\n";
-        //for(const auto & hit : hrrinfo.bralist)
-        //    os << HRRBraStepString(hit, it.amlist[2]) << "\n";
+        for(const auto & hit : hrrsteps.first)
+        {
+            os << std::string(12, ' ') << "// " << hit << "\n";
+            os << HRRBraStepString(hit, it.ket) << "\n\n";
+        }
         os << "        }\n";
         os << "\n";
     }
