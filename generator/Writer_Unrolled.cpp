@@ -90,8 +90,7 @@ void Writer_Unrolled(std::ostream & os,
     int nam4 = NCART(am[3]);
     int ncart = nam1 * nam2 * nam3 * nam4;
 
-    // todo - calculate the max v needed for the boys function
-    int maxv = 2;
+    int maxv = am[0] + am[1] + am[2] + am[3] + 1;
 
     // calculate the top requirements for the HRR steps
     QuartetSet hrrtopreq;

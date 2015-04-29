@@ -167,8 +167,7 @@ void Writer_Looped(std::ostream & os,
 {
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
-    // todo - calculate the max v needed for the boys function
-    int maxv = 2;
+    int maxv = am[0] + am[1] + am[2] + am[3] + 1;
 
 
     // I need:
