@@ -82,6 +82,43 @@ static std::string HRRBraStepVariable(const Doublet & d, const ShellDoublet & ke
     return ss.str();
 }
 
+static std::string HRRKetStepVariable(const Doublet & d, const ShellDoublet & bra, bool istarget)
+{
+    std::stringstream ss;
+
+
+    // bra should always be initial
+
+    if(d.flags & DOUBLET_HRRTOPLEVEL && bra.flags & DOUBLET_HRRTOPLEVEL)
+    {
+        ShellQuartet sq(bra, d, 0);
+        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * bra.ncart() 
+                                        << " + abi * " << bra.ncart() << " + " << d.idx() << "]";
+    }
+
+    else if(d.flags & DOUBLET_HRRTOPLEVEL)  // initial bra, hrr top level ket = a bra target
+    {
+        ShellQuartet sq(bra, d, 0);
+        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * bra.ncart() 
+                                        << " + abi * " << bra.ncart() << " + " << d.idx() << "]";
+    }
+
+    else if(d.flags & DOUBLET_INITIAL)
+    {
+        ss << "integrals" << "[abcd * " << d.ncart() * bra.ncart() 
+                                        << " + ni * " << d.ncart() << " + " << d.idx() << "]";
+    }
+
+    else
+    {
+        if(istarget)
+            ss << "const double ";
+        ss << "KET_" << d.left.ijk[0] << d.left.ijk[1] << d.left.ijk[2]
+           << "_" <<  d.right.ijk[0] << d.right.ijk[1] << d.right.ijk[2];
+    }
+    return ss.str();
+}
+
 
 static std::string HRRBraStepString(const HRRDoubletStep & hrr, const ShellDoublet & ket)
 {
@@ -98,39 +135,27 @@ static std::string HRRBraStepString(const HRRDoubletStep & hrr, const ShellDoubl
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
     ss << HRRBraStepVariable(hrr.src2, ket, false);
     ss << " );";
-/*
-    if(hrr.target.flags & DOUBLET_INITIAL || hrr.target.flags & DOUBLET_HRRTOPLEVEL)
-    {
-        ShellQuartet tshellq{{hrr.target.left.am(), hrr.target.right.am(), ketam, 0}, 0, 0};  // don't think I need to set flags
-        ss << ShellQuartetVarString(tshellq) << "[somemath]"; 
-    }
-    else
-        ss << "const double " << DoubletVarString(hrr.target, DoubletType::BRA);
-
-    ss << " = ";
-
-    if(hrr.src1.flags & DOUBLET_INITIAL || hrr.src1.flags & DOUBLET_HRRTOPLEVEL)
-    {
-        ShellQuartet tshellq{{hrr.src1.left.am(), hrr.src1.right.am(), ketam, 0}, 0, 0};  // don't think I need to set flags
-        ss << ShellQuartetVarString(tshellq) << "[somemath]"; 
-    }
-    else
-        ss << DoubletVarString(hrr.src1, DoubletType::BRA);
-
-    ss << " + (" << xyztype << hrr.xyz << "[abcd]"
-       << " * ";
-
-    if(hrr.src2.flags & DOUBLET_INITIAL || hrr.src2.flags & DOUBLET_HRRTOPLEVEL)
-    {
-        ShellQuartet tshellq{{hrr.src2.left.am(), hrr.src2.right.am(), ketam, 0}, 0, 0};  // don't think I need to set flags
-        ss << ShellQuartetVarString(tshellq) << "[somemath]"; 
-    }
-    else
-        ss << DoubletVarString(hrr.src2, DoubletType::BRA);
-*/
 
     return ss.str();
+}
 
+static std::string HRRKetStepString(const HRRDoubletStep & hrr, const ShellDoublet & bra)
+{
+    // determine P,Q, etc, for AB_x, AB_y, AB_z
+    const char * xyztype = "AB_";
+
+    std::stringstream ss;
+    ss << std::string(12, ' ');
+
+    ss << HRRKetStepVariable(hrr.target, bra, true);
+
+    ss << " = ";
+    ss << HRRKetStepVariable(hrr.src1, bra, false);
+    ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
+    ss << HRRKetStepVariable(hrr.src2, bra, false);
+    ss << " );";
+
+    return ss.str();
 }
 
 
@@ -345,6 +370,28 @@ void Writer_Looped(std::ostream & os,
         os << "\n";
     }
     os << "\n";
+    os << "    }\n";
+    os << "\n";
+    os << "\n";
+    os << "    //////////////////////////////////////////////\n";
+    os << "    // Contracted integrals: Horizontal recurrance\n";
+    os << "    // Ket part\n";
+    os << "    // Steps: " << hrrsteps.second.size() << "\n";
+    os << "    // Forming final integrals\n";
+    os << "    //////////////////////////////////////////////\n";
+    os << "\n";
+    os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
+    os << "    {\n";
+    os << "        for(int abi = 0; abi < " << NCART(am[0]) * NCART(am[1]) << "; ++abi)\n"; 
+    os << "        {\n"; 
+
+    ShellDoublet initbra{DoubletType::BRA, {am[0], am[1]}, DOUBLET_INITIAL};
+    for(const auto & hit : hrrsteps.second)
+    {
+        os << std::string(12, ' ') << "// " << hit << "\n";
+        os << HRRKetStepString(hit, initbra) << "\n\n";
+    }
+    os << "        }\n"; 
     os << "    }\n";
     os << "\n";
     os << "\n";
