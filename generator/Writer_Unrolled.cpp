@@ -52,10 +52,22 @@ static std::string HRRQuartetStepString(const HRRQuartetStep & hrr)
     if(!(hrr.target.flags & QUARTET_INITIAL))
         ss << "const double ";  
 
-    ss << QuartetVarString(hrr.target) 
-       << " = " << QuartetVarString(hrr.src1)
-       << " + (" << xyztype << hrr.xyz << "[abcd]" 
-       << " * " << QuartetVarString(hrr.src2) << ");";
+    ss << QuartetVarString(hrr.target);
+    if(hrr.target.flags & QUARTET_HRRTOPLEVEL) 
+        ss << "[abcd]";
+
+    ss << " = " << QuartetVarString(hrr.src1);
+
+    if(hrr.src1.flags & QUARTET_HRRTOPLEVEL) 
+        ss << "[abcd]";
+
+    ss << " + ( " << xyztype << hrr.xyz << "[abcd]" 
+       << " * " << QuartetVarString(hrr.src2);
+
+    if(hrr.src2.flags & QUARTET_HRRTOPLEVEL) 
+        ss << "[abcd]";
+
+    ss << " );";
 
     // is it one of the final integrals?
     // if so, add a comment about which one it is

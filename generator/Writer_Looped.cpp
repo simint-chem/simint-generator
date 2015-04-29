@@ -106,7 +106,7 @@ static std::string HRRKetStepVariable(const Doublet & d, const ShellDoublet & br
     else if(d.flags & DOUBLET_INITIAL)
     {
         ss << "integrals" << "[abcd * " << d.ncart() * bra.ncart() 
-                                        << " + ni * " << d.ncart() << " + " << d.idx() << "]";
+                                        << " + abi * " << d.ncart() << " + " << d.idx() << "]";
     }
 
     else
