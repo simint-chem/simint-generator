@@ -167,8 +167,8 @@ void Writer_Unrolled(std::ostream & os,
     os << "\n";
     os << "            // Store for later\n";
     os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = P.AB_x[cd];\n";
-    os << "            AB_y[abcd] = P.AB_y[ab];  CD_x[abcd] = P.AB_y[cd];\n";
-    os << "            AB_z[abcd] = P.AB_z[ab];  CD_x[abcd] = P.AB_z[cd];\n";
+    os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = P.AB_y[cd];\n";
+    os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = P.AB_z[cd];\n";
     os << "\n";
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
