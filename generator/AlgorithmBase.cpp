@@ -1,19 +1,14 @@
 #include <iostream>
-#include <memory>
+#include <algorithm>
 
-#include "generator/Classes.hpp"
-#include "generator/Algorithms.hpp"
-#include "generator/Boys.hpp"
-#include "generator/Writer.hpp"
+#include "generator/AlgorithmBase.hpp"
 #include "generator/Helpers.hpp"
 
 using namespace std;
 
-
-static void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
-                           const DoubletSet & inittargets,
-                           DoubletSet & solveddoublets,
-                           std::unique_ptr<HRR_Algorithm_Base> & hrralgo)
+void HRR_Algorithm_Base::HRRDoubletLoop(HRRDoubletStepList & hrrlist,
+                                        const DoubletSet & inittargets,
+                                        DoubletSet & solveddoublets)
 {
     DoubletSet targets = inittargets;
 
@@ -23,7 +18,7 @@ static void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
 
         for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
-            HRRDoubletStep hrr = hrralgo->doubletstep(*it);
+            HRRDoubletStep hrr = this->doubletstep(*it);
             hrrlist.push_back(hrr);
 
             if(solveddoublets.count(hrr.src1) == 0)
@@ -46,11 +41,10 @@ static void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
 }
 
 
-static void HRRQuartetLoop(HRRQuartetStepList & hrrlist,
-                           const QuartetSet & inittargets,
-                           QuartetSet & solvedquartets,
-                           DoubletType type,
-                           std::unique_ptr<HRR_Algorithm_Base> & hrralgo)
+void HRR_Algorithm_Base::HRRQuartetLoop(HRRQuartetStepList & hrrlist,
+                                        const QuartetSet & inittargets,
+                                        QuartetSet & solvedquartets,
+                                        DoubletType type)
 {
     QuartetSet targets = inittargets;
 
@@ -60,7 +54,7 @@ static void HRRQuartetLoop(HRRQuartetStepList & hrrlist,
 
         for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
-            HRRQuartetStep hrr = hrralgo->quartetstep(*it, type);
+            HRRQuartetStep hrr = this->quartetstep(*it, type);
             hrrlist.push_back(hrr);
 
             if(solvedquartets.count(hrr.src1) == 0)
@@ -83,8 +77,51 @@ static void HRRQuartetLoop(HRRQuartetStepList & hrrlist,
 }
                
 
+HRRQuartetStep HRR_Algorithm_Base::quartetstep(const Quartet & target, DoubletType steptype)
+{
+    // Call doublet step, then create the Quartet 
 
-HRRBraKetStepList Create_DoubletStepLists(QAMList amlist, std::unique_ptr<HRR_Algorithm_Base> & hrralgo)
+    Doublet d = target.get(steptype);
+
+    // call doubletstep
+    HRRDoubletStep hds = this->doubletstep(d);
+
+    // Create the HRR step
+    // (this preserves the flags of target
+    if(steptype == DoubletType::BRA)
+    {
+        HRRQuartetStep hrr{target, 
+                          {hds.src1, target.ket, target.m, 0},   // src1 quartet
+                          {hds.src2, target.ket, target.m, 0},   // src2 quartet
+                          steptype,                                 // bra or ket being stepped
+                          hds.xyz};                                 // cartesian direction being stepped
+        return hrr;
+    }
+    else
+    {
+        HRRQuartetStep hrr{target, 
+                          {target.bra, hds.src1, target.m, 0},   // src1 quartet
+                          {target.bra, hds.src2, target.m, 0},   // src2 quartet
+                          steptype,                                 // bra or ket being stepped
+                          hds.xyz};                                 // cartesian direction being stepped
+        return hrr;
+    }
+}
+
+VRRMap VRR_Algorithm_Base::CreateAllMaps(int maxam)
+{
+    VRRMap vm;
+    for(int i = 0; i <= maxam; i++)
+    {
+        VRRMap vm2 = CreateVRRMap(i);
+        vm.insert(vm2.begin(), vm2.end());
+    }
+   
+    return vm; 
+}
+
+
+HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAMList amlist)
 {
     // First, we need a list of doublet steps for the bra
     HRRDoubletStepList bralist;
@@ -102,7 +139,7 @@ HRRBraKetStepList Create_DoubletStepLists(QAMList amlist, std::unique_ptr<HRR_Al
     PrintDoubletSet(targets, "Inital bra targets");
 
     // Solve the bra part
-    HRRDoubletLoop(bralist, targets, solvedbras, hrralgo);
+    HRRDoubletLoop(bralist, targets, solvedbras);
     std::reverse(bralist.begin(), bralist.end());
 
     cout << "\n\n";
@@ -125,7 +162,7 @@ HRRBraKetStepList Create_DoubletStepLists(QAMList amlist, std::unique_ptr<HRR_Al
     PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
-    HRRDoubletLoop(ketlist, targets, solvedkets, hrralgo);
+    HRRDoubletLoop(ketlist, targets, solvedkets);
     std::reverse(ketlist.begin(), ketlist.end());
 
     cout << "\n\n";
@@ -157,8 +194,7 @@ HRRBraKetStepList Create_DoubletStepLists(QAMList amlist, std::unique_ptr<HRR_Al
 }
 
 
-HRRQuartetStepList Create_QuartetStepList(QAMList amlist,
-                                          std::unique_ptr<HRR_Algorithm_Base> & hrralgo)
+HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
 {
     // all HRR steps
     HRRQuartetStepList hrrlist;
@@ -176,7 +212,7 @@ HRRQuartetStepList Create_QuartetStepList(QAMList amlist,
     PrintQuartetSet(targets, "Inital bra targets");
 
     // Solve the bra part
-    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::BRA, hrralgo);
+    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::BRA);
 
     // now do kets
     // targets are src1 and src2 of hrrlist, pruned on the ket side
@@ -199,7 +235,7 @@ HRRQuartetStepList Create_QuartetStepList(QAMList amlist,
     PrintQuartetSet(targets, "Initial ket targets");
 
     // Solve the ket part
-    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::KET, hrralgo);
+    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::KET);
 
     // reverse the steps
     std::reverse(hrrlist.begin(), hrrlist.end());

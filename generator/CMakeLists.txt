@@ -10,9 +10,9 @@ list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
 add_executable(generator generator.cpp
+                         AlgorithmBase.cpp
                          Helpers.cpp
                          Boys.cpp
-                         Create.cpp
                          Writer_Unrolled.cpp
                          Writer_Looped.cpp
               )

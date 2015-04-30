@@ -9,36 +9,20 @@ class HRR_Algorithm_Base
         virtual ~HRR_Algorithm_Base() { }
 
         virtual HRRDoubletStep doubletstep(const Doublet & target) = 0;
-        virtual HRRQuartetStep quartetstep(const Quartet & target, DoubletType steptype)
-        {
-            // Call doublet step, then create the Quartet 
+        virtual HRRQuartetStep quartetstep(const Quartet & target, DoubletType steptype);
 
-            Doublet d = target.get(steptype);
+        HRRBraKetStepList Create_DoubletStepLists(QAMList amlist);
+        HRRQuartetStepList Create_QuartetStepList(QAMList amlist);
 
-            // call doubletstep
-            HRRDoubletStep hds = this->doubletstep(d);
+    private:
+        void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
+                            const DoubletSet & inittargets,
+                            DoubletSet & solveddoublets);
 
-            // Create the HRR step
-            // (this preserves the flags of target
-            if(steptype == DoubletType::BRA)
-            {
-                HRRQuartetStep hrr{target, 
-                                  {hds.src1, target.ket, target.m, 0},   // src1 quartet
-                                  {hds.src2, target.ket, target.m, 0},   // src2 quartet
-                                  steptype,                                 // bra or ket being stepped
-                                  hds.xyz};                                 // cartesian direction being stepped
-                return hrr;
-            }
-            else
-            {
-                HRRQuartetStep hrr{target, 
-                                  {target.bra, hds.src1, target.m, 0},   // src1 quartet
-                                  {target.bra, hds.src2, target.m, 0},   // src2 quartet
-                                  steptype,                                 // bra or ket being stepped
-                                  hds.xyz};                                 // cartesian direction being stepped
-                return hrr;
-            }
-        }
+        void HRRQuartetLoop(HRRQuartetStepList & hrrlist,
+                            const QuartetSet & inittargets,
+                            QuartetSet & solvedquartets,
+                            DoubletType type);
 };
 
 
@@ -51,17 +35,7 @@ class VRR_Algorithm_Base
         // this will create a map for all possible
         // components, but hopefully only some
         // will be needed
-        virtual VRRMap CreateAllMaps(int maxam)
-        {
-            VRRMap vm;
-            for(int i = 0; i <= maxam; i++)
-            {
-                VRRMap vm2 = CreateVRRMap(i);
-                vm.insert(vm2.begin(), vm2.end());
-            }
-           
-            return vm; 
-        }
+        virtual VRRMap CreateAllMaps(int maxam);
 };
 
 
