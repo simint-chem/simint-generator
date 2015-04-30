@@ -7,6 +7,7 @@
 #include <ostream>
 #include <vector>
 #include <set>
+#include <map>
 #include <utility>
 
 
@@ -554,21 +555,8 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 }
 
 
-
-struct VRRStep
-{
-    std::string str(void) const
-    {
-        return "TOTO";
-    } 
-};
-
-inline std::ostream & operator<<(std::ostream & os, const VRRStep & is)
-{
-    os << is.str();
-    return os;
-}
-
+typedef std::set<Gaussian> GaussianSet;
+typedef std::map<Gaussian, XYZStep> VRRMap;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
@@ -576,7 +564,6 @@ typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
-typedef std::vector<VRRStep> VRRStepList;
 
 typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;

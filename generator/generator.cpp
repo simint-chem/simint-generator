@@ -28,12 +28,18 @@ int main(int argc, char ** argv)
                     atoi(argv[4])
                   };
 
+    const int L = amlist[0] + amlist[1] + amlist[2] + amlist[3] + 1;
 
     // Read in the boys map
     BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
 
-    // algorithm used
-    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
+    // algorithms used
+    //std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
+    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
+    VRRMap vm = vrralgo->CreateAllMaps(L);
+
+    for(const auto & it : vm)
+        cout << "    " << it.first << "  <-  " << it.second << "\n";
 
     /*
     // Create the quartet list
@@ -44,10 +50,10 @@ int main(int argc, char ** argv)
     */
 
     // Create the step lists
-    HRRBraKetStepList bksl = Create_DoubletStepLists(amlist, hrralgo);
+    //HRRBraKetStepList bksl = Create_DoubletStepLists(amlist, hrralgo);
 
     // Write it out
-    Writer_Looped(cout, amlist, "FOCombined", bm, bksl);
+    //Writer_Looped(cout, amlist, "FOCombined", bm, bksl);
 
 
     }

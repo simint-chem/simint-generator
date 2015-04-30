@@ -43,4 +43,34 @@ class Makowski_HRR : public HRR_Algorithm_Base
         }
 };
 
+class Makowski_VRR : public VRR_Algorithm_Base
+{
+    public:
+        virtual VRRMap CreateVRRMap(int am)
+        {
+            VRRMap vm;
+
+            if(am == 0)
+                return vm;  // empty!
+
+            Gaussian g{am, 0, 0};
+
+            do {      
+                // lowest exponent, favoring the far right if equal
+                // idx is the xyz index
+                ExpList ijk = g.ijk;
+                std::sort(ijk.begin(), ijk.end());
+                auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
+                auto it = std::find(g.ijk.rbegin(), g.ijk.rend(), *v); 
+                int idx = 2 - std::distance(g.ijk.rbegin(), it);  // remember we are working with reverse iterators
+
+                vm[g] = IdxToXYZStep(idx);
+            } while(g.Iterate());
+
+            return vm;
+            
+        }
+};
+
+
 #endif

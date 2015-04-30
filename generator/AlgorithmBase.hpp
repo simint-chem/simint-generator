@@ -42,4 +42,27 @@ class HRR_Algorithm_Base
 };
 
 
+class VRR_Algorithm_Base
+{
+    public:
+        virtual ~VRR_Algorithm_Base() { }
+        virtual VRRMap CreateVRRMap(int am) = 0;
+
+        // this will create a map for all possible
+        // components, but hopefully only some
+        // will be needed
+        virtual VRRMap CreateAllMaps(int maxam)
+        {
+            VRRMap vm;
+            for(int i = 0; i <= maxam; i++)
+            {
+                VRRMap vm2 = CreateVRRMap(i);
+                vm.insert(vm2.begin(), vm2.end());
+            }
+           
+            return vm; 
+        }
+};
+
+
 #endif

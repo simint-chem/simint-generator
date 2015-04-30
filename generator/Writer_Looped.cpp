@@ -278,13 +278,6 @@ void Writer_Looped(std::ostream & os,
     for(const auto & it : hrrtopshells)
         os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
 
-    os << "\n";
-    os << "    // Holds boys function values (times prefactors)\n";
-    os << "    double AUX_0[" << maxv+1 << "];\n";
-    os << "\n";
-    os << "    // Holds the auxiliary integrals ( i 0| 0 0 )^m in the primitive basis\n";
-    for(int i = 1; i <= maxv; i++)
-        os << "    double AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";
     os << "    // Loop over shells and primitives\n";
@@ -314,6 +307,14 @@ void Writer_Looped(std::ostream & os,
     os << "            {\n";
     os << "                for(j = cdstart; j < cdend; ++j)\n";
     os << "                {\n";
+    os << "\n";
+    os << "                    // Holds boys function values (times prefactors)\n";
+    os << "                    double AUX_0[" << maxv+1 << "];\n";
+    os << "\n";
+    os << "                    // Holds the auxiliary integrals ( i 0| 0 0 )^m in the primitive basis\n";
+    for(int i = 1; i <= maxv; i++)
+        os << "                    double AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
+    os << "\n\n";
     os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
     os << "                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];\n";
     os << "\n";
