@@ -84,10 +84,14 @@ struct Gaussian
 
     std::string str(void) const
     {
-       const char * amchar = "SPDFGHIJKLMNOQRTUVWXYZABCE";
-       std::stringstream ss;
-       ss << amchar[am()] << "_" << ijk[0] << ijk[1] << ijk[2];
-       return ss.str(); 
+        const char * amchar = "SPDFGHIJKLMNOQRTUVWXYZABCE";
+        std::stringstream ss;
+        
+        if(Valid())
+            ss << amchar[am()] << "_" << ijk[0] << ijk[1] << ijk[2];
+        else
+            ss << "?_" << ijk[0] << ijk[1] << ijk[2];
+        return ss.str(); 
     }
 
 

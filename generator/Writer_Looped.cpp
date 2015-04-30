@@ -2,6 +2,7 @@
 
 #include "generator/Classes.hpp"
 #include "generator/Boys.hpp"
+#include "generator/Helpers.hpp"
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
@@ -56,13 +57,14 @@ static std::string HRRBraStepVariable(const Doublet & d, const ShellDoublet & ke
                                         << " + " << d.idx() << " * " << ket.ncart() << " + ni]";
     }
 
-    /*
-    else if(d.flags & DOUBLET_INITIAL & ket.flags & DOUBLET_INITIAL)
+    else if(d.flags & DOUBLET_INITIAL & ket.flags & DOUBLET_INITIAL) 
     {
-        ShellQuartet sq(d, ket, 0);
-        ss << ShellQuartetVarString(sq) << "[INITmath]";
+        // we are calculating a final integral here
+        // ie integral is in the form of ( a b | c 0 )
+        ss << "integrals" << "[abcd * " << d.ncart() * ket.ncart() 
+                                        << " + " << d.idx() << " * " << ket.ncart()
+                                        << " + ni]";
     }
-    */
 
     else if(d.flags & DOUBLET_INITIAL)
     {
@@ -92,20 +94,20 @@ static std::string HRRKetStepVariable(const Doublet & d, const ShellDoublet & br
     if(d.flags & DOUBLET_HRRTOPLEVEL && bra.flags & DOUBLET_HRRTOPLEVEL)
     {
         ShellQuartet sq(bra, d, 0);
-        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * bra.ncart() 
+        ss << ShellQuartetVarString(sq) << "[abcd * " << bra.ncart() * d.ncart() 
                                         << " + abi * " << bra.ncart() << " + " << d.idx() << "]";
     }
 
     else if(d.flags & DOUBLET_HRRTOPLEVEL)  // initial bra, hrr top level ket = a bra target
     {
         ShellQuartet sq(bra, d, 0);
-        ss << ShellQuartetVarString(sq) << "[abcd * " << d.ncart() * bra.ncart() 
+        ss << ShellQuartetVarString(sq) << "[abcd * " << bra.ncart() * d.ncart() 
                                         << " + abi * " << bra.ncart() << " + " << d.idx() << "]";
     }
 
     else if(d.flags & DOUBLET_INITIAL)
     {
-        ss << "integrals" << "[abcd * " << d.ncart() * bra.ncart() 
+        ss << "integrals" << "[abcd * " << bra.ncart() * d.ncart() 
                                         << " + abi * " << d.ncart() << " + " << d.idx() << "]";
     }
 
@@ -163,11 +165,13 @@ void Writer_Looped(std::ostream & os,
                    const QAMList & am,
                    const std::string & nameappend,
                    const BoysMap & bm,
+                   const std::pair<VRRMap, VRRReqMap> & vrrinfo,
                    const HRRBraKetStepList & hrrsteps)
 {
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
-    int maxv = am[0] + am[1] + am[2] + am[3] + 1;
+    const int L = am[0] + am[1] + am[2] + am[3];
+    const int maxv = L+1;
 
 
     // I need:
@@ -189,11 +193,19 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets.insert(it.src2);
     }
 
-    // these might be (ss| or |ss)
+    // these might be ( X s | or | X s )
     if(hrrtopbras.size() == 0)
-        hrrtopbras.insert({DoubletType::BRA, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
+    {
+        GaussianSet gs = AllGaussiansForAM(am[0]);
+        for(const auto & it : gs)
+            hrrtopbras.insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
     if(hrrtopkets.size() == 0)
-        hrrtopkets.insert({DoubletType::KET, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
+    {
+        GaussianSet gs = AllGaussiansForAM(am[2]);
+        for(const auto & it : gs)
+            hrrtopkets.insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
 
     // 2.) HRR top level Shell Quartets
     ShellQuartetSet hrrtopshells;
@@ -309,11 +321,18 @@ void Writer_Looped(std::ostream & os,
     os << "                {\n";
     os << "\n";
     os << "                    // Holds boys function values (times prefactors)\n";
-    os << "                    double AUX_0[" << maxv+1 << "];\n";
+    os << "                    double AUX_0[" << maxv+1 << "];  // we need [0,maxv] inclusive\n";
     os << "\n";
-    os << "                    // Holds the auxiliary integrals ( i 0| 0 0 )^m in the primitive basis\n";
-    for(int i = 1; i <= maxv; i++)
-        os << "                    double AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
+    os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
+    os << "                    // with m as the slowest index\n";
+    for(int i = 1; i <= L+1; i++)
+    {
+        // size of requirements for this AM
+        GaussianSet greq = vrrinfo.second.at(i);
+        os << "                    // AM = " << i << ": Needed from this AM: " << greq.size() << "\n";
+        os << "                    double AUX_" << i << "[" << (maxv-i+1) << " * " << greq.size() << "];\n";
+        os << "\n";
+    }
     os << "\n\n";
     os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
     os << "                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];\n";
@@ -330,7 +349,7 @@ void Writer_Looped(std::ostream & os,
     os << "                    const double allprefac =  pfac * P.prefac[i] * Q.prefac[j];\n";
     os << "\n";
     os << "                    // various factors\n";
-    os << "                    const double alpha = PQlpha_mul/PQalpha_sum;   // alpha from MEST\n";
+    os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
     os << "                    const double aoverp =  alpha / P.alpha[i];     // a/p from MEST\n";
     os << "                    const double one_over_2p = 1.0/(2.0 * P.alpha[i]);  // gets multiplied by i in VRR\n";
     os << "\n";
@@ -352,25 +371,73 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "                    int idx = 0;\n";
     os << "\n";
-    for(int i = 1; i <= maxv; i++)
+
+    // i loops over am
+    for(int i = 1; i <= L+1; i++)
     {
-        os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << NCART(i) << "];\n";
+        // requirements for this am
+        GaussianSet greq = vrrinfo.second.at(i);
+        os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << greq.size() << "];\n";
+        os << "                    // Needed from this AM:\n";
+        for(const auto & it : greq)
+            os << "                    //    " << it << "\n";
         os << "                    idx = 0;\n";
-        os << "                    for(int j = 0; j < " << (maxv-i+1) << "; j++)\n";
+        os << "                    for(int m = 0; m < " << (maxv-i+1) << "; m++)  // loop over orders of boys function\n";
         os << "                    {\n";
-        os << "                        // increment x on all previous\n";
-        os << "                        for(int k = 0; k < " << NCART(i-1) << "; k++)\n";
-        os << "                        {\n";
-        os << "                            AUX_" << i << "[idx++] = XPA * AUX_" << (i-1) << "[j] - aoverp * XPQ * AUX_" << (i-1) << "[j+1]\n";
-        os << "                                         + " << (i-1) << " * one_over_2p * ( AUX_" << (i-2) << "[j] - aoverp*AUX_" << (i-2) << "[j+1] );\n";
-        os << "                        }\n";
-        os << "\n";
-        os << "                        // increment y\n";
-        os << "                        for(int k = 0; k < " << NCART(i-2) << "; k++)\n";
-        os << "                        {\n";
-        os << "                            AUX_" << i << "[idx++] = XPA * AUX_" << (i-1) << "[j] - aoverp * XPQ * AUX_" << (i-1) << "[j+1]\n";
-        os << "                                         + " << (i-1) << " * one_over_2p * ( AUX_" << (i-2) << "[j] - aoverp*AUX_" << (i-2) << "[j+1] );\n";
-        os << "                        }\n";
+
+        for(const auto & it : greq) // should be in order, since it's a set
+        {
+            // Get the stepping
+            XYZStep step = vrrinfo.first.at(it);
+
+            // and then the required gaussians
+            Gaussian g1 = it.StepDown(step, 1);
+            Gaussian g2 = it.StepDown(step, 2);
+
+            // number of gaussians in the previous two AM
+            int ng1 = -1;
+            int ng2 = -1;
+
+            int g1_idx = -1;
+            int g2_idx = -1;
+
+            // indices. This is a little messy, but whatever
+            if(g1)
+            { 
+                auto g1_it = vrrinfo.second.at(i-1).find(g1); 
+                g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
+                ng1 = vrrinfo.second.at(i-1).size();
+            }
+            if(g2)
+            {
+                auto g2_it = vrrinfo.second.at(i-2).find(g2); 
+                g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
+                ng2 = vrrinfo.second.at(i-2).size();
+            }
+
+            // the value of i in the VRR eqn
+            // = value of exponent of g1 in the position of the step
+            int vrr_i = g1.ijk[XYZStepToIdx(step)];
+
+            os << "                        //" << it <<  " : STEP: " << step << "\n";
+//            os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
+//            os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
+//            os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
+            os << "                        AUX_" << i << "[idx++] = P.PA_" << step << "[i] * ";
+
+            if(g1)
+                os << "AUX_" << (i-1) << "[m * " << ng1 << " + " << g1_idx 
+                   << "] - aoverp * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+            if(g2)
+            {
+                os << "\n";
+                os << "                                     + " << vrr_i << " * one_over_2p * ( AUX_" << (i-2)
+                                                              << "[m * " << ng2 << " +  " << g2_idx << "]"
+                                                              << " - aoverp * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+            }
+            os << ";\n\n"; 
+        }
+
         os << "                    }\n";
         os << "\n\n";
     }
@@ -390,29 +457,41 @@ void Writer_Looped(std::ostream & os,
     os << "    // Steps: " << hrrsteps.first.size() << "\n";
     os << "    //////////////////////////////////////////////\n";
     os << "\n";
-    os << "    // Bra targets\n";
-    for(const auto & it : hrrbratargets)
-        os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
-
-    os << "\n";    
-    os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
-    os << "    {\n";
-
-    for(const auto & it : hrrbratargets)
+    if(hrrsteps.first.size() == 0)
+        os << "    // Nothing to do.....\n";
+    else
     {
-        os << "        // form " << it << "\n";
-        os << "        for(int ni = 0; ni < " << NCART(it.ket.amlist[0]) << "; ++ni)\n";
-        os << "        {\n";
-        for(const auto & hit : hrrsteps.first)
+        if(hrrsteps.second.size() == 0)
         {
-            os << std::string(12, ' ') << "// " << hit << "\n";
-            os << HRRBraStepString(hit, it.ket) << "\n\n";
+            os << "    // No bra-specific targets. Should all end up in integrals\n";
         }
-        os << "        }\n";
+        else
+        {
+            os << "    // Bra targets\n";
+            for(const auto & it : hrrbratargets)
+                os << "    double " << ShellQuartetVarString(it) << "[" << it.ncart() << " * nshell1234];\n";
+        }
+
+        os << "\n";    
+        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
+        os << "    {\n";
+
+        for(const auto & it : hrrbratargets)
+        {
+            os << "        // form " << it << "\n";
+            os << "        for(int ni = 0; ni < " << NCART(it.ket.amlist[0]) << "; ++ni)\n";
+            os << "        {\n";
+            for(const auto & hit : hrrsteps.first)
+            {
+                os << std::string(12, ' ') << "// " << hit << "\n";
+                os << HRRBraStepString(hit, it.ket) << "\n\n";
+            }
+            os << "        }\n";
+            os << "\n";
+        }
         os << "\n";
+        os << "    }\n";
     }
-    os << "\n";
-    os << "    }\n";
     os << "\n";
     os << "\n";
     os << "    //////////////////////////////////////////////\n";
