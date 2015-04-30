@@ -22,12 +22,10 @@ class Makowski_HRR : public HRR_Algorithm_Base
             int idx = 2 - std::distance(target.right.ijk.rbegin(), it);  // remember we are working with reverse iterators
 
             // gaussian common to both src1 and src2
-            Gaussian common(target.right);
-            common.ijk[idx] -= 1;
+            Gaussian common(target.right.StepDown(idx, 1));
 
             // for src1
-            Gaussian src1g(target.left);
-            src1g.ijk[idx] += 1;
+            Gaussian src1g(target.left.StepUp(idx, 1));
 
             // create new doublets
             Doublet src1d{target.type, src1g, common};

@@ -35,7 +35,7 @@ class VRR_Algorithm_Base
         // this will create a map for all possible
         // components, but hopefully only some
         // will be needed
-        virtual VRRMap CreateAllMaps(int maxam);
+        std::pair<VRRMap, VRRReqMap> CreateAllMaps(int maxam);
 };
 
 

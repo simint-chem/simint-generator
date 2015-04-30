@@ -14,4 +14,8 @@ void PrintQuartetSet(const QuartetSet & q, const std::string & title);
 
 int GaussianOrder(const QAMList & ijk);
 
+
+GaussianSet AllGaussiansForAM(int am);
+
+
 #endif

@@ -62,6 +62,16 @@ inline XYZStep IdxToXYZStep(int xyz)
         return XYZStep::STEP_Z;
 }
 
+inline int XYZStepToIdx(XYZStep s)
+{
+    if(s == XYZStep::STEP_X)
+        return 0;
+    else if(s == XYZStep::STEP_Y)
+        return 1;
+    else //(s == XYZStep::STEP_Z)
+        return 2;
+}
+
 
 
 struct Gaussian
@@ -100,6 +110,16 @@ struct Gaussian
         return (ijk == rhs.ijk);
     }
 
+    bool Valid(void) const
+    {
+        return (ijk[0] >= 0 && ijk[1] >= 0 && ijk[2] >= 0);
+    }
+
+    operator bool(void) const
+    {
+        return Valid();
+    }
+    
     bool Iterate(void)
     {
         if(ijk[2] == am())  // at the end
@@ -109,7 +129,32 @@ struct Gaussian
             ijk = {ijk[0],   ijk[1]-1,      ijk[2]+1 };
         else
             ijk = {ijk[0]-1, am()-ijk[0]+1, 0        };
-        return true;
+        return Valid();
+    }
+
+
+    Gaussian StepUp(XYZStep step, int n = 1) const
+    {
+        return StepUp(XYZStepToIdx(step), n);
+    }
+
+    Gaussian StepUp(int idx, int n = 1) const
+    {
+        Gaussian g(*this);
+        g.ijk[idx] += n;
+        return g;
+    }
+
+    Gaussian StepDown(XYZStep step, int n = 1) const
+    {
+        return StepDown(XYZStepToIdx(step), n);
+    }
+
+    Gaussian StepDown(int idx, int n = 1) const
+    {
+        Gaussian g(*this);
+        g.ijk[idx] -= n;
+        return g;
     }
 };
 
@@ -538,8 +583,6 @@ inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
 }
 
 
-
-
 struct ETStep
 {
     std::string str(void) const
@@ -557,6 +600,7 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 
 typedef std::set<Gaussian> GaussianSet;
 typedef std::map<Gaussian, XYZStep> VRRMap;
+typedef std::map<int, GaussianSet> VRRReqMap;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;

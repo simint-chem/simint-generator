@@ -136,3 +136,15 @@ int GaussianOrder(const ExpList & ijk)
 
     return ordermap_.at(ijk);
 }
+
+
+GaussianSet AllGaussiansForAM(int am)
+{
+    GaussianSet gs;
+    Gaussian g{am, 0, 0};
+    do {
+        gs.insert(g);
+    } while(g.Iterate());
+
+    return gs;
+}

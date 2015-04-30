@@ -35,10 +35,7 @@ int main(int argc, char ** argv)
     // algorithms used
     //std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
-    VRRMap vm = vrralgo->CreateAllMaps(L);
-
-    for(const auto & it : vm)
-        cout << "    " << it.first << "  <-  " << it.second << "\n";
+    std::pair<VRRMap, VRRReqMap> vm = vrralgo->CreateAllMaps(L);
 
     /*
     // Create the quartet list

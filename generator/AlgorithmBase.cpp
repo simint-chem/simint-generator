@@ -108,7 +108,8 @@ HRRQuartetStep HRR_Algorithm_Base::quartetstep(const Quartet & target, DoubletTy
     }
 }
 
-VRRMap VRR_Algorithm_Base::CreateAllMaps(int maxam)
+
+std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(int maxam)
 {
     VRRMap vm;
     for(int i = 0; i <= maxam; i++)
@@ -116,9 +117,39 @@ VRRMap VRR_Algorithm_Base::CreateAllMaps(int maxam)
         VRRMap vm2 = CreateVRRMap(i);
         vm.insert(vm2.begin(), vm2.end());
     }
-   
-    return vm; 
+
+    // create the requirements for each am
+    VRRReqMap vrm;
+
+    // the top requires all
+    vrm[maxam] = AllGaussiansForAM(maxam); 
+
+    // recurse down
+    for(int i = maxam-1; i > 0; i--)
+    {
+        // get the set from the previous am
+        GaussianSet prev = vrm[i+1];
+        
+        // for each one, look up its requirements
+        for(const auto & it : prev)
+        {
+            XYZStep s = vm[it];
+
+            // add what it needs to this step
+            Gaussian g1 = it.StepDown(s, 1);
+            Gaussian g2 = it.StepDown(s, 2);
+
+            // if these are valid
+            if(g1)
+                vrm[g1.am()].insert(g1);
+            if(g2)
+                vrm[g2.am()].insert(g2);
+        }
+    }
+
+    return {vm, vrm}; 
 }
+
 
 
 HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAMList amlist)
@@ -260,3 +291,8 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
 
     return hrrlist;
 }
+
+
+
+
+
