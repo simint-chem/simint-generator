@@ -299,17 +299,16 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
 }
 
 
-ETStepList ET_Algorithm_Base::Create_ETStepList(int am1, int am3)
+ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
 {
     ETStepList etsl;
-/*
+
     // holds all the 'solved' quartets
-    QuartetSet solvedquartets;
+//    QuartetSet solvedquartets;
 
     // generate initial targets
-    QuartetSet inittargets = GenerateInitialQuartetTargets(amlist, true);
-    PrintQuartetSet(inittargets, "Initial Targets");
-
+    PrintQuartetSet(inittargets, "Initial ET Targets");
+/*
     // Inital bra targets
     QuartetSet targets = inittargets;
     PruneRight(targets, DoubletType::BRA);

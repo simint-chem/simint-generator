@@ -33,6 +33,7 @@ int main(int argc, char ** argv)
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
+    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
 
     /*
     // Create the quartet list
@@ -42,11 +43,8 @@ int main(int argc, char ** argv)
     Writer_Unrolled(cout, amlist, "FOCombined", bm, hqsl);
     */
 
-    // Create the step lists
-    HRRBraKetStepList bksl = hrralgo->Create_DoubletStepLists(amlist);
-
-    // Write it out
-    Writer_Looped(cout, amlist, "FOCombined", bm, *vrralgo, bksl);
+    // Create/Write
+    Writer_Looped(cout, amlist, "FOCombined", bm, *vrralgo, *etalgo, *hrralgo);
 
 
     }

@@ -14,6 +14,7 @@ void Writer_Looped(std::ostream & os,
                    const std::string & nameappend,
                    const BoysMap & bm,
                    VRR_Algorithm_Base & vrralgo,
-                   const HRRBraKetStepList & hrrsteps);
+                   ET_Algorithm_Base & etalgo,
+                   HRR_Algorithm_Base & hrralgo);
 
 #endif

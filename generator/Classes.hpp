@@ -15,9 +15,11 @@
 // some flags
 #define QUARTET_INITIAL     1  // what we are looking for at the end
 #define QUARTET_HRRTOPLEVEL 2
+#define QUARTET_ETTOPLEVEL  8
 
 #define DOUBLET_INITIAL     1  // what we are looking for at the end
 #define DOUBLET_HRRTOPLEVEL 2
+#define DOUBLET_ETTOPLEVEL  8
 
 
 typedef std::array<int, 2> DAMList;
@@ -194,6 +196,8 @@ struct Doublet
             ss << "i";
         if(flags & DOUBLET_HRRTOPLEVEL)
             ss << "t";
+        if(flags & DOUBLET_ETTOPLEVEL)
+            ss << "e";
         ss << "}";
         
         return ss.str();
@@ -276,6 +280,8 @@ struct Quartet
             ss << "i";
         if(flags & QUARTET_HRRTOPLEVEL)
             ss << "t";
+        if(flags & QUARTET_ETTOPLEVEL)
+            ss << "e";
         ss << "}";
         
         return ss.str();

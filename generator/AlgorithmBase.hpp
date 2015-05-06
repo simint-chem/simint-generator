@@ -29,7 +29,7 @@ class HRR_Algorithm_Base
 class ET_Algorithm_Base
 {
     public:
-        virtual ETStepList Create_ETStepList(int am1, int am3);
+        virtual ETStepList Create_ETStepList(const QuartetSet & inittargets);
 
     private:    
         virtual ETStep etstep(const Quartet & target) = 0;

@@ -147,7 +147,8 @@ void Writer_Looped(std::ostream & os,
                    const std::string & nameappend,
                    const BoysMap & bm,
                    VRR_Algorithm_Base & vrralgo,
-                   const HRRBraKetStepList & hrrsteps)
+                   ET_Algorithm_Base & etalgo,
+                   HRR_Algorithm_Base & hrralgo)
 {
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
     int ncart_bra = NCART(am[0]) * NCART(am[1]);
@@ -157,6 +158,9 @@ void Writer_Looped(std::ostream & os,
 
 
     // I need:
+    // 0.) HRR Steps
+    HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
+
     // 1.) HRR Top level Doublets, sorted into their AM
     DoubletSetMap hrrtopbras, hrrtopkets;
     for(const auto & it : hrrsteps.first)
@@ -175,6 +179,19 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.src2.am()].insert(it.src2);
     }
 
+    // 2.) ET steps
+    //     with the HRR top level stuff as the initial targets
+    QuartetSet etinit;
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        for(const auto & dit : it.second)
+        for(const auto & dit2 : it2.second)
+            etinit.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
+    }
+
+    ETStepList etsl = etalgo.Create_ETStepList(etinit);
+        
 
     // 3.) VRR Steps
     //     This is #3 because we will need ET steps for #2
@@ -197,10 +214,10 @@ void Writer_Looped(std::ostream & os,
     }
 
 
-    std::cout << "TOP BRAS: " << hrrtopbras.size() << "\n";
+    std::cout << "VRR Top BrasS: " << hrrtopbras.size() << "\n";
     for(const auto & it : hrrtopbras)
         std::cout << " AM: " << it.first << "   Elements: " << it.second.size() << " / " << ((it.first+1)*(it.first+2)/2) << "\n";
-    std::cout << "TOP KETS: " << hrrtopkets.size() << "\n";
+    std::cout << "VRR Top Kets: " << hrrtopkets.size() << "\n";
     for(const auto & it : hrrtopkets)
         std::cout << " AM: " << it.first << "   Elements: " << it.second.size() << " / " << ((it.first+1)*(it.first+2)/2) << "\n";
     std::cout << "\n";
