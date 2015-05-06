@@ -109,22 +109,28 @@ HRRQuartetStep HRR_Algorithm_Base::quartetstep(const Quartet & target, DoubletTy
 }
 
 
-std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(int maxam)
+std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(const GaussianSet & greq)
 {
+    // holds the requirements for each am
+    VRRReqMap vrm;
+
+    // find the requested gaussians for each am
+    for(const auto & it : greq)
+        vrm[it.am()].insert(it); 
+
+    // max am
+    int maxam = vrm.rbegin()->first;
+
+    // holds the VRR steps
     VRRMap vm;
+
     for(int i = 0; i <= maxam; i++)
     {
         VRRMap vm2 = CreateVRRMap(i);
         vm.insert(vm2.begin(), vm2.end());
     }
 
-    // create the requirements for each am
-    VRRReqMap vrm;
-
-    // the top requires all
-    vrm[maxam] = AllGaussiansForAM(maxam); 
-
-    // recurse down
+    // recurse down from the end
     for(int i = maxam-1; i > 0; i--)
     {
         // get the set from the previous am

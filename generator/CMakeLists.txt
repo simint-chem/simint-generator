@@ -3,7 +3,8 @@
 ###################
 list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
 list(APPEND GENERATOR_CXX_FLAGS "-O3")
-list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wunused-variable -pedantic -Werror -pedantic-errors")
+list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wunused-variable -pedantic")
+list(APPEND GENERATOR_CXX_FLAGS "-Werror -pedantic-errors")
 list(APPEND GENERATOR_CXX_FLAGS "-ggdb")
 
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")

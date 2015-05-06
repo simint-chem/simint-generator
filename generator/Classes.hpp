@@ -617,5 +617,7 @@ typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 
+typedef std::map<int, DoubletSet> DoubletSetMap;
+
 
 #endif

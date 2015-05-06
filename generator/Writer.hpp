@@ -13,7 +13,7 @@ void Writer_Looped(std::ostream & os,
                    const QAMList & am,
                    const std::string & nameappend,
                    const BoysMap & bm,
-                   const std::pair<VRRMap, VRRReqMap> & vrrinfo,
+                   VRR_Algorithm_Base & vrralgo,
                    const HRRBraKetStepList & hrrsteps);
 
 #endif
