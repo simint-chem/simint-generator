@@ -8,13 +8,13 @@ class HRR_Algorithm_Base
     public:
         virtual ~HRR_Algorithm_Base() { }
 
-        virtual HRRDoubletStep doubletstep(const Doublet & target) = 0;
-        virtual HRRQuartetStep quartetstep(const Quartet & target, DoubletType steptype);
-
         HRRBraKetStepList Create_DoubletStepLists(QAMList amlist);
         HRRQuartetStepList Create_QuartetStepList(QAMList amlist);
 
     private:
+        virtual HRRDoubletStep doubletstep(const Doublet & target) = 0;
+        virtual HRRQuartetStep quartetstep(const Quartet & target, DoubletType steptype);
+
         void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
                             const DoubletSet & inittargets,
                             DoubletSet & solveddoublets);
@@ -23,6 +23,16 @@ class HRR_Algorithm_Base
                             const QuartetSet & inittargets,
                             QuartetSet & solvedquartets,
                             DoubletType type);
+};
+
+
+class ET_Algorithm_Base
+{
+    public:
+        virtual ETStepList Create_ETStepList(int am1, int am3);
+
+    private:    
+        virtual ETStep etstep(const Quartet & target) = 0;
 };
 
 

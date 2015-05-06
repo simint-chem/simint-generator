@@ -589,11 +589,27 @@ inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
 
 struct ETStep
 {
+    Quartet target;
+    Quartet src1, src2, src3, src4;
+    XYZStep xyz;
+
     std::string str(void) const
     {
-        return "TOTO";
-    } 
+        std::stringstream ss;
+        ss << target << " = " << xyz << " * " << src1 << " + " << src2 << " + " << src3 << " - " << src4;
+        return ss.str();
+    }
+
+    bool operator==(const ETStep & rhs) const
+    {
+        return (target == rhs.target &&
+                src1 == rhs.src1 &&
+                src2 == rhs.src2 &&
+                src3 == rhs.src3 &&
+                src4 == rhs.src4);
+    }
 };
+
 
 inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 {
@@ -618,6 +634,7 @@ typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 
 typedef std::map<int, DoubletSet> DoubletSetMap;
+
 
 
 #endif
