@@ -340,6 +340,7 @@ inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
 }
 
 
+#if 0
 // A single bra or ket, containing two gaussians, shell form
 struct ShellDoublet
 {
@@ -421,7 +422,6 @@ struct ShellDoublet
                 : type(type), amlist(amlist), flags(flags) { }
 
 };
-
 
 
 struct ShellQuartet
@@ -524,6 +524,8 @@ inline std::ostream & operator<<(std::ostream & os, const ShellQuartet & q)
     os << q.str();
     return os;
 }
+#endif
+
 
 
 struct HRRDoubletStep
@@ -635,7 +637,7 @@ typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
 
-typedef std::set<ShellQuartet> ShellQuartetSet;
+//typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 
