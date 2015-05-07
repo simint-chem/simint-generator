@@ -8,6 +8,7 @@ DoubletSet GenerateInitialDoubletTargets(DAMList amlst, DoubletType type, bool i
 
 void PruneRight(DoubletSet & ds);
 void PruneRight(QuartetSet & qs, DoubletType type);
+void PruneET(QuartetSet & qs);
 
 void PrintDoubletSet(const DoubletSet & d, const std::string & title);
 void PrintQuartetSet(const QuartetSet & q, const std::string & title);

@@ -89,7 +89,7 @@ struct Gaussian
         const char * amchar = "SPDFGHIJKLMNOQRTUVWXYZABCE";
         std::stringstream ss;
         
-        if(Valid())
+        if(*this)
             ss << amchar[am()] << "_" << ijk[0] << ijk[1] << ijk[2];
         else
             ss << "?_" << ijk[0] << ijk[1] << ijk[2];
@@ -116,14 +116,9 @@ struct Gaussian
         return (ijk == rhs.ijk);
     }
 
-    bool Valid(void) const
-    {
-        return (ijk[0] >= 0 && ijk[1] >= 0 && ijk[2] >= 0);
-    }
-
     operator bool(void) const
     {
-        return Valid();
+        return (ijk[0] >= 0 && ijk[1] >= 0 && ijk[2] >= 0);
     }
     
     bool Iterate(void)
@@ -135,7 +130,7 @@ struct Gaussian
             ijk = {ijk[0],   ijk[1]-1,      ijk[2]+1 };
         else
             ijk = {ijk[0]-1, am()-ijk[0]+1, 0        };
-        return Valid();
+        return *this;
     }
 
 
@@ -244,6 +239,11 @@ struct Doublet
                 type == rhs.type &&
                 flags == rhs.flags);
     }
+
+    operator bool(void) const
+    {
+        return (left && right);
+    }
 };
 
 inline std::ostream & operator<<(std::ostream & os, const Doublet & d)
@@ -291,7 +291,7 @@ struct Quartet
     {
         std::stringstream ss;
         ss << "( " << bra.left << " " << bra.right << " | "
-                   << ket.left << " " << ket.right << " )"
+                   << ket.left << " " << ket.right << " )^"
                    << m << flagstr();
         return ss.str();
     }
@@ -328,6 +328,11 @@ struct Quartet
     bool operator==(const Quartet & rhs) const
     {
         return (bra == rhs.bra && ket == rhs.ket && m == rhs.m && flags == rhs.flags);
+    }
+
+    operator bool(void) const
+    {
+        return bra && ket;
     }
 
 };
@@ -604,7 +609,14 @@ struct ETStep
     std::string str(void) const
     {
         std::stringstream ss;
-        ss << target << " = " << xyz << " * " << src1 << " + " << src2 << " + " << src3 << " - " << src4;
+        ss << target << " = " << xyz << " * " << src1;
+        if(src2.bra.left && src2.ket.left)
+            ss << " + " << src2;
+        if(src3.bra.left && src3.ket.left)
+            ss << " + " << src3;
+        if(src4.bra.left && src4.ket.left)
+            ss << " - " << src4;
+ 
         return ss.str();
     }
 
@@ -629,6 +641,7 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 typedef std::set<Gaussian> GaussianSet;
 typedef std::map<Gaussian, XYZStep> VRRMap;
 typedef std::map<int, GaussianSet> VRRReqMap;
+typedef std::map<int, GaussianSet> ETReqMap;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;

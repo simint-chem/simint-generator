@@ -78,12 +78,13 @@ void PruneRight(DoubletSet & ds)
 
     for(auto & it : ds)
     {
-        if(it.right.am() != 0)
+        if(it.right && it.right.am() != 0)
             dsnew.insert(it);
     }
 
     ds = dsnew; 
 }
+
 
 void PruneRight(QuartetSet & qs, DoubletType type)
 {
@@ -91,13 +92,25 @@ void PruneRight(QuartetSet & qs, DoubletType type)
 
     for(auto & it : qs)
     {
-        if(it.get(type).right.am() != 0)
+        if(it.get(type).right && it.get(type).right.am() != 0)
             qsnew.insert(it);
     }
 
     qs = qsnew; 
 }
 
+void PruneET(QuartetSet & qs)
+{
+    QuartetSet qsnew;
+
+    for(auto & it : qs)
+    {
+        if(it && it.ket.left.am() != 0 && it.bra.left.am() > 0)
+            qsnew.insert(it);
+    }
+
+    qs = qsnew; 
+}
 
 
 void PrintQuartetSet(const QuartetSet & q, const std::string & title)

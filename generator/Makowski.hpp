@@ -104,14 +104,17 @@ class Makowski_ET : public ET_Algorithm_Base
             Gaussian s{0,0,0};
 
             Doublet src1d_bra{DoubletType::BRA, src1g_1, s};
-            Doublet src2d_bra{DoubletType::BRA, src2g_1, s};
-            Doublet src3d_bra{DoubletType::BRA, src3g_1, s};
-            Doublet src4d_bra{DoubletType::BRA, src4g_1, s};
-
             Doublet src1d_ket{DoubletType::KET, src1g_2, s};
+
+            Doublet src2d_bra{DoubletType::BRA, src2g_1, s};
             Doublet src2d_ket{DoubletType::KET, src2g_2, s};
+
+            Doublet src3d_bra{DoubletType::BRA, src3g_1, s};
             Doublet src3d_ket{DoubletType::KET, src3g_2, s};
+
+            Doublet src4d_bra{DoubletType::BRA, src4g_1, s};
             Doublet src4d_ket{DoubletType::KET, src4g_2, s};
+
 
 
             XYZStep xyzstep = IdxToXYZStep(idx);

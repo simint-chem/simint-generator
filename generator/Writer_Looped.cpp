@@ -1,5 +1,4 @@
 #include <sstream>
-#include <iostream>
 #include "generator/Classes.hpp"
 #include "generator/Boys.hpp"
 #include "generator/Helpers.hpp"
@@ -157,7 +156,7 @@ void Writer_Looped(std::ostream & os,
     const int maxv = L+1;
 
 
-    // I need:
+    // Working backwards, I need:
     // 0.) HRR Steps
     HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
 
@@ -179,6 +178,9 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.src2.am()].insert(it.src2);
     }
 
+
+
+
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
     QuartetSet etinit;
@@ -191,13 +193,27 @@ void Writer_Looped(std::ostream & os,
     }
 
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
-        
+    
 
-    // 3.) VRR Steps
-    //     This is #3 because we will need ET steps for #2
+    // 3.) Top level gaussians from ET, sorted by AM
+    ETReqMap etrm;
+    for(const auto & it : etsl)
+    {
+        // should only add the first element of the bra
+        if(it.src1.flags & QUARTET_ETTOPLEVEL)
+            etrm[it.src1.bra.left.am()].insert(it.src1.bra.left);
+        if(it.src2.flags & QUARTET_ETTOPLEVEL)
+            etrm[it.src2.bra.left.am()].insert(it.src2.bra.left);
+        if(it.src3.flags & QUARTET_ETTOPLEVEL)
+            etrm[it.src3.bra.left.am()].insert(it.src3.bra.left);
+        if(it.src4.flags & QUARTET_ETTOPLEVEL)
+            etrm[it.src4.bra.left.am()].insert(it.src4.bra.left);
+    }
+    
+
+    // 4.) VRR Steps
     //     For now, this is dependent on L
-    GaussianSet gsreq{AllGaussiansForAM(L+1)};
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(gsreq);
+    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(etrm);
 
     // these might be ( X s | or | X s )
     if(hrrtopbras.size() == 0)
@@ -214,13 +230,29 @@ void Writer_Looped(std::ostream & os,
     }
 
 
-    std::cout << "VRR Top BrasS: " << hrrtopbras.size() << "\n";
+    // print out info
+    os << "HRR Top Bras: " << hrrtopbras.size() << "\n";
     for(const auto & it : hrrtopbras)
-        std::cout << " AM: " << it.first << "   Elements: " << it.second.size() << " / " << ((it.first+1)*(it.first+2)/2) << "\n";
-    std::cout << "VRR Top Kets: " << hrrtopkets.size() << "\n";
+        os << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
+    os << "HRR Top Kets: " << hrrtopkets.size() << "\n";
     for(const auto & it : hrrtopkets)
-        std::cout << " AM: " << it.first << "   Elements: " << it.second.size() << " / " << ((it.first+1)*(it.first+2)/2) << "\n";
-    std::cout << "\n";
+        os << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
+    os << "\n";
+
+    os << "ET Requirements: " << etrm.size() << "\n";
+    for(const auto & greq : etrm)
+    {
+        os << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+        for(const auto & it : greq.second)
+            os << "    " << it << "\n";
+    }
+    os << "\n";
+
+    os << "VRR Requirements: " << vrrinfo.second.size() << "\n";
+    for(const auto & greq : vrrinfo.second)
+        os << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+    os << "\n";
+
 
     //////////////////////////////////////////////////
     // set up the function to make it look pretty
@@ -349,82 +381,94 @@ void Writer_Looped(std::ostream & os,
 
     Write_BoysFunction(os, bm, maxv);
 
-    os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Vertical recurrance\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "\n";
-    os << "                    int idx = 0;\n";
-    os << "\n";
-
-    // i loops over am
-    for(int i = 1; i <= L+1; i++)
+    if(vrrinfo.second.size() > 1)
     {
-        // requirements for this am
-        GaussianSet greq = vrrinfo.second.at(i);
-        os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << greq.size() << "];\n";
-        os << "                    // Needed from this AM:\n";
-        for(const auto & it : greq)
-            os << "                    //    " << it << "\n";
-        os << "                    idx = 0;\n";
-        os << "                    for(int m = 0; m < " << (maxv-i+1) << "; m++)  // loop over orders of boys function\n";
-        os << "                    {\n";
+        os << "\n";
+        os << "                    //////////////////////////////////////////////\n";
+        os << "                    // Primitive integrals: Vertical recurrance\n";
+        os << "                    //////////////////////////////////////////////\n";
+        os << "\n";
+        os << "                    int idx = 0;\n";
+        os << "\n";
 
-        for(const auto & it : greq) // should be in order, since it's a set
+        // loop over am
+        for(const auto & it3 : vrrinfo.second)
         {
-            // Get the stepping
-            XYZStep step = vrrinfo.first.at(it);
+            // i is the m
+            int i = it3.first;
 
-            // and then the required gaussians
-            Gaussian g1 = it.StepDown(step, 1);
-            Gaussian g2 = it.StepDown(step, 2);
+            // don't do zero - that is handled by the boys function stuff
+            if(i == 0)
+                continue;
 
-            // number of gaussians in the previous two AM
-            int ng1 = -1;
-            int ng2 = -1;
+            // greq is the actual info
+            const GaussianSet & greq = it3.second;
 
-            int g1_idx = -1;
-            int g2_idx = -1;
+            // requirements for this am
+            os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << greq.size() << "];\n";
+            os << "                    // Needed from this AM:\n";
+            for(const auto & it : greq)
+                os << "                    //    " << it << "\n";
+            os << "                    idx = 0;\n";
+            os << "                    for(int m = 0; m < " << (maxv-i+1) << "; m++)  // loop over orders of boys function\n";
+            os << "                    {\n";
 
-            // indices. This is a little messy, but whatever
-            if(g1)
-            { 
-                auto g1_it = vrrinfo.second.at(i-1).find(g1); 
-                g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
-                ng1 = vrrinfo.second.at(i-1).size();
-            }
-            if(g2)
+            for(const auto & it : greq) // should be in order, since it's a set
             {
-                auto g2_it = vrrinfo.second.at(i-2).find(g2); 
-                g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
-                ng2 = vrrinfo.second.at(i-2).size();
+                // Get the stepping
+                XYZStep step = vrrinfo.first.at(it);
+
+                // and then the required gaussians
+                Gaussian g1 = it.StepDown(step, 1);
+                Gaussian g2 = it.StepDown(step, 2);
+
+                // number of gaussians in the previous two AM
+                int ng1 = -1;
+                int ng2 = -1;
+
+                int g1_idx = -1;
+                int g2_idx = -1;
+
+                // indices. This is a little messy, but whatever
+                if(g1)
+                { 
+                    auto g1_it = vrrinfo.second.at(i-1).find(g1); 
+                    g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
+                    ng1 = vrrinfo.second.at(i-1).size();
+                }
+                if(g2)
+                {
+                    auto g2_it = vrrinfo.second.at(i-2).find(g2); 
+                    g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
+                    ng2 = vrrinfo.second.at(i-2).size();
+                }
+
+                // the value of i in the VRR eqn
+                // = value of exponent of g1 in the position of the step
+                int vrr_i = g1.ijk[XYZStepToIdx(step)];
+
+                os << "                        //" << it <<  " : STEP: " << step << "\n";
+                //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
+                //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
+                //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
+                os << "                        AUX_" << i << "[idx++] = P.PA_" << step << "[i] * ";
+
+                if(g1)
+                    os << "AUX_" << (i-1) << "[m * " << ng1 << " + " << g1_idx 
+                       << "] - aoverp * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+                if(g2)
+                {
+                    os << "\n";
+                    os << "                                     + " << vrr_i << " * one_over_2p * ( AUX_" << (i-2)
+                                                                  << "[m * " << ng2 << " +  " << g2_idx << "]"
+                                                                  << " - aoverp * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+                }
+                os << ";\n\n"; 
             }
 
-            // the value of i in the VRR eqn
-            // = value of exponent of g1 in the position of the step
-            int vrr_i = g1.ijk[XYZStepToIdx(step)];
-
-            os << "                        //" << it <<  " : STEP: " << step << "\n";
-//            os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
-//            os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
-//            os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
-            os << "                        AUX_" << i << "[idx++] = P.PA_" << step << "[i] * ";
-
-            if(g1)
-                os << "AUX_" << (i-1) << "[m * " << ng1 << " + " << g1_idx 
-                   << "] - aoverp * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
-            if(g2)
-            {
-                os << "\n";
-                os << "                                     + " << vrr_i << " * one_over_2p * ( AUX_" << (i-2)
-                                                              << "[m * " << ng2 << " +  " << g2_idx << "]"
-                                                              << " - aoverp * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
-            }
-            os << ";\n\n"; 
+            os << "                    }\n";
+            os << "\n\n";
         }
-
-        os << "                    }\n";
-        os << "\n\n";
     }
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";

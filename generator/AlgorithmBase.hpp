@@ -33,6 +33,10 @@ class ET_Algorithm_Base
 
     private:    
         virtual ETStep etstep(const Quartet & target) = 0;
+
+        virtual void ETStepLoop(ETStepList & etsl,
+                                const QuartetSet & inittargets,
+                                QuartetSet & solvedquartets);
 };
 
 
@@ -40,12 +44,14 @@ class VRR_Algorithm_Base
 {
     public:
         virtual ~VRR_Algorithm_Base() { }
-        virtual VRRMap CreateVRRMap(int am) = 0;
 
         // this will create a map for all possible
         // components, but hopefully only some
         // will be needed
-        std::pair<VRRMap, VRRReqMap> CreateAllMaps(const GaussianSet & greq);
+        std::pair<VRRMap, VRRReqMap> CreateAllMaps(const ETReqMap & greq);
+
+    private:
+        virtual VRRMap CreateVRRMap(int am) = 0;
 };
 
 

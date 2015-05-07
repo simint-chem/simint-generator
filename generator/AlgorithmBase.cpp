@@ -109,14 +109,10 @@ HRRQuartetStep HRR_Algorithm_Base::quartetstep(const Quartet & target, DoubletTy
 }
 
 
-std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(const GaussianSet & greq)
+std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(const ETReqMap & greq)
 {
     // holds the requirements for each am
-    VRRReqMap vrm;
-
-    // find the requested gaussians for each am
-    for(const auto & it : greq)
-        vrm[it.am()].insert(it); 
+    VRRReqMap vrm = greq;
 
     // max am
     int maxam = vrm.rbegin()->first;
@@ -284,6 +280,8 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
     for(auto & it : hrrlist)
         cout << it << "\n";
 
+    cout << "\n\n";
+
     // mark top level reqs
     for(auto & it : hrrlist)
     {
@@ -293,10 +291,49 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
             it.src2.flags |= QUARTET_HRRTOPLEVEL;
     } 
 
-    cout << "\n\n";
 
     return hrrlist;
 }
+
+
+void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
+                                   const QuartetSet & inittargets,
+                                   QuartetSet & solvedquartets)
+{
+    QuartetSet targets = inittargets;
+
+    while(targets.size())
+    {
+        QuartetSet newtargets;
+
+        for(auto it = targets.rbegin(); it != targets.rend(); ++it)
+        {
+            ETStep ets = this->etstep(*it);
+            etsl.push_back(ets);
+
+            if(solvedquartets.count(ets.src1) == 0)
+                newtargets.insert(ets.src1);
+            if(solvedquartets.count(ets.src2) == 0)
+                newtargets.insert(ets.src2);
+            if(solvedquartets.count(ets.src3) == 0)
+                newtargets.insert(ets.src3);
+            if(solvedquartets.count(ets.src4) == 0)
+                newtargets.insert(ets.src4);
+            
+            solvedquartets.insert(*it);
+        }
+
+        cout << "Generated " << newtargets.size() << " new targets\n";
+
+        PruneET(newtargets);
+        cout << "After pruning: " << newtargets.size() << " new targets\n";
+        for(const auto & it : newtargets)
+            cout << "    " << it << "\n";
+
+        targets = newtargets;
+    } 
+}
+
 
 
 ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
@@ -304,65 +341,39 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     ETStepList etsl;
 
     // holds all the 'solved' quartets
-//    QuartetSet solvedquartets;
+    QuartetSet solvedquartets;
 
     // generate initial targets
     PrintQuartetSet(inittargets, "Initial ET Targets");
-/*
-    // Inital bra targets
-    QuartetSet targets = inittargets;
-    PruneRight(targets, DoubletType::BRA);
-    PrintQuartetSet(targets, "Inital bra targets");
 
     // Solve the bra part
-    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::BRA);
-
-    // now do kets
-    // targets are src1 and src2 of hrrlist, pruned on the ket side
-    // and include any init targets that weren't solved
-    targets.clear();
-    for(const auto & it : hrrlist)
-    {
-        if(solvedquartets.count(it.src1) == 0)
-            targets.insert(it.src1);
-        if(solvedquartets.count(it.src2) == 0)
-            targets.insert(it.src2);
-    }
-    
-    if(targets.size() == 0)
-        targets = inittargets; // might be some there? ie  ( ss | ps )
-
-    PruneRight(targets, DoubletType::KET);
-
-    cout << "\n\n";
-    PrintQuartetSet(targets, "Initial ket targets");
-
-    // Solve the ket part
-    HRRQuartetLoop(hrrlist, targets, solvedquartets, DoubletType::KET);
+    ETStepLoop(etsl, inittargets, solvedquartets);
 
     // reverse the steps
-    std::reverse(hrrlist.begin(), hrrlist.end());
+    std::reverse(etsl.begin(), etsl.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
-    cout << "HRR step done. Solution is " << hrrlist.size() << " steps\n";
+    cout << "ET step done. Solution is " << etsl.size() << " steps\n";
     cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : hrrlist)
+    for(auto & it : etsl)
         cout << it << "\n";
 
-    // mark top level reqs
-    for(auto & it : hrrlist)
-    {
-        if(solvedquartets.count(it.src1) == 0)
-            it.src1.flags |= QUARTET_HRRTOPLEVEL;
-        if(solvedquartets.count(it.src2) == 0)
-            it.src2.flags |= QUARTET_HRRTOPLEVEL;
-    } 
-
     cout << "\n\n";
 
-    return hrrlist;
- */   
+    // mark top level reqs
+    for(auto & it : etsl)
+    {
+        if(it.src1 && solvedquartets.count(it.src1) == 0)
+            it.src1.flags |= QUARTET_ETTOPLEVEL;
+        if(it.src2 && solvedquartets.count(it.src2) == 0)
+            it.src2.flags |= QUARTET_ETTOPLEVEL;
+        if(it.src3 && solvedquartets.count(it.src3) == 0)
+            it.src3.flags |= QUARTET_ETTOPLEVEL;
+        if(it.src4 && solvedquartets.count(it.src4) == 0)
+            it.src4.flags |= QUARTET_ETTOPLEVEL;
+    } 
+
 
     return etsl;
 }
