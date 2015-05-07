@@ -344,10 +344,12 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     QuartetSet solvedquartets;
 
     // generate initial targets
-    PrintQuartetSet(inittargets, "Initial ET Targets");
+    QuartetSet targets = inittargets;
+    PruneET(targets);
+    PrintQuartetSet(targets, "Initial ET Targets");
 
-    // Solve the bra part
-    ETStepLoop(etsl, inittargets, solvedquartets);
+    // Solve
+    ETStepLoop(etsl, targets, solvedquartets);
 
     // reverse the steps
     std::reverse(etsl.begin(), etsl.end());

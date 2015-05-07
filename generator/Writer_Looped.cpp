@@ -153,7 +153,6 @@ void Writer_Looped(std::ostream & os,
     int ncart_bra = NCART(am[0]) * NCART(am[1]);
 
     const int L = am[0] + am[1] + am[2] + am[3];
-    const int maxv = L+1;
 
 
     // Working backwards, I need:
@@ -191,6 +190,11 @@ void Writer_Looped(std::ostream & os,
         for(const auto & dit2 : it2.second)
             etinit.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
     }
+
+
+    // Final integrals may not need HRR ( ie (A 0 | B 0) )
+    if(etinit.size() == 0)
+        etinit = GenerateInitialQuartetTargets(am, true);
 
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
     
@@ -347,7 +351,7 @@ void Writer_Looped(std::ostream & os,
         // size of requirements for this AM
         //GaussianSet greq = vrrinfo.second.at(i);
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-        os << "                    double AUX_" << greq.first << "[" << (maxv-greq.first+1) << " * " << greq.second.size() << "];\n";
+        os << "                    double AUX_" << greq.first << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
     }
     os << "\n\n";
@@ -372,14 +376,14 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
-    os << "                    // Maximum v value: " << maxv << "\n";
+    os << "                    // Maximum v value: " << L << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // The paremeter to the boys function\n";
     os << "                    const double F_x = R2 * alpha;\n";
     os << "\n";
     os << "\n";
 
-    Write_BoysFunction(os, bm, maxv);
+    Write_BoysFunction(os, bm, L);
 
     if(vrrinfo.second.size() > 1)
     {
@@ -405,12 +409,12 @@ void Writer_Looped(std::ostream & os,
             const GaussianSet & greq = it3.second;
 
             // requirements for this am
-            os << "                    // Forming AUX_" << i << "[" << (maxv-i+1) << " * " << greq.size() << "];\n";
+            os << "                    // Forming AUX_" << i << "[" << (L-i+1) << " * " << greq.size() << "];\n";
             os << "                    // Needed from this AM:\n";
             for(const auto & it : greq)
                 os << "                    //    " << it << "\n";
             os << "                    idx = 0;\n";
-            os << "                    for(int m = 0; m < " << (maxv-i+1) << "; m++)  // loop over orders of boys function\n";
+            os << "                    for(int m = 0; m < " << (L-i+1) << "; m++)  // loop over orders of boys function\n";
             os << "                    {\n";
 
             for(const auto & it : greq) // should be in order, since it's a set
