@@ -42,8 +42,12 @@ struct multishell_pair
     double * PA_x;
     double * PA_y;
     double * PA_z;
+    double * bAB_x;
+    double * bAB_y;
+    double * bAB_z;
     double * alpha;
     double * prefac;
+
 };
 
 

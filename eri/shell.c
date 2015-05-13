@@ -110,19 +110,22 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     const int size2 = shell12_size*sizeof(double); // for holding Xab, etc
 
     // allocate one large space
-    double * mem = ALLOC(size * 8 + size2 * 3 ); 
+    double * mem = ALLOC(size * 11 + size2 * 3 ); 
     P->x      = mem;
     P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
     P->PA_x   = mem + 3*prim_size;
     P->PA_y   = mem + 4*prim_size;
     P->PA_z   = mem + 5*prim_size;
-    P->alpha  = mem + 6*prim_size;
-    P->prefac = mem + 7*prim_size;
+    P->bAB_x  = mem + 6*prim_size;
+    P->bAB_y  = mem + 7*prim_size;
+    P->bAB_z  = mem + 8*prim_size;
+    P->alpha  = mem + 9*prim_size;
+    P->prefac = mem + 10*prim_size;
 
-    P->AB_x   = mem + 8*prim_size;
-    P->AB_y   = mem + 8*prim_size + shell12_size;
-    P->AB_z   = mem + 8*prim_size + 2*shell12_size;
+    P->AB_x   = mem + 11*prim_size;
+    P->AB_y   = mem + 11*prim_size + shell12_size;
+    P->AB_z   = mem + 11*prim_size + 2*shell12_size;
 
     /* Should this be aligned? I don't think so */
     int * intmem = malloc((na+nb+3*na*nb)*sizeof(int));
@@ -226,6 +229,9 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
     ASSUME_ALIGN(P->PA_x);
     ASSUME_ALIGN(P->PA_y);
     ASSUME_ALIGN(P->PA_z);
+    ASSUME_ALIGN(P->bAB_x);
+    ASSUME_ALIGN(P->bAB_Y);
+    ASSUME_ALIGN(P->bAB_Z);
     ASSUME_ALIGN(P->alpha);
     ASSUME_ALIGN(P->prefac);
 
@@ -286,6 +292,9 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
                     P->PA_x[idx] = P->x[idx] - A[sa].x;
                     P->PA_y[idx] = P->y[idx] - A[sa].y;
                     P->PA_z[idx] = P->z[idx] - A[sa].z;
+                    P->bAB_x[idx] = B[sb].alpha[j]*Xab_x;
+                    P->bAB_y[idx] = B[sb].alpha[j]*Xab_y;
+                    P->bAB_z[idx] = B[sb].alpha[j]*Xab_z;
                     P->alpha[idx] = p_ab;
                     ++idx;
                 }
