@@ -35,7 +35,11 @@ static std::string HRRBraStepVariable(const Doublet & d, const DoubletSetMap::va
 
     std::stringstream ss;
 
-    if(d.flags & DOUBLET_HRRTOPLEVEL && ketflags & DOUBLET_HRRTOPLEVEL)
+    if(kets.am() == 0)
+    {
+        ss << "AUX_" << bra.am() << "[" << d.idx() << " * " << kets.ncart() 
+    }
+    else if(d.flags & DOUBLET_HRRTOPLEVEL && ketflags & DOUBLET_HRRTOPLEVEL)
     {
         ss << HRRVarString({d.left.am(), d.right.am(), kets.first, 0}) 
            << "[abcd * " << d.ncart() * kets.second.size() 
@@ -63,9 +67,10 @@ static std::string HRRBraStepVariable(const Doublet & d, const DoubletSetMap::va
     {
         if(istarget)
             ss << "const double ";
-        ss << "BRA_" << d.left.ijk[0] << d.left.ijk[1] << d.left.ijk[2]
-           << "_" <<  d.right.ijk[0] << d.right.ijk[1] << d.right.ijk[2];
+        ss << "BRA_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                     << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2]; 
     }
+    ss << ";";
     return ss.str();
 }
 
@@ -84,20 +89,19 @@ static std::string HRRKetStepVariable(const Doublet & d, const DAMList & braam, 
            << "[abcd * " << ncart_bra * d.ncart() 
            << " + abi * " << ncart_bra << " + " << d.idx() << "]";
     }
-
     else if(d.flags & DOUBLET_INITIAL)
     {
         ss << "integrals" << "[abcd * " << ncart_bra * d.ncart() 
                                         << " + abi * " << d.ncart() << " + " << d.idx() << "]";
     }
-
     else
     {
         if(istarget)
             ss << "const double ";
-        ss << "KET_" << d.left.ijk[0] << d.left.ijk[1] << d.left.ijk[2]
-           << "_" <<  d.right.ijk[0] << d.right.ijk[1] << d.right.ijk[2];
+        ss << "KET_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                     << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2]; 
     }
+
     return ss.str();
 }
 
@@ -210,13 +214,13 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 
             if(g1)
                 os << "AUX_" << (i-1) << "[m * " << ng1 << " + " << g1_idx 
-                   << "] - aoverp * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+                   << "] - a_over_p * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
             if(g2)
             {
                 os << "\n";
                 os << "                                     + " << vrr_i << " * one_over_2p * ( AUX_" << (i-2)
                                                               << "[m * " << ng2 << " +  " << g2_idx << "]"
-                                                              << " - aoverp * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+                                                              << " - a_over_p * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
             }
             os << ";\n\n"; 
         }
@@ -227,10 +231,59 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 }
 
 
-static std::string ETStepString(const ETStep & et)
+static std::string ETStepVar(const Quartet & q, bool target)
 {
     std::stringstream ss;
-    ss << "                    " << et << "\n";
+
+    if(q.flags & QUARTET_ETTOPLEVEL)
+    {
+        ss << "AUX_" << q.am() << "[" << q.idx() << "]";
+    }
+    else if(q.flags & QUARTET_HRRTOPLEVEL)
+    {
+        ss << HRRVarString({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}) 
+           << "[abcd * " << q.ncart() << " + " << q.idx() << "]";
+        if(target)
+            ss << " += ";
+    }
+    else if(q.flags & QUARTET_INITIAL)
+    {
+        ss << "integrals" << "[abcd * " << q.ncart() << " + " << q.idx() << "]";
+
+        if(target)
+            ss << " += ";
+    }
+    else
+    {
+        if(target)
+            ss << "const double ";
+        ss << "ET_" << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
+                    << q.bra.right.ijk[0] << "_" << q.bra.right.ijk[1] << "_" << q.bra.right.ijk[2] << "_"
+                    << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
+                    << q.ket.right.ijk[0] << "_" << q.ket.right.ijk[1] << "_" << q.ket.right.ijk[2];
+    }
+
+    return ss.str();
+}
+
+static std::string ETStepString(const ETStep & et)
+{
+    int stepidx = XYZStepToIdx(et.xyz);
+    int ival = et.target.bra.left.ijk[stepidx];
+    int kval = et.target.ket.left.ijk[stepidx]-1;
+
+    std::stringstream ss;
+    ss << std::string(20, ' ');
+    ss << ETStepVar(et.target, true) << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, false);
+
+    if(et.src2.bra.left && et.src2.ket.left)
+        ss << " + " << ival << " * one_over_2q * " << ETStepVar(et.src2, false);
+    if(et.src3.bra.left && et.src3.ket.left)
+        ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3, false);
+    if(et.src4.bra.left && et.src4.ket.left)
+        ss << " + p_over_q * " << ETStepVar(et.src4, false);
+    ss << "\n";
+
     return ss.str();
 }
 
@@ -244,6 +297,11 @@ void Writer_Looped(std::ostream & os,
                    ET_Algorithm_Base & etalgo,
                    HRR_Algorithm_Base & hrralgo)
 {
+    // for electron transfer
+    // ETMap[am1][am2] is a list of steps for forming
+    typedef std::map<int, std::map<int, ETStepList>> ETMap;
+
+
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
     int ncart_bra = NCART(am[0]) * NCART(am[1]);
 
@@ -310,9 +368,20 @@ void Writer_Looped(std::ostream & os,
     }
     
 
+    // 3.1) ET Map
+    ETMap etmap;
+    for(const auto & it : etsl)
+        etmap[it.target.bra.am()][it.target.ket.am()].push_back(it);
+
     // 4.) VRR Steps
-    //     For now, this is dependent on L
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(etrm);
+    // requirements for vrr are the elements of etrm
+    ETReqMap vreq = etrm;
+
+    // but if there are none, this of the type ( X 0 | 0 0 )
+    if(vreq.size() == 0)
+        vreq[L] = AllGaussiansForAM(L);
+
+    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
     // these might be ( X s | or | X s )
     if(hrrtopbras.size() == 0)
@@ -380,11 +449,24 @@ void Writer_Looped(std::ostream & os,
     os << "    ASSUME_ALIGN(P.x);\n";
     os << "    ASSUME_ALIGN(P.y);\n";
     os << "    ASSUME_ALIGN(P.z);\n";
+    os << "    ASSUME_ALIGN(P.PA_x);\n";
+    os << "    ASSUME_ALIGN(P.PA_y);\n";
+    os << "    ASSUME_ALIGN(P.PA_z);\n";
+    os << "    ASSUME_ALIGN(P.bAB_x);\n";
+    os << "    ASSUME_ALIGN(P.bAB_y);\n";
+    os << "    ASSUME_ALIGN(P.bAB_z);\n";
     os << "    ASSUME_ALIGN(P.alpha);\n";
     os << "    ASSUME_ALIGN(P.prefac);\n";
+    os << "\n";
     os << "    ASSUME_ALIGN(Q.x);\n";
     os << "    ASSUME_ALIGN(Q.y);\n";
     os << "    ASSUME_ALIGN(Q.z);\n";
+    os << "    ASSUME_ALIGN(Q.PA_x);\n";
+    os << "    ASSUME_ALIGN(Q.PA_y);\n";
+    os << "    ASSUME_ALIGN(Q.PA_z);\n";
+    os << "    ASSUME_ALIGN(Q.bAB_x);\n";
+    os << "    ASSUME_ALIGN(Q.bAB_y);\n";
+    os << "    ASSUME_ALIGN(Q.bAB_z);\n";
     os << "    ASSUME_ALIGN(Q.alpha);\n";
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "    ASSUME_ALIGN(integrals)\n";
@@ -466,8 +548,20 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "                    // various factors\n";
     os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
-    os << "                    const double aoverp =  alpha / P.alpha[i];     // a/p from MEST\n";
-    os << "                    const double one_over_2p = 1.0/(2.0 * P.alpha[i]);  // gets multiplied by i in VRR\n";
+    os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
+    os << "                    const double one_over_q = 1.0 / QA.alpha[i];\n";
+    os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
+    os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+    os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
+    os << "                    const double p_over_q = p * one_over_q;\n";
+    os << "\n";
+    os << "                    // for electron transfer\n";
+    os << "                    const double etfac[3] = {\n";
+    os << "                                             -(P.bAB_x + Q.bAB_x) * one_over_q,\n";
+    os << "                                             -(P.bAB_y + Q.bAB_y) * one_over_q,\n";
+    os << "                                             -(P.bAB_z + Q.bAB_z) * one_over_q,\n";
+    os << "                                            };\n";
+    os << "\n";
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
@@ -498,8 +592,27 @@ void Writer_Looped(std::ostream & os,
     os << "                    //////////////////////////////////////////////\n";
     os << "\n";
 
-    for(const auto & it : etsl)
-        os << ETStepString(it);
+    //Write_ElectronTransfer(os, etsl, etrm, etinit);
+    // Start at the highest am, and work down
+    for(auto it1 = hrrtopbras.rbegin(); it1 != hrrtopbras.rend(); ++ it1)
+    for(auto it2 = hrrtopkets.rbegin(); it2 != hrrtopkets.rend(); ++ it2)
+    {
+        int am1 = it1->first;
+        int am2 = it2->first;
+        os << "                    // am1 = " << am1 << "  am2 = " << am2 << "\n";
+
+        for(const auto & it : etmap[am1][am2])
+        {
+            os << std::string(20, ' ') << "// " << it << "\n";
+            os << ETStepString(it);
+            os << "\n";
+        }
+
+        os << "\n";
+        am1--;
+        am2++;
+    }
+
     
     os << "\n";
     os << "                 }\n";
