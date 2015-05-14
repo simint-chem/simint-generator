@@ -8,6 +8,23 @@
 
 static const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
 
+// contains all variables stored in arrays, rather than local 'double'
+std::set<QAMList> arrinfo;
+std::map<QAMList, bool> continfo;  // is stored contracted
+
+static bool IsArray(const QAMList & am)
+{
+    auto it = arrinfo.find(am);
+    return (it != arrinfo.end());
+}
+
+static bool IsContArray(const QAMList & am)
+{
+    if(continfo.count(am) == 0)
+        return false;
+    else
+        return continfo[am];
+}
 
 // This is split out to allow for future optimization
 static void Write_BoysFunction(std::ostream & os,
@@ -19,94 +36,78 @@ static void Write_BoysFunction(std::ostream & os,
 }
 
 
-static std::string HRRVarString(const QAMList & am)
+static std::string ArrVarName(const QAMList & am,
+                              const std::string & id,
+                              bool istarget = false)
 {
     std::stringstream ss;
-    ss << "SQ_"  << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];;
-    return ss.str();
-}
-
-
-static std::string HRRBraStepVariable(const Doublet & d, const DoubletSetMap::value_type kets, bool istarget)
-{
-    // get the ket flags
-    // They should all be the same, so just get the first one
-    int ketflags = kets.second.begin()->flags;
-
-    std::stringstream ss;
-
-    if(kets.am() == 0)
+    if(IsArray(am))
     {
-        ss << "AUX_" << bra.am() << "[" << d.idx() << " * " << kets.ncart() 
-    }
-    else if(d.flags & DOUBLET_HRRTOPLEVEL && ketflags & DOUBLET_HRRTOPLEVEL)
-    {
-        ss << HRRVarString({d.left.am(), d.right.am(), kets.first, 0}) 
-           << "[abcd * " << d.ncart() * kets.second.size() 
-                         << " + " << d.idx() << " * " << kets.second.size() << " + ni]";
-    }
-
-    else if(d.flags & DOUBLET_INITIAL & ketflags & DOUBLET_INITIAL) 
-    {
-        // we are calculating a final integral here
-        // ie integral is in the form of ( a b | c 0 )
-        ss << "integrals" << "[abcd * " << d.ncart() * kets.second.size() 
-                                        << " + " << d.idx() << " * " << kets.second.size()
-                                        << " + ni]";
-    }
-
-    else if(d.flags & DOUBLET_INITIAL)
-    {
-        // this is a 'bra target'
-        // determine the shell quartet
-        ss << HRRVarString({d.left.am(), d.right.am(), kets.first, 0})
-           << "[abcd * " << d.ncart() * kets.second.size() 
-           << " + " << d.idx() << " * " << kets.second.size() << " + ni]";
+        ss << "SQ_"  << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
     }
     else
     {
         if(istarget)
             ss << "const double ";
-        ss << "BRA_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                     << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2]; 
+        ss << "Q_" << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
+        if(id.size() > 0)
+            ss << "_" << id;
     }
-    ss << ";";
+    return ss.str();
+}
+
+/*
+static std::string ArrVarName(const Quartet & q,
+                              const std::string & id,
+                              bool istarget = false)
+{
+    std::stringstream ss;
+    ss << q.bra.left.ijk[0] << "_" << q.bra.left.ijk[1] << "_" << q.bra.left.ijk[2] << "_";
+    ss << q.bra.right.ijk[0] << "_" << q.bra.right.ijk[1] << "_" << q.bra.right.ijk[2] << "_";
+    ss << q.ket.left.ijk[0] << "_" << q.ket.left.ijk[1] << "_" << q.ket.left.ijk[2] << "_";
+    ss << q.ket.right.ijk[0] << "_" << q.ket.right.ijk[1] << "_" << q.ket.right.ijk[2];
+
+    return ArrVarName({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}, ss.str(), istarget);
+}
+*/
+
+
+static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget = false)
+{
+    int ncart_ket = NCART(ketam); // all am is on the left part of the ket
+
+    // index to the array
+    std::stringstream ssidx;
+    ssidx << "[abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + ni]";
+
+    std::stringstream ss, ss2;
+    ss2 << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
+        << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
+        << ketam;
+
+    ss << ArrVarName({d.left.am(), d.right.am(), ketam, 0}, ss2.str(), istarget) << ssidx.str();
     return ss.str();
 }
 
 
-static std::string HRRKetStepVariable(const Doublet & d, const DAMList & braam, bool istarget)
+static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget = false)
 {
-    std::stringstream ss;
-
     const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
 
-    // bra should always be initial
+    std::stringstream ssidx;
+    ssidx << "[abcd * " << ncart_bra * d.ncart() << " + abi * " << d.ncart() << " + " << d.idx() << "]"; 
 
-    if(d.flags & DOUBLET_HRRTOPLEVEL)  // initial bra, hrr top level ket = a bra target
-    {
-        ss << HRRVarString({braam[0], braam[1], d.left.am(), d.right.am()}) 
-           << "[abcd * " << ncart_bra * d.ncart() 
-           << " + abi * " << ncart_bra << " + " << d.idx() << "]";
-    }
-    else if(d.flags & DOUBLET_INITIAL)
-    {
-        ss << "integrals" << "[abcd * " << ncart_bra * d.ncart() 
-                                        << " + abi * " << d.ncart() << " + " << d.idx() << "]";
-    }
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "KET_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                     << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2]; 
-    }
-
+    std::stringstream ss, ss2;
+    ss2 << braam[0] << "_" << braam[1] << "_" 
+        << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
+        << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
+    ss << ArrVarName({braam[0], braam[1], d.left.am(), d.right.am()}, ss2.str(), istarget) << ssidx.str();
     return ss.str();
 }
 
 
-static std::string HRRBraStepString(const HRRDoubletStep & hrr, const DoubletSetMap::value_type kets)
+
+static std::string HRRBraStepString(const HRRDoubletStep & hrr, int ketam)
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
     const char * xyztype = "AB_";
@@ -114,12 +115,12 @@ static std::string HRRBraStepString(const HRRDoubletStep & hrr, const DoubletSet
     std::stringstream ss;
     ss << std::string(12, ' ');
 
-    ss << HRRBraStepVariable(hrr.target, kets, true);
+    ss << HRRBraStepArrVar(hrr.target, ketam, true);
 
     ss << " = ";
-    ss << HRRBraStepVariable(hrr.src1, kets, false);
+    ss << HRRBraStepArrVar(hrr.src1, ketam);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRBraStepVariable(hrr.src2, kets, false);
+    ss << HRRBraStepArrVar(hrr.src2, ketam);
     ss << " );";
 
     return ss.str();
@@ -133,17 +134,22 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
     std::stringstream ss;
     ss << std::string(12, ' ');
 
-    ss << HRRKetStepVariable(hrr.target, braam, true);
+    ss << HRRKetStepArrVar(hrr.target, braam, true);
 
     ss << " = ";
-    ss << HRRKetStepVariable(hrr.src1, braam, false);
+    ss << HRRKetStepArrVar(hrr.src1, braam);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRKetStepVariable(hrr.src2, braam, false);
+    ss << HRRKetStepArrVar(hrr.src2, braam);
     ss << " );";
 
     return ss.str();
 }
 
+
+static std::string AuxName(int i)
+{
+    return ArrVarName({i, 0, 0, 0}, "");
+}
 
 static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
 {
@@ -164,7 +170,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         const GaussianSet & greq = it3.second;
 
         // requirements for this am
-        os << "                    // Forming AUX_" << i << "[" << (L-i+1) << " * " << greq.size() << "];\n";
+        os << "                    // Forming " << AuxName(i) << "[" << (L-i+1) << " * " << greq.size() << "];\n";
         os << "                    // Needed from this AM:\n";
         for(const auto & it : greq)
             os << "                    //    " << it << "\n";
@@ -210,17 +216,17 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
             //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
             //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
-            os << "                        AUX_" << i << "[idx++] = P.PA_" << step << "[i] * ";
+            os << "                        " << AuxName(i) << "[idx++] = P.PA_" << step << "[i] * ";
 
             if(g1)
-                os << "AUX_" << (i-1) << "[m * " << ng1 << " + " << g1_idx 
-                   << "] - a_over_p * PQ_" << step << " * AUX_" << (i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+                os << AuxName(i-1) << "[m * " << ng1 << " + " << g1_idx 
+                   << "] - a_over_p * PQ_" << step << " * " << AuxName(i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
             if(g2)
             {
                 os << "\n";
-                os << "                                     + " << vrr_i << " * one_over_2p * ( AUX_" << (i-2)
+                os << "                                     + " << vrr_i << " * one_over_2p * ( " << AuxName(i-2)
                                                               << "[m * " << ng2 << " +  " << g2_idx << "]"
-                                                              << " - a_over_p * AUX_" << (i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+                                                              << " - a_over_p * " << AuxName(i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
             }
             os << ";\n\n"; 
         }
@@ -237,11 +243,11 @@ static std::string ETStepVar(const Quartet & q, bool target)
 
     if(q.flags & QUARTET_ETTOPLEVEL)
     {
-        ss << "AUX_" << q.am() << "[" << q.idx() << "]";
+        ss << AuxName(q.am()) << "[" << q.idx() << "]";
     }
     else if(q.flags & QUARTET_HRRTOPLEVEL)
     {
-        ss << HRRVarString({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}) 
+        ss << ArrVarName({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}, "TODO") 
            << "[abcd * " << q.ncart() << " + " << q.idx() << "]";
         if(target)
             ss << " += ";
@@ -297,6 +303,10 @@ void Writer_Looped(std::ostream & os,
                    ET_Algorithm_Base & etalgo,
                    HRR_Algorithm_Base & hrralgo)
 {
+    // add the am list to the contracted info, etc
+    arrinfo.insert(am);
+    continfo[am] = true;
+
     // for electron transfer
     // ETMap[am1][am2] is a list of steps for forming
     typedef std::map<int, std::map<int, ETStepList>> ETMap;
@@ -330,7 +340,21 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.src2.am()].insert(it.src2);
     }
 
+    // add these to contracted array variable set
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        QAMList qam{it.first, 0, it2.first, 0};
+        arrinfo.insert(qam);
+        continfo[qam] = true;
+    }
 
+    for(const auto & it : hrrtopkets)
+    {
+        QAMList qam{am[0], am[1], it.first, 0};
+        arrinfo.insert(qam);
+        continfo[qam] = true;
+    }
 
 
     // 2.) ET steps
@@ -443,7 +467,7 @@ void Writer_Looped(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const restrict integrals)\n";
+    os << indent << "double * const restrict " << ArrVarName(am, "") << ")\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -483,13 +507,13 @@ void Writer_Looped(std::ostream & os,
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
     os << "\n";
-    os << "    // Top level HRR requirements. Contracted integrals are accumulated here\n";
+    os << "    // Workspace for contracted integrals\n";
 
-    // HRR top level stuff
-    // each topbra/topket combo
-    for(const auto & it : hrrtopbras)
-        for(const auto & it2 : hrrtopkets)
-            os << "    double " << HRRVarString({it.first, 0, it2.first, 0}) << "[" << it.second.size() << " * " << it2.second.size() << " * nshell1234];\n";
+    for(const auto & it : continfo)
+        if(it.first != am)
+           os << "    double " << ArrVarName(it.first, "") << "[nshell1234 * "
+               << NCART(it.first[0]) * NCART(it.first[1]) *
+                  NCART(it.first[2]) * NCART(it.first[3]) << "];\n";
 
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";
@@ -528,7 +552,7 @@ void Writer_Looped(std::ostream & os,
         // size of requirements for this AM
         //GaussianSet greq = vrrinfo.second.at(i);
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-        os << "                    double AUX_" << greq.first << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
+        os << "                    " << ArrVarName({greq.first, 0, 0, 0}, "") << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
     }
     os << "\n\n";
@@ -595,7 +619,7 @@ void Writer_Looped(std::ostream & os,
     //Write_ElectronTransfer(os, etsl, etrm, etinit);
     // Start at the highest am, and work down
     for(auto it1 = hrrtopbras.rbegin(); it1 != hrrtopbras.rend(); ++ it1)
-    for(auto it2 = hrrtopkets.rbegin(); it2 != hrrtopkets.rend(); ++ it2)
+    for(auto it2 = hrrtopkets.begin(); it2 != hrrtopkets.end(); ++ it2)
     {
         int am1 = it1->first;
         int am2 = it2->first;
@@ -612,7 +636,6 @@ void Writer_Looped(std::ostream & os,
         am1--;
         am2++;
     }
-
     
     os << "\n";
     os << "                 }\n";
@@ -632,30 +655,18 @@ void Writer_Looped(std::ostream & os,
         os << "    // Nothing to do.....\n";
     else
     {
-        if(hrrsteps.second.size() == 0)
-        {
-            os << "    // No bra-specific targets. Should all end up in integrals\n";
-        }
-        else
-        {
-            os << "    // Bra targets\n";   // these are the top kets, with the final bra
-            for(const auto & it : hrrtopkets)
-                os << "    double " << HRRVarString({am[0], am[1], it.first, 0}) << "[" << ncart_bra << " * " << it.second.size() << " * nshell1234];\n";
-        }
-
-        os << "\n";    
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
         for(const auto & it : hrrtopkets)
         {
-            os << "        // form " << HRRVarString({am[0], am[1], it.first, 0}) << "\n";
+            os << "        // form " << ArrVarName({am[0], am[1], it.first, 0}, "") << "\n";
             os << "        for(int ni = 0; ni < " << it.second.size() << "; ++ni)\n";
             os << "        {\n";
             for(const auto & hit : hrrsteps.first)
             {
                 os << std::string(12, ' ') << "// " << hit << "\n";
-                os << HRRBraStepString(hit, it) << "\n\n";
+                os << HRRBraStepString(hit, it.first) << "\n\n";
             }
             os << "        }\n";
             os << "\n";

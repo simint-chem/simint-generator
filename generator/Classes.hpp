@@ -263,6 +263,8 @@ struct Quartet
     int am(void) const { return bra.am() + ket.am(); }
     int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
+    QAMList amlist(void) const { return { bra.left.am(), bra.right.am(),
+                                          ket.left.am(), ket.right.am() }; }
 
     Doublet get(DoubletType type) const
     {
