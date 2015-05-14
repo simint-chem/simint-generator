@@ -161,7 +161,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
     // loop over am
     for(const auto & it3 : vrrinfo.second)
     {
-        // i is the m
+        // i is the am
         int i = it3.first;
 
         // don't do zero - that is handled by the boys function stuff
@@ -218,7 +218,14 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
             //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
             //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
-            os << "                        " << AuxName(i) << "[idx++] = P.PA_" << step << "[i] * ";
+            os << "                        " << AuxName(i);
+
+            if(IsContArray({i, 0, 0, 0}))
+                os << "[abcd * " << NCART(i) << " + idx++] += ";
+            else
+                os << "[idx++] = ";
+
+            os << "P.PA_" << step << "[i] * ";
 
             if(g1)
                 os << AuxName(i-1) << "[m * " << ng1 << " + " << g1_idx 
@@ -552,7 +559,10 @@ void Writer_Looped(std::ostream & os,
 
         QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-        os << "                    double " << ArrVarName(qam) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
+        if(qam == am)
+            os << "                    // is the final integral...\n";
+        else
+            os << "                    double " << ArrVarName(qam) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
 
         // add to contracted array list (but not contracted!)
