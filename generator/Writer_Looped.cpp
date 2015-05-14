@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 #include "generator/Classes.hpp"
 #include "generator/Boys.hpp"
 #include "generator/Helpers.hpp"
@@ -415,27 +416,27 @@ void Writer_Looped(std::ostream & os,
 
 
     // print out info
-    os << "HRR Top Bras: " << hrrtopbras.size() << "\n";
+    std::cout << "HRR Top Bras: " << hrrtopbras.size() << "\n";
     for(const auto & it : hrrtopbras)
-        os << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
-    os << "HRR Top Kets: " << hrrtopkets.size() << "\n";
+        std::cout << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
+    std::cout << "HRR Top Kets: " << hrrtopkets.size() << "\n";
     for(const auto & it : hrrtopkets)
-        os << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
-    os << "\n";
+        std::cout << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
+    std::cout << "\n";
 
-    os << "ET Requirements: " << etrm.size() << "\n";
+    std::cout << "ET Requirements: " << etrm.size() << "\n";
     for(const auto & greq : etrm)
     {
-        os << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
         for(const auto & it : greq.second)
-            os << "    " << it << "\n";
+            std::cout << "    " << it << "\n";
     }
-    os << "\n";
+    std::cout << "\n";
 
-    os << "VRR Requirements: " << vrrinfo.second.size() << "\n";
+    std::cout << "VRR Requirements: " << vrrinfo.second.size() << "\n";
     for(const auto & greq : vrrinfo.second)
-        os << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
-    os << "\n";
+        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+    std::cout << "\n";
 
 
     //////////////////////////////////////////////////
@@ -544,6 +545,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
     os << "                    // with m as the slowest index\n";
+
     for(const auto & greq : vrrinfo.second)
     {
         // size of requirements for this AM
@@ -555,7 +557,9 @@ void Writer_Looped(std::ostream & os,
 
         // add to contracted array list (but not contracted!)
         arrinfo.insert(qam);
+
     }
+
     os << "\n\n";
     os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
     os << "                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];\n";

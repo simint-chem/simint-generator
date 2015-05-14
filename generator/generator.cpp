@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <fstream>
 
 #include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
@@ -14,9 +15,9 @@ int main(int argc, char ** argv)
 {
     try {
 
-    if(argc != 5)
+    if(argc != 6)
     {
-        printf("Need 4 arguments\n");
+        std::cout << "usage: generator am1 am2 am3 am4 outfile\n";
         return 1;
     }
 
@@ -44,7 +45,15 @@ int main(int argc, char ** argv)
     */
 
     // Create/Write
-    Writer_Looped(cout, amlist, "FOCombined", bm, *vrralgo, *etalgo, *hrralgo);
+
+    std::ofstream of(argv[5]);
+    if(!of.is_open())
+    {
+        std::cout << "Cannot open file: " << argv[5] << "\n";
+        return 2; 
+    }
+
+    Writer_Looped(of, amlist, "FOCombined", bm, *vrralgo, *etalgo, *hrralgo);
 
 
     }

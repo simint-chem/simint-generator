@@ -127,7 +127,7 @@ std::pair<VRRMap, VRRReqMap> VRR_Algorithm_Base::CreateAllMaps(const ETReqMap & 
     }
 
     // recurse down from the end
-    for(int i = maxam-1; i > 0; i--)
+    for(int i = maxam-1; i >= 0; i--)
     {
         // get the set from the previous am
         GaussianSet prev = vrm[i+1];
