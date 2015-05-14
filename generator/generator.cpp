@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
     HRRQuartetStepList hqsl = hrralgo->Create_QuartetStepList(amlist);
 
     // Write it out
-    Writer_Unrolled(cout, amlist, "FOCombined", bm, hqsl);
+    Writer_Unrolled(cout, amlist, "FOcombined", bm, hqsl);
     */
 
     // Create/Write
@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
-    Writer_Looped(of, amlist, "FOCombined", bm, *vrralgo, *etalgo, *hrralgo);
+    Writer_Looped(of, amlist, "FOcombined", bm, *vrralgo, *etalgo, *hrralgo);
 
 
     }
