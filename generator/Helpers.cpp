@@ -105,7 +105,7 @@ void PruneET(QuartetSet & qs)
 
     for(auto & it : qs)
     {
-        if(it && it.ket.left.am() != 0 && it.bra.left.am() > 0)
+        if(it && it.ket.left.am() != 0)
             qsnew.insert(it);
     }
 

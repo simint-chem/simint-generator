@@ -313,10 +313,13 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
 
             if(solvedquartets.count(ets.src1) == 0)
                 newtargets.insert(ets.src1);
+
             if(solvedquartets.count(ets.src2) == 0)
                 newtargets.insert(ets.src2);
+
             if(solvedquartets.count(ets.src3) == 0)
                 newtargets.insert(ets.src3);
+
             if(solvedquartets.count(ets.src4) == 0)
                 newtargets.insert(ets.src4);
             

@@ -10,7 +10,7 @@ static const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
 
 // contains all variables stored in arrays, rather than local 'double'
 std::set<QAMList> arrinfo;
-std::map<QAMList, bool> continfo;  // is stored contracted
+std::set<QAMList> continfo;  // is stored contracted
 
 static bool IsArray(const QAMList & am)
 {
@@ -20,10 +20,7 @@ static bool IsArray(const QAMList & am)
 
 static bool IsContArray(const QAMList & am)
 {
-    if(continfo.count(am) == 0)
-        return false;
-    else
-        return continfo[am];
+    return continfo.count(am);
 }
 
 // This is split out to allow for future optimization
@@ -36,72 +33,74 @@ static void Write_BoysFunction(std::ostream & os,
 }
 
 
-static std::string ArrVarName(const QAMList & am,
-                              const std::string & id,
-                              bool istarget = false)
+static std::string ArrVarName(const QAMList & am)
 {
     std::stringstream ss;
+    ss << "S_"  << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
+    return ss.str();
+}
+
+
+static std::string VarName(const QAMList & am,
+                           const std::string & idx,
+                           const std::string & singleid,
+                           bool istarget)
+{
+    std::stringstream ss;
+
     if(IsArray(am))
     {
-        ss << "SQ_"  << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
+       ss << ArrVarName(am) << "[" << idx << "]"; 
     }
     else
     {
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
-        if(id.size() > 0)
-            ss << "_" << id;
+        ss << "Q_" << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3] << "__" << singleid;
     }
+
     return ss.str();
 }
 
-/*
-static std::string ArrVarName(const Quartet & q,
-                              const std::string & id,
-                              bool istarget = false)
-{
-    std::stringstream ss;
-    ss << q.bra.left.ijk[0] << "_" << q.bra.left.ijk[1] << "_" << q.bra.left.ijk[2] << "_";
-    ss << q.bra.right.ijk[0] << "_" << q.bra.right.ijk[1] << "_" << q.bra.right.ijk[2] << "_";
-    ss << q.ket.left.ijk[0] << "_" << q.ket.left.ijk[1] << "_" << q.ket.left.ijk[2] << "_";
-    ss << q.ket.right.ijk[0] << "_" << q.ket.right.ijk[1] << "_" << q.ket.right.ijk[2];
 
-    return ArrVarName({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}, ss.str(), istarget);
-}
-*/
-
-
-static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget = false)
+static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
 {
     int ncart_ket = NCART(ketam); // all am is on the left part of the ket
 
     // index to the array
     std::stringstream ssidx;
-    ssidx << "[abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + ni]";
+    ssidx << "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + ni";
 
-    std::stringstream ss, ss2;
-    ss2 << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
-        << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
-        << ketam;
+    std::stringstream ss;
+    ss << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
+       << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
+       << ketam;
 
-    ss << ArrVarName({d.left.am(), d.right.am(), ketam, 0}, ss2.str(), istarget) << ssidx.str();
+    return VarName({d.left.am(), d.right.am(), ketam, 0},
+                    ssidx.str(),
+                    ss.str(),
+                    istarget);
     return ss.str();
 }
 
 
-static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget = false)
+static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget)
 {
     const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
 
     std::stringstream ssidx;
-    ssidx << "[abcd * " << ncart_bra * d.ncart() << " + abi * " << d.ncart() << " + " << d.idx() << "]"; 
+    ssidx << "abcd * " << ncart_bra * d.ncart() << " + abi * " << d.ncart() << " + " << d.idx(); 
 
-    std::stringstream ss, ss2;
-    ss2 << braam[0] << "_" << braam[1] << "_" 
-        << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
-        << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
-    ss << ArrVarName({braam[0], braam[1], d.left.am(), d.right.am()}, ss2.str(), istarget) << ssidx.str();
+    std::stringstream ss;
+    ss << braam[0] << "_" << braam[1] << "_" 
+       << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
+       << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
+
+    return VarName({braam[0], braam[1], d.left.am(), d.right.am()},
+                    ssidx.str(),
+                    ss.str(),
+                    istarget);
+
     return ss.str();
 }
 
@@ -118,9 +117,9 @@ static std::string HRRBraStepString(const HRRDoubletStep & hrr, int ketam)
     ss << HRRBraStepArrVar(hrr.target, ketam, true);
 
     ss << " = ";
-    ss << HRRBraStepArrVar(hrr.src1, ketam);
+    ss << HRRBraStepArrVar(hrr.src1, ketam, false);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRBraStepArrVar(hrr.src2, ketam);
+    ss << HRRBraStepArrVar(hrr.src2, ketam, false);
     ss << " );";
 
     return ss.str();
@@ -137,9 +136,9 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
     ss << HRRKetStepArrVar(hrr.target, braam, true);
 
     ss << " = ";
-    ss << HRRKetStepArrVar(hrr.src1, braam);
+    ss << HRRKetStepArrVar(hrr.src1, braam, true);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRKetStepArrVar(hrr.src2, braam);
+    ss << HRRKetStepArrVar(hrr.src2, braam, true);
     ss << " );";
 
     return ss.str();
@@ -148,8 +147,10 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
 
 static std::string AuxName(int i)
 {
-    return ArrVarName({i, 0, 0, 0}, "");
+    return ArrVarName({i, 0, 0, 0});
 }
+
+
 
 static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
 {
@@ -237,39 +238,22 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 }
 
 
-static std::string ETStepVar(const Quartet & q, bool target)
+static std::string ETStepVar(const Quartet & q, bool istarget)
 {
+    // index to the array
+    std::stringstream ssidx;
+    ssidx << "abcd * " << q.ncart() << " + " << q.idx();
+
     std::stringstream ss;
+    ss << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
+       << q.bra.right.ijk[0]  << "_" << q.bra.right.ijk[1]  << "_" << q.bra.right.ijk[2]  << "_"
+       << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
+       << q.ket.right.ijk[0]  << "_" << q.ket.right.ijk[1]  << "_" << q.ket.right.ijk[2];
 
-    if(q.flags & QUARTET_ETTOPLEVEL)
-    {
-        ss << AuxName(q.am()) << "[" << q.idx() << "]";
-    }
-    else if(q.flags & QUARTET_HRRTOPLEVEL)
-    {
-        ss << ArrVarName({q.bra.left.am(), q.bra.right.am(), q.ket.left.am(), q.ket.right.am()}, "TODO") 
-           << "[abcd * " << q.ncart() << " + " << q.idx() << "]";
-        if(target)
-            ss << " += ";
-    }
-    else if(q.flags & QUARTET_INITIAL)
-    {
-        ss << "integrals" << "[abcd * " << q.ncart() << " + " << q.idx() << "]";
-
-        if(target)
-            ss << " += ";
-    }
-    else
-    {
-        if(target)
-            ss << "const double ";
-        ss << "ET_" << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
-                    << q.bra.right.ijk[0] << "_" << q.bra.right.ijk[1] << "_" << q.bra.right.ijk[2] << "_"
-                    << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
-                    << q.ket.right.ijk[0] << "_" << q.ket.right.ijk[1] << "_" << q.ket.right.ijk[2];
-    }
-
-    return ss.str();
+    return VarName(q.amlist(),
+                    ssidx.str(),
+                    ss.str(),
+                    istarget);
 }
 
 static std::string ETStepString(const ETStep & et)
@@ -280,7 +264,15 @@ static std::string ETStepString(const ETStep & et)
 
     std::stringstream ss;
     ss << std::string(20, ' ');
-    ss << ETStepVar(et.target, true) << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, false);
+    ss << ETStepVar(et.target, true);
+
+    // accumulate if is contracted integral workspace, otherwise just assign
+    if(IsContArray(et.target.amlist()))
+        ss << " += ";
+    else
+        ss << " = ";
+
+    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, false);
 
     if(et.src2.bra.left && et.src2.ket.left)
         ss << " + " << ival << " * one_over_2q * " << ETStepVar(et.src2, false);
@@ -288,7 +280,7 @@ static std::string ETStepString(const ETStep & et)
         ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3, false);
     if(et.src4.bra.left && et.src4.ket.left)
         ss << " + p_over_q * " << ETStepVar(et.src4, false);
-    ss << "\n";
+    ss << ";\n";
 
     return ss.str();
 }
@@ -305,7 +297,7 @@ void Writer_Looped(std::ostream & os,
 {
     // add the am list to the contracted info, etc
     arrinfo.insert(am);
-    continfo[am] = true;
+    continfo.insert(am);
 
     // for electron transfer
     // ETMap[am1][am2] is a list of steps for forming
@@ -346,14 +338,14 @@ void Writer_Looped(std::ostream & os,
     {
         QAMList qam{it.first, 0, it2.first, 0};
         arrinfo.insert(qam);
-        continfo[qam] = true;
+        continfo.insert(qam);
     }
 
     for(const auto & it : hrrtopkets)
     {
         QAMList qam{am[0], am[1], it.first, 0};
         arrinfo.insert(qam);
-        continfo[qam] = true;
+        continfo.insert(qam);
     }
 
 
@@ -393,9 +385,9 @@ void Writer_Looped(std::ostream & os,
     
 
     // 3.1) ET Map
-    ETMap etmap;
-    for(const auto & it : etsl)
-        etmap[it.target.bra.am()][it.target.ket.am()].push_back(it);
+    //ETMap etmap;
+    //for(const auto & it : etsl)
+    //    etmap[it.target.bra.am()][it.target.ket.am()].push_back(it);
 
     // 4.) VRR Steps
     // requirements for vrr are the elements of etrm
@@ -467,7 +459,7 @@ void Writer_Looped(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const restrict " << ArrVarName(am, "") << ")\n";
+    os << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -497,7 +489,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
-    os << "    memset(integrals, 0, nshell1234*sizeof(double));\n";
+    os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*sizeof(double));\n";
     os << "\n";
     os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
     os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
@@ -510,10 +502,15 @@ void Writer_Looped(std::ostream & os,
     os << "    // Workspace for contracted integrals\n";
 
     for(const auto & it : continfo)
-        if(it.first != am)
-           os << "    double " << ArrVarName(it.first, "") << "[nshell1234 * "
-               << NCART(it.first[0]) * NCART(it.first[1]) *
-                  NCART(it.first[2]) * NCART(it.first[3]) << "];\n";
+        if(it != am)  // skip if this is the final integrals - don't re-declare
+        {
+            std::stringstream ss;
+            ss << "nshell1234 * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+
+            os << "    double " << ArrVarName(it) << "[" << ss.str() << "];\n";
+            os << "    memset(" << ArrVarName(it) << ", 0, (" << ss.str() << ") * sizeof(double));\n";
+            os << "\n";
+        }
 
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";
@@ -550,10 +547,14 @@ void Writer_Looped(std::ostream & os,
     for(const auto & greq : vrrinfo.second)
     {
         // size of requirements for this AM
-        //GaussianSet greq = vrrinfo.second.at(i);
+
+        QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-        os << "                    " << ArrVarName({greq.first, 0, 0, 0}, "") << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
+        os << "                    double " << ArrVarName(qam) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
+
+        // add to contracted array list (but not contracted!)
+        arrinfo.insert(qam);
     }
     os << "\n\n";
     os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
@@ -573,17 +574,17 @@ void Writer_Looped(std::ostream & os,
     os << "                    // various factors\n";
     os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
     os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
-    os << "                    const double one_over_q = 1.0 / QA.alpha[i];\n";
+    os << "                    const double one_over_q = 1.0 / Q.alpha[i];\n";
     os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
     os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
     os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
-    os << "                    const double p_over_q = p * one_over_q;\n";
+    os << "                    const double p_over_q = P.alpha[i] * one_over_q;\n";
     os << "\n";
     os << "                    // for electron transfer\n";
     os << "                    const double etfac[3] = {\n";
-    os << "                                             -(P.bAB_x + Q.bAB_x) * one_over_q,\n";
-    os << "                                             -(P.bAB_y + Q.bAB_y) * one_over_q,\n";
-    os << "                                             -(P.bAB_z + Q.bAB_z) * one_over_q,\n";
+    os << "                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,\n";
+    os << "                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,\n";
+    os << "                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,\n";
     os << "                                            };\n";
     os << "\n";
     os << "\n";
@@ -618,25 +619,13 @@ void Writer_Looped(std::ostream & os,
 
     //Write_ElectronTransfer(os, etsl, etrm, etinit);
     // Start at the highest am, and work down
-    for(auto it1 = hrrtopbras.rbegin(); it1 != hrrtopbras.rend(); ++ it1)
-    for(auto it2 = hrrtopkets.begin(); it2 != hrrtopkets.end(); ++ it2)
+    for(const auto & it : etsl)
     {
-        int am1 = it1->first;
-        int am2 = it2->first;
-        os << "                    // am1 = " << am1 << "  am2 = " << am2 << "\n";
-
-        for(const auto & it : etmap[am1][am2])
-        {
-            os << std::string(20, ' ') << "// " << it << "\n";
-            os << ETStepString(it);
-            os << "\n";
-        }
-
+        os << std::string(20, ' ') << "// " << it << "\n";
+        os << ETStepString(it);
         os << "\n";
-        am1--;
-        am2++;
     }
-    
+        
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
@@ -660,7 +649,7 @@ void Writer_Looped(std::ostream & os,
 
         for(const auto & it : hrrtopkets)
         {
-            os << "        // form " << ArrVarName({am[0], am[1], it.first, 0}, "") << "\n";
+            os << "        // form " << ArrVarName({am[0], am[1], it.first, 0}) << "\n";
             os << "        for(int ni = 0; ni < " << it.second.size() << "; ++ni)\n";
             os << "        {\n";
             for(const auto & hit : hrrsteps.first)
