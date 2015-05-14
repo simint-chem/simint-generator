@@ -37,7 +37,7 @@ std::string BoysFit::code_line(void) const
 {
     const std::string indent(20, ' ');
     std::stringstream ss;
-    ss << indent << "S_0_0_0_0[" << v << "] = allprefac\n"; 
+    ss << indent << "AUX_S_0_0_0_0[" << v << "] = allprefac\n"; 
     ss << indent << "         * pow(\n";
     ss << indent << "                 (\n";
     ss << indent << "                   (\n";

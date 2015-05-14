@@ -44,6 +44,7 @@ static std::string ArrVarName(const QAMList & am)
 
 static std::string VarName(const QAMList & am,
                            const std::string & idx,
+                           const std::string & contidx,
                            const std::string & singleid,
                            bool istarget)
 {
@@ -51,7 +52,12 @@ static std::string VarName(const QAMList & am,
 
     if(IsArray(am))
     {
-       ss << ArrVarName(am) << "[" << idx << "]"; 
+        ss << ArrVarName(am) << "[";
+        if(IsContArray(am))
+            ss << contidx;
+        else
+            ss << idx;
+        ss << "]"; 
     }
     else
     {
@@ -68,7 +74,7 @@ static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
 {
     int ncart_ket = NCART(ketam); // all am is on the left part of the ket
 
-    // index to the array
+    // index to the array (always contracted)
     std::stringstream ssidx;
     ssidx << "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + ni";
 
@@ -78,6 +84,7 @@ static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
        << ketam;
 
     return VarName({d.left.am(), d.right.am(), ketam, 0},
+                    ssidx.str(),
                     ssidx.str(),
                     ss.str(),
                     istarget);
@@ -89,8 +96,9 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
 {
     const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
 
+    // index to the array (always contracted)
     std::stringstream ssidx;
-    ssidx << "abcd * " << ncart_bra * d.ncart() << " + abi * " << d.ncart() << " + " << d.idx(); 
+    ssidx << "abcd * " << ncart_bra * d.ncart() << " + abi * " << ncart_bra << " + " << d.idx(); 
 
     std::stringstream ss;
     ss << braam[0] << "_" << braam[1] << "_" 
@@ -98,6 +106,7 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
        << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
 
     return VarName({braam[0], braam[1], d.left.am(), d.right.am()},
+                    ssidx.str(),
                     ssidx.str(),
                     ss.str(),
                     istarget);
@@ -148,7 +157,7 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
 
 static std::string AuxName(int i)
 {
-    return ArrVarName({i, 0, 0, 0});
+    return std::string("AUX_") + ArrVarName({i, 0, 0, 0});
 }
 
 
@@ -157,6 +166,16 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 {
     os << "                    int idx = 0;\n";
     os << "\n";
+
+    // accumulate S_0_0_0_0 if needed
+    if(IsContArray({0, 0, 0, 0}))
+    {
+        os << "\n";
+        os << "                    // Accumulating S_0_0_0_0 in contracted workspace\n";
+        os <<"                    " << ArrVarName({0, 0, 0, 0}) << "[abcd] += "
+           << AuxName(0) << "[0];\n";
+        os << "\n";
+    }
 
     // loop over am
     for(const auto & it3 : vrrinfo.second)
@@ -220,10 +239,10 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
             os << "                        " << AuxName(i);
 
-            if(IsContArray({i, 0, 0, 0}))
-                os << "[abcd * " << NCART(i) << " + idx++] += ";
-            else
-                os << "[idx++] = ";
+            //if(IsContArray({i, 0, 0, 0}))
+            //    os << "[abcd * " << NCART(i) << " + idx++] += ";
+            //else
+            os << "[idx++] = ";
 
             os << "P.PA_" << step << "[i] * ";
 
@@ -241,16 +260,37 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         }
 
         os << "                    }\n";
+
+
+        // if this target is also a contracted array, accumulate there
+        if(IsContArray({i, 0, 0, 0}))
+        {
+            os << "\n";
+            os << "                    // Accumulating in contracted workspace\n";
+            os << "                    idx = 0;\n";
+            int idx = 0;
+            for(const auto & it : greq)
+            {
+                os <<"                    " << ArrVarName({i, 0, 0, 0}) << "[abcd * " << NCART(i) << " + " 
+                   << it.idx() << "] += " << AuxName(i) << "[" << idx++ << "];\n";
+            }
+        }
+
+
         os << "\n\n";
     }
+
 }
 
 
 static std::string ETStepVar(const Quartet & q, bool istarget)
 {
     // index to the array
+    std::stringstream sscontidx;
+    sscontidx << "abcd * " << q.ncart() << " + " << q.idx();
+
     std::stringstream ssidx;
-    ssidx << "abcd * " << q.ncart() << " + " << q.idx();
+    ssidx << q.idx();
 
     std::stringstream ss;
     ss << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
@@ -258,10 +298,26 @@ static std::string ETStepVar(const Quartet & q, bool istarget)
        << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
        << q.ket.right.ijk[0]  << "_" << q.ket.right.ijk[1]  << "_" << q.ket.right.ijk[2];
 
-    return VarName(q.amlist(),
-                    ssidx.str(),
-                    ss.str(),
-                    istarget);
+    // prefix this if it should be a result from VRR
+    std::string prefix;
+
+    // always use 'uncontracted' stuff if not target
+    if(!istarget || !IsContArray(q.amlist()))
+        prefix = "AUX_";
+
+    if(istarget) 
+        return prefix + VarName(q.amlist(),
+                                ssidx.str(),
+                                sscontidx.str(),
+                                ss.str(),
+                                istarget);
+    else
+        return prefix + VarName(q.amlist(),
+                                ssidx.str(),
+                                ssidx.str(),  // force uncontracted
+                                ss.str(),
+                                istarget);
+        
 }
 
 static std::string ETStepString(const ETStep & et)
@@ -287,7 +343,7 @@ static std::string ETStepString(const ETStep & et)
     if(et.src3.bra.left && et.src3.ket.left)
         ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3, false);
     if(et.src4.bra.left && et.src4.ket.left)
-        ss << " + p_over_q * " << ETStepVar(et.src4, false);
+        ss << " - p_over_q * " << ETStepVar(et.src4, false);
     ss << ";\n";
 
     return ss.str();
@@ -312,7 +368,7 @@ void Writer_Looped(std::ostream & os,
     typedef std::map<int, std::map<int, ETStepList>> ETMap;
 
 
-    //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
     int ncart_bra = NCART(am[0]) * NCART(am[1]);
 
     const int L = am[0] + am[1] + am[2] + am[3];
@@ -340,21 +396,9 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.src2.am()].insert(it.src2);
     }
 
-    // add these to contracted array variable set
-    for(const auto & it : hrrtopbras)
-    for(const auto & it2 : hrrtopkets)
-    {
-        QAMList qam{it.first, 0, it2.first, 0};
-        arrinfo.insert(qam);
-        continfo.insert(qam);
-    }
-
-    for(const auto & it : hrrtopkets)
-    {
-        QAMList qam{am[0], am[1], it.first, 0};
-        arrinfo.insert(qam);
-        continfo.insert(qam);
-    }
+    // we may need to add ( s s | s s )
+    if(hrrtopbras.size() == 0 && hrrtopkets.size() > 0)
+        hrrtopbras[0].insert({DoubletType::BRA, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
 
 
     // 2.) ET steps
@@ -371,7 +415,9 @@ void Writer_Looped(std::ostream & os,
 
     // Final integrals may not need HRR ( ie (A 0 | B 0) )
     if(etinit.size() == 0)
+    {
         etinit = GenerateInitialQuartetTargets(am, true);
+    }
 
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
     
@@ -401,7 +447,7 @@ void Writer_Looped(std::ostream & os,
     // requirements for vrr are the elements of etrm
     ETReqMap vreq = etrm;
 
-    // but if there are none, this of the type ( X 0 | 0 0 )
+    // but if there are none, this of the type ( X 0 | 0 0 ) or ( 0 X | 0 0 )
     if(vreq.size() == 0)
         vreq[L] = AllGaussiansForAM(L);
 
@@ -419,6 +465,22 @@ void Writer_Looped(std::ostream & os,
         GaussianSet gs = AllGaussiansForAM(am[2]);
         for(const auto & it : gs)
             hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
+
+    // add these to contracted array variable set
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        QAMList qam{it.first, 0, it2.first, 0};
+        arrinfo.insert(qam);
+        continfo.insert(qam);
+    }
+
+    for(const auto & it : hrrtopkets)
+    {
+        QAMList qam{am[0], am[1], it.first, 0};
+        arrinfo.insert(qam);
+        continfo.insert(qam);
     }
 
 
@@ -497,7 +559,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
-    os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*sizeof(double));\n";
+    os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
     os << "\n";
     os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
     os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
@@ -541,9 +603,9 @@ void Writer_Looped(std::ostream & os,
     os << "            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
     os << "            // Store for later\n";
-    os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = P.AB_x[cd];\n";
-    os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = P.AB_y[cd];\n";
-    os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = P.AB_z[cd];\n";
+    os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = Q.AB_x[cd];\n";
+    os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = Q.AB_y[cd];\n";
+    os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = Q.AB_z[cd];\n";
     os << "\n";
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
@@ -559,16 +621,21 @@ void Writer_Looped(std::ostream & os,
 
         QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
+
+        /*
         if(qam == am)
             os << "                    // is the final integral...\n";
-        else
-            os << "                    double " << ArrVarName(qam) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
+        else if(IsContArray(qam))
+            os << "                    // is a contracted integral...\n";
+        else*/
+        os << "                    double " << AuxName(greq.first) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
 
         // add to contracted array list (but not contracted!)
         arrinfo.insert(qam);
 
     }
+
 
     os << "\n\n";
     os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
@@ -588,7 +655,7 @@ void Writer_Looped(std::ostream & os,
     os << "                    // various factors\n";
     os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
     os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
-    os << "                    const double one_over_q = 1.0 / Q.alpha[i];\n";
+    os << "                    const double one_over_q = 1.0 / Q.alpha[j];\n";
     os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
     os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
     os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
@@ -631,13 +698,18 @@ void Writer_Looped(std::ostream & os,
     os << "                    //////////////////////////////////////////////\n";
     os << "\n";
 
-    //Write_ElectronTransfer(os, etsl, etrm, etinit);
-    // Start at the highest am, and work down
-    for(const auto & it : etsl)
+    if(etsl.size() == 0)
+        os << "                    //...nothing to do...\n";
+    else
     {
-        os << std::string(20, ' ') << "// " << it << "\n";
-        os << ETStepString(it);
-        os << "\n";
+        //Write_ElectronTransfer(os, etsl, etrm, etinit);
+        // Start at the highest am, and work down
+        for(const auto & it : etsl)
+        {
+            os << std::string(20, ' ') << "// " << it << "\n";
+            os << ETStepString(it);
+            os << "\n";
+        }
     }
         
     os << "\n";

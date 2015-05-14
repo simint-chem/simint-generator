@@ -4,6 +4,10 @@ add_library(simint_eri STATIC
                               eri_split.c
                               eri_splitcombined.c
                               eri_FOcombined.c
+                              eri_FOcombined_psss.c
+                              eri_FOcombined_spss.c
+                              eri_FOcombined_ssps.c
+                              eri_FOcombined_sssp.c
            )
 
 set_target_properties(simint_eri PROPERTIES INCLUDE_DIRECTORIES "${SIMINT_C_INCLUDES}")
