@@ -38,9 +38,6 @@ int main(int argc, char ** argv)
     double * intwork1 = (double *)ALLOC(3 * worksize * sizeof(double));
     double * intwork2 = (double *)ALLOC(3 * worksize * sizeof(double));
 
-    // allocate gaussian shell memory
-    VecQuartet gshells(  CreateRandomQuartets(nshell, nprim) );
-
     // find the maximum possible x value for the boys function
     const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
     const double max_x = maxR2 * (MAX_EXP*MAX_EXP) / (2.0 * MAX_EXP);
@@ -52,7 +49,7 @@ int main(int argc, char ** argv)
 
     for(int n = 0; n < NTEST; n++)
     {
-        auto gshells(  CreateRandomQuartets(nshell, nprim) );
+        auto gshells(  CreateRandomQuartets(nshell, nprim, {0,0,0,0}) );
 
         // Actually calculate
         struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),

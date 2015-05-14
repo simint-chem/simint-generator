@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
     double * intwork2 = (double *)ALLOC(3 * worksize * sizeof(double));
 
     // allocate gaussian shell memory
-    VecQuartet gshells(  CreateRandomQuartets(nshell, nprim) );
+    VecQuartet gshells(  CreateRandomQuartets(nshell, nprim, {0,0,0,0}) );
 
     // find the maximum possible x value for the boys function
     const double maxR2 = 12.0 * MAX_COORD * MAX_COORD;
@@ -49,9 +49,9 @@ int main(int argc, char ** argv)
 
     // Actually calculate
     struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),
-                                                         nshell[1], gshells[1].data());
+                                                      nshell[1], gshells[1].data());
     struct multishell_pair Q = create_multishell_pair(nshell[2], gshells[2].data(),
-                                                         nshell[3], gshells[3].data());
+                                                      nshell[3], gshells[3].data());
 
     eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );
     eri_splitcombined_ssss(   P, Q, res_splitcombined                       );
