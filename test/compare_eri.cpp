@@ -48,9 +48,9 @@ int main(int argc, char ** argv)
     Valeev_Init();
 
     // Actually calculate
-    struct multishell_pair P = create_ss_multishell_pair(nshell[0], gshells[0].data(),
+    struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),
                                                          nshell[1], gshells[1].data());
-    struct multishell_pair Q = create_ss_multishell_pair(nshell[2], gshells[2].data(),
+    struct multishell_pair Q = create_multishell_pair(nshell[2], gshells[2].data(),
                                                          nshell[3], gshells[3].data());
 
     eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );

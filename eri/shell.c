@@ -156,7 +156,7 @@ void free_multishell_pair(struct multishell_pair P)
 
 
 
-void fill_ss_shell_pair(struct gaussian_shell const A,
+void fill_shell_pair(struct gaussian_shell const A,
                         struct gaussian_shell const B,
                         struct shell_pair * const restrict P)
 {
@@ -217,7 +217,7 @@ void fill_ss_shell_pair(struct gaussian_shell const A,
 }
 
 
-void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                              int nb, struct gaussian_shell const * const restrict B,
                              struct multishell_pair * const restrict P)
 {
@@ -317,21 +317,21 @@ void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restric
 }
 
 struct shell_pair
-create_ss_shell_pair(struct gaussian_shell const A,
+create_shell_pair(struct gaussian_shell const A,
                      struct gaussian_shell const B)
 {
     struct shell_pair P;
     allocate_shell_pair(A, B, &P);
-    fill_ss_shell_pair(A, B, &P);
+    fill_shell_pair(A, B, &P);
     return P; 
 }
 
 struct multishell_pair
-create_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                      int nb, struct gaussian_shell const * const restrict B)
 {
     struct multishell_pair P;
     allocate_multishell_pair(na, A, nb, B, &P);
-    fill_ss_multishell_pair(na, A, nb, B, &P);
+    fill_multishell_pair(na, A, nb, B, &P);
     return P; 
 }

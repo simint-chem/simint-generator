@@ -92,20 +92,20 @@ void free_multishell_pair(struct multishell_pair P);
 
 
 
-void fill_ss_shell_pair(struct gaussian_shell const A,
+void fill_shell_pair(struct gaussian_shell const A,
                         struct gaussian_shell const B,
                         struct shell_pair * const restrict P);
 
-void fill_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                              int nb, struct gaussian_shell const * const restrict B,
                              struct multishell_pair * const restrict P);
 
 struct shell_pair
-create_ss_shell_pair(struct gaussian_shell const A,
+createshell_pair(struct gaussian_shell const A,
                      struct gaussian_shell const B);
 
 struct multishell_pair
-create_ss_multishell_pair(int na, struct gaussian_shell const * const restrict A,
+create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                           int nb, struct gaussian_shell const * const restrict B);
 
 #ifdef __cplusplus
