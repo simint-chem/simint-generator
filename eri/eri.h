@@ -5,7 +5,9 @@
 extern "C" {
 #endif
 
-#include "shell.h"
+#include "eri/shell.h"
+#include "eri/FOcombined/eri_FOcombined.h"
+
 
 int eri_split_ssss(struct multishell_pair const P,
                    struct multishell_pair const Q,
@@ -16,10 +18,6 @@ int eri_split_ssss(struct multishell_pair const P,
 int eri_splitcombined_ssss(struct multishell_pair const P,
                            struct multishell_pair const Q,
                            double * const restrict integrals);
-
-int eri_FOcombined_ssss(struct multishell_pair const P,
-                        struct multishell_pair const Q,
-                        double * const restrict integrals);
 
 #ifdef __cplusplus
 }

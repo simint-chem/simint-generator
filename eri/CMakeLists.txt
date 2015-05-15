@@ -1,13 +1,11 @@
+file(GLOB SIMINT_FOCOMB_FILES FOcombined/*.c)
+
 add_library(simint_eri STATIC 
                               shell.c
                               shell_constants.c
                               eri_split.c
                               eri_splitcombined.c
-                              eri_FOcombined.c
-                              eri_FOcombined_psss.c
-                              eri_FOcombined_spss.c
-                              eri_FOcombined_ssps.c
-                              eri_FOcombined_sssp.c
+                              ${SIMINT_FOCOMB_FILES}
            )
 
 set_target_properties(simint_eri PROPERTIES INCLUDE_DIRECTORIES "${SIMINT_C_INCLUDES}")

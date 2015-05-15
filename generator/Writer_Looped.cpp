@@ -686,10 +686,7 @@ void Writer_Looped(std::ostream & os,
     os << "                    //////////////////////////////////////////////\n";
     os << "\n";
 
-    if(vrrinfo.second.size() <= 1)
-        os << "                    // nothing to do....\n";
-    else
-        WriteVRRInfo(os, vrrinfo, L);
+    WriteVRRInfo(os, vrrinfo, L);
     os << "\n";
 
     os << "\n";
