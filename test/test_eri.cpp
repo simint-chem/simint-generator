@@ -7,20 +7,40 @@
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
+#define MAXAM 1
+
 typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
 
+
+int eri_notyetimplemented(struct multishell_pair const P,
+                          struct multishell_pair const Q,
+                          double * const restrict dummy)
+{
+    printf("****************************\n");
+    printf("*** NOT YET IMPLEMENTED! ***\n");
+    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
+    printf("****************************\n");
+    exit(1);
+    return 0;
+}
 
 
 
 
 int main(int argc, char ** argv)
 {
-    erifunc funcs[2][2][2][2];
+    
+    erifunc funcs[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
+    for(int i = 0; i <= MAXAM; i++)
+    for(int j = 0; j <= MAXAM; j++)
+    for(int k = 0; k <= MAXAM; k++)
+    for(int l = 0; l <= MAXAM; l++)
+        funcs[i][j][k][l] = eri_notyetimplemented; 
+
     funcs[0][0][0][0] = eri_FOcombined_ssss;
     funcs[1][0][0][0] = eri_FOcombined_psss;
-    funcs[0][1][0][0] = eri_FOcombined_spss;
-    funcs[0][0][1][0] = eri_FOcombined_ssps;
-    funcs[0][0][0][1] = eri_FOcombined_sssp;
+    funcs[1][1][0][0] = eri_FOcombined_ppss;
+    funcs[1][0][1][0] = eri_FOcombined_psps;
 
 
     if(argc != 13)
