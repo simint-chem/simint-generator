@@ -131,7 +131,7 @@ static std::string ETStepVar(const Quartet & q, bool istarget)
     std::string prefix;
 
     // always use 'uncontracted' stuff if not target
-    if(!istarget || !IsContArray(q.amlist()))
+    if( IsArray(q.amlist()) && !IsContArray(q.amlist()) )
         prefix = "AUX_";
 
     if(istarget) 

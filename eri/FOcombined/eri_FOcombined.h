@@ -27,6 +27,10 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                         struct multishell_pair const Q,
                         double * const restrict S_1_1_1_0);
 
+int eri_FOcombined_pppp(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_1_1_1_1);
+
 
 
 #ifdef __cplusplus
