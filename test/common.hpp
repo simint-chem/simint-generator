@@ -134,17 +134,15 @@ void ValeevIntegrals(const VecQuartet & gshells,
         double vD[3] = { D[l].x, D[l].y, D[l].z };
 
         std::array<int, 3> g1{gshells[0][i].am, 0, 0};
-        std::array<int, 3> g2{gshells[1][j].am, 0, 0};
-        std::array<int, 3> g3{gshells[2][k].am, 0, 0};
-        std::array<int, 3> g4{gshells[3][l].am, 0, 0};
-
-
         do
         {
+            std::array<int, 3> g2{gshells[1][j].am, 0, 0};
             do
             {
+                std::array<int, 3> g3{gshells[2][k].am, 0, 0};
                 do
                 {
+                    std::array<int, 3> g4{gshells[3][l].am, 0, 0};
                     do
                     {
                         integrals[idx] = 0.0;
@@ -157,6 +155,7 @@ void ValeevIntegrals(const VecQuartet & gshells,
                         std::cout << g4[0] << "," << g4[1] << "," << g4[2] << "  ";
                         std::cout << idx << "\n";
                         */
+
 
                         for(int m = 0; m < A[i].nprim; m++)
                         for(int n = 0; n < B[j].nprim; n++)
