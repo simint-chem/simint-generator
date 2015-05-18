@@ -87,6 +87,7 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                 {
 
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
+
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
                     double AUX_S_0_0_0_0[4 * 1];
@@ -100,6 +101,11 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                     // AM = 3: Needed from this AM: 10
                     double AUX_S_3_0_0_0[1 * 10];
 
+
+
+                    // Holds temporary integrals for electron transfer
+                    double AUX_S_1_0_1_0[9];
+                    double AUX_S_2_0_1_0[18];
 
 
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
@@ -311,24 +317,21 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                     // Primitive integrals: Vertical recurrance
                     //////////////////////////////////////////////
 
-                    int idx = 0;
-
                     // Forming AUX_S_1_0_0_0[3 * 3];
                     // Needed from this AM:
                     //    P_100
                     //    P_010
                     //    P_001
-                    idx = 0;
                     for(int m = 0; m < 3; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
-                        AUX_S_1_0_0_0[idx++] = P.PA_x[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_x * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 0] = P.PA_x[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_x * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                         //P_010 : STEP: y
-                        AUX_S_1_0_0_0[idx++] = P.PA_y[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_y * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 1] = P.PA_y[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_y * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                         //P_001 : STEP: z
-                        AUX_S_1_0_0_0[idx++] = P.PA_z[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_z * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 2] = P.PA_z[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_z * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                     }
 
@@ -341,28 +344,27 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                     //    D_020
                     //    D_011
                     //    D_002
-                    idx = 0;
                     for(int m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
-                        AUX_S_2_0_0_0[idx++] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
+                        AUX_S_2_0_0_0[m*6 + 0] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
-                        AUX_S_2_0_0_0[idx++] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_S_2_0_0_0[m*6 + 1] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
 
                         //D_101 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_S_2_0_0_0[m*6 + 2] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 0];
 
                         //D_020 : STEP: y
-                        AUX_S_2_0_0_0[idx++] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
+                        AUX_S_2_0_0_0[m*6 + 3] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
+                        AUX_S_2_0_0_0[m*6 + 4] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
+                        AUX_S_2_0_0_0[m*6 + 5] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                     }
@@ -380,40 +382,39 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                     //    F_021
                     //    F_012
                     //    F_003
-                    idx = 0;
                     for(int m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //F_300 : STEP: x
-                        AUX_S_3_0_0_0[idx++] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 0]
+                        AUX_S_3_0_0_0[m*10 + 0] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 0]
                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  0] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 0] );
 
                         //F_210 : STEP: y
-                        AUX_S_3_0_0_0[idx++] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 0];
+                        AUX_S_3_0_0_0[m*10 + 1] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 0];
 
                         //F_201 : STEP: z
-                        AUX_S_3_0_0_0[idx++] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 0];
+                        AUX_S_3_0_0_0[m*10 + 2] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 0];
 
                         //F_120 : STEP: x
-                        AUX_S_3_0_0_0[idx++] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 3];
+                        AUX_S_3_0_0_0[m*10 + 3] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 3];
 
                         //F_111 : STEP: z
-                        AUX_S_3_0_0_0[idx++] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 1] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 1];
+                        AUX_S_3_0_0_0[m*10 + 4] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 1] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 1];
 
                         //F_102 : STEP: x
-                        AUX_S_3_0_0_0[idx++] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 5];
+                        AUX_S_3_0_0_0[m*10 + 5] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 5];
 
                         //F_030 : STEP: y
-                        AUX_S_3_0_0_0[idx++] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 3]
+                        AUX_S_3_0_0_0[m*10 + 6] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 3]
                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  1] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 1] );
 
                         //F_021 : STEP: z
-                        AUX_S_3_0_0_0[idx++] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 3];
+                        AUX_S_3_0_0_0[m*10 + 7] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 3];
 
                         //F_012 : STEP: y
-                        AUX_S_3_0_0_0[idx++] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 5];
+                        AUX_S_3_0_0_0[m*10 + 8] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 5];
 
                         //F_003 : STEP: z
-                        AUX_S_3_0_0_0[idx++] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 5]
+                        AUX_S_3_0_0_0[m*10 + 9] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 5]
                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  2] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 2] );
 
                     }
@@ -426,86 +427,117 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
                     //////////////////////////////////////////////
 
                     // ( P_100 S_000 | P_100 S_000 )^0_{t} = x * ( P_100 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_200 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 0] += etfac[0] * AUX_S_1_0_0_0[0] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[0];
+                    AUX_S_1_0_1_0[0] = etfac[0] * AUX_S_1_0_0_0[0] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[0];
 
                     // ( P_100 S_000 | P_010 S_000 )^0_{t} = y * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 1] += etfac[1] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[1];
+                    AUX_S_1_0_1_0[1] = etfac[1] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[1];
 
                     // ( P_100 S_000 | P_001 S_000 )^0_{t} = z * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 2] += etfac[2] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[2];
+                    AUX_S_1_0_1_0[2] = etfac[2] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[2];
 
                     // ( P_010 S_000 | P_100 S_000 )^0_{t} = x * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 3] += etfac[0] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[1];
+                    AUX_S_1_0_1_0[3] = etfac[0] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[1];
 
                     // ( P_010 S_000 | P_010 S_000 )^0_{t} = y * ( P_010 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_020 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 4] += etfac[1] * AUX_S_1_0_0_0[1] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[3];
+                    AUX_S_1_0_1_0[4] = etfac[1] * AUX_S_1_0_0_0[1] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[3];
 
                     // ( P_010 S_000 | P_001 S_000 )^0_{t} = z * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 5] += etfac[2] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[4];
+                    AUX_S_1_0_1_0[5] = etfac[2] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[4];
 
                     // ( P_001 S_000 | P_100 S_000 )^0_{t} = x * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 6] += etfac[0] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[2];
+                    AUX_S_1_0_1_0[6] = etfac[0] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[2];
 
                     // ( P_001 S_000 | P_010 S_000 )^0_{t} = y * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 7] += etfac[1] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[4];
+                    AUX_S_1_0_1_0[7] = etfac[1] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[4];
 
                     // ( P_001 S_000 | P_001 S_000 )^0_{t} = z * ( P_001 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_002 S_000 | S_000 S_000 )^0_{e}
-                    S_1_0_1_0[abcd * 9 + 8] += etfac[2] * AUX_S_1_0_0_0[2] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[5];
+                    AUX_S_1_0_1_0[8] = etfac[2] * AUX_S_1_0_0_0[2] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[5];
 
                     // ( D_200 S_000 | P_100 S_000 )^0_{t} = x * ( D_200 S_000 | S_000 S_000 )^0_{e} + ( P_100 S_000 | S_000 S_000 )^0_{e} - ( F_300 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 0] += etfac[0] * AUX_S_2_0_0_0[0] + 2 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[0];
+                    AUX_S_2_0_1_0[0] = etfac[0] * AUX_S_2_0_0_0[0] + 2 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[0];
 
                     // ( D_200 S_000 | P_010 S_000 )^0_{t} = y * ( D_200 S_000 | S_000 S_000 )^0_{e} - ( F_210 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 1] += etfac[1] * AUX_S_2_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[1];
+                    AUX_S_2_0_1_0[1] = etfac[1] * AUX_S_2_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[1];
 
                     // ( D_200 S_000 | P_001 S_000 )^0_{t} = z * ( D_200 S_000 | S_000 S_000 )^0_{e} - ( F_201 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 2] += etfac[2] * AUX_S_2_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[2];
+                    AUX_S_2_0_1_0[2] = etfac[2] * AUX_S_2_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[2];
 
                     // ( D_110 S_000 | P_100 S_000 )^0_{t} = x * ( D_110 S_000 | S_000 S_000 )^0_{e} + ( P_010 S_000 | S_000 S_000 )^0_{e} - ( F_210 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 3] += etfac[0] * AUX_S_2_0_0_0[1] + 1 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[1];
+                    AUX_S_2_0_1_0[3] = etfac[0] * AUX_S_2_0_0_0[1] + 1 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[1];
 
                     // ( D_110 S_000 | P_010 S_000 )^0_{t} = y * ( D_110 S_000 | S_000 S_000 )^0_{e} + ( P_100 S_000 | S_000 S_000 )^0_{e} - ( F_120 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 4] += etfac[1] * AUX_S_2_0_0_0[1] + 1 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[3];
+                    AUX_S_2_0_1_0[4] = etfac[1] * AUX_S_2_0_0_0[1] + 1 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[3];
 
                     // ( D_110 S_000 | P_001 S_000 )^0_{t} = z * ( D_110 S_000 | S_000 S_000 )^0_{e} - ( F_111 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 5] += etfac[2] * AUX_S_2_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[4];
+                    AUX_S_2_0_1_0[5] = etfac[2] * AUX_S_2_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[4];
 
                     // ( D_101 S_000 | P_100 S_000 )^0_{t} = x * ( D_101 S_000 | S_000 S_000 )^0_{e} + ( P_001 S_000 | S_000 S_000 )^0_{e} - ( F_201 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 6] += etfac[0] * AUX_S_2_0_0_0[2] + 1 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[2];
+                    AUX_S_2_0_1_0[6] = etfac[0] * AUX_S_2_0_0_0[2] + 1 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[2];
 
                     // ( D_101 S_000 | P_010 S_000 )^0_{t} = y * ( D_101 S_000 | S_000 S_000 )^0_{e} - ( F_111 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 7] += etfac[1] * AUX_S_2_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[4];
+                    AUX_S_2_0_1_0[7] = etfac[1] * AUX_S_2_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[4];
 
                     // ( D_101 S_000 | P_001 S_000 )^0_{t} = z * ( D_101 S_000 | S_000 S_000 )^0_{e} + ( P_100 S_000 | S_000 S_000 )^0_{e} - ( F_102 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 8] += etfac[2] * AUX_S_2_0_0_0[2] + 1 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[5];
+                    AUX_S_2_0_1_0[8] = etfac[2] * AUX_S_2_0_0_0[2] + 1 * one_over_2q * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_3_0_0_0[5];
 
                     // ( D_020 S_000 | P_100 S_000 )^0_{t} = x * ( D_020 S_000 | S_000 S_000 )^0_{e} - ( F_120 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 9] += etfac[0] * AUX_S_2_0_0_0[3] - p_over_q * AUX_S_3_0_0_0[3];
+                    AUX_S_2_0_1_0[9] = etfac[0] * AUX_S_2_0_0_0[3] - p_over_q * AUX_S_3_0_0_0[3];
 
                     // ( D_020 S_000 | P_010 S_000 )^0_{t} = y * ( D_020 S_000 | S_000 S_000 )^0_{e} + ( P_010 S_000 | S_000 S_000 )^0_{e} - ( F_030 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 10] += etfac[1] * AUX_S_2_0_0_0[3] + 2 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[6];
+                    AUX_S_2_0_1_0[10] = etfac[1] * AUX_S_2_0_0_0[3] + 2 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[6];
 
                     // ( D_020 S_000 | P_001 S_000 )^0_{t} = z * ( D_020 S_000 | S_000 S_000 )^0_{e} - ( F_021 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 11] += etfac[2] * AUX_S_2_0_0_0[3] - p_over_q * AUX_S_3_0_0_0[7];
+                    AUX_S_2_0_1_0[11] = etfac[2] * AUX_S_2_0_0_0[3] - p_over_q * AUX_S_3_0_0_0[7];
 
                     // ( D_011 S_000 | P_100 S_000 )^0_{t} = x * ( D_011 S_000 | S_000 S_000 )^0_{e} - ( F_111 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 12] += etfac[0] * AUX_S_2_0_0_0[4] - p_over_q * AUX_S_3_0_0_0[4];
+                    AUX_S_2_0_1_0[12] = etfac[0] * AUX_S_2_0_0_0[4] - p_over_q * AUX_S_3_0_0_0[4];
 
                     // ( D_011 S_000 | P_010 S_000 )^0_{t} = y * ( D_011 S_000 | S_000 S_000 )^0_{e} + ( P_001 S_000 | S_000 S_000 )^0_{e} - ( F_021 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 13] += etfac[1] * AUX_S_2_0_0_0[4] + 1 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[7];
+                    AUX_S_2_0_1_0[13] = etfac[1] * AUX_S_2_0_0_0[4] + 1 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[7];
 
                     // ( D_011 S_000 | P_001 S_000 )^0_{t} = z * ( D_011 S_000 | S_000 S_000 )^0_{e} + ( P_010 S_000 | S_000 S_000 )^0_{e} - ( F_012 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 14] += etfac[2] * AUX_S_2_0_0_0[4] + 1 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[8];
+                    AUX_S_2_0_1_0[14] = etfac[2] * AUX_S_2_0_0_0[4] + 1 * one_over_2q * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_3_0_0_0[8];
 
                     // ( D_002 S_000 | P_100 S_000 )^0_{t} = x * ( D_002 S_000 | S_000 S_000 )^0_{e} - ( F_102 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 15] += etfac[0] * AUX_S_2_0_0_0[5] - p_over_q * AUX_S_3_0_0_0[5];
+                    AUX_S_2_0_1_0[15] = etfac[0] * AUX_S_2_0_0_0[5] - p_over_q * AUX_S_3_0_0_0[5];
 
                     // ( D_002 S_000 | P_010 S_000 )^0_{t} = y * ( D_002 S_000 | S_000 S_000 )^0_{e} - ( F_012 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 16] += etfac[1] * AUX_S_2_0_0_0[5] - p_over_q * AUX_S_3_0_0_0[8];
+                    AUX_S_2_0_1_0[16] = etfac[1] * AUX_S_2_0_0_0[5] - p_over_q * AUX_S_3_0_0_0[8];
 
                     // ( D_002 S_000 | P_001 S_000 )^0_{t} = z * ( D_002 S_000 | S_000 S_000 )^0_{e} + ( P_001 S_000 | S_000 S_000 )^0_{e} - ( F_003 S_000 | S_000 S_000 )^0_{e}
-                    S_2_0_1_0[abcd * 18 + 17] += etfac[2] * AUX_S_2_0_0_0[5] + 2 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[9];
+                    AUX_S_2_0_1_0[17] = etfac[2] * AUX_S_2_0_0_0[5] + 2 * one_over_2q * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_3_0_0_0[9];
 
+
+                    // Accumulating in contracted workspace
+                    S_1_0_1_0[abcd * 9 + 0] += AUX_S_1_0_1_0[0];
+                    S_1_0_1_0[abcd * 9 + 1] += AUX_S_1_0_1_0[1];
+                    S_1_0_1_0[abcd * 9 + 2] += AUX_S_1_0_1_0[2];
+                    S_1_0_1_0[abcd * 9 + 3] += AUX_S_1_0_1_0[3];
+                    S_1_0_1_0[abcd * 9 + 4] += AUX_S_1_0_1_0[4];
+                    S_1_0_1_0[abcd * 9 + 5] += AUX_S_1_0_1_0[5];
+                    S_1_0_1_0[abcd * 9 + 6] += AUX_S_1_0_1_0[6];
+                    S_1_0_1_0[abcd * 9 + 7] += AUX_S_1_0_1_0[7];
+                    S_1_0_1_0[abcd * 9 + 8] += AUX_S_1_0_1_0[8];
+
+                    // Accumulating in contracted workspace
+                    S_2_0_1_0[abcd * 18 + 0] += AUX_S_2_0_1_0[0];
+                    S_2_0_1_0[abcd * 18 + 1] += AUX_S_2_0_1_0[1];
+                    S_2_0_1_0[abcd * 18 + 2] += AUX_S_2_0_1_0[2];
+                    S_2_0_1_0[abcd * 18 + 3] += AUX_S_2_0_1_0[3];
+                    S_2_0_1_0[abcd * 18 + 4] += AUX_S_2_0_1_0[4];
+                    S_2_0_1_0[abcd * 18 + 5] += AUX_S_2_0_1_0[5];
+                    S_2_0_1_0[abcd * 18 + 6] += AUX_S_2_0_1_0[6];
+                    S_2_0_1_0[abcd * 18 + 7] += AUX_S_2_0_1_0[7];
+                    S_2_0_1_0[abcd * 18 + 8] += AUX_S_2_0_1_0[8];
+                    S_2_0_1_0[abcd * 18 + 9] += AUX_S_2_0_1_0[9];
+                    S_2_0_1_0[abcd * 18 + 10] += AUX_S_2_0_1_0[10];
+                    S_2_0_1_0[abcd * 18 + 11] += AUX_S_2_0_1_0[11];
+                    S_2_0_1_0[abcd * 18 + 12] += AUX_S_2_0_1_0[12];
+                    S_2_0_1_0[abcd * 18 + 13] += AUX_S_2_0_1_0[13];
+                    S_2_0_1_0[abcd * 18 + 14] += AUX_S_2_0_1_0[14];
+                    S_2_0_1_0[abcd * 18 + 15] += AUX_S_2_0_1_0[15];
+                    S_2_0_1_0[abcd * 18 + 16] += AUX_S_2_0_1_0[16];
+                    S_2_0_1_0[abcd * 18 + 17] += AUX_S_2_0_1_0[17];
 
                  }
             }
@@ -522,34 +554,34 @@ int eri_FOcombined_ppps(struct multishell_pair const P,
     for(abcd = 0; abcd < nshell1234; ++abcd)
     {
         // form S_1_1_1_0
-        for(int ni = 0; ni < 3; ++ni)
+        for(int iket = 0; iket < 3; ++iket)
         {
             // (P_100 P_100|_{i} = (D_200 S_000|_{t} + x_ab * (P_100 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 0 * 3 + ni] = S_2_0_1_0[abcd * 18 + 0 * 3 + ni] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 0 * 3 + iket] = S_2_0_1_0[abcd * 18 + 0 * 3 + iket] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + iket] );
 
             // (P_100 P_010|_{i} = (D_110 S_000|_{t} + y_ab * (P_100 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 1 * 3 + ni] = S_2_0_1_0[abcd * 18 + 1 * 3 + ni] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 1 * 3 + iket] = S_2_0_1_0[abcd * 18 + 1 * 3 + iket] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + iket] );
 
             // (P_100 P_001|_{i} = (D_101 S_000|_{t} + z_ab * (P_100 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 2 * 3 + ni] = S_2_0_1_0[abcd * 18 + 2 * 3 + ni] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 2 * 3 + iket] = S_2_0_1_0[abcd * 18 + 2 * 3 + iket] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 0 * 3 + iket] );
 
             // (P_010 P_100|_{i} = (D_110 S_000|_{t} + x_ab * (P_010 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 3 * 3 + ni] = S_2_0_1_0[abcd * 18 + 1 * 3 + ni] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 3 * 3 + iket] = S_2_0_1_0[abcd * 18 + 1 * 3 + iket] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + iket] );
 
             // (P_010 P_010|_{i} = (D_020 S_000|_{t} + y_ab * (P_010 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 4 * 3 + ni] = S_2_0_1_0[abcd * 18 + 3 * 3 + ni] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 4 * 3 + iket] = S_2_0_1_0[abcd * 18 + 3 * 3 + iket] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + iket] );
 
             // (P_010 P_001|_{i} = (D_011 S_000|_{t} + z_ab * (P_010 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 5 * 3 + ni] = S_2_0_1_0[abcd * 18 + 4 * 3 + ni] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 5 * 3 + iket] = S_2_0_1_0[abcd * 18 + 4 * 3 + iket] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 1 * 3 + iket] );
 
             // (P_001 P_100|_{i} = (D_101 S_000|_{t} + x_ab * (P_001 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 6 * 3 + ni] = S_2_0_1_0[abcd * 18 + 2 * 3 + ni] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 6 * 3 + iket] = S_2_0_1_0[abcd * 18 + 2 * 3 + iket] + ( AB_x[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + iket] );
 
             // (P_001 P_010|_{i} = (D_011 S_000|_{t} + y_ab * (P_001 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 7 * 3 + ni] = S_2_0_1_0[abcd * 18 + 4 * 3 + ni] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 7 * 3 + iket] = S_2_0_1_0[abcd * 18 + 4 * 3 + iket] + ( AB_y[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + iket] );
 
             // (P_001 P_001|_{i} = (D_002 S_000|_{t} + z_ab * (P_001 S_000|_{t}
-            S_1_1_1_0[abcd * 27 + 8 * 3 + ni] = S_2_0_1_0[abcd * 18 + 5 * 3 + ni] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + ni] );
+            S_1_1_1_0[abcd * 27 + 8 * 3 + iket] = S_2_0_1_0[abcd * 18 + 5 * 3 + iket] + ( AB_z[abcd] * S_1_0_1_0[abcd * 9 + 2 * 3 + iket] );
 
         }
 

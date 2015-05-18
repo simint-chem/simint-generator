@@ -42,6 +42,23 @@ int eri_FOcombined_dpss(struct multishell_pair const P,
                         struct multishell_pair const Q,
                         double * const restrict S_2_1_0_0);
 
+int eri_FOcombined_dsps(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_0_1_0);
+
+int eri_FOcombined_dsds(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_0_2_0);
+
+int eri_FOcombined_dspp(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_0_1_1);
+
+
+////////////////
+int eri_FOcombined_ppds(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_1_1_2_0);
 
 
 #ifdef __cplusplus

@@ -38,6 +38,7 @@ int main(int argc, char ** argv)
         funcs[i][j][k][l] = eri_notyetimplemented; 
 
     funcs[0][0][0][0] = eri_FOcombined_ssss;
+
     funcs[1][0][0][0] = eri_FOcombined_psss;
     funcs[1][1][0][0] = eri_FOcombined_ppss;
     funcs[1][0][1][0] = eri_FOcombined_psps;
@@ -46,6 +47,12 @@ int main(int argc, char ** argv)
 
     funcs[2][0][0][0] = eri_FOcombined_dsss;
     funcs[2][1][0][0] = eri_FOcombined_dpss;
+    funcs[2][0][1][0] = eri_FOcombined_dsps;
+    funcs[2][0][1][1] = eri_FOcombined_dspp;
+    funcs[2][0][2][0] = eri_FOcombined_dsds;
+
+
+    funcs[1][1][2][0] = eri_FOcombined_ppds;
 
 
     if(argc != 13)

@@ -18,15 +18,20 @@ void HRR_Algorithm_Base::HRRDoubletLoop(HRRDoubletStepList & hrrlist,
 
         for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
+            // skip if done alread
+            // this can happen with some of the more complex trees
+            if(solveddoublets.count(it->noflags()) > 0)
+                continue;
+
             HRRDoubletStep hrr = this->doubletstep(*it);
             hrrlist.push_back(hrr);
 
-            if(solveddoublets.count(hrr.src1) == 0)
+            if(solveddoublets.count(hrr.src1.noflags()) == 0)
                 newtargets.insert(hrr.src1);
-            if(solveddoublets.count(hrr.src2) == 0)
+            if(solveddoublets.count(hrr.src2.noflags()) == 0)
                 newtargets.insert(hrr.src2);
             
-            solveddoublets.insert(*it);
+            solveddoublets.insert(it->noflags());
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
@@ -54,15 +59,20 @@ void HRR_Algorithm_Base::HRRQuartetLoop(HRRQuartetStepList & hrrlist,
 
         for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
+            // skip if done alread
+            // this can happen with some of the more complex trees
+            if(solvedquartets.count(it->noflags()) > 0)
+                continue;
+
             HRRQuartetStep hrr = this->quartetstep(*it, type);
             hrrlist.push_back(hrr);
 
-            if(solvedquartets.count(hrr.src1) == 0)
+            if(solvedquartets.count(hrr.src1.noflags()) == 0)
                 newtargets.insert(hrr.src1);
-            if(solvedquartets.count(hrr.src2) == 0)
+            if(solvedquartets.count(hrr.src2.noflags()) == 0)
                 newtargets.insert(hrr.src2);
             
-            solvedquartets.insert(*it);
+            solvedquartets.insert(it->noflags());
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
@@ -253,9 +263,9 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
     targets.clear();
     for(const auto & it : hrrlist)
     {
-        if(solvedquartets.count(it.src1) == 0)
+        if(solvedquartets.count(it.src1.noflags()) == 0)
             targets.insert(it.src1);
-        if(solvedquartets.count(it.src2) == 0)
+        if(solvedquartets.count(it.src2.noflags()) == 0)
             targets.insert(it.src2);
     }
     
@@ -285,9 +295,9 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
     // mark top level reqs
     for(auto & it : hrrlist)
     {
-        if(solvedquartets.count(it.src1) == 0)
+        if(solvedquartets.count(it.src1.noflags()) == 0)
             it.src1.flags |= QUARTET_HRRTOPLEVEL;
-        if(solvedquartets.count(it.src2) == 0)
+        if(solvedquartets.count(it.src2.noflags()) == 0)
             it.src2.flags |= QUARTET_HRRTOPLEVEL;
     } 
 
@@ -308,22 +318,28 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
 
         for(auto it = targets.rbegin(); it != targets.rend(); ++it)
         {
+            // skip if done alread
+            // this can happen with some of the more complex trees
+            if(solvedquartets.count(it->noflags()) > 0)
+                continue;
+
             ETStep ets = this->etstep(*it);
             etsl.push_back(ets);
 
-            if(solvedquartets.count(ets.src1) == 0)
+            if(solvedquartets.count(ets.src1.noflags()) == 0)
                 newtargets.insert(ets.src1);
 
-            if(solvedquartets.count(ets.src2) == 0)
+            if(solvedquartets.count(ets.src2.noflags()) == 0)
                 newtargets.insert(ets.src2);
 
-            if(solvedquartets.count(ets.src3) == 0)
+            if(solvedquartets.count(ets.src3.noflags()) == 0)
                 newtargets.insert(ets.src3);
 
-            if(solvedquartets.count(ets.src4) == 0)
+            if(solvedquartets.count(ets.src4.noflags()) == 0)
                 newtargets.insert(ets.src4);
-            
-            solvedquartets.insert(*it);
+           
+            // insert copy with no flags 
+            solvedquartets.insert(it->noflags());
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
@@ -369,13 +385,13 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     // mark top level reqs
     for(auto & it : etsl)
     {
-        if(it.src1 && solvedquartets.count(it.src1) == 0)
+        if(it.src1 && solvedquartets.count(it.src1.noflags()) == 0)
             it.src1.flags |= QUARTET_ETTOPLEVEL;
-        if(it.src2 && solvedquartets.count(it.src2) == 0)
+        if(it.src2 && solvedquartets.count(it.src2.noflags()) == 0)
             it.src2.flags |= QUARTET_ETTOPLEVEL;
-        if(it.src3 && solvedquartets.count(it.src3) == 0)
+        if(it.src3 && solvedquartets.count(it.src3.noflags()) == 0)
             it.src3.flags |= QUARTET_ETTOPLEVEL;
-        if(it.src4 && solvedquartets.count(it.src4) == 0)
+        if(it.src4 && solvedquartets.count(it.src4.noflags()) == 0)
             it.src4.flags |= QUARTET_ETTOPLEVEL;
     } 
 

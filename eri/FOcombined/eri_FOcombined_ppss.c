@@ -87,6 +87,7 @@ int eri_FOcombined_ppss(struct multishell_pair const P,
                 {
 
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
+
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
                     double AUX_S_0_0_0_0[3 * 1];
@@ -97,6 +98,9 @@ int eri_FOcombined_ppss(struct multishell_pair const P,
                     // AM = 2: Needed from this AM: 6
                     double AUX_S_2_0_0_0[1 * 6];
 
+
+
+                    // Holds temporary integrals for electron transfer
 
 
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
@@ -257,29 +261,25 @@ int eri_FOcombined_ppss(struct multishell_pair const P,
                     // Primitive integrals: Vertical recurrance
                     //////////////////////////////////////////////
 
-                    int idx = 0;
-
                     // Forming AUX_S_1_0_0_0[2 * 3];
                     // Needed from this AM:
                     //    P_100
                     //    P_010
                     //    P_001
-                    idx = 0;
                     for(int m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
-                        AUX_S_1_0_0_0[idx++] = P.PA_x[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_x * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 0] = P.PA_x[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_x * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                         //P_010 : STEP: y
-                        AUX_S_1_0_0_0[idx++] = P.PA_y[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_y * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 1] = P.PA_y[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_y * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                         //P_001 : STEP: z
-                        AUX_S_1_0_0_0[idx++] = P.PA_z[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_z * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_S_1_0_0_0[m*3 + 2] = P.PA_z[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_z * AUX_S_0_0_0_0[(m+1) * 1 + 0];
 
                     }
 
                     // Accumulating in contracted workspace
-                    idx = 0;
                     S_1_0_0_0[abcd * 3 + 0] += AUX_S_1_0_0_0[0];
                     S_1_0_0_0[abcd * 3 + 1] += AUX_S_1_0_0_0[1];
                     S_1_0_0_0[abcd * 3 + 2] += AUX_S_1_0_0_0[2];
@@ -293,34 +293,32 @@ int eri_FOcombined_ppss(struct multishell_pair const P,
                     //    D_020
                     //    D_011
                     //    D_002
-                    idx = 0;
                     for(int m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
-                        AUX_S_2_0_0_0[idx++] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
+                        AUX_S_2_0_0_0[m*6 + 0] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
-                        AUX_S_2_0_0_0[idx++] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_S_2_0_0_0[m*6 + 1] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
 
                         //D_101 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_S_2_0_0_0[m*6 + 2] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 0];
 
                         //D_020 : STEP: y
-                        AUX_S_2_0_0_0[idx++] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
+                        AUX_S_2_0_0_0[m*6 + 3] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
+                        AUX_S_2_0_0_0[m*6 + 4] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
-                        AUX_S_2_0_0_0[idx++] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
+                        AUX_S_2_0_0_0[m*6 + 5] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                     }
 
                     // Accumulating in contracted workspace
-                    idx = 0;
                     S_2_0_0_0[abcd * 6 + 0] += AUX_S_2_0_0_0[0];
                     S_2_0_0_0[abcd * 6 + 1] += AUX_S_2_0_0_0[1];
                     S_2_0_0_0[abcd * 6 + 2] += AUX_S_2_0_0_0[2];
@@ -352,34 +350,34 @@ int eri_FOcombined_ppss(struct multishell_pair const P,
     for(abcd = 0; abcd < nshell1234; ++abcd)
     {
         // form S_1_1_0_0
-        for(int ni = 0; ni < 1; ++ni)
+        for(int iket = 0; iket < 1; ++iket)
         {
             // (P_100 P_100|_{i} = (D_200 S_000|_{t} + x_ab * (P_100 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 0 * 1 + ni] = S_2_0_0_0[abcd * 6 + 0 * 1 + ni] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 0 * 1 + iket] = S_2_0_0_0[abcd * 6 + 0 * 1 + iket] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + iket] );
 
             // (P_100 P_010|_{i} = (D_110 S_000|_{t} + y_ab * (P_100 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 1 * 1 + ni] = S_2_0_0_0[abcd * 6 + 1 * 1 + ni] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 1 * 1 + iket] = S_2_0_0_0[abcd * 6 + 1 * 1 + iket] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + iket] );
 
             // (P_100 P_001|_{i} = (D_101 S_000|_{t} + z_ab * (P_100 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 2 * 1 + ni] = S_2_0_0_0[abcd * 6 + 2 * 1 + ni] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 2 * 1 + iket] = S_2_0_0_0[abcd * 6 + 2 * 1 + iket] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 0 * 1 + iket] );
 
             // (P_010 P_100|_{i} = (D_110 S_000|_{t} + x_ab * (P_010 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 3 * 1 + ni] = S_2_0_0_0[abcd * 6 + 1 * 1 + ni] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 3 * 1 + iket] = S_2_0_0_0[abcd * 6 + 1 * 1 + iket] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + iket] );
 
             // (P_010 P_010|_{i} = (D_020 S_000|_{t} + y_ab * (P_010 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 4 * 1 + ni] = S_2_0_0_0[abcd * 6 + 3 * 1 + ni] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 4 * 1 + iket] = S_2_0_0_0[abcd * 6 + 3 * 1 + iket] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + iket] );
 
             // (P_010 P_001|_{i} = (D_011 S_000|_{t} + z_ab * (P_010 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 5 * 1 + ni] = S_2_0_0_0[abcd * 6 + 4 * 1 + ni] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 5 * 1 + iket] = S_2_0_0_0[abcd * 6 + 4 * 1 + iket] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 1 * 1 + iket] );
 
             // (P_001 P_100|_{i} = (D_101 S_000|_{t} + x_ab * (P_001 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 6 * 1 + ni] = S_2_0_0_0[abcd * 6 + 2 * 1 + ni] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 6 * 1 + iket] = S_2_0_0_0[abcd * 6 + 2 * 1 + iket] + ( AB_x[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + iket] );
 
             // (P_001 P_010|_{i} = (D_011 S_000|_{t} + y_ab * (P_001 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 7 * 1 + ni] = S_2_0_0_0[abcd * 6 + 4 * 1 + ni] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 7 * 1 + iket] = S_2_0_0_0[abcd * 6 + 4 * 1 + iket] + ( AB_y[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + iket] );
 
             // (P_001 P_001|_{i} = (D_002 S_000|_{t} + z_ab * (P_001 S_000|_{t}
-            S_1_1_0_0[abcd * 9 + 8 * 1 + ni] = S_2_0_0_0[abcd * 6 + 5 * 1 + ni] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + ni] );
+            S_1_1_0_0[abcd * 9 + 8 * 1 + iket] = S_2_0_0_0[abcd * 6 + 5 * 1 + iket] + ( AB_z[abcd] * S_1_0_0_0[abcd * 3 + 2 * 1 + iket] );
 
         }
 

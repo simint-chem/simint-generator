@@ -179,6 +179,7 @@ struct Doublet
     int am(void) const { return left.am() + right.am(); }    
     int idx(void) const { return left.idx() * right.ncart() + right.idx(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
+    Doublet noflags(void) const { return {type, left, right, 0}; }
 
     std::string flagstr(void) const
     {
@@ -265,6 +266,8 @@ struct Quartet
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
     QAMList amlist(void) const { return { bra.left.am(), bra.right.am(),
                                           ket.left.am(), ket.right.am() }; }
+
+    Quartet noflags(void) const { return {bra.noflags(), ket.noflags(), m, 0}; }
 
     Doublet get(DoubletType type) const
     {

@@ -81,10 +81,14 @@ int eri_FOcombined_ssss(struct multishell_pair const P,
                 {
 
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
+
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
                     double AUX_S_0_0_0_0[1 * 1];
 
+
+
+                    // Holds temporary integrals for electron transfer
 
 
                     const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
