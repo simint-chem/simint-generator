@@ -24,16 +24,6 @@ static bool IsContArray(const QAMList & am)
     return continfo.count(am);
 }
 
-// This is split out to allow for future optimization
-static void Write_BoysFunction(std::ostream & os,
-                               const BoysMap & bm,
-                               int maxv)
-{
-    for(int i = 0; i <= maxv; i++)
-        os << bm.at(i)->code_line() << "\n";
-}
-
-
 static std::string ArrVarName(const QAMList & am)
 {
     std::stringstream ss;
@@ -68,6 +58,13 @@ static std::string VarName(const QAMList & am,
 
     return ss.str();
 }
+
+static std::string AuxName(int i)
+{
+    return std::string("AUX_") + ArrVarName({i, 0, 0, 0});
+}
+
+
 
 
 static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
@@ -115,6 +112,44 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
 }
 
 
+static std::string ETStepVar(const Quartet & q, bool istarget)
+{
+    // index to the array
+    std::stringstream sscontidx;
+    sscontidx << "abcd * " << q.ncart() << " + " << q.idx();
+
+    std::stringstream ssidx;
+    ssidx << q.idx();
+
+    std::stringstream ss;
+    ss << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
+       << q.bra.right.ijk[0]  << "_" << q.bra.right.ijk[1]  << "_" << q.bra.right.ijk[2]  << "_"
+       << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
+       << q.ket.right.ijk[0]  << "_" << q.ket.right.ijk[1]  << "_" << q.ket.right.ijk[2];
+
+    // prefix this if it should be a result from VRR
+    std::string prefix;
+
+    // always use 'uncontracted' stuff if not target
+    if(!istarget || !IsContArray(q.amlist()))
+        prefix = "AUX_";
+
+    if(istarget) 
+        return prefix + VarName(q.amlist(),
+                                ssidx.str(),
+                                sscontidx.str(),
+                                ss.str(),
+                                istarget);
+    else
+        return prefix + VarName(q.amlist(),
+                                ssidx.str(),
+                                ssidx.str(),  // force uncontracted
+                                ss.str(),
+                                istarget);
+        
+}
+
+
 
 static std::string HRRBraStepString(const HRRDoubletStep & hrr, int ketam)
 {
@@ -155,171 +190,6 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
 }
 
 
-static std::string AuxName(int i)
-{
-    return std::string("AUX_") + ArrVarName({i, 0, 0, 0});
-}
-
-
-
-static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
-{
-    os << "                    int idx = 0;\n";
-    os << "\n";
-
-    // accumulate S_0_0_0_0 if needed
-    if(IsContArray({0, 0, 0, 0}))
-    {
-        os << "\n";
-        os << "                    // Accumulating S_0_0_0_0 in contracted workspace\n";
-        os <<"                    " << ArrVarName({0, 0, 0, 0}) << "[abcd] += "
-           << AuxName(0) << "[0];\n";
-        os << "\n";
-    }
-
-    // loop over am
-    for(const auto & it3 : vrrinfo.second)
-    {
-        // i is the am
-        int i = it3.first;
-
-        // don't do zero - that is handled by the boys function stuff
-        if(i == 0)
-            continue;
-
-        // greq is the actual info
-        const GaussianSet & greq = it3.second;
-
-        // requirements for this am
-        os << "                    // Forming " << AuxName(i) << "[" << (L-i+1) << " * " << greq.size() << "];\n";
-        os << "                    // Needed from this AM:\n";
-        for(const auto & it : greq)
-            os << "                    //    " << it << "\n";
-        os << "                    idx = 0;\n";
-        os << "                    for(int m = 0; m < " << (L-i+1) << "; m++)  // loop over orders of boys function\n";
-        os << "                    {\n";
-
-        for(const auto & it : greq) // should be in order, since it's a set
-        {
-            // Get the stepping
-            XYZStep step = vrrinfo.first.at(it);
-
-            // and then the required gaussians
-            Gaussian g1 = it.StepDown(step, 1);
-            Gaussian g2 = it.StepDown(step, 2);
-
-            // number of gaussians in the previous two AM
-            int ng1 = -1;
-            int ng2 = -1;
-
-            int g1_idx = -1;
-            int g2_idx = -1;
-
-            // indices. This is a little messy, but whatever
-            if(g1)
-            { 
-                auto g1_it = vrrinfo.second.at(i-1).find(g1); 
-                g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
-                ng1 = vrrinfo.second.at(i-1).size();
-            }
-            if(g2)
-            {
-                auto g2_it = vrrinfo.second.at(i-2).find(g2); 
-                g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
-                ng2 = vrrinfo.second.at(i-2).size();
-            }
-
-            // the value of i in the VRR eqn
-            // = value of exponent of g1 in the position of the step
-            int vrr_i = g1.ijk[XYZStepToIdx(step)];
-
-            os << "                        //" << it <<  " : STEP: " << step << "\n";
-            //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
-            //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
-            //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
-            os << "                        " << AuxName(i);
-
-            //if(IsContArray({i, 0, 0, 0}))
-            //    os << "[abcd * " << NCART(i) << " + idx++] += ";
-            //else
-            os << "[idx++] = ";
-
-            os << "P.PA_" << step << "[i] * ";
-
-            if(g1)
-                os << AuxName(i-1) << "[m * " << ng1 << " + " << g1_idx 
-                   << "] - a_over_p * PQ_" << step << " * " << AuxName(i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
-            if(g2)
-            {
-                os << "\n";
-                os << "                                     + " << vrr_i << " * one_over_2p * ( " << AuxName(i-2)
-                                                              << "[m * " << ng2 << " +  " << g2_idx << "]"
-                                                              << " - a_over_p * " << AuxName(i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
-            }
-            os << ";\n\n"; 
-        }
-
-        os << "                    }\n";
-
-
-        // if this target is also a contracted array, accumulate there
-        if(IsContArray({i, 0, 0, 0}))
-        {
-            os << "\n";
-            os << "                    // Accumulating in contracted workspace\n";
-            os << "                    idx = 0;\n";
-            int idx = 0;
-            for(const auto & it : greq)
-            {
-                os <<"                    " << ArrVarName({i, 0, 0, 0}) << "[abcd * " << NCART(i) << " + " 
-                   << it.idx() << "] += " << AuxName(i) << "[" << idx++ << "];\n";
-            }
-        }
-
-
-        os << "\n\n";
-    }
-
-}
-
-
-static std::string ETStepVar(const Quartet & q, bool istarget)
-{
-    // index to the array
-    std::stringstream sscontidx;
-    sscontidx << "abcd * " << q.ncart() << " + " << q.idx();
-
-    std::stringstream ssidx;
-    ssidx << q.idx();
-
-    std::stringstream ss;
-    ss << q.bra.left.ijk[0]  << "_" << q.bra.left.ijk[1]  << "_" << q.bra.left.ijk[2]  << "_"
-       << q.bra.right.ijk[0]  << "_" << q.bra.right.ijk[1]  << "_" << q.bra.right.ijk[2]  << "_"
-       << q.ket.left.ijk[0]  << "_" << q.ket.left.ijk[1]  << "_" << q.ket.left.ijk[2]  << "_"
-       << q.ket.right.ijk[0]  << "_" << q.ket.right.ijk[1]  << "_" << q.ket.right.ijk[2];
-
-    // prefix this if it should be a result from VRR
-    std::string prefix;
-
-    // always use 'uncontracted' stuff if not target
-    if(!istarget || !IsContArray(q.amlist()))
-        prefix = "AUX_";
-
-    if(istarget) 
-        return prefix + VarName(q.amlist(),
-                                ssidx.str(),
-                                sscontidx.str(),
-                                ss.str(),
-                                istarget);
-    else
-        return prefix + VarName(q.amlist(),
-                                ssidx.str(),
-                                ssidx.str(),  // force uncontracted
-                                ss.str(),
-                                istarget);
-        
-}
-
 static std::string ETStepString(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
@@ -348,6 +218,130 @@ static std::string ETStepString(const ETStep & et)
 
     return ss.str();
 }
+
+
+
+
+
+
+static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
+{
+    os << "                    int idx = 0;\n";
+    os << "\n";
+
+    // accumulate S_0_0_0_0 if needed
+    if(IsContArray({0, 0, 0, 0}))
+    {
+        os << "\n";
+        os << "                    // Accumulating S_0_0_0_0 in contracted workspace\n";
+        os <<"                    " << ArrVarName({0, 0, 0, 0}) << "[abcd] += " << AuxName(0) << "[0];\n";
+        os << "\n";
+    }
+
+    // iterate over increasing am
+    for(const auto & it3 : vrrinfo.second)
+    {
+        // i is the am
+        int i = it3.first;
+
+        // don't do zero - that is handled by the boys function stuff
+        if(i == 0)
+            continue;
+
+        // greq is the actual requirements for this am
+        const GaussianSet & greq = it3.second;
+
+        // requirements for this am
+        os << "                    // Forming " << AuxName(i) << "[" << (L-i+1) << " * " << greq.size() << "];\n";
+        os << "                    // Needed from this AM:\n";
+        for(const auto & it : greq)
+            os << "                    //    " << it << "\n";
+        os << "                    idx = 0;\n";
+        os << "                    for(int m = 0; m < " << (L-i+1) << "; m++)  // loop over orders of boys function\n";
+        os << "                    {\n";
+
+        // iterate over the requirements
+        // should be in order since it's a set
+        for(const auto & it : greq)
+        {
+            // Get the stepping
+            XYZStep step = vrrinfo.first.at(it);
+
+            // and then step to the the required gaussians
+            Gaussian g1 = it.StepDown(step, 1);
+            Gaussian g2 = it.StepDown(step, 2);
+
+            // get the number of gaussians in the previous two AM
+            int ng1 = -1;
+            int ng2 = -1;
+            int g1_idx = -1;
+            int g2_idx = -1;
+
+            // Ugh indices. This is a little messy, but whatever
+            if(g1)
+            { 
+                auto g1_it = vrrinfo.second.at(i-1).find(g1); 
+                g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
+                ng1 = vrrinfo.second.at(i-1).size();
+            }
+            if(g2)
+            {
+                auto g2_it = vrrinfo.second.at(i-2).find(g2); 
+                g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
+                ng2 = vrrinfo.second.at(i-2).size();
+            }
+
+            // the value of i in the VRR eqn
+            // = value of exponent of g1 in the position of the step
+            int vrr_i = g1.ijk[XYZStepToIdx(step)];
+
+            os << "                        //" << it <<  " : STEP: " << step << "\n";
+            //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
+            //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
+            //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
+            os << "                        " << AuxName(i);
+
+            os << "[idx++] = P.PA_" << step << "[i] * ";
+
+            if(g1)
+                os << AuxName(i-1) << "[m * " << ng1 << " + " << g1_idx 
+                   << "] - a_over_p * PQ_" << step << " * " << AuxName(i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+            if(g2)
+            {
+                os << "\n";
+                os << "                                     + " << vrr_i << " * one_over_2p * ( " << AuxName(i-2)
+                   << "[m * " << ng2 << " +  " << g2_idx << "]"
+                   << " - a_over_p * " << AuxName(i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+            }
+            os << ";\n\n"; 
+        }
+
+        os << "                    }\n";
+
+
+        // if this target is also a contracted array, accumulate there
+        // note that contracted array has storage for all elements of a
+        // given AM, not just what we calculated
+        // (ie abcd*NCART(i) not abcd*greq.size() or something)
+        if(IsContArray({i, 0, 0, 0}))
+        {
+            os << "\n";
+            os << "                    // Accumulating in contracted workspace\n";
+            os << "                    idx = 0;\n";
+            int idx = 0;
+            for(const auto & it : greq)
+            {
+                os <<"                    " << ArrVarName({i, 0, 0, 0}) << "[abcd * " << NCART(i) << " + " 
+                   << it.idx() << "] += " << AuxName(i) << "[" << idx++ << "];\n";
+            }
+        }
+
+        os << "\n\n";
+    }
+
+}
+
+
 
 
 
@@ -507,6 +501,10 @@ void Writer_Looped(std::ostream & os,
         std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
     std::cout << "\n";
 
+    // some helper bools
+    bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
+    bool haset = (etsl.size() > 0);
+
 
     //////////////////////////////////////////////////
     // set up the function to make it look pretty
@@ -621,13 +619,6 @@ void Writer_Looped(std::ostream & os,
 
         QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-
-        /*
-        if(qam == am)
-            os << "                    // is the final integral...\n";
-        else if(IsContArray(qam))
-            os << "                    // is a contracted integral...\n";
-        else*/
         os << "                    double " << AuxName(greq.first) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
         os << "\n";
 
@@ -654,19 +645,29 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "                    // various factors\n";
     os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
-    os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
-    os << "                    const double one_over_q = 1.0 / Q.alpha[j];\n";
-    os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
-    os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
-    os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
-    os << "                    const double p_over_q = P.alpha[i] * one_over_q;\n";
-    os << "\n";
-    os << "                    // for electron transfer\n";
-    os << "                    const double etfac[3] = {\n";
-    os << "                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,\n";
-    os << "                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,\n";
-    os << "                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,\n";
-    os << "                                            };\n";
+
+    if(hasvrr)
+    {
+        os << "                    // for VRR\n";
+        os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
+        os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
+        os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+    }
+
+    if(haset)
+    {
+        os << "                    // for electron transfer\n";
+        os << "                    const double one_over_q = 1.0 / Q.alpha[j];\n";
+        os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
+        os << "                    const double p_over_q = P.alpha[i] * one_over_q;\n";
+        os << "\n";
+        os << "                    const double etfac[3] = {\n";
+        os << "                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,\n";
+        os << "                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,\n";
+        os << "                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,\n";
+        os << "                                            };\n";
+    }
+
     os << "\n";
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
@@ -678,7 +679,8 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    Write_BoysFunction(os, bm, L);
+    for(int i = 0; i <= L; i++)
+        os << bm.at(i)->code_line() << "\n";
 
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
