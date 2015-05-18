@@ -33,6 +33,17 @@ int eri_FOcombined_pppp(struct multishell_pair const P,
 
 
 
+int eri_FOcombined_dsss(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_0_0_0);
+
+
+int eri_FOcombined_dpss(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_1_0_0);
+
+
+
 #ifdef __cplusplus
 }
 #endif

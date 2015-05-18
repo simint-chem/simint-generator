@@ -7,7 +7,7 @@
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
-#define MAXAM 1
+#define MAXAM 3
 
 typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
 
@@ -43,6 +43,9 @@ int main(int argc, char ** argv)
     funcs[1][0][1][0] = eri_FOcombined_psps;
     funcs[1][1][1][0] = eri_FOcombined_ppps;
     funcs[1][1][1][1] = eri_FOcombined_pppp;
+
+    funcs[2][0][0][0] = eri_FOcombined_dsss;
+    funcs[2][1][0][0] = eri_FOcombined_dpss;
 
 
     if(argc != 13)
