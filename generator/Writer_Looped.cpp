@@ -226,8 +226,8 @@ static std::string ETStepString(const ETStep & et)
 
 static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
 {
-    os << "                    int idx = 0;\n";
-    os << "\n";
+    if( vrrinfo.second.size() > 1 || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) )
+        os << "                    int idx = 0;\n\n";
 
     // accumulate S_0_0_0_0 if needed
     if(IsContArray({0, 0, 0, 0}))
@@ -390,14 +390,28 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.src2.am()].insert(it.src2);
     }
 
-    // we may need to add ( s s | s s )
-    if(hrrtopbras.size() == 0 && hrrtopkets.size() > 0)
-        hrrtopbras[0].insert({DoubletType::BRA, {0,0,0}, {0,0,0}, DOUBLET_HRRTOPLEVEL});
+
+    // we may need to add ( a s | as a top bra for AM quartets
+    // that do not have HRR in the bra part
+    // these might be ( X s |  or  | X s )
+    if(hrrtopbras.size() == 0)
+    {
+        GaussianSet gs = AllGaussiansForAM(am[0]);
+        for(const auto & it : gs)
+            hrrtopbras[it.am()].insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
+    if(hrrtopkets.size() == 0)
+    {
+        GaussianSet gs = AllGaussiansForAM(am[2]);
+        for(const auto & it : gs)
+            hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
 
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
     QuartetSet etinit;
+
     for(const auto & it : hrrtopbras)
     for(const auto & it2 : hrrtopkets)
     {
@@ -406,15 +420,7 @@ void Writer_Looped(std::ostream & os,
             etinit.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
     }
 
-
-    // Final integrals may not need HRR ( ie (A 0 | B 0) )
-    if(etinit.size() == 0)
-    {
-        etinit = GenerateInitialQuartetTargets(am, true);
-    }
-
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
-    
 
     // 3.) Top level gaussians from ET, sorted by AM
     ETReqMap etrm;
@@ -432,34 +438,16 @@ void Writer_Looped(std::ostream & os,
     }
     
 
-    // 3.1) ET Map
-    //ETMap etmap;
-    //for(const auto & it : etsl)
-    //    etmap[it.target.bra.am()][it.target.ket.am()].push_back(it);
-
     // 4.) VRR Steps
     // requirements for vrr are the elements of etrm
     ETReqMap vreq = etrm;
 
-    // but if there are none, this of the type ( X 0 | 0 0 ) or ( 0 X | 0 0 )
+    // but if there are none, this of the type ( X 0 | 0 0 )
     if(vreq.size() == 0)
         vreq[L] = AllGaussiansForAM(L);
 
     std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
-    // these might be ( X s | or | X s )
-    if(hrrtopbras.size() == 0)
-    {
-        GaussianSet gs = AllGaussiansForAM(am[0]);
-        for(const auto & it : gs)
-            hrrtopbras[it.am()].insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
-    if(hrrtopkets.size() == 0)
-    {
-        GaussianSet gs = AllGaussiansForAM(am[2]);
-        for(const auto & it : gs)
-            hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
 
     // add these to contracted array variable set
     for(const auto & it : hrrtopbras)
@@ -478,7 +466,7 @@ void Writer_Looped(std::ostream & os,
     }
 
 
-    // print out info
+    // print out some info
     std::cout << "HRR Top Bras: " << hrrtopbras.size() << "\n";
     for(const auto & it : hrrtopbras)
         std::cout << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
@@ -504,6 +492,7 @@ void Writer_Looped(std::ostream & os,
     // some helper bools
     bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
     bool haset = (etsl.size() > 0);
+    bool hasoneover2p = true;  // TODO
 
 
     //////////////////////////////////////////////////
@@ -616,7 +605,6 @@ void Writer_Looped(std::ostream & os,
     for(const auto & greq : vrrinfo.second)
     {
         // size of requirements for this AM
-
         QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
         os << "                    double " << AuxName(greq.first) << "[" << (L-greq.first+1) << " * " << greq.second.size() << "];\n";
@@ -651,7 +639,8 @@ void Writer_Looped(std::ostream & os,
         os << "                    // for VRR\n";
         os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
         os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
-        os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+        if(hasoneover2p)
+            os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
     }
 
     if(haset)

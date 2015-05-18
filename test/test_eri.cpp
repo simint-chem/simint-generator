@@ -41,6 +41,8 @@ int main(int argc, char ** argv)
     funcs[1][0][0][0] = eri_FOcombined_psss;
     funcs[1][1][0][0] = eri_FOcombined_ppss;
     funcs[1][0][1][0] = eri_FOcombined_psps;
+    funcs[1][1][1][0] = eri_FOcombined_ppps;
+    funcs[1][1][1][1] = eri_FOcombined_pppp;
 
 
     if(argc != 13)

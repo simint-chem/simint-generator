@@ -109,14 +109,15 @@ int eri_FOcombined_psps(struct multishell_pair const P,
 
                     // various factors
                     const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST
+                    // for VRR
                     const double one_over_p = 1.0 / P.alpha[i];
-                    const double one_over_q = 1.0 / Q.alpha[j];
                     const double a_over_p =  alpha * one_over_p;     // a/p from MEST
                     const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR
+                    // for electron transfer
+                    const double one_over_q = 1.0 / Q.alpha[j];
                     const double one_over_2q = 0.5 * one_over_q;
                     const double p_over_q = P.alpha[i] * one_over_q;
 
-                    // for electron transfer
                     const double etfac[3] = {
                                              -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,
                                              -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,
@@ -323,31 +324,31 @@ int eri_FOcombined_psps(struct multishell_pair const P,
                     // Primitive integrals: Electron transfer
                     //////////////////////////////////////////////
 
-                    // ( P_100 S_000 | P_100 S_000 )^0_{i} = x * ( P_100 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_200 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_100 S_000 | P_100 S_000 )^0_{t} = x * ( P_100 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_200 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 0] += etfac[0] * AUX_S_1_0_0_0[0] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[0];
 
-                    // ( P_100 S_000 | P_010 S_000 )^0_{i} = y * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_100 S_000 | P_010 S_000 )^0_{t} = y * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 1] += etfac[1] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[1];
 
-                    // ( P_100 S_000 | P_001 S_000 )^0_{i} = z * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_100 S_000 | P_001 S_000 )^0_{t} = z * ( P_100 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 2] += etfac[2] * AUX_S_1_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[2];
 
-                    // ( P_010 S_000 | P_100 S_000 )^0_{i} = x * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_010 S_000 | P_100 S_000 )^0_{t} = x * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_110 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 3] += etfac[0] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[1];
 
-                    // ( P_010 S_000 | P_010 S_000 )^0_{i} = y * ( P_010 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_020 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_010 S_000 | P_010 S_000 )^0_{t} = y * ( P_010 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_020 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 4] += etfac[1] * AUX_S_1_0_0_0[1] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[3];
 
-                    // ( P_010 S_000 | P_001 S_000 )^0_{i} = z * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_010 S_000 | P_001 S_000 )^0_{t} = z * ( P_010 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 5] += etfac[2] * AUX_S_1_0_0_0[1] - p_over_q * AUX_S_2_0_0_0[4];
 
-                    // ( P_001 S_000 | P_100 S_000 )^0_{i} = x * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_001 S_000 | P_100 S_000 )^0_{t} = x * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_101 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 6] += etfac[0] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[2];
 
-                    // ( P_001 S_000 | P_010 S_000 )^0_{i} = y * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_001 S_000 | P_010 S_000 )^0_{t} = y * ( P_001 S_000 | S_000 S_000 )^0_{e} - ( D_011 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 7] += etfac[1] * AUX_S_1_0_0_0[2] - p_over_q * AUX_S_2_0_0_0[4];
 
-                    // ( P_001 S_000 | P_001 S_000 )^0_{i} = z * ( P_001 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_002 S_000 | S_000 S_000 )^0_{e}
+                    // ( P_001 S_000 | P_001 S_000 )^0_{t} = z * ( P_001 S_000 | S_000 S_000 )^0_{e} + ( S_000 S_000 | S_000 S_000 )^0_{e} - ( D_002 S_000 | S_000 S_000 )^0_{e}
                     S_1_0_1_0[abcd * 9 + 8] += etfac[2] * AUX_S_1_0_0_0[2] + 1 * one_over_2q * AUX_S_0_0_0_0[0] - p_over_q * AUX_S_2_0_0_0[5];
 
 

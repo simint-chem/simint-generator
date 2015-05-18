@@ -106,19 +106,10 @@ int eri_FOcombined_psss(struct multishell_pair const P,
 
                     // various factors
                     const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST
+                    // for VRR
                     const double one_over_p = 1.0 / P.alpha[i];
-                    const double one_over_q = 1.0 / Q.alpha[j];
                     const double a_over_p =  alpha * one_over_p;     // a/p from MEST
                     const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR
-                    const double one_over_2q = 0.5 * one_over_q;
-                    const double p_over_q = P.alpha[i] * one_over_q;
-
-                    // for electron transfer
-                    const double etfac[3] = {
-                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,
-                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,
-                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,
-                                            };
 
 
                     //////////////////////////////////////////////
