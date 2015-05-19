@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
-    Writer_Looped(of, amlist, "FOcombined", bm, *vrralgo, *etalgo, *hrralgo);
+    Writer_Looped(of, amlist, "FO", bm, *vrralgo, *etalgo, *hrralgo);
 
 
     }

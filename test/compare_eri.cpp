@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     /* Storage of test results */
     double * res_split           = (double *)ALLOC(nshell1234 * sizeof(double));
     double * res_splitcombined   = (double *)ALLOC(nshell1234 * sizeof(double));
-    double * res_FOcombined      = (double *)ALLOC(nshell1234 * sizeof(double));
+    double * res_FO              = (double *)ALLOC(nshell1234 * sizeof(double));
 
     double * res_liberd          = (double *)ALLOC(nshell1234 * sizeof(double));
     double * res_valeev          = (double *)ALLOC(nshell1234 * sizeof(double));
@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
 
     eri_split_ssss(           P, Q, res_split,          intwork1, intwork2  );
     eri_splitcombined_ssss(   P, Q, res_splitcombined                       );
-    eri_FOcombined_ssss(      P, Q, res_FOcombined                          );
+    eri_FO_s_s_s_s(           P, Q, res_FO                          );
     free_multishell_pair(P);
     free_multishell_pair(Q);
 
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
 
 
     printf("%22s %22s %22s %22s %22s\n",
-           "liberd", "split", "splitcombined", "FOcombined", "valeev");
+           "liberd", "split", "splitcombined", "FO", "valeev");
 
     for(int i = 0; i < nshell1234; i++)
     {
@@ -76,16 +76,16 @@ int main(int argc, char ** argv)
         double diff_liberd         = fabs(res_liberd[i]         - v);
         double diff_split          = fabs(res_split[i]          - v);
         double diff_splitcombined  = fabs(res_splitcombined[i]  - v);
-        double diff_FOcombined     = fabs(res_FOcombined[i]     - v);
+        double diff_FO             = fabs(res_FO[i]     - v);
 
         printf("%22.4e  %22.4e  %22.4e  %22.4e  %22.4e\n",
                                   res_liberd[i], res_split[i], res_splitcombined[i],
-                                  res_FOcombined[i],
+                                  res_FO[i],
                                   res_valeev[i]);
 
         printf("%22.4e  %22.4e  %22.4e  %22.4e\n",
                                   diff_liberd, diff_split, diff_splitcombined,
-                                  diff_FOcombined);
+                                  diff_FO);
 
         printf("\n");
     }
@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
     FREE(res_liberd);
     FREE(res_split);
     FREE(res_splitcombined);
-    FREE(res_FOcombined);
+    FREE(res_FO);
     FREE(intwork1); FREE(intwork2);
 
     return 0;

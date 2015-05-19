@@ -37,23 +37,13 @@ int main(int argc, char ** argv)
     for(int l = 0; l <= MAXAM; l++)
         funcs[i][j][k][l] = eri_notyetimplemented; 
 
-    funcs[0][0][0][0] = eri_FOcombined_ssss;
 
-    funcs[1][0][0][0] = eri_FOcombined_psss;
-    funcs[1][1][0][0] = eri_FOcombined_ppss;
-    funcs[1][0][1][0] = eri_FOcombined_psps;
-    funcs[1][1][1][0] = eri_FOcombined_ppps;
-    funcs[1][1][1][1] = eri_FOcombined_pppp;
-
-    funcs[2][0][0][0] = eri_FOcombined_dsss;
-    funcs[2][1][0][0] = eri_FOcombined_dpss;
-    funcs[2][0][1][0] = eri_FOcombined_dsps;
-    funcs[2][0][1][1] = eri_FOcombined_dspp;
-    funcs[2][0][2][0] = eri_FOcombined_dsds;
-
-
-    funcs[1][1][2][0] = eri_FOcombined_ppds;
-    funcs[2][1][2][1] = eri_FOcombined_dpdp;
+    funcs[0][0][0][0] = eri_FO_s_s_s_s;
+    funcs[1][0][0][0] = eri_FO_p_s_s_s;
+    funcs[1][0][1][0] = eri_FO_p_s_p_s;
+    funcs[1][1][0][0] = eri_FO_p_p_s_s;
+    funcs[1][1][1][0] = eri_FO_p_p_p_s;
+    funcs[1][1][1][1] = eri_FO_p_p_p_p;
 
 
 

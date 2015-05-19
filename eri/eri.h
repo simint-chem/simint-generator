@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "eri/shell.h"
-#include "eri/FOcombined/eri_FOcombined.h"
+#include "eri/FO/eri_FO.h"
 
 
 int eri_split_ssss(struct multishell_pair const P,

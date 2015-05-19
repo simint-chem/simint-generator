@@ -437,8 +437,8 @@ void Writer_Looped(std::ostream & os,
     //////////////////////////////////////////////////
     std::stringstream ss;
     ss << "int eri_" << nameappend << "_"
-       << amchar[am[0]] << amchar[am[1]]
-       << amchar[am[2]] << amchar[am[3]] << "(";
+       << amchar[am[0]] << "_" << amchar[am[1]] << "_"
+       << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
     std::string funcline = ss.str();
     std::string indent(funcline.length(), ' ');
