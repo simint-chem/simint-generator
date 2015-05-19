@@ -1,4 +1,4 @@
-//#include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <array>
@@ -147,13 +147,13 @@ void ValeevIntegrals(const VecQuartet & gshells,
                     {
                         integrals[idx] = 0.0;
 
-                        /*
+                        /* 
                         std::cout << "i,j,k,l,idx = ";
                         std::cout << g1[0] << "," << g1[1] << "," << g1[2] << "  ";
                         std::cout << g2[0] << "," << g2[1] << "," << g2[2] << "  ";
                         std::cout << g3[0] << "," << g3[1] << "," << g3[2] << "  ";
                         std::cout << g4[0] << "," << g4[1] << "," << g4[2] << "  ";
-                        std::cout << idx << "\n";
+                        std::cout << idx << "  ";
                         */
 
 
@@ -178,6 +178,8 @@ void ValeevIntegrals(const VecQuartet & gshells,
                             printf("%8.3e %8.3e %8.3e %8.3e\n", A[i].coef[m], B[j].coef[n], C[k].coef[o], D[l].coef[p]);
                             */
                         }
+
+                        //std::cout << "int = " << integrals[idx] << "\n";
 
                         idx++;
                     } while(IterateGaussian(g4));
