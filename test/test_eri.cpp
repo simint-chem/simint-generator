@@ -53,6 +53,7 @@ int main(int argc, char ** argv)
 
 
     funcs[1][1][2][0] = eri_FOcombined_ppds;
+    funcs[2][1][2][1] = eri_FOcombined_dpdp;
 
 
     if(argc != 13)

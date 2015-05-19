@@ -10,14 +10,7 @@
 static const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
 
 // contains all variables stored in arrays, rather than local 'double'
-std::set<QAMList> arrinfo;
 std::set<QAMList> continfo;  // is stored contracted
-
-static bool IsArray(const QAMList & am)
-{
-    auto it = arrinfo.find(am);
-    return (it != arrinfo.end());
-}
 
 static bool IsContArray(const QAMList & am)
 {
@@ -31,31 +24,13 @@ static std::string ArrVarName(const QAMList & am)
     return ss.str();
 }
 
-
-static std::string VarName(const QAMList & am,
-                           const std::string & idx,
-                           const std::string & contidx,
-                           const std::string & singleid,
-                           bool istarget)
+static std::string QuartetArrVar(const Quartet & q, bool iscont)
 {
     std::stringstream ss;
-
-    if(IsArray(am))
-    {
-        ss << ArrVarName(am) << "[";
-        if(IsContArray(am))
-            ss << contidx;
-        else
-            ss << idx;
-        ss << "]"; 
-    }
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "Q_" << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3] << "__" << singleid;
-    }
-
+    ss << ArrVarName(q.amlist()) << "[";
+    if(iscont)
+        ss << "abcd * " << q.ncart() << " + ";
+    ss << q.idx() << "]";
     return ss.str();
 }
 
@@ -71,20 +46,11 @@ static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
 {
     int ncart_ket = NCART(ketam); // all am is on the left part of the ket
 
-    // index to the array (always contracted)
-    std::stringstream ssidx;
-    ssidx << "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + iket";
-
     std::stringstream ss;
-    ss << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
-       << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
-       << ketam;
+    ss << ArrVarName({d.left.am(), d.right.am(), ketam, 0})
+       << "[" "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket
+       << " + iket]"; 
 
-    return VarName({d.left.am(), d.right.am(), ketam, 0},
-                    ssidx.str(),
-                    ssidx.str(),
-                    ss.str(),
-                    istarget);
     return ss.str();
 }
 
@@ -93,32 +59,16 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
 {
     const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
 
-    // index to the array (always contracted)
-    std::stringstream ssidx;
-    ssidx << "abcd * " << ncart_bra * d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx(); 
-
     std::stringstream ss;
-    ss << braam[0] << "_" << braam[1] << "_" 
-       << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2]  << "_"
-       << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
-
-    return VarName({braam[0], braam[1], d.left.am(), d.right.am()},
-                    ssidx.str(),
-                    ssidx.str(),
-                    ss.str(),
-                    istarget);
-
+    ss << ArrVarName({braam[0], braam[1], d.left.am(), d.right.am()})
+       << "[abcd * " << ncart_bra * d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
     return ss.str();
 }
 
 
 static std::string ETStepVar(const Quartet & q, bool istarget)
 {
-    // index to the array
-    std::stringstream ssidx;
-    ssidx << q.idx();
-
-    return "AUX_"  + ArrVarName(q.amlist()) + "[" +  ssidx.str() + "]";
+    return std::string("AUX_") + QuartetArrVar(q, false);
 }
 
 
@@ -206,22 +156,21 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
     // iterate over increasing am
     for(const auto & it3 : vrrinfo.second)
     {
-        // i is the am
-        int i = it3.first;
+        int am = it3.first;
 
         // don't do zero - that is handled by the boys function stuff
-        if(i == 0)
+        if(am == 0)
             continue;
 
-        // greq is the actual requirements for this am
+        // greq is what is actually required from this am
         const GaussianSet & greq = it3.second;
 
         // requirements for this am
-        os << "                    // Forming " << AuxName(i) << "[" << (L-i+1) << " * " << NCART(i) << "];\n";
+        os << "                    // Forming " << AuxName(am) << "[" << (L-am+1) << " * " << NCART(am) << "];\n";
         os << "                    // Needed from this AM:\n";
         for(const auto & it : greq)
             os << "                    //    " << it << "\n";
-        os << "                    for(int m = 0; m < " << (L-i+1) << "; m++)  // loop over orders of boys function\n";
+        os << "                    for(int m = 0; m < " << (L-am+1) << "; m++)  // loop over orders of boys function\n";
         os << "                    {\n";
 
         // iterate over the requirements
@@ -235,47 +184,24 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             Gaussian g1 = it.StepDown(step, 1);
             Gaussian g2 = it.StepDown(step, 2);
 
-            // get the number of gaussians in the previous two AM
-            int ng1 = -1;
-            int ng2 = -1;
-            int g1_idx = -1;
-            int g2_idx = -1;
-
-            // Ugh indices. This is a little messy, but whatever
-            if(g1)
-            { 
-                auto g1_it = vrrinfo.second.at(i-1).find(g1); 
-                g1_idx = std::distance(vrrinfo.second.at(i-1).begin(), g1_it);
-                ng1 = vrrinfo.second.at(i-1).size();
-            }
-            if(g2)
-            {
-                auto g2_it = vrrinfo.second.at(i-2).find(g2); 
-                g2_idx = std::distance(vrrinfo.second.at(i-2).begin(), g2_it);
-                ng2 = vrrinfo.second.at(i-2).size();
-            }
-
             // the value of i in the VRR eqn
             // = value of exponent of g1 in the position of the step
             int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
             os << "                        //" << it <<  " : STEP: " << step << "\n";
-            //os << "                        NEED: " << g1 << "  ,  " << g2 << "\n";
-            //os << "                         IDX: " << g1_idx << "  ,  " << g2_idx << "\n";
-            //os << "                       OUTOF: " << ng1 << "  ,  " << ng2 << "\n";
-            os << "                        " << AuxName(i);
+            os << "                        " << AuxName(am);
 
-            os << "[m*" << NCART(i) << " + " << it.idx() << "] = P.PA_" << step << "[i] * ";
+            os << "[m * " << NCART(am) << " + " << it.idx() << "] = P.PA_" << step << "[i] * ";
 
             if(g1)
-                os << AuxName(i-1) << "[m * " << ng1 << " + " << g1_idx 
-                   << "] - a_over_p * PQ_" << step << " * " << AuxName(i-1) << "[(m+1) * " << ng1 << " + " << g1_idx << "]";
+                os << AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
+                   << "] - a_over_p * PQ_" << step << " * " << AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
             if(g2)
             {
                 os << "\n";
-                os << "                                     + " << vrr_i << " * one_over_2p * ( " << AuxName(i-2)
-                   << "[m * " << ng2 << " +  " << g2_idx << "]"
-                   << " - a_over_p * " << AuxName(i-2) << "[(m+1) * " << ng2 << " + " << g2_idx << "] )";
+                os << "                                      +" << vrr_i << " * one_over_2p * ( "
+                   << AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
+                   << " - a_over_p * " << AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
             }
             os << ";\n\n"; 
         }
@@ -287,14 +213,14 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         // note that contracted array has storage for all elements of a
         // given AM, not just what we calculated
         // (ie abcd*NCART(i) not abcd*greq.size() or something)
-        if(IsContArray({i, 0, 0, 0}))
+        if(IsContArray({am, 0, 0, 0}))
         {
             os << "\n";
             os << "                    // Accumulating in contracted workspace\n";
             for(const auto & it : greq)
             {
-                os << "                    " << ArrVarName({i, 0, 0, 0}) << "[abcd * " << NCART(i) << " + " 
-                   << it.idx() << "] += " << AuxName(i) << "[" << it.idx() << "];\n";
+                os << "                    " << ArrVarName({am, 0, 0, 0}) << "[abcd * " << NCART(am) << " + " 
+                   << it.idx() << "] += " << AuxName(am) << "[" << it.idx() << "];\n";
             }
         }
 
@@ -348,8 +274,11 @@ void Writer_Looped(std::ostream & os,
                    ET_Algorithm_Base & etalgo,
                    HRR_Algorithm_Base & hrralgo)
 {
-    // add the am list to the contracted info, etc
-    arrinfo.insert(am);
+    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    int ncart_bra = NCART(am[0]) * NCART(am[1]);
+    const int L = am[0] + am[1] + am[2] + am[3];
+
+    // add the am list to the contracted info
     continfo.insert(am);
 
     // for electron transfer
@@ -357,17 +286,13 @@ void Writer_Looped(std::ostream & os,
     typedef std::map<int, std::map<int, ETStepList>> ETMap;
 
 
-    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
-    int ncart_bra = NCART(am[0]) * NCART(am[1]);
-
-    const int L = am[0] + am[1] + am[2] + am[3];
 
 
     // Working backwards, I need:
     // 0.) HRR Steps
     HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
 
-    // 1.) HRR Top level Doublets, sorted into their AM
+    // 1.) HRR Top level Doublets, sorted by their AM
     DoubletSetMap hrrtopbras, hrrtopkets;
     for(const auto & it : hrrsteps.first)
     {
@@ -402,6 +327,21 @@ void Writer_Looped(std::ostream & os,
             hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
     }
 
+    // add these to contracted array variable set
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        QAMList qam{it.first, 0, it2.first, 0};
+        continfo.insert(qam);
+    }
+    
+    // also add final bra, plus all the kets
+    for(const auto & it : hrrtopkets)
+    {
+        QAMList qam{am[0], am[1], it.first, 0};
+        continfo.insert(qam);
+    }
+
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
@@ -432,7 +372,7 @@ void Writer_Looped(std::ostream & os,
         if(it.src4 && (it.src4.flags & QUARTET_ETTOPLEVEL))
             etrm[it.src4.bra.left.am()].insert(it.src4.bra.left);
 
-        // add all integrals to set
+        // add all integrals for this step to the set
         if(it.src1)
             etint.insert(it.src1.amlist());
         if(it.src2)
@@ -458,21 +398,9 @@ void Writer_Looped(std::ostream & os,
     std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
 
-    // add these to contracted array variable set
-    for(const auto & it : hrrtopbras)
-    for(const auto & it2 : hrrtopkets)
-    {
-        QAMList qam{it.first, 0, it2.first, 0};
-        arrinfo.insert(qam);
-        continfo.insert(qam);
-    }
-
-    for(const auto & it : hrrtopkets)
-    {
-        QAMList qam{am[0], am[1], it.first, 0};
-        arrinfo.insert(qam);
-        continfo.insert(qam);
-    }
+    ///////////////////////////////////////////////
+    // Done with prerequisites
+    ///////////////////////////////////////////////
 
 
     // print out some info
@@ -505,7 +433,10 @@ void Writer_Looped(std::ostream & os,
 
 
     //////////////////////////////////////////////////
-    // set up the function to make it look pretty
+    //////////////////////////////////////////////////
+    // Create the function
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
     std::stringstream ss;
     ss << "int eri_" << nameappend << "_"
        << amchar[am[0]] << amchar[am[1]]
@@ -616,14 +547,9 @@ void Writer_Looped(std::ostream & os,
 
     for(const auto & greq : vrrinfo.second)
     {
-        // size of requirements for this AM
-        QAMList qam{greq.first, 0, 0, 0};
         os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
         os << "                    double " << AuxName(greq.first) << "[" << (L-greq.first+1) << " * " << NCART(greq.first) << "];\n";
         os << "\n";
-
-        // add to contracted array list (but not contracted!)
-        arrinfo.insert(qam);
     }
 
 
@@ -633,7 +559,7 @@ void Writer_Looped(std::ostream & os,
     {
         // only if these aren't from vrr
         if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-            os << "                    double AUX_" << ArrVarName(it) << "[" << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << "];\n";
+            os << "                    double AUX_" << ArrVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
     }
 
 

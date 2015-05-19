@@ -60,6 +60,10 @@ int eri_FOcombined_ppds(struct multishell_pair const P,
                         struct multishell_pair const Q,
                         double * const restrict S_1_1_2_0);
 
+int eri_FOcombined_dpdp(struct multishell_pair const P,
+                        struct multishell_pair const Q,
+                        double * const restrict S_2_1_2_1);
+
 
 #ifdef __cplusplus
 }
