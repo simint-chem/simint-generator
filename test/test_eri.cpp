@@ -61,6 +61,9 @@ int main(int argc, char ** argv)
     funcs[2][2][2][2] = eri_FO_d_d_d_d;
 
 
+    funcs[3][0][0][0] = eri_FO_d_p_s_s;
+    funcs[2][0][0][0] = eri_FO_d_p_s_s;
+
 
     if(argc != 13)
     {
@@ -100,7 +103,7 @@ int main(int argc, char ** argv)
 
     // test with valeev & liberd
     ValeevIntegrals(gshells, res_valeev);
-    ERDIntegrals(gshells, res_liberd);
+    //ERDIntegrals(gshells, res_liberd);
 
 
     printf("( %d %d | %d %d )\n", am[0], am[1], am[2], am[3]);

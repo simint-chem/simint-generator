@@ -415,9 +415,21 @@ void Writer_Looped(std::ostream & os,
     // requirements for vrr are the elements of etrm
     ETReqMap vreq = etrm;
 
+    // and also any elements from top bra/kets in the form ( X 0 | 0 0 )
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        for(const auto & dit : it.second)
+        for(const auto & dit2 : it2.second)
+        {
+            if(dit.right.am() == 0 && dit2.left.am() == 0 && dit2.right.am() == 0)
+                vreq[dit.left.am()].insert(dit.left);
+        }
+    }
+
     // but if there are none, this of the type ( X 0 | 0 0 )
-    if(vreq.size() == 0)
-        vreq[L] = AllGaussiansForAM(L);
+    //if(vreq.size() == 0)
+    //    vreq[L] = AllGaussiansForAM(L);
 
     std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
