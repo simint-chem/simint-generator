@@ -44,25 +44,51 @@ static std::string AuxName(int i)
 
 static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
 {
-    int ncart_ket = NCART(ketam); // all am is on the left part of the ket
+    if(IsContArray({d.left.am(), d.right.am(), ketam, 0}))
+    {
+        int ncart_ket = NCART(ketam); // all am is on the left part of the ket
 
-    std::stringstream ss;
-    ss << ArrVarName({d.left.am(), d.right.am(), ketam, 0})
-       << "[" "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket
-       << " + iket]"; 
+        std::stringstream ss;
+        ss << ArrVarName({d.left.am(), d.right.am(), ketam, 0})
+           << "[" "abcd * " << d.ncart() * ncart_ket << " + " << d.idx() << " * " << ncart_ket
+           << " + iket]"; 
 
-    return ss.str();
+        return ss.str();
+    }
+    else
+    {
+        std::stringstream ss;
+        if(istarget)
+            ss << "const double ";
+        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
+                   << ketam;
+        return ss.str();
+    }
 }
 
 
 static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget)
 {
-    const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
+    if(IsContArray({braam[0], braam[1], d.left.am(), d.right.am()}))
+    {
+        const int ncart_bra = NCART(braam[0]) * NCART(braam[1]);
 
-    std::stringstream ss;
-    ss << ArrVarName({braam[0], braam[1], d.left.am(), d.right.am()})
-       << "[abcd * " << ncart_bra * d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    return ss.str();
+        std::stringstream ss;
+        ss << ArrVarName({braam[0], braam[1], d.left.am(), d.right.am()})
+           << "[abcd * " << ncart_bra * d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+        return ss.str();
+    }
+    else
+    {
+        std::stringstream ss;
+        if(istarget)
+            ss << "const double ";
+        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
+                   << braam[0] << "_" << braam[1];
+        return ss.str();
+    }
 }
 
 
@@ -103,9 +129,9 @@ static std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & 
     ss << HRRKetStepArrVar(hrr.target, braam, true);
 
     ss << " = ";
-    ss << HRRKetStepArrVar(hrr.src1, braam, true);
+    ss << HRRKetStepArrVar(hrr.src1, braam, false);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRKetStepArrVar(hrr.src2, braam, true);
+    ss << HRRKetStepArrVar(hrr.src2, braam, false);
     ss << " );";
 
     return ss.str();

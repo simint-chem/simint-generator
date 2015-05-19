@@ -44,6 +44,21 @@ int main(int argc, char ** argv)
     funcs[1][1][0][0] = eri_FO_p_p_s_s;
     funcs[1][1][1][0] = eri_FO_p_p_p_s;
     funcs[1][1][1][1] = eri_FO_p_p_p_p;
+    funcs[2][0][0][0] = eri_FO_d_s_s_s;
+    funcs[2][0][1][0] = eri_FO_d_s_p_s;
+    funcs[2][0][1][1] = eri_FO_d_s_p_p;
+    funcs[2][0][2][0] = eri_FO_d_s_d_s;
+    funcs[2][1][0][0] = eri_FO_d_p_s_s;
+    funcs[2][1][1][0] = eri_FO_d_p_p_s;
+    funcs[2][1][1][1] = eri_FO_d_p_p_p;
+    funcs[2][1][2][0] = eri_FO_d_p_d_s;
+    funcs[2][1][2][1] = eri_FO_d_p_d_p;
+    funcs[2][2][0][0] = eri_FO_d_d_s_s;
+    funcs[2][2][1][0] = eri_FO_d_d_p_s;
+    funcs[2][2][1][1] = eri_FO_d_d_p_p;
+    funcs[2][2][2][0] = eri_FO_d_d_d_s;
+    funcs[2][2][2][1] = eri_FO_d_d_d_p;
+    funcs[2][2][2][2] = eri_FO_d_d_d_d;
 
 
 
