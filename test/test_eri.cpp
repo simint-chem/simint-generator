@@ -56,6 +56,7 @@ int main(int argc, char ** argv)
     funcs[2][1][2][1] = eri_FOcombined_dpdp;
 
 
+
     if(argc != 13)
     {
         printf("Give me 12 arguments! I got %d\n", argc-1);
@@ -74,9 +75,9 @@ int main(int argc, char ** argv)
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);   
 
     /* Storage of test results */
-    double * res_FOcombined      = (double *)ALLOC(ncart * nshell1234 * sizeof(double));
-    double * res_liberd          = (double *)ALLOC(ncart * nshell1234 * sizeof(double));
-    double * res_valeev          = (double *)ALLOC(ncart * nshell1234 * sizeof(double));
+    double * res_FOcombined      = (double *)ALLOC(64*ncart * nshell1234 * sizeof(double));
+    double * res_liberd          = (double *)ALLOC(64*ncart * nshell1234 * sizeof(double));
+    double * res_valeev          = (double *)ALLOC(64*ncart * nshell1234 * sizeof(double));
 
     // allocate gaussian shell memory
     VecQuartet gshells(  CreateRandomQuartets(nshell, nprim, am) );

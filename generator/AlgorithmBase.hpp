@@ -37,6 +37,9 @@ class ET_Algorithm_Base
         virtual void ETStepLoop(ETStepList & etsl,
                                 const QuartetSet & inittargets,
                                 QuartetSet & solvedquartets);
+
+        void ETAddWithDependencies(std::vector<QAMList> & amorder, QAMList am);
+
 };
 
 

@@ -235,8 +235,6 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
         os << "                    //...nothing to do...\n";
     else
     {
-        //Write_ElectronTransfer(os, etsl, etrm, etinit);
-        // Start at the highest am, and work down
         for(const auto & it : etsl)
         {
             os << std::string(20, ' ') << "// " << it << "\n";

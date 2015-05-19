@@ -306,25 +306,71 @@ HRRQuartetStepList HRR_Algorithm_Base::Create_QuartetStepList(QAMList amlist)
 }
 
 
+void ET_Algorithm_Base::ETAddWithDependencies(std::vector<QAMList> & amorder, QAMList am)
+{
+    // skip if it was already done somewhere
+    if(std::find(amorder.begin(), amorder.end(), am) != amorder.end()) 
+        return;
+
+    // also skip if this is a VRR result
+    if(am[2] == 0)
+        return;
+ 
+    // 4 possible dependencies
+    std::vector<QAMList> deps;  
+
+    if(am[0] >= 0 && am[2] >= 1)
+    {
+        deps.push_back({am[0],   0, am[2]-1, 0});
+        deps.push_back({am[0]+1, 0, am[2]-1, 0});
+    }
+    if(am[0] >= 0 && am[2] >= 2)
+    {
+        deps.push_back({am[0]  , 0, am[2]-2, 0});
+    }
+    if(am[0] >= 1 && am[2] >= 1)
+    {
+        deps.push_back({am[0]-1, 0, am[2]-1, 0});
+    }
+
+
+    // Yo dawg, I heard your dependencies might have dependencies
+    for(const auto & it : deps)
+        ETAddWithDependencies(amorder, it);
+
+    // add am to amorder
+    // If it exists, then it was a dependency of itself. Uh oh
+    if(std::find(amorder.begin(), amorder.end(), am) != amorder.end()) 
+        throw std::runtime_error("Circular dependency in electron transfer tree");
+
+    amorder.push_back(am);
+}
+
+
 void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
                                    const QuartetSet & inittargets,
                                    QuartetSet & solvedquartets)
 {
     QuartetSet targets = inittargets;
 
+    // steps, sorted by their am
+    std::map<QAMList, ETStepList> etslmap;
+
     while(targets.size())
     {
         QuartetSet newtargets;
 
-        for(auto it = targets.rbegin(); it != targets.rend(); ++it)
+        for(auto it = targets.begin(); it != targets.end(); ++it)
         {
-            // skip if done alread
+            // skip if done already
             // this can happen with some of the more complex trees
             if(solvedquartets.count(it->noflags()) > 0)
                 continue;
 
             ETStep ets = this->etstep(*it);
-            etsl.push_back(ets);
+
+            // add to the map
+            etslmap[ets.target.amlist()].push_back(ets);
 
             if(solvedquartets.count(ets.src1.noflags()) == 0)
                 newtargets.insert(ets.src1);
@@ -337,7 +383,7 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
 
             if(solvedquartets.count(ets.src4.noflags()) == 0)
                 newtargets.insert(ets.src4);
-           
+       
             // insert copy with no flags 
             solvedquartets.insert(it->noflags());
         }
@@ -345,12 +391,46 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
         cout << "Generated " << newtargets.size() << " new targets\n";
 
         PruneET(newtargets);
+
         cout << "After pruning: " << newtargets.size() << " new targets\n";
         for(const auto & it : newtargets)
             cout << "    " << it << "\n";
 
         targets = newtargets;
     } 
+
+    ///////////////////////////////////////////////////
+    // we need to do a dependency graph type of thing
+    // This only really comes about when an initial
+    // quartet depends on another initial quartet
+    // But I might as well do the whole thing, just in case
+    std::vector<QAMList> amorder;
+
+    // start with the initial targets
+    // (well, their am)
+    std::set<QAMList> initamlist;
+    for(const auto & it : inittargets)
+        initamlist.insert(it.amlist());
+
+    // add the dependencies for this am
+    for(const auto & it : initamlist)
+        ETAddWithDependencies(amorder, it);
+
+    // now create the final step list
+    cout << "AMORDER: " << amorder.size() << "\n";
+    for(const auto & ait : amorder)
+        cout << "   " << ait[0] << " , " << ait[1] << " , " << ait[2] << " , " << ait[3] << "\n";
+
+    cout << "\nMAP: " << etslmap.size() << "\n";
+    for(const auto & mit : etslmap)
+        cout << "   " << mit.first[0] << " , " << mit.first[1] << " , " << mit.first[2] << " , " << mit.first[3] << " Steps: " << mit.second.size() << "\n";
+    cout << "\n";
+
+    if(amorder.size() != etslmap.size())
+        throw runtime_error("Error - inconsistent map and ordering sizes");
+
+    for(const auto & ait : amorder)
+        etsl.insert(etsl.end(), etslmap.at(ait).begin(), etslmap.at(ait).end());
 }
 
 
@@ -371,7 +451,8 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     ETStepLoop(etsl, targets, solvedquartets);
 
     // reverse the steps
-    std::reverse(etsl.begin(), etsl.end());
+    // (now done in ETStepLoop)
+    //std::reverse(etsl.begin(), etsl.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
