@@ -4,7 +4,7 @@
 
 #include "generator/Boys.hpp"
 
-BoysFit::BoysFit(const std::string & filepath)
+BoysFO::BoysFit::BoysFit(const std::string & filepath)
 {
     std::ifstream f(filepath.c_str());
     if(!f.is_open())
@@ -33,7 +33,7 @@ BoysFit::BoysFit(const std::string & filepath)
     f.close();
 }
 
-std::string BoysFit::code_line(void) const
+std::string BoysFO::BoysFit::code_line(void) const
 {
     const std::string indent(20, ' ');
     std::stringstream ss;
@@ -57,7 +57,8 @@ std::string BoysFit::code_line(void) const
     return ss.str();  
 }
 
-BoysMap ReadBoysFitInfo(std::string dir)
+
+BoysFO::BoysFO(std::string dir)
 {
     if(dir.back() == '/')
         dir = dir.substr(0, dir.size()-1);
@@ -70,16 +71,16 @@ BoysMap ReadBoysFitInfo(std::string dir)
 
     f.exceptions(std::ifstream::badbit);
 
-    BoysMap bm;
     std::string fline;
 
     while(std::getline(f, fline).good())
     {
-        BoysGenPtr bf(new BoysFit(dir + "/" + fline));
-        bm[bf->v] = bf;
+        BoysFit bf(dir + "/" + fline);
+        bfmap_[bf.v] = bf;
     }
-
-    return bm;
-
 }
 
+std::string BoysFO::code_line(int am) const
+{
+    return bfmap_.at(am).code_line();
+}

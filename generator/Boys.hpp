@@ -6,37 +6,48 @@
 #include <vector>
 #include <map>
 
-struct BoysGen
+class BoysGen
 {
-    int v; // order of the boys function
-
-    virtual ~BoysGen() { };
-    virtual std::string code_line(void) const = 0;
+    public:
+        virtual std::string code_line(int am) const = 0;
+        virtual ~BoysGen() { };
 };
 
-struct BoysFit : public BoysGen
+class BoysFO : public BoysGen
 {
-    int n; // order of the numerator polynomial
-    int m; // order of the denominator polynomial
+    public:
+        BoysFO(std::string dir); // read from directory
 
-    std::vector<std::string> a; // numerator coefficients
-    std::vector<std::string> b; // denominator coefficients
+        virtual std::string code_line(int am) const;
 
-    BoysFit(const std::string & filepath);
+    private:
+        struct BoysFit
+        {
+            int v; // order of the boys function
+            int n; // order of the numerator polynomial
+            int m; // order of the denominator polynomial
 
-    // let the compiler generate these
-    BoysFit(const BoysFit & rhs) = default;
-    BoysFit() = default;
+            std::vector<std::string> a; // numerator coefficients
+            std::vector<std::string> b; // denominator coefficients
 
-    virtual std::string code_line(void) const;
+            BoysFit(const std::string & filepath);
+
+            // let the compiler generate these
+            BoysFit(const BoysFit & rhs) = default;
+            BoysFit() = default;
+
+            std::string code_line(void) const;
+        };
+
+        std::map<int, BoysFit> bfmap_;
 };
 
-
-typedef std::shared_ptr<BoysGen> BoysGenPtr;
-typedef std::map<int, BoysGenPtr> BoysMap;
-
-
-BoysMap ReadBoysFitInfo(std::string dir);
+/*
+struct BoysSplit : public BoysGen
+{
+    
+};
+*/
 
 
 #endif

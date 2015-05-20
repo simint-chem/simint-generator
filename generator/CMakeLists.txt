@@ -14,7 +14,6 @@ add_executable(generator generator.cpp
                          AlgorithmBase.cpp
                          Helpers.cpp
                          Boys.cpp
-                         Writer_Unrolled.cpp
                          Writer_Looped.cpp
               )
 

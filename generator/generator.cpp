@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
                   };
 
     // Read in the boys map
-    BoysMap bm = ReadBoysFitInfo("/home/ben/programming/simint/generator/dat");
+    std::unique_ptr<BoysGen> bg(new BoysFO("/home/ben/programming/simint/generator/dat"));
 
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
-    Writer_Looped(of, amlist, "FO", bm, *vrralgo, *etalgo, *hrralgo);
+    Writer_Looped(of, amlist, "FO", *bg, *vrralgo, *etalgo, *hrralgo);
 
 
     }

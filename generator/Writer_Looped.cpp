@@ -293,7 +293,7 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
 void Writer_Looped(std::ostream & os,
                    const QAMList & am,
                    const std::string & nameappend,
-                   const BoysMap & bm,
+                   const BoysGen & bg,
                    VRR_Algorithm_Base & vrralgo,
                    ET_Algorithm_Base & etalgo,
                    HRR_Algorithm_Base & hrralgo)
@@ -652,7 +652,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
 
     for(int i = 0; i <= L; i++)
-        os << bm.at(i)->code_line() << "\n";
+        os << bg.code_line(i) << "\n";
 
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
