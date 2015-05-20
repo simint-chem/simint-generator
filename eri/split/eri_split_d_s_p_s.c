@@ -50,6 +50,10 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
     int i, j;
 
     // Workspace for contracted integrals
+    double * const contwork = malloc(nshell1234 * 0);
+    memset(contwork, 0, nshell1234 * 0);
+
+    // partition workspace into shells
 
 
     ////////////////////////////////////////
@@ -82,7 +86,6 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
                 {
 
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
-
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
                     double AUX_S_0_0_0_0[4 * 1];

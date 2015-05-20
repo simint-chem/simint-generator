@@ -4169,3 +4169,7 @@ AM = 6 : Require: 28 / 28
 AM = 7 : Require: 36 / 36
 AM = 8 : Require: 45 / 45
 
+MEMORY (unaligned, per shell quartet):
+Contracted elements: 2077    Bytes: 16616
+
+

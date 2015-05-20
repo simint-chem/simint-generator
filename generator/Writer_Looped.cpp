@@ -434,6 +434,18 @@ void Writer_Looped(std::ostream & os,
     std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
 
+    // 5.) Memory required
+    size_t memory_cont_elements = 0;
+    for(const auto & it : continfo)
+    {
+        if(it != am)  // final integral storage is already set
+            memory_cont_elements += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+    }
+
+    size_t memory_cont = memory_cont_elements * sizeof(double);
+
+
+
     ///////////////////////////////////////////////
     // Done with prerequisites
     ///////////////////////////////////////////////
@@ -461,6 +473,11 @@ void Writer_Looped(std::ostream & os,
     for(const auto & greq : vrrinfo.second)
         std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
     std::cout << "\n";
+
+    std::cout << "MEMORY (unaligned, per shell quartet):\n";
+    std::cout << "Contracted elements: " << memory_cont_elements << "    Bytes: " << memory_cont << "\n";
+    std::cout << "\n\n";
+
 
     // some helper bools
     bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
@@ -539,17 +556,18 @@ void Writer_Looped(std::ostream & os,
     os << "    int i, j;\n";
     os << "\n";
     os << "    // Workspace for contracted integrals\n";
+    os << "    double * const contwork = malloc(nshell1234 * " << memory_cont << ");\n";
+    os << "    memset(contwork, 0, nshell1234 * " << memory_cont << ");\n";
+    os << "\n";
+    os << "    // partition workspace into shells\n";
 
+    size_t ptidx = 0;
     for(const auto & it : continfo)
     {
-        if(it != am)  // skip if this is the final integrals - don't re-declare
+        if(it != am)
         {
-            std::stringstream ss;
-            ss << "nshell1234 * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
-
-            os << "    double " << ArrVarName(it) << "[" << ss.str() << "];\n";
-            os << "    memset(" << ArrVarName(it) << ", 0, (" << ss.str() << ") * sizeof(double));\n";
-            os << "\n";
+            os << "    double * const restrict " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
+            ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
         }
     }
 
@@ -584,7 +602,6 @@ void Writer_Looped(std::ostream & os,
     os << "                {\n";
     os << "\n";
     os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-    os << "\n";
     os << "                    // with m as the slowest index\n";
 
     for(const auto & greq : vrrinfo.second)

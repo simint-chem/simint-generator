@@ -45,3 +45,7 @@ VRR Requirements: 2
 AM = 0 : Require: 1 / 1
 AM = 1 : Require: 3 / 3
 
+MEMORY (unaligned, per shell quartet):
+Contracted elements: 0    Bytes: 0
+
+
