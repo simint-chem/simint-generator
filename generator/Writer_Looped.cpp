@@ -485,9 +485,15 @@ void Writer_Looped(std::ostream & os,
     os << "#include <string.h>\n";
     os << "#include <math.h>\n";
     os << "\n";
+
     os << "#include \"vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
     os << "#include \"eri/shell.h\"\n";
+
+    std::vector<std::string> boysinc = bg.includes();
+    for(const auto & it : boysinc)
+        os << "#include \"" << it << "\"\n";
+
     os << "\n\n";
     os << funcline;
     os << "struct multishell_pair const P,\n";
@@ -651,8 +657,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    for(int i = 0; i <= L; i++)
-        os << bg.code_line(i) << "\n";
+    os << bg.all_code_lines(L);
 
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";

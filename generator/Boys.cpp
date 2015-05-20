@@ -3,7 +3,20 @@
 #include <sstream>
 
 #include "generator/Boys.hpp"
+        
+////////////////////////////////////
+// Base class
+////////////////////////////////////
+std::vector<std::string> BoysGen::includes(void) const
+{
+    return std::vector<std::string>();
+}
 
+
+
+////////////////////////////////////
+// FO fitting
+////////////////////////////////////
 BoysFO::BoysFit::BoysFit(const std::string & filepath)
 {
     std::ifstream f(filepath.c_str());
@@ -31,6 +44,14 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
         f >> b[i];
 
     f.close();
+}
+
+std::string BoysFO::all_code_lines(int maxam) const
+{
+    std::stringstream ss;
+    for(int i = 0; i <= maxam; i++)
+        ss << bfmap_.at(i).code_line() << "\n";
+    return ss.str();
 }
 
 std::string BoysFO::BoysFit::code_line(void) const
@@ -80,7 +101,25 @@ BoysFO::BoysFO(std::string dir)
     }
 }
 
-std::string BoysFO::code_line(int am) const
+
+////////////////////////////////////
+// Boys Split
+////////////////////////////////////
+
+std::string BoysSplit::all_code_lines(int maxam) const
 {
-    return bfmap_.at(am).code_line();
+    const std::string indent(20, ' ');
+    std::stringstream ss;
+    ss << indent << "Boys_F_split(AUX_S_0_0_0_0, " << maxam << ", F_x);\n";
+    for(int i = 0; i <= maxam; i++)
+        ss << indent << "AUX_S_0_0_0_0[" << i << "] *= allprefac;\n";
+
+    return ss.str();
 }
+
+std::vector<std::string> BoysSplit::includes(void) const
+{
+    std::vector<std::string> v{"boys/boys_split.h"};
+    return v;
+}
+

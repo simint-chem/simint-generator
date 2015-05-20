@@ -8,14 +8,16 @@ import subprocess
 import re
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", type=int, required=True,                help="Maximum AM")
-parser.add_argument("-g", type=str, required=True,                help="Path to generator binary")
-parser.add_argument("-d", type=str, required=True,                help="Directory in which to create files")
-parser.add_argument("-p", type=str, required=False, default="FO", help="Type prefix. Default = FO")
+parser.add_argument("-l", type=int, required=True, help="Maximum AM")
+parser.add_argument("-g", type=str, required=True, help="Path to generator binary")
+parser.add_argument("-d", type=str, required=True, help="Directory in which to create files")
+parser.add_argument("-p", type=str, required=True, help="Type prefix")
+parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 args = parser.parse_args()
 
 
 amchar = "spdfghijklmnoqrtuvwxyzabce"
+validboys = [ "FO", "split" ]
 
 def ValidQuartet(q):
   if q[0] < q[1]:
@@ -33,9 +35,27 @@ def ValidQuartet(q):
   return True
 
 
+
+
+
 def QStr(q):
   return "( {} {} | {} {} )".format(q[0], q[1], q[2], q[3])
 
+
+
+
+
+
+
+
+
+
+
+
+
+###################################
+# Actual code starts here
+###################################
 
 if not os.path.isdir(args.d):
   print("The path \"{}\" does not exist or is not a directory".format(args.d))
@@ -43,6 +63,10 @@ if not os.path.isdir(args.d):
 
 if not os.path.isfile(args.g):
   print("The file \"{}\" does not exist or is not a (binary) file".format(args.g))
+  quit(1)
+
+if not args.b in validboys:
+  print("Invalid boys function type \"{}\"".format(args.b))
   quit(1)
 
 
@@ -101,7 +125,7 @@ for q in valid:
   print("     Logfile: {}".format(logfile))
 
   with open(logfile, 'w') as lf:
-    ret = subprocess.call([args.g, str(q[0]), str(q[1]), str(q[2]), str(q[3]), outfile], stdout=lf, stderr=lf)
+    ret = subprocess.call([args.g, args.b, args.p, str(q[0]), str(q[1]), str(q[2]), str(q[3]), outfile], stdout=lf, stderr=lf)
     if ret != 0:
       print("\n")
       print("*********************************")

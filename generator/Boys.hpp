@@ -9,7 +9,9 @@
 class BoysGen
 {
     public:
-        virtual std::string code_line(int am) const = 0;
+        virtual std::string all_code_lines(int maxam) const = 0;
+
+        virtual std::vector<std::string> includes(void) const;
         virtual ~BoysGen() { };
 };
 
@@ -18,7 +20,7 @@ class BoysFO : public BoysGen
     public:
         BoysFO(std::string dir); // read from directory
 
-        virtual std::string code_line(int am) const;
+        virtual std::string all_code_lines(int maxam) const;
 
     private:
         struct BoysFit
@@ -42,12 +44,17 @@ class BoysFO : public BoysGen
         std::map<int, BoysFit> bfmap_;
 };
 
-/*
+
 struct BoysSplit : public BoysGen
 {
-    
+    public:
+        // default constructors ok
+
+        virtual std::string all_code_lines(int maxam) const;
+        virtual std::vector<std::string> includes(void) const;
 };
-*/
+
+
 
 
 #endif

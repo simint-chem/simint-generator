@@ -15,21 +15,36 @@ int main(int argc, char ** argv)
 {
     try {
 
-    if(argc != 6)
+    if(argc != 8)
     {
-        std::cout << "usage: generator am1 am2 am3 am4 outfile\n";
+        std::cout << "usage: generator boystype prefix am1 am2 am3 am4 outfile\n";
         return 1;
     }
 
+    std::string boystype(argv[1]);
+    std::string prefix(argv[2]);
+
     QAMList amlist{
-                    atoi(argv[1]),
-                    atoi(argv[2]),
                     atoi(argv[3]),
-                    atoi(argv[4])
+                    atoi(argv[4]),
+                    atoi(argv[5]),
+                    atoi(argv[6])
                   };
 
+    std::string fpath(argv[7]);
+
     // Read in the boys map
-    std::unique_ptr<BoysGen> bg(new BoysFO("/home/ben/programming/simint/generator/dat"));
+    std::unique_ptr<BoysGen> bg;
+
+    if(boystype == "FO")
+        bg = std::unique_ptr<BoysGen>(new BoysFO("/home/ben/programming/simint/generator/dat"));
+    else if(boystype == "split")
+        bg = std::unique_ptr<BoysGen>(new BoysSplit());
+    else
+    {
+        std::cout << "Unknown boys type \"" << boystype << "\"\n";
+        return 3;
+    }
 
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
@@ -46,14 +61,14 @@ int main(int argc, char ** argv)
 
     // Create/Write
 
-    std::ofstream of(argv[5]);
+    std::ofstream of(fpath);
     if(!of.is_open())
     {
-        std::cout << "Cannot open file: " << argv[5] << "\n";
+        std::cout << "Cannot open file: " << fpath << "\n";
         return 2; 
     }
 
-    Writer_Looped(of, amlist, "FO", *bg, *vrralgo, *etalgo, *hrralgo);
+    Writer_Looped(of, amlist, prefix, *bg, *vrralgo, *etalgo, *hrralgo);
 
 
     }
