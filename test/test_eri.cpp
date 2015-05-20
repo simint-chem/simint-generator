@@ -42,35 +42,61 @@ bool ValidQuartet(std::array<int, 4> am)
 int main(int argc, char ** argv)
 {
     
-    erifunc funcs[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
+    erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
+    erifunc funcs_split[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
     for(int i = 0; i <= MAXAM; i++)
     for(int j = 0; j <= MAXAM; j++)
     for(int k = 0; k <= MAXAM; k++)
     for(int l = 0; l <= MAXAM; l++)
-        funcs[i][j][k][l] = eri_notyetimplemented; 
+    {
+        funcs_FO[i][j][k][l] = eri_notyetimplemented; 
+        funcs_split[i][j][k][l] = eri_notyetimplemented; 
+    }
 
 
-    funcs[0][0][0][0] = eri_FO_s_s_s_s;
-    funcs[1][0][0][0] = eri_FO_p_s_s_s;
-    funcs[1][0][1][0] = eri_FO_p_s_p_s;
-    funcs[1][1][0][0] = eri_FO_p_p_s_s;
-    funcs[1][1][1][0] = eri_FO_p_p_p_s;
-    funcs[1][1][1][1] = eri_FO_p_p_p_p;
-    funcs[2][0][0][0] = eri_FO_d_s_s_s;
-    funcs[2][0][1][0] = eri_FO_d_s_p_s;
-    funcs[2][0][1][1] = eri_FO_d_s_p_p;
-    funcs[2][0][2][0] = eri_FO_d_s_d_s;
-    funcs[2][1][0][0] = eri_FO_d_p_s_s;
-    funcs[2][1][1][0] = eri_FO_d_p_p_s;
-    funcs[2][1][1][1] = eri_FO_d_p_p_p;
-    funcs[2][1][2][0] = eri_FO_d_p_d_s;
-    funcs[2][1][2][1] = eri_FO_d_p_d_p;
-    funcs[2][2][0][0] = eri_FO_d_d_s_s;
-    funcs[2][2][1][0] = eri_FO_d_d_p_s;
-    funcs[2][2][1][1] = eri_FO_d_d_p_p;
-    funcs[2][2][2][0] = eri_FO_d_d_d_s;
-    funcs[2][2][2][1] = eri_FO_d_d_d_p;
-    funcs[2][2][2][2] = eri_FO_d_d_d_d;
+    funcs_FO[0][0][0][0] = eri_FO_s_s_s_s;
+    funcs_FO[1][0][0][0] = eri_FO_p_s_s_s;
+    funcs_FO[1][0][1][0] = eri_FO_p_s_p_s;
+    funcs_FO[1][1][0][0] = eri_FO_p_p_s_s;
+    funcs_FO[1][1][1][0] = eri_FO_p_p_p_s;
+    funcs_FO[1][1][1][1] = eri_FO_p_p_p_p;
+    funcs_FO[2][0][0][0] = eri_FO_d_s_s_s;
+    funcs_FO[2][0][1][0] = eri_FO_d_s_p_s;
+    funcs_FO[2][0][1][1] = eri_FO_d_s_p_p;
+    funcs_FO[2][0][2][0] = eri_FO_d_s_d_s;
+    funcs_FO[2][1][0][0] = eri_FO_d_p_s_s;
+    funcs_FO[2][1][1][0] = eri_FO_d_p_p_s;
+    funcs_FO[2][1][1][1] = eri_FO_d_p_p_p;
+    funcs_FO[2][1][2][0] = eri_FO_d_p_d_s;
+    funcs_FO[2][1][2][1] = eri_FO_d_p_d_p;
+    funcs_FO[2][2][0][0] = eri_FO_d_d_s_s;
+    funcs_FO[2][2][1][0] = eri_FO_d_d_p_s;
+    funcs_FO[2][2][1][1] = eri_FO_d_d_p_p;
+    funcs_FO[2][2][2][0] = eri_FO_d_d_d_s;
+    funcs_FO[2][2][2][1] = eri_FO_d_d_d_p;
+    funcs_FO[2][2][2][2] = eri_FO_d_d_d_d;
+
+    funcs_split[0][0][0][0] = eri_split_s_s_s_s;
+    funcs_split[1][0][0][0] = eri_split_p_s_s_s;
+    funcs_split[1][0][1][0] = eri_split_p_s_p_s;
+    funcs_split[1][1][0][0] = eri_split_p_p_s_s;
+    funcs_split[1][1][1][0] = eri_split_p_p_p_s;
+    funcs_split[1][1][1][1] = eri_split_p_p_p_p;
+    funcs_split[2][0][0][0] = eri_split_d_s_s_s;
+    funcs_split[2][0][1][0] = eri_split_d_s_p_s;
+    funcs_split[2][0][1][1] = eri_split_d_s_p_p;
+    funcs_split[2][0][2][0] = eri_split_d_s_d_s;
+    funcs_split[2][1][0][0] = eri_split_d_p_s_s;
+    funcs_split[2][1][1][0] = eri_split_d_p_p_s;
+    funcs_split[2][1][1][1] = eri_split_d_p_p_p;
+    funcs_split[2][1][2][0] = eri_split_d_p_d_s;
+    funcs_split[2][1][2][1] = eri_split_d_p_d_p;
+    funcs_split[2][2][0][0] = eri_split_d_d_s_s;
+    funcs_split[2][2][1][0] = eri_split_d_d_p_s;
+    funcs_split[2][2][1][1] = eri_split_d_d_p_p;
+    funcs_split[2][2][2][0] = eri_split_d_d_d_s;
+    funcs_split[2][2][2][1] = eri_split_d_d_d_p;
+    funcs_split[2][2][2][2] = eri_split_d_d_d_d;
 
 
 
@@ -100,12 +126,13 @@ int main(int argc, char ** argv)
 
     /* Storage of test results */
     double * res_FO              = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
+    double * res_split           = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     //double * res_liberd          = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     double * res_valeev          = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
 
 
     printf("\n");
-    printf("%16s  %20s  %20s\n", "Quartet", "MaxErr", "MaxRelErr");
+    printf("%17s    %20s  %20s    %20s  %20s\n", "Quartet", "FO MaxErr", "split MaxErr", "FO MaxRelErr", "Split MaxRelErr");
 
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= MAXAM; i++)
@@ -133,7 +160,8 @@ int main(int argc, char ** argv)
 
 
         // calcualate with my code
-        funcs[am[0]][am[1]][am[2]][am[3]](P, Q, res_FO);
+        funcs_FO[am[0]][am[1]][am[2]][am[3]](P, Q, res_FO);
+        funcs_split[am[0]][am[1]][am[2]][am[3]](P, Q, res_split);
 
         // test with valeev & liberd
         ValeevIntegrals(gshells, res_valeev);
@@ -143,8 +171,11 @@ int main(int argc, char ** argv)
         //printf("( %d %d | %d %d )\n", am[0], am[1], am[2], am[3]);
         //printf("%22s %22s %22s\n", "liberd", "FO", "valeev");
 
-        double maxerr = 0;
-        double maxrelerr = 0;
+        double maxerr_FO = 0;
+        double maxerr_split = 0;
+
+        double maxrelerr_FO = 0;
+        double maxrelerr_split = 0;
 
         int idx = 0;
         for(int i = 0; i < nshell1234; i++)
@@ -156,21 +187,30 @@ int main(int argc, char ** argv)
                 const double v = res_valeev[idx];
                 //double diff_liberd  = fabs(res_liberd[idx]         - v);
                 double diff_FO      = fabs(res_FO[idx]     - v);
+                double diff_split   = fabs(res_split[idx]     - v);
                 double rel_FO       = fabs(diff_FO / v);
+                double rel_split    = fabs(diff_split / v);
                 //printf("%22.4e  %22.4e\n", diff_liberd, diff_FO);
                 //printf("\n");
 
-                if(diff_FO > maxerr)
-                    maxerr= diff_FO;
-                if(rel_FO > maxrelerr)
-                    maxrelerr = rel_FO;
+                if(diff_FO > maxerr_FO)
+                    maxerr_FO = diff_FO;
+                if(rel_FO > maxrelerr_FO)
+                    maxrelerr_FO = rel_FO;
+
+                if(diff_split > maxerr_split)
+                    maxerr_split = diff_split;
+                if(rel_split > maxrelerr_split)
+                    maxrelerr_split = rel_split;
 
                 idx++;
             }
             //printf("\n");
         }
 
-        printf("( %2d %2d | %2d %2d )    %20.8e   %20.8e\n", am[0], am[1], am[2], am[3], maxerr, maxrelerr);
+        printf("( %2d %2d | %2d %2d )    %20.8e  %20.8e    %20.8e  %20.8e\n", am[0], am[1], am[2], am[3],
+                                                      maxerr_FO, maxerr_split,
+                                                      maxrelerr_FO, maxrelerr_split);
 
         free_multishell_pair(P);
         free_multishell_pair(Q);
