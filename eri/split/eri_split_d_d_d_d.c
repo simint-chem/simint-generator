@@ -54,18 +54,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
     memset(contwork, 0, nshell1234 * 16616);
 
     // partition workspace into shells
-    double * const restrict S_2_0_2_0 = contwork + (nshell1234 * 0);
-    double * const restrict S_2_0_3_0 = contwork + (nshell1234 * 36);
-    double * const restrict S_2_0_4_0 = contwork + (nshell1234 * 96);
-    double * const restrict S_2_2_2_0 = contwork + (nshell1234 * 186);
-    double * const restrict S_2_2_3_0 = contwork + (nshell1234 * 402);
-    double * const restrict S_2_2_4_0 = contwork + (nshell1234 * 762);
-    double * const restrict S_3_0_2_0 = contwork + (nshell1234 * 1302);
-    double * const restrict S_3_0_3_0 = contwork + (nshell1234 * 1362);
-    double * const restrict S_3_0_4_0 = contwork + (nshell1234 * 1462);
-    double * const restrict S_4_0_2_0 = contwork + (nshell1234 * 1612);
-    double * const restrict S_4_0_3_0 = contwork + (nshell1234 * 1702);
-    double * const restrict S_4_0_4_0 = contwork + (nshell1234 * 1852);
+    double * const S_2_0_2_0 = contwork + (nshell1234 * 0);
+    double * const S_2_0_3_0 = contwork + (nshell1234 * 36);
+    double * const S_2_0_4_0 = contwork + (nshell1234 * 96);
+    double * const S_2_2_2_0 = contwork + (nshell1234 * 186);
+    double * const S_2_2_3_0 = contwork + (nshell1234 * 402);
+    double * const S_2_2_4_0 = contwork + (nshell1234 * 762);
+    double * const S_3_0_2_0 = contwork + (nshell1234 * 1302);
+    double * const S_3_0_3_0 = contwork + (nshell1234 * 1362);
+    double * const S_3_0_4_0 = contwork + (nshell1234 * 1462);
+    double * const S_4_0_2_0 = contwork + (nshell1234 * 1612);
+    double * const S_4_0_3_0 = contwork + (nshell1234 * 1702);
+    double * const S_4_0_4_0 = contwork + (nshell1234 * 1852);
 
 
     ////////////////////////////////////////
@@ -81,6 +81,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
+            // set up pointers to the contracted integrals - VRR
+            // set up pointers to the contracted integrals - Electron Transfer
+        double * const restrict PRIM_S_2_0_2_0 = S_2_0_2_0 + (abcd * 36);
+        double * const restrict PRIM_S_2_0_3_0 = S_2_0_3_0 + (abcd * 60);
+        double * const restrict PRIM_S_2_0_4_0 = S_2_0_4_0 + (abcd * 90);
+        double * const restrict PRIM_S_3_0_2_0 = S_3_0_2_0 + (abcd * 60);
+        double * const restrict PRIM_S_3_0_3_0 = S_3_0_3_0 + (abcd * 100);
+        double * const restrict PRIM_S_3_0_4_0 = S_3_0_4_0 + (abcd * 150);
+        double * const restrict PRIM_S_4_0_2_0 = S_4_0_2_0 + (abcd * 90);
+        double * const restrict PRIM_S_4_0_3_0 = S_4_0_3_0 + (abcd * 150);
+        double * const restrict PRIM_S_4_0_4_0 = S_4_0_4_0 + (abcd * 225);
+
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
@@ -240,7 +252,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //D_200 : STEP: x
                         AUX_S_2_0_0_0[m * 6 + 0] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
                         AUX_S_2_0_0_0[m * 6 + 1] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
@@ -250,14 +262,14 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //D_020 : STEP: y
                         AUX_S_2_0_0_0[m * 6 + 3] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
                         AUX_S_2_0_0_0[m * 6 + 4] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
                         AUX_S_2_0_0_0[m * 6 + 5] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                     }
 
@@ -278,7 +290,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //F_300 : STEP: x
                         AUX_S_3_0_0_0[m * 10 + 0] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 0]
-                                      +2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  0] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 0] );
+                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  0] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 0] );
 
                         //F_210 : STEP: y
                         AUX_S_3_0_0_0[m * 10 + 1] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 0];
@@ -297,7 +309,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //F_030 : STEP: y
                         AUX_S_3_0_0_0[m * 10 + 6] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 3]
-                                      +2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  1] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 1] );
+                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  1] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 1] );
 
                         //F_021 : STEP: z
                         AUX_S_3_0_0_0[m * 10 + 7] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 3];
@@ -307,7 +319,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //F_003 : STEP: z
                         AUX_S_3_0_0_0[m * 10 + 9] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 5]
-                                      +2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  2] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 2] );
+                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  2] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 2] );
 
                     }
 
@@ -333,7 +345,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //G_400 : STEP: x
                         AUX_S_4_0_0_0[m * 15 + 0] = P.PA_x[i] * AUX_S_3_0_0_0[m * 10 + 0] - a_over_p * PQ_x * AUX_S_3_0_0_0[(m+1) * 10 + 0]
-                                      +3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
+                                      + 3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
 
                         //G_310 : STEP: y
                         AUX_S_4_0_0_0[m * 15 + 1] = P.PA_y[i] * AUX_S_3_0_0_0[m * 10 + 0] - a_over_p * PQ_y * AUX_S_3_0_0_0[(m+1) * 10 + 0];
@@ -343,14 +355,14 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //G_220 : STEP: y
                         AUX_S_4_0_0_0[m * 15 + 3] = P.PA_y[i] * AUX_S_3_0_0_0[m * 10 + 1] - a_over_p * PQ_y * AUX_S_3_0_0_0[(m+1) * 10 + 1]
-                                      +1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
 
                         //G_211 : STEP: z
                         AUX_S_4_0_0_0[m * 15 + 4] = P.PA_z[i] * AUX_S_3_0_0_0[m * 10 + 1] - a_over_p * PQ_z * AUX_S_3_0_0_0[(m+1) * 10 + 1];
 
                         //G_202 : STEP: z
                         AUX_S_4_0_0_0[m * 15 + 5] = P.PA_z[i] * AUX_S_3_0_0_0[m * 10 + 2] - a_over_p * PQ_z * AUX_S_3_0_0_0[(m+1) * 10 + 2]
-                                      +1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  0] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 0] );
 
                         //G_130 : STEP: x
                         AUX_S_4_0_0_0[m * 15 + 6] = P.PA_x[i] * AUX_S_3_0_0_0[m * 10 + 6] - a_over_p * PQ_x * AUX_S_3_0_0_0[(m+1) * 10 + 6];
@@ -366,21 +378,21 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //G_040 : STEP: y
                         AUX_S_4_0_0_0[m * 15 + 10] = P.PA_y[i] * AUX_S_3_0_0_0[m * 10 + 6] - a_over_p * PQ_y * AUX_S_3_0_0_0[(m+1) * 10 + 6]
-                                      +3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  3] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 3] );
+                                      + 3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  3] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 3] );
 
                         //G_031 : STEP: z
                         AUX_S_4_0_0_0[m * 15 + 11] = P.PA_z[i] * AUX_S_3_0_0_0[m * 10 + 6] - a_over_p * PQ_z * AUX_S_3_0_0_0[(m+1) * 10 + 6];
 
                         //G_022 : STEP: z
                         AUX_S_4_0_0_0[m * 15 + 12] = P.PA_z[i] * AUX_S_3_0_0_0[m * 10 + 7] - a_over_p * PQ_z * AUX_S_3_0_0_0[(m+1) * 10 + 7]
-                                      +1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  3] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 3] );
+                                      + 1 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  3] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 3] );
 
                         //G_013 : STEP: y
                         AUX_S_4_0_0_0[m * 15 + 13] = P.PA_y[i] * AUX_S_3_0_0_0[m * 10 + 9] - a_over_p * PQ_y * AUX_S_3_0_0_0[(m+1) * 10 + 9];
 
                         //G_004 : STEP: z
                         AUX_S_4_0_0_0[m * 15 + 14] = P.PA_z[i] * AUX_S_3_0_0_0[m * 10 + 9] - a_over_p * PQ_z * AUX_S_3_0_0_0[(m+1) * 10 + 9]
-                                      +3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  5] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 5] );
+                                      + 3 * one_over_2p * ( AUX_S_2_0_0_0[m * 6 +  5] - a_over_p * AUX_S_2_0_0_0[(m+1) * 6 + 5] );
 
                     }
 
@@ -412,7 +424,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //H_500 : STEP: x
                         AUX_S_5_0_0_0[m * 21 + 0] = P.PA_x[i] * AUX_S_4_0_0_0[m * 15 + 0] - a_over_p * PQ_x * AUX_S_4_0_0_0[(m+1) * 15 + 0]
-                                      +4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
+                                      + 4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
 
                         //H_410 : STEP: y
                         AUX_S_5_0_0_0[m * 21 + 1] = P.PA_y[i] * AUX_S_4_0_0_0[m * 15 + 0] - a_over_p * PQ_y * AUX_S_4_0_0_0[(m+1) * 15 + 0];
@@ -422,18 +434,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //H_320 : STEP: y
                         AUX_S_5_0_0_0[m * 21 + 3] = P.PA_y[i] * AUX_S_4_0_0_0[m * 15 + 1] - a_over_p * PQ_y * AUX_S_4_0_0_0[(m+1) * 15 + 1]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
 
                         //H_311 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 4] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 1] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 1];
 
                         //H_302 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 5] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 2] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 2]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  0] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 0] );
 
                         //H_230 : STEP: x
                         AUX_S_5_0_0_0[m * 21 + 6] = P.PA_x[i] * AUX_S_4_0_0_0[m * 15 + 6] - a_over_p * PQ_x * AUX_S_4_0_0_0[(m+1) * 15 + 6]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
 
                         //H_221 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 7] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 3] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 3];
@@ -443,7 +455,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //H_203 : STEP: x
                         AUX_S_5_0_0_0[m * 21 + 9] = P.PA_x[i] * AUX_S_4_0_0_0[m * 15 + 9] - a_over_p * PQ_x * AUX_S_4_0_0_0[(m+1) * 15 + 9]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
 
                         //H_140 : STEP: x
                         AUX_S_5_0_0_0[m * 21 + 10] = P.PA_x[i] * AUX_S_4_0_0_0[m * 15 + 10] - a_over_p * PQ_x * AUX_S_4_0_0_0[(m+1) * 15 + 10];
@@ -462,25 +474,25 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //H_050 : STEP: y
                         AUX_S_5_0_0_0[m * 21 + 15] = P.PA_y[i] * AUX_S_4_0_0_0[m * 15 + 10] - a_over_p * PQ_y * AUX_S_4_0_0_0[(m+1) * 15 + 10]
-                                      +4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
+                                      + 4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
 
                         //H_041 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 16] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 10] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 10];
 
                         //H_032 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 17] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 11] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 11]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  6] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 6] );
 
                         //H_023 : STEP: y
                         AUX_S_5_0_0_0[m * 21 + 18] = P.PA_y[i] * AUX_S_4_0_0_0[m * 15 + 13] - a_over_p * PQ_y * AUX_S_4_0_0_0[(m+1) * 15 + 13]
-                                      +1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
+                                      + 1 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
 
                         //H_014 : STEP: y
                         AUX_S_5_0_0_0[m * 21 + 19] = P.PA_y[i] * AUX_S_4_0_0_0[m * 15 + 14] - a_over_p * PQ_y * AUX_S_4_0_0_0[(m+1) * 15 + 14];
 
                         //H_005 : STEP: z
                         AUX_S_5_0_0_0[m * 21 + 20] = P.PA_z[i] * AUX_S_4_0_0_0[m * 15 + 14] - a_over_p * PQ_z * AUX_S_4_0_0_0[(m+1) * 15 + 14]
-                                      +4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
+                                      + 4 * one_over_2p * ( AUX_S_3_0_0_0[m * 10 +  9] - a_over_p * AUX_S_3_0_0_0[(m+1) * 10 + 9] );
 
                     }
 
@@ -519,7 +531,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //I_600 : STEP: x
                         AUX_S_6_0_0_0[m * 28 + 0] = P.PA_x[i] * AUX_S_5_0_0_0[m * 21 + 0] - a_over_p * PQ_x * AUX_S_5_0_0_0[(m+1) * 21 + 0]
-                                      +5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
+                                      + 5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
 
                         //I_510 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 1] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 0] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 0];
@@ -529,18 +541,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //I_420 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 3] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 1] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 1]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
 
                         //I_411 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 4] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 1] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 1];
 
                         //I_402 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 5] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 2] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 2]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  0] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 0] );
 
                         //I_330 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 6] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 3] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 3]
-                                      +2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  1] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 1] );
+                                      + 2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  1] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 1] );
 
                         //I_321 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 7] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 3] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 3];
@@ -550,25 +562,25 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //I_303 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 9] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 5] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 5]
-                                      +2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  2] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 2] );
+                                      + 2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  2] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 2] );
 
                         //I_240 : STEP: x
                         AUX_S_6_0_0_0[m * 28 + 10] = P.PA_x[i] * AUX_S_5_0_0_0[m * 21 + 10] - a_over_p * PQ_x * AUX_S_5_0_0_0[(m+1) * 21 + 10]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
 
                         //I_231 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 11] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 6] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 6];
 
                         //I_222 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 12] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 7] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 7]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  3] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 3] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  3] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 3] );
 
                         //I_213 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 13] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 9] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 9];
 
                         //I_204 : STEP: x
                         AUX_S_6_0_0_0[m * 28 + 14] = P.PA_x[i] * AUX_S_5_0_0_0[m * 21 + 14] - a_over_p * PQ_x * AUX_S_5_0_0_0[(m+1) * 21 + 14]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
 
                         //I_150 : STEP: x
                         AUX_S_6_0_0_0[m * 28 + 15] = P.PA_x[i] * AUX_S_5_0_0_0[m * 21 + 15] - a_over_p * PQ_x * AUX_S_5_0_0_0[(m+1) * 21 + 15];
@@ -590,29 +602,29 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //I_060 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 21] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 15] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 15]
-                                      +5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
+                                      + 5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
 
                         //I_051 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 22] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 15] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 15];
 
                         //I_042 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 23] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 16] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 16]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  10] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 10] );
 
                         //I_033 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 24] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 17] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 17]
-                                      +2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  11] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 11] );
+                                      + 2 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  11] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 11] );
 
                         //I_024 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 25] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 19] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 19]
-                                      +1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
+                                      + 1 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
 
                         //I_015 : STEP: y
                         AUX_S_6_0_0_0[m * 28 + 26] = P.PA_y[i] * AUX_S_5_0_0_0[m * 21 + 20] - a_over_p * PQ_y * AUX_S_5_0_0_0[(m+1) * 21 + 20];
 
                         //I_006 : STEP: z
                         AUX_S_6_0_0_0[m * 28 + 27] = P.PA_z[i] * AUX_S_5_0_0_0[m * 21 + 20] - a_over_p * PQ_z * AUX_S_5_0_0_0[(m+1) * 21 + 20]
-                                      +5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
+                                      + 5 * one_over_2p * ( AUX_S_4_0_0_0[m * 15 +  14] - a_over_p * AUX_S_4_0_0_0[(m+1) * 15 + 14] );
 
                     }
 
@@ -659,7 +671,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //J_700 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 0] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 0] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 0]
-                                      +6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
+                                      + 6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
 
                         //J_610 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 1] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 0] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 0];
@@ -669,18 +681,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //J_520 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 3] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 1] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 1]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
 
                         //J_511 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 4] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 1] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 1];
 
                         //J_502 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 5] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 2] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 2]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  0] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 0] );
 
                         //J_430 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 6] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 3] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 3]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  1] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 1] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  1] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 1] );
 
                         //J_421 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 7] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 3] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 3];
@@ -690,47 +702,47 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //J_403 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 9] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 5] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 5]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  2] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 2] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  2] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 2] );
 
                         //J_340 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 10] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 10] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 10]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  10] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 10] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  10] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 10] );
 
                         //J_331 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 11] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 6] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 6];
 
                         //J_322 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 12] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 7] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 7]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  3] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 3] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  3] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 3] );
 
                         //J_313 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 13] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 9] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 9];
 
                         //J_304 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 14] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 14] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 14]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  14] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 14] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  14] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 14] );
 
                         //J_250 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 15] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 15] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 15]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
 
                         //J_241 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 16] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 10] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 10];
 
                         //J_232 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 17] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 11] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 11]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  6] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 6] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  6] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 6] );
 
                         //J_223 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 18] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 13] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 13]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  9] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 9] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  9] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 9] );
 
                         //J_214 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 19] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 14] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 14];
 
                         //J_205 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 20] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 20] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 20]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
 
                         //J_160 : STEP: x
                         AUX_S_7_0_0_0[m * 36 + 21] = P.PA_x[i] * AUX_S_6_0_0_0[m * 28 + 21] - a_over_p * PQ_x * AUX_S_6_0_0_0[(m+1) * 28 + 21];
@@ -755,33 +767,33 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //J_070 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 28] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 21] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 21]
-                                      +6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
+                                      + 6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
 
                         //J_061 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 29] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 21] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 21];
 
                         //J_052 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 30] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 22] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 22]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  15] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 15] );
 
                         //J_043 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 31] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 23] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 23]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  16] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 16] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  16] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 16] );
 
                         //J_034 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 32] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 25] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 25]
-                                      +2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  19] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 19] );
+                                      + 2 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  19] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 19] );
 
                         //J_025 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 33] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 26] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 26]
-                                      +1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
+                                      + 1 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
 
                         //J_016 : STEP: y
                         AUX_S_7_0_0_0[m * 36 + 34] = P.PA_y[i] * AUX_S_6_0_0_0[m * 28 + 27] - a_over_p * PQ_y * AUX_S_6_0_0_0[(m+1) * 28 + 27];
 
                         //J_007 : STEP: z
                         AUX_S_7_0_0_0[m * 36 + 35] = P.PA_z[i] * AUX_S_6_0_0_0[m * 28 + 27] - a_over_p * PQ_z * AUX_S_6_0_0_0[(m+1) * 28 + 27]
-                                      +6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
+                                      + 6 * one_over_2p * ( AUX_S_5_0_0_0[m * 21 +  20] - a_over_p * AUX_S_5_0_0_0[(m+1) * 21 + 20] );
 
                     }
 
@@ -837,7 +849,7 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
                     {
                         //K_800 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 0] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 0] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 0]
-                                      +7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
+                                      + 7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
 
                         //K_710 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 1] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 0] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 0];
@@ -847,18 +859,18 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //K_620 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 3] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 1] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 1]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
 
                         //K_611 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 4] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 1] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 1];
 
                         //K_602 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 5] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 2] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 2]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  0] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 0] );
 
                         //K_530 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 6] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 3] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 3]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  1] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 1] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  1] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 1] );
 
                         //K_521 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 7] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 3] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 3];
@@ -868,73 +880,73 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //K_503 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 9] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 5] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 5]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  2] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 2] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  2] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 2] );
 
                         //K_440 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 10] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 6] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 6]
-                                      +3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  3] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 3] );
+                                      + 3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  3] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 3] );
 
                         //K_431 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 11] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 6] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 6];
 
                         //K_422 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 12] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 7] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 7]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  3] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 3] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  3] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 3] );
 
                         //K_413 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 13] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 9] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 9];
 
                         //K_404 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 14] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 9] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 9]
-                                      +3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  5] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 5] );
+                                      + 3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  5] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 5] );
 
                         //K_350 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 15] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 15] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 15]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  15] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 15] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  15] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 15] );
 
                         //K_341 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 16] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 10] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 10];
 
                         //K_332 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 17] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 11] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 11]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  6] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 6] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  6] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 6] );
 
                         //K_323 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 18] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 13] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 13]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  9] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 9] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  9] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 9] );
 
                         //K_314 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 19] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 14] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 14];
 
                         //K_305 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 20] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 20] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 20]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  20] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 20] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  20] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 20] );
 
                         //K_260 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 21] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 21] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 21]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
 
                         //K_251 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 22] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 15] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 15];
 
                         //K_242 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 23] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 16] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 16]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  10] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 10] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  10] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 10] );
 
                         //K_233 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 24] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 24] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 24]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  24] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 24] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  24] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 24] );
 
                         //K_224 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 25] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 19] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 19]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  14] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 14] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  14] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 14] );
 
                         //K_215 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 26] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 20] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 20];
 
                         //K_206 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 27] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 27] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 27]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
 
                         //K_170 : STEP: x
                         AUX_S_8_0_0_0[m * 45 + 28] = P.PA_x[i] * AUX_S_7_0_0_0[m * 36 + 28] - a_over_p * PQ_x * AUX_S_7_0_0_0[(m+1) * 36 + 28];
@@ -962,37 +974,37 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
                         //K_080 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 36] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 28] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 28]
-                                      +7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
+                                      + 7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
 
                         //K_071 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 37] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 28] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 28];
 
                         //K_062 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 38] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 29] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 29]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  21] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 21] );
 
                         //K_053 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 39] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 30] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 30]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  22] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 22] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  22] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 22] );
 
                         //K_044 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 40] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 31] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 31]
-                                      +3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  23] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 23] );
+                                      + 3 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  23] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 23] );
 
                         //K_035 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 41] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 33] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 33]
-                                      +2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  26] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 26] );
+                                      + 2 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  26] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 26] );
 
                         //K_026 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 42] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 34] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 34]
-                                      +1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
+                                      + 1 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
 
                         //K_017 : STEP: y
                         AUX_S_8_0_0_0[m * 45 + 43] = P.PA_y[i] * AUX_S_7_0_0_0[m * 36 + 35] - a_over_p * PQ_y * AUX_S_7_0_0_0[(m+1) * 36 + 35];
 
                         //K_008 : STEP: z
                         AUX_S_8_0_0_0[m * 45 + 44] = P.PA_z[i] * AUX_S_7_0_0_0[m * 36 + 35] - a_over_p * PQ_z * AUX_S_7_0_0_0[(m+1) * 36 + 35]
-                                      +7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
+                                      + 7 * one_over_2p * ( AUX_S_6_0_0_0[m * 28 +  27] - a_over_p * AUX_S_6_0_0_0[(m+1) * 28 + 27] );
 
                     }
 
@@ -5901,983 +5913,40 @@ int eri_split_d_d_d_d(struct multishell_pair const P,
 
 
                     // Accumulating in contracted workspace
-                    S_2_0_2_0[abcd * 36 + 0] += AUX_S_2_0_2_0[0];
-                    S_2_0_2_0[abcd * 36 + 1] += AUX_S_2_0_2_0[1];
-                    S_2_0_2_0[abcd * 36 + 2] += AUX_S_2_0_2_0[2];
-                    S_2_0_2_0[abcd * 36 + 3] += AUX_S_2_0_2_0[3];
-                    S_2_0_2_0[abcd * 36 + 4] += AUX_S_2_0_2_0[4];
-                    S_2_0_2_0[abcd * 36 + 5] += AUX_S_2_0_2_0[5];
-                    S_2_0_2_0[abcd * 36 + 6] += AUX_S_2_0_2_0[6];
-                    S_2_0_2_0[abcd * 36 + 7] += AUX_S_2_0_2_0[7];
-                    S_2_0_2_0[abcd * 36 + 8] += AUX_S_2_0_2_0[8];
-                    S_2_0_2_0[abcd * 36 + 9] += AUX_S_2_0_2_0[9];
-                    S_2_0_2_0[abcd * 36 + 10] += AUX_S_2_0_2_0[10];
-                    S_2_0_2_0[abcd * 36 + 11] += AUX_S_2_0_2_0[11];
-                    S_2_0_2_0[abcd * 36 + 12] += AUX_S_2_0_2_0[12];
-                    S_2_0_2_0[abcd * 36 + 13] += AUX_S_2_0_2_0[13];
-                    S_2_0_2_0[abcd * 36 + 14] += AUX_S_2_0_2_0[14];
-                    S_2_0_2_0[abcd * 36 + 15] += AUX_S_2_0_2_0[15];
-                    S_2_0_2_0[abcd * 36 + 16] += AUX_S_2_0_2_0[16];
-                    S_2_0_2_0[abcd * 36 + 17] += AUX_S_2_0_2_0[17];
-                    S_2_0_2_0[abcd * 36 + 18] += AUX_S_2_0_2_0[18];
-                    S_2_0_2_0[abcd * 36 + 19] += AUX_S_2_0_2_0[19];
-                    S_2_0_2_0[abcd * 36 + 20] += AUX_S_2_0_2_0[20];
-                    S_2_0_2_0[abcd * 36 + 21] += AUX_S_2_0_2_0[21];
-                    S_2_0_2_0[abcd * 36 + 22] += AUX_S_2_0_2_0[22];
-                    S_2_0_2_0[abcd * 36 + 23] += AUX_S_2_0_2_0[23];
-                    S_2_0_2_0[abcd * 36 + 24] += AUX_S_2_0_2_0[24];
-                    S_2_0_2_0[abcd * 36 + 25] += AUX_S_2_0_2_0[25];
-                    S_2_0_2_0[abcd * 36 + 26] += AUX_S_2_0_2_0[26];
-                    S_2_0_2_0[abcd * 36 + 27] += AUX_S_2_0_2_0[27];
-                    S_2_0_2_0[abcd * 36 + 28] += AUX_S_2_0_2_0[28];
-                    S_2_0_2_0[abcd * 36 + 29] += AUX_S_2_0_2_0[29];
-                    S_2_0_2_0[abcd * 36 + 30] += AUX_S_2_0_2_0[30];
-                    S_2_0_2_0[abcd * 36 + 31] += AUX_S_2_0_2_0[31];
-                    S_2_0_2_0[abcd * 36 + 32] += AUX_S_2_0_2_0[32];
-                    S_2_0_2_0[abcd * 36 + 33] += AUX_S_2_0_2_0[33];
-                    S_2_0_2_0[abcd * 36 + 34] += AUX_S_2_0_2_0[34];
-                    S_2_0_2_0[abcd * 36 + 35] += AUX_S_2_0_2_0[35];
+                    for(int i = 0; i < 36; i++)
+                        PRIM_S_2_0_2_0[i] += AUX_S_2_0_2_0[i];
 
                     // Accumulating in contracted workspace
-                    S_2_0_3_0[abcd * 60 + 0] += AUX_S_2_0_3_0[0];
-                    S_2_0_3_0[abcd * 60 + 1] += AUX_S_2_0_3_0[1];
-                    S_2_0_3_0[abcd * 60 + 2] += AUX_S_2_0_3_0[2];
-                    S_2_0_3_0[abcd * 60 + 3] += AUX_S_2_0_3_0[3];
-                    S_2_0_3_0[abcd * 60 + 4] += AUX_S_2_0_3_0[4];
-                    S_2_0_3_0[abcd * 60 + 5] += AUX_S_2_0_3_0[5];
-                    S_2_0_3_0[abcd * 60 + 6] += AUX_S_2_0_3_0[6];
-                    S_2_0_3_0[abcd * 60 + 7] += AUX_S_2_0_3_0[7];
-                    S_2_0_3_0[abcd * 60 + 8] += AUX_S_2_0_3_0[8];
-                    S_2_0_3_0[abcd * 60 + 9] += AUX_S_2_0_3_0[9];
-                    S_2_0_3_0[abcd * 60 + 10] += AUX_S_2_0_3_0[10];
-                    S_2_0_3_0[abcd * 60 + 11] += AUX_S_2_0_3_0[11];
-                    S_2_0_3_0[abcd * 60 + 12] += AUX_S_2_0_3_0[12];
-                    S_2_0_3_0[abcd * 60 + 13] += AUX_S_2_0_3_0[13];
-                    S_2_0_3_0[abcd * 60 + 14] += AUX_S_2_0_3_0[14];
-                    S_2_0_3_0[abcd * 60 + 15] += AUX_S_2_0_3_0[15];
-                    S_2_0_3_0[abcd * 60 + 16] += AUX_S_2_0_3_0[16];
-                    S_2_0_3_0[abcd * 60 + 17] += AUX_S_2_0_3_0[17];
-                    S_2_0_3_0[abcd * 60 + 18] += AUX_S_2_0_3_0[18];
-                    S_2_0_3_0[abcd * 60 + 19] += AUX_S_2_0_3_0[19];
-                    S_2_0_3_0[abcd * 60 + 20] += AUX_S_2_0_3_0[20];
-                    S_2_0_3_0[abcd * 60 + 21] += AUX_S_2_0_3_0[21];
-                    S_2_0_3_0[abcd * 60 + 22] += AUX_S_2_0_3_0[22];
-                    S_2_0_3_0[abcd * 60 + 23] += AUX_S_2_0_3_0[23];
-                    S_2_0_3_0[abcd * 60 + 24] += AUX_S_2_0_3_0[24];
-                    S_2_0_3_0[abcd * 60 + 25] += AUX_S_2_0_3_0[25];
-                    S_2_0_3_0[abcd * 60 + 26] += AUX_S_2_0_3_0[26];
-                    S_2_0_3_0[abcd * 60 + 27] += AUX_S_2_0_3_0[27];
-                    S_2_0_3_0[abcd * 60 + 28] += AUX_S_2_0_3_0[28];
-                    S_2_0_3_0[abcd * 60 + 29] += AUX_S_2_0_3_0[29];
-                    S_2_0_3_0[abcd * 60 + 30] += AUX_S_2_0_3_0[30];
-                    S_2_0_3_0[abcd * 60 + 31] += AUX_S_2_0_3_0[31];
-                    S_2_0_3_0[abcd * 60 + 32] += AUX_S_2_0_3_0[32];
-                    S_2_0_3_0[abcd * 60 + 33] += AUX_S_2_0_3_0[33];
-                    S_2_0_3_0[abcd * 60 + 34] += AUX_S_2_0_3_0[34];
-                    S_2_0_3_0[abcd * 60 + 35] += AUX_S_2_0_3_0[35];
-                    S_2_0_3_0[abcd * 60 + 36] += AUX_S_2_0_3_0[36];
-                    S_2_0_3_0[abcd * 60 + 37] += AUX_S_2_0_3_0[37];
-                    S_2_0_3_0[abcd * 60 + 38] += AUX_S_2_0_3_0[38];
-                    S_2_0_3_0[abcd * 60 + 39] += AUX_S_2_0_3_0[39];
-                    S_2_0_3_0[abcd * 60 + 40] += AUX_S_2_0_3_0[40];
-                    S_2_0_3_0[abcd * 60 + 41] += AUX_S_2_0_3_0[41];
-                    S_2_0_3_0[abcd * 60 + 42] += AUX_S_2_0_3_0[42];
-                    S_2_0_3_0[abcd * 60 + 43] += AUX_S_2_0_3_0[43];
-                    S_2_0_3_0[abcd * 60 + 44] += AUX_S_2_0_3_0[44];
-                    S_2_0_3_0[abcd * 60 + 45] += AUX_S_2_0_3_0[45];
-                    S_2_0_3_0[abcd * 60 + 46] += AUX_S_2_0_3_0[46];
-                    S_2_0_3_0[abcd * 60 + 47] += AUX_S_2_0_3_0[47];
-                    S_2_0_3_0[abcd * 60 + 48] += AUX_S_2_0_3_0[48];
-                    S_2_0_3_0[abcd * 60 + 49] += AUX_S_2_0_3_0[49];
-                    S_2_0_3_0[abcd * 60 + 50] += AUX_S_2_0_3_0[50];
-                    S_2_0_3_0[abcd * 60 + 51] += AUX_S_2_0_3_0[51];
-                    S_2_0_3_0[abcd * 60 + 52] += AUX_S_2_0_3_0[52];
-                    S_2_0_3_0[abcd * 60 + 53] += AUX_S_2_0_3_0[53];
-                    S_2_0_3_0[abcd * 60 + 54] += AUX_S_2_0_3_0[54];
-                    S_2_0_3_0[abcd * 60 + 55] += AUX_S_2_0_3_0[55];
-                    S_2_0_3_0[abcd * 60 + 56] += AUX_S_2_0_3_0[56];
-                    S_2_0_3_0[abcd * 60 + 57] += AUX_S_2_0_3_0[57];
-                    S_2_0_3_0[abcd * 60 + 58] += AUX_S_2_0_3_0[58];
-                    S_2_0_3_0[abcd * 60 + 59] += AUX_S_2_0_3_0[59];
+                    for(int i = 0; i < 60; i++)
+                        PRIM_S_2_0_3_0[i] += AUX_S_2_0_3_0[i];
 
                     // Accumulating in contracted workspace
-                    S_2_0_4_0[abcd * 90 + 0] += AUX_S_2_0_4_0[0];
-                    S_2_0_4_0[abcd * 90 + 1] += AUX_S_2_0_4_0[1];
-                    S_2_0_4_0[abcd * 90 + 2] += AUX_S_2_0_4_0[2];
-                    S_2_0_4_0[abcd * 90 + 3] += AUX_S_2_0_4_0[3];
-                    S_2_0_4_0[abcd * 90 + 4] += AUX_S_2_0_4_0[4];
-                    S_2_0_4_0[abcd * 90 + 5] += AUX_S_2_0_4_0[5];
-                    S_2_0_4_0[abcd * 90 + 6] += AUX_S_2_0_4_0[6];
-                    S_2_0_4_0[abcd * 90 + 7] += AUX_S_2_0_4_0[7];
-                    S_2_0_4_0[abcd * 90 + 8] += AUX_S_2_0_4_0[8];
-                    S_2_0_4_0[abcd * 90 + 9] += AUX_S_2_0_4_0[9];
-                    S_2_0_4_0[abcd * 90 + 10] += AUX_S_2_0_4_0[10];
-                    S_2_0_4_0[abcd * 90 + 11] += AUX_S_2_0_4_0[11];
-                    S_2_0_4_0[abcd * 90 + 12] += AUX_S_2_0_4_0[12];
-                    S_2_0_4_0[abcd * 90 + 13] += AUX_S_2_0_4_0[13];
-                    S_2_0_4_0[abcd * 90 + 14] += AUX_S_2_0_4_0[14];
-                    S_2_0_4_0[abcd * 90 + 15] += AUX_S_2_0_4_0[15];
-                    S_2_0_4_0[abcd * 90 + 16] += AUX_S_2_0_4_0[16];
-                    S_2_0_4_0[abcd * 90 + 17] += AUX_S_2_0_4_0[17];
-                    S_2_0_4_0[abcd * 90 + 18] += AUX_S_2_0_4_0[18];
-                    S_2_0_4_0[abcd * 90 + 19] += AUX_S_2_0_4_0[19];
-                    S_2_0_4_0[abcd * 90 + 20] += AUX_S_2_0_4_0[20];
-                    S_2_0_4_0[abcd * 90 + 21] += AUX_S_2_0_4_0[21];
-                    S_2_0_4_0[abcd * 90 + 22] += AUX_S_2_0_4_0[22];
-                    S_2_0_4_0[abcd * 90 + 23] += AUX_S_2_0_4_0[23];
-                    S_2_0_4_0[abcd * 90 + 24] += AUX_S_2_0_4_0[24];
-                    S_2_0_4_0[abcd * 90 + 25] += AUX_S_2_0_4_0[25];
-                    S_2_0_4_0[abcd * 90 + 26] += AUX_S_2_0_4_0[26];
-                    S_2_0_4_0[abcd * 90 + 27] += AUX_S_2_0_4_0[27];
-                    S_2_0_4_0[abcd * 90 + 28] += AUX_S_2_0_4_0[28];
-                    S_2_0_4_0[abcd * 90 + 29] += AUX_S_2_0_4_0[29];
-                    S_2_0_4_0[abcd * 90 + 30] += AUX_S_2_0_4_0[30];
-                    S_2_0_4_0[abcd * 90 + 31] += AUX_S_2_0_4_0[31];
-                    S_2_0_4_0[abcd * 90 + 32] += AUX_S_2_0_4_0[32];
-                    S_2_0_4_0[abcd * 90 + 33] += AUX_S_2_0_4_0[33];
-                    S_2_0_4_0[abcd * 90 + 34] += AUX_S_2_0_4_0[34];
-                    S_2_0_4_0[abcd * 90 + 35] += AUX_S_2_0_4_0[35];
-                    S_2_0_4_0[abcd * 90 + 36] += AUX_S_2_0_4_0[36];
-                    S_2_0_4_0[abcd * 90 + 37] += AUX_S_2_0_4_0[37];
-                    S_2_0_4_0[abcd * 90 + 38] += AUX_S_2_0_4_0[38];
-                    S_2_0_4_0[abcd * 90 + 39] += AUX_S_2_0_4_0[39];
-                    S_2_0_4_0[abcd * 90 + 40] += AUX_S_2_0_4_0[40];
-                    S_2_0_4_0[abcd * 90 + 41] += AUX_S_2_0_4_0[41];
-                    S_2_0_4_0[abcd * 90 + 42] += AUX_S_2_0_4_0[42];
-                    S_2_0_4_0[abcd * 90 + 43] += AUX_S_2_0_4_0[43];
-                    S_2_0_4_0[abcd * 90 + 44] += AUX_S_2_0_4_0[44];
-                    S_2_0_4_0[abcd * 90 + 45] += AUX_S_2_0_4_0[45];
-                    S_2_0_4_0[abcd * 90 + 46] += AUX_S_2_0_4_0[46];
-                    S_2_0_4_0[abcd * 90 + 47] += AUX_S_2_0_4_0[47];
-                    S_2_0_4_0[abcd * 90 + 48] += AUX_S_2_0_4_0[48];
-                    S_2_0_4_0[abcd * 90 + 49] += AUX_S_2_0_4_0[49];
-                    S_2_0_4_0[abcd * 90 + 50] += AUX_S_2_0_4_0[50];
-                    S_2_0_4_0[abcd * 90 + 51] += AUX_S_2_0_4_0[51];
-                    S_2_0_4_0[abcd * 90 + 52] += AUX_S_2_0_4_0[52];
-                    S_2_0_4_0[abcd * 90 + 53] += AUX_S_2_0_4_0[53];
-                    S_2_0_4_0[abcd * 90 + 54] += AUX_S_2_0_4_0[54];
-                    S_2_0_4_0[abcd * 90 + 55] += AUX_S_2_0_4_0[55];
-                    S_2_0_4_0[abcd * 90 + 56] += AUX_S_2_0_4_0[56];
-                    S_2_0_4_0[abcd * 90 + 57] += AUX_S_2_0_4_0[57];
-                    S_2_0_4_0[abcd * 90 + 58] += AUX_S_2_0_4_0[58];
-                    S_2_0_4_0[abcd * 90 + 59] += AUX_S_2_0_4_0[59];
-                    S_2_0_4_0[abcd * 90 + 60] += AUX_S_2_0_4_0[60];
-                    S_2_0_4_0[abcd * 90 + 61] += AUX_S_2_0_4_0[61];
-                    S_2_0_4_0[abcd * 90 + 62] += AUX_S_2_0_4_0[62];
-                    S_2_0_4_0[abcd * 90 + 63] += AUX_S_2_0_4_0[63];
-                    S_2_0_4_0[abcd * 90 + 64] += AUX_S_2_0_4_0[64];
-                    S_2_0_4_0[abcd * 90 + 65] += AUX_S_2_0_4_0[65];
-                    S_2_0_4_0[abcd * 90 + 66] += AUX_S_2_0_4_0[66];
-                    S_2_0_4_0[abcd * 90 + 67] += AUX_S_2_0_4_0[67];
-                    S_2_0_4_0[abcd * 90 + 68] += AUX_S_2_0_4_0[68];
-                    S_2_0_4_0[abcd * 90 + 69] += AUX_S_2_0_4_0[69];
-                    S_2_0_4_0[abcd * 90 + 70] += AUX_S_2_0_4_0[70];
-                    S_2_0_4_0[abcd * 90 + 71] += AUX_S_2_0_4_0[71];
-                    S_2_0_4_0[abcd * 90 + 72] += AUX_S_2_0_4_0[72];
-                    S_2_0_4_0[abcd * 90 + 73] += AUX_S_2_0_4_0[73];
-                    S_2_0_4_0[abcd * 90 + 74] += AUX_S_2_0_4_0[74];
-                    S_2_0_4_0[abcd * 90 + 75] += AUX_S_2_0_4_0[75];
-                    S_2_0_4_0[abcd * 90 + 76] += AUX_S_2_0_4_0[76];
-                    S_2_0_4_0[abcd * 90 + 77] += AUX_S_2_0_4_0[77];
-                    S_2_0_4_0[abcd * 90 + 78] += AUX_S_2_0_4_0[78];
-                    S_2_0_4_0[abcd * 90 + 79] += AUX_S_2_0_4_0[79];
-                    S_2_0_4_0[abcd * 90 + 80] += AUX_S_2_0_4_0[80];
-                    S_2_0_4_0[abcd * 90 + 81] += AUX_S_2_0_4_0[81];
-                    S_2_0_4_0[abcd * 90 + 82] += AUX_S_2_0_4_0[82];
-                    S_2_0_4_0[abcd * 90 + 83] += AUX_S_2_0_4_0[83];
-                    S_2_0_4_0[abcd * 90 + 84] += AUX_S_2_0_4_0[84];
-                    S_2_0_4_0[abcd * 90 + 85] += AUX_S_2_0_4_0[85];
-                    S_2_0_4_0[abcd * 90 + 86] += AUX_S_2_0_4_0[86];
-                    S_2_0_4_0[abcd * 90 + 87] += AUX_S_2_0_4_0[87];
-                    S_2_0_4_0[abcd * 90 + 88] += AUX_S_2_0_4_0[88];
-                    S_2_0_4_0[abcd * 90 + 89] += AUX_S_2_0_4_0[89];
+                    for(int i = 0; i < 90; i++)
+                        PRIM_S_2_0_4_0[i] += AUX_S_2_0_4_0[i];
 
                     // Accumulating in contracted workspace
-                    S_3_0_2_0[abcd * 60 + 0] += AUX_S_3_0_2_0[0];
-                    S_3_0_2_0[abcd * 60 + 1] += AUX_S_3_0_2_0[1];
-                    S_3_0_2_0[abcd * 60 + 2] += AUX_S_3_0_2_0[2];
-                    S_3_0_2_0[abcd * 60 + 3] += AUX_S_3_0_2_0[3];
-                    S_3_0_2_0[abcd * 60 + 4] += AUX_S_3_0_2_0[4];
-                    S_3_0_2_0[abcd * 60 + 5] += AUX_S_3_0_2_0[5];
-                    S_3_0_2_0[abcd * 60 + 6] += AUX_S_3_0_2_0[6];
-                    S_3_0_2_0[abcd * 60 + 7] += AUX_S_3_0_2_0[7];
-                    S_3_0_2_0[abcd * 60 + 8] += AUX_S_3_0_2_0[8];
-                    S_3_0_2_0[abcd * 60 + 9] += AUX_S_3_0_2_0[9];
-                    S_3_0_2_0[abcd * 60 + 10] += AUX_S_3_0_2_0[10];
-                    S_3_0_2_0[abcd * 60 + 11] += AUX_S_3_0_2_0[11];
-                    S_3_0_2_0[abcd * 60 + 12] += AUX_S_3_0_2_0[12];
-                    S_3_0_2_0[abcd * 60 + 13] += AUX_S_3_0_2_0[13];
-                    S_3_0_2_0[abcd * 60 + 14] += AUX_S_3_0_2_0[14];
-                    S_3_0_2_0[abcd * 60 + 15] += AUX_S_3_0_2_0[15];
-                    S_3_0_2_0[abcd * 60 + 16] += AUX_S_3_0_2_0[16];
-                    S_3_0_2_0[abcd * 60 + 17] += AUX_S_3_0_2_0[17];
-                    S_3_0_2_0[abcd * 60 + 18] += AUX_S_3_0_2_0[18];
-                    S_3_0_2_0[abcd * 60 + 19] += AUX_S_3_0_2_0[19];
-                    S_3_0_2_0[abcd * 60 + 20] += AUX_S_3_0_2_0[20];
-                    S_3_0_2_0[abcd * 60 + 21] += AUX_S_3_0_2_0[21];
-                    S_3_0_2_0[abcd * 60 + 22] += AUX_S_3_0_2_0[22];
-                    S_3_0_2_0[abcd * 60 + 23] += AUX_S_3_0_2_0[23];
-                    S_3_0_2_0[abcd * 60 + 24] += AUX_S_3_0_2_0[24];
-                    S_3_0_2_0[abcd * 60 + 25] += AUX_S_3_0_2_0[25];
-                    S_3_0_2_0[abcd * 60 + 26] += AUX_S_3_0_2_0[26];
-                    S_3_0_2_0[abcd * 60 + 27] += AUX_S_3_0_2_0[27];
-                    S_3_0_2_0[abcd * 60 + 28] += AUX_S_3_0_2_0[28];
-                    S_3_0_2_0[abcd * 60 + 29] += AUX_S_3_0_2_0[29];
-                    S_3_0_2_0[abcd * 60 + 30] += AUX_S_3_0_2_0[30];
-                    S_3_0_2_0[abcd * 60 + 31] += AUX_S_3_0_2_0[31];
-                    S_3_0_2_0[abcd * 60 + 32] += AUX_S_3_0_2_0[32];
-                    S_3_0_2_0[abcd * 60 + 33] += AUX_S_3_0_2_0[33];
-                    S_3_0_2_0[abcd * 60 + 34] += AUX_S_3_0_2_0[34];
-                    S_3_0_2_0[abcd * 60 + 35] += AUX_S_3_0_2_0[35];
-                    S_3_0_2_0[abcd * 60 + 36] += AUX_S_3_0_2_0[36];
-                    S_3_0_2_0[abcd * 60 + 37] += AUX_S_3_0_2_0[37];
-                    S_3_0_2_0[abcd * 60 + 38] += AUX_S_3_0_2_0[38];
-                    S_3_0_2_0[abcd * 60 + 39] += AUX_S_3_0_2_0[39];
-                    S_3_0_2_0[abcd * 60 + 40] += AUX_S_3_0_2_0[40];
-                    S_3_0_2_0[abcd * 60 + 41] += AUX_S_3_0_2_0[41];
-                    S_3_0_2_0[abcd * 60 + 42] += AUX_S_3_0_2_0[42];
-                    S_3_0_2_0[abcd * 60 + 43] += AUX_S_3_0_2_0[43];
-                    S_3_0_2_0[abcd * 60 + 44] += AUX_S_3_0_2_0[44];
-                    S_3_0_2_0[abcd * 60 + 45] += AUX_S_3_0_2_0[45];
-                    S_3_0_2_0[abcd * 60 + 46] += AUX_S_3_0_2_0[46];
-                    S_3_0_2_0[abcd * 60 + 47] += AUX_S_3_0_2_0[47];
-                    S_3_0_2_0[abcd * 60 + 48] += AUX_S_3_0_2_0[48];
-                    S_3_0_2_0[abcd * 60 + 49] += AUX_S_3_0_2_0[49];
-                    S_3_0_2_0[abcd * 60 + 50] += AUX_S_3_0_2_0[50];
-                    S_3_0_2_0[abcd * 60 + 51] += AUX_S_3_0_2_0[51];
-                    S_3_0_2_0[abcd * 60 + 52] += AUX_S_3_0_2_0[52];
-                    S_3_0_2_0[abcd * 60 + 53] += AUX_S_3_0_2_0[53];
-                    S_3_0_2_0[abcd * 60 + 54] += AUX_S_3_0_2_0[54];
-                    S_3_0_2_0[abcd * 60 + 55] += AUX_S_3_0_2_0[55];
-                    S_3_0_2_0[abcd * 60 + 56] += AUX_S_3_0_2_0[56];
-                    S_3_0_2_0[abcd * 60 + 57] += AUX_S_3_0_2_0[57];
-                    S_3_0_2_0[abcd * 60 + 58] += AUX_S_3_0_2_0[58];
-                    S_3_0_2_0[abcd * 60 + 59] += AUX_S_3_0_2_0[59];
+                    for(int i = 0; i < 60; i++)
+                        PRIM_S_3_0_2_0[i] += AUX_S_3_0_2_0[i];
 
                     // Accumulating in contracted workspace
-                    S_3_0_3_0[abcd * 100 + 0] += AUX_S_3_0_3_0[0];
-                    S_3_0_3_0[abcd * 100 + 1] += AUX_S_3_0_3_0[1];
-                    S_3_0_3_0[abcd * 100 + 2] += AUX_S_3_0_3_0[2];
-                    S_3_0_3_0[abcd * 100 + 3] += AUX_S_3_0_3_0[3];
-                    S_3_0_3_0[abcd * 100 + 4] += AUX_S_3_0_3_0[4];
-                    S_3_0_3_0[abcd * 100 + 5] += AUX_S_3_0_3_0[5];
-                    S_3_0_3_0[abcd * 100 + 6] += AUX_S_3_0_3_0[6];
-                    S_3_0_3_0[abcd * 100 + 7] += AUX_S_3_0_3_0[7];
-                    S_3_0_3_0[abcd * 100 + 8] += AUX_S_3_0_3_0[8];
-                    S_3_0_3_0[abcd * 100 + 9] += AUX_S_3_0_3_0[9];
-                    S_3_0_3_0[abcd * 100 + 10] += AUX_S_3_0_3_0[10];
-                    S_3_0_3_0[abcd * 100 + 11] += AUX_S_3_0_3_0[11];
-                    S_3_0_3_0[abcd * 100 + 12] += AUX_S_3_0_3_0[12];
-                    S_3_0_3_0[abcd * 100 + 13] += AUX_S_3_0_3_0[13];
-                    S_3_0_3_0[abcd * 100 + 14] += AUX_S_3_0_3_0[14];
-                    S_3_0_3_0[abcd * 100 + 15] += AUX_S_3_0_3_0[15];
-                    S_3_0_3_0[abcd * 100 + 16] += AUX_S_3_0_3_0[16];
-                    S_3_0_3_0[abcd * 100 + 17] += AUX_S_3_0_3_0[17];
-                    S_3_0_3_0[abcd * 100 + 18] += AUX_S_3_0_3_0[18];
-                    S_3_0_3_0[abcd * 100 + 19] += AUX_S_3_0_3_0[19];
-                    S_3_0_3_0[abcd * 100 + 20] += AUX_S_3_0_3_0[20];
-                    S_3_0_3_0[abcd * 100 + 21] += AUX_S_3_0_3_0[21];
-                    S_3_0_3_0[abcd * 100 + 22] += AUX_S_3_0_3_0[22];
-                    S_3_0_3_0[abcd * 100 + 23] += AUX_S_3_0_3_0[23];
-                    S_3_0_3_0[abcd * 100 + 24] += AUX_S_3_0_3_0[24];
-                    S_3_0_3_0[abcd * 100 + 25] += AUX_S_3_0_3_0[25];
-                    S_3_0_3_0[abcd * 100 + 26] += AUX_S_3_0_3_0[26];
-                    S_3_0_3_0[abcd * 100 + 27] += AUX_S_3_0_3_0[27];
-                    S_3_0_3_0[abcd * 100 + 28] += AUX_S_3_0_3_0[28];
-                    S_3_0_3_0[abcd * 100 + 29] += AUX_S_3_0_3_0[29];
-                    S_3_0_3_0[abcd * 100 + 30] += AUX_S_3_0_3_0[30];
-                    S_3_0_3_0[abcd * 100 + 31] += AUX_S_3_0_3_0[31];
-                    S_3_0_3_0[abcd * 100 + 32] += AUX_S_3_0_3_0[32];
-                    S_3_0_3_0[abcd * 100 + 33] += AUX_S_3_0_3_0[33];
-                    S_3_0_3_0[abcd * 100 + 34] += AUX_S_3_0_3_0[34];
-                    S_3_0_3_0[abcd * 100 + 35] += AUX_S_3_0_3_0[35];
-                    S_3_0_3_0[abcd * 100 + 36] += AUX_S_3_0_3_0[36];
-                    S_3_0_3_0[abcd * 100 + 37] += AUX_S_3_0_3_0[37];
-                    S_3_0_3_0[abcd * 100 + 38] += AUX_S_3_0_3_0[38];
-                    S_3_0_3_0[abcd * 100 + 39] += AUX_S_3_0_3_0[39];
-                    S_3_0_3_0[abcd * 100 + 40] += AUX_S_3_0_3_0[40];
-                    S_3_0_3_0[abcd * 100 + 41] += AUX_S_3_0_3_0[41];
-                    S_3_0_3_0[abcd * 100 + 42] += AUX_S_3_0_3_0[42];
-                    S_3_0_3_0[abcd * 100 + 43] += AUX_S_3_0_3_0[43];
-                    S_3_0_3_0[abcd * 100 + 44] += AUX_S_3_0_3_0[44];
-                    S_3_0_3_0[abcd * 100 + 45] += AUX_S_3_0_3_0[45];
-                    S_3_0_3_0[abcd * 100 + 46] += AUX_S_3_0_3_0[46];
-                    S_3_0_3_0[abcd * 100 + 47] += AUX_S_3_0_3_0[47];
-                    S_3_0_3_0[abcd * 100 + 48] += AUX_S_3_0_3_0[48];
-                    S_3_0_3_0[abcd * 100 + 49] += AUX_S_3_0_3_0[49];
-                    S_3_0_3_0[abcd * 100 + 50] += AUX_S_3_0_3_0[50];
-                    S_3_0_3_0[abcd * 100 + 51] += AUX_S_3_0_3_0[51];
-                    S_3_0_3_0[abcd * 100 + 52] += AUX_S_3_0_3_0[52];
-                    S_3_0_3_0[abcd * 100 + 53] += AUX_S_3_0_3_0[53];
-                    S_3_0_3_0[abcd * 100 + 54] += AUX_S_3_0_3_0[54];
-                    S_3_0_3_0[abcd * 100 + 55] += AUX_S_3_0_3_0[55];
-                    S_3_0_3_0[abcd * 100 + 56] += AUX_S_3_0_3_0[56];
-                    S_3_0_3_0[abcd * 100 + 57] += AUX_S_3_0_3_0[57];
-                    S_3_0_3_0[abcd * 100 + 58] += AUX_S_3_0_3_0[58];
-                    S_3_0_3_0[abcd * 100 + 59] += AUX_S_3_0_3_0[59];
-                    S_3_0_3_0[abcd * 100 + 60] += AUX_S_3_0_3_0[60];
-                    S_3_0_3_0[abcd * 100 + 61] += AUX_S_3_0_3_0[61];
-                    S_3_0_3_0[abcd * 100 + 62] += AUX_S_3_0_3_0[62];
-                    S_3_0_3_0[abcd * 100 + 63] += AUX_S_3_0_3_0[63];
-                    S_3_0_3_0[abcd * 100 + 64] += AUX_S_3_0_3_0[64];
-                    S_3_0_3_0[abcd * 100 + 65] += AUX_S_3_0_3_0[65];
-                    S_3_0_3_0[abcd * 100 + 66] += AUX_S_3_0_3_0[66];
-                    S_3_0_3_0[abcd * 100 + 67] += AUX_S_3_0_3_0[67];
-                    S_3_0_3_0[abcd * 100 + 68] += AUX_S_3_0_3_0[68];
-                    S_3_0_3_0[abcd * 100 + 69] += AUX_S_3_0_3_0[69];
-                    S_3_0_3_0[abcd * 100 + 70] += AUX_S_3_0_3_0[70];
-                    S_3_0_3_0[abcd * 100 + 71] += AUX_S_3_0_3_0[71];
-                    S_3_0_3_0[abcd * 100 + 72] += AUX_S_3_0_3_0[72];
-                    S_3_0_3_0[abcd * 100 + 73] += AUX_S_3_0_3_0[73];
-                    S_3_0_3_0[abcd * 100 + 74] += AUX_S_3_0_3_0[74];
-                    S_3_0_3_0[abcd * 100 + 75] += AUX_S_3_0_3_0[75];
-                    S_3_0_3_0[abcd * 100 + 76] += AUX_S_3_0_3_0[76];
-                    S_3_0_3_0[abcd * 100 + 77] += AUX_S_3_0_3_0[77];
-                    S_3_0_3_0[abcd * 100 + 78] += AUX_S_3_0_3_0[78];
-                    S_3_0_3_0[abcd * 100 + 79] += AUX_S_3_0_3_0[79];
-                    S_3_0_3_0[abcd * 100 + 80] += AUX_S_3_0_3_0[80];
-                    S_3_0_3_0[abcd * 100 + 81] += AUX_S_3_0_3_0[81];
-                    S_3_0_3_0[abcd * 100 + 82] += AUX_S_3_0_3_0[82];
-                    S_3_0_3_0[abcd * 100 + 83] += AUX_S_3_0_3_0[83];
-                    S_3_0_3_0[abcd * 100 + 84] += AUX_S_3_0_3_0[84];
-                    S_3_0_3_0[abcd * 100 + 85] += AUX_S_3_0_3_0[85];
-                    S_3_0_3_0[abcd * 100 + 86] += AUX_S_3_0_3_0[86];
-                    S_3_0_3_0[abcd * 100 + 87] += AUX_S_3_0_3_0[87];
-                    S_3_0_3_0[abcd * 100 + 88] += AUX_S_3_0_3_0[88];
-                    S_3_0_3_0[abcd * 100 + 89] += AUX_S_3_0_3_0[89];
-                    S_3_0_3_0[abcd * 100 + 90] += AUX_S_3_0_3_0[90];
-                    S_3_0_3_0[abcd * 100 + 91] += AUX_S_3_0_3_0[91];
-                    S_3_0_3_0[abcd * 100 + 92] += AUX_S_3_0_3_0[92];
-                    S_3_0_3_0[abcd * 100 + 93] += AUX_S_3_0_3_0[93];
-                    S_3_0_3_0[abcd * 100 + 94] += AUX_S_3_0_3_0[94];
-                    S_3_0_3_0[abcd * 100 + 95] += AUX_S_3_0_3_0[95];
-                    S_3_0_3_0[abcd * 100 + 96] += AUX_S_3_0_3_0[96];
-                    S_3_0_3_0[abcd * 100 + 97] += AUX_S_3_0_3_0[97];
-                    S_3_0_3_0[abcd * 100 + 98] += AUX_S_3_0_3_0[98];
-                    S_3_0_3_0[abcd * 100 + 99] += AUX_S_3_0_3_0[99];
+                    for(int i = 0; i < 100; i++)
+                        PRIM_S_3_0_3_0[i] += AUX_S_3_0_3_0[i];
 
                     // Accumulating in contracted workspace
-                    S_3_0_4_0[abcd * 150 + 0] += AUX_S_3_0_4_0[0];
-                    S_3_0_4_0[abcd * 150 + 1] += AUX_S_3_0_4_0[1];
-                    S_3_0_4_0[abcd * 150 + 2] += AUX_S_3_0_4_0[2];
-                    S_3_0_4_0[abcd * 150 + 3] += AUX_S_3_0_4_0[3];
-                    S_3_0_4_0[abcd * 150 + 4] += AUX_S_3_0_4_0[4];
-                    S_3_0_4_0[abcd * 150 + 5] += AUX_S_3_0_4_0[5];
-                    S_3_0_4_0[abcd * 150 + 6] += AUX_S_3_0_4_0[6];
-                    S_3_0_4_0[abcd * 150 + 7] += AUX_S_3_0_4_0[7];
-                    S_3_0_4_0[abcd * 150 + 8] += AUX_S_3_0_4_0[8];
-                    S_3_0_4_0[abcd * 150 + 9] += AUX_S_3_0_4_0[9];
-                    S_3_0_4_0[abcd * 150 + 10] += AUX_S_3_0_4_0[10];
-                    S_3_0_4_0[abcd * 150 + 11] += AUX_S_3_0_4_0[11];
-                    S_3_0_4_0[abcd * 150 + 12] += AUX_S_3_0_4_0[12];
-                    S_3_0_4_0[abcd * 150 + 13] += AUX_S_3_0_4_0[13];
-                    S_3_0_4_0[abcd * 150 + 14] += AUX_S_3_0_4_0[14];
-                    S_3_0_4_0[abcd * 150 + 15] += AUX_S_3_0_4_0[15];
-                    S_3_0_4_0[abcd * 150 + 16] += AUX_S_3_0_4_0[16];
-                    S_3_0_4_0[abcd * 150 + 17] += AUX_S_3_0_4_0[17];
-                    S_3_0_4_0[abcd * 150 + 18] += AUX_S_3_0_4_0[18];
-                    S_3_0_4_0[abcd * 150 + 19] += AUX_S_3_0_4_0[19];
-                    S_3_0_4_0[abcd * 150 + 20] += AUX_S_3_0_4_0[20];
-                    S_3_0_4_0[abcd * 150 + 21] += AUX_S_3_0_4_0[21];
-                    S_3_0_4_0[abcd * 150 + 22] += AUX_S_3_0_4_0[22];
-                    S_3_0_4_0[abcd * 150 + 23] += AUX_S_3_0_4_0[23];
-                    S_3_0_4_0[abcd * 150 + 24] += AUX_S_3_0_4_0[24];
-                    S_3_0_4_0[abcd * 150 + 25] += AUX_S_3_0_4_0[25];
-                    S_3_0_4_0[abcd * 150 + 26] += AUX_S_3_0_4_0[26];
-                    S_3_0_4_0[abcd * 150 + 27] += AUX_S_3_0_4_0[27];
-                    S_3_0_4_0[abcd * 150 + 28] += AUX_S_3_0_4_0[28];
-                    S_3_0_4_0[abcd * 150 + 29] += AUX_S_3_0_4_0[29];
-                    S_3_0_4_0[abcd * 150 + 30] += AUX_S_3_0_4_0[30];
-                    S_3_0_4_0[abcd * 150 + 31] += AUX_S_3_0_4_0[31];
-                    S_3_0_4_0[abcd * 150 + 32] += AUX_S_3_0_4_0[32];
-                    S_3_0_4_0[abcd * 150 + 33] += AUX_S_3_0_4_0[33];
-                    S_3_0_4_0[abcd * 150 + 34] += AUX_S_3_0_4_0[34];
-                    S_3_0_4_0[abcd * 150 + 35] += AUX_S_3_0_4_0[35];
-                    S_3_0_4_0[abcd * 150 + 36] += AUX_S_3_0_4_0[36];
-                    S_3_0_4_0[abcd * 150 + 37] += AUX_S_3_0_4_0[37];
-                    S_3_0_4_0[abcd * 150 + 38] += AUX_S_3_0_4_0[38];
-                    S_3_0_4_0[abcd * 150 + 39] += AUX_S_3_0_4_0[39];
-                    S_3_0_4_0[abcd * 150 + 40] += AUX_S_3_0_4_0[40];
-                    S_3_0_4_0[abcd * 150 + 41] += AUX_S_3_0_4_0[41];
-                    S_3_0_4_0[abcd * 150 + 42] += AUX_S_3_0_4_0[42];
-                    S_3_0_4_0[abcd * 150 + 43] += AUX_S_3_0_4_0[43];
-                    S_3_0_4_0[abcd * 150 + 44] += AUX_S_3_0_4_0[44];
-                    S_3_0_4_0[abcd * 150 + 45] += AUX_S_3_0_4_0[45];
-                    S_3_0_4_0[abcd * 150 + 46] += AUX_S_3_0_4_0[46];
-                    S_3_0_4_0[abcd * 150 + 47] += AUX_S_3_0_4_0[47];
-                    S_3_0_4_0[abcd * 150 + 48] += AUX_S_3_0_4_0[48];
-                    S_3_0_4_0[abcd * 150 + 49] += AUX_S_3_0_4_0[49];
-                    S_3_0_4_0[abcd * 150 + 50] += AUX_S_3_0_4_0[50];
-                    S_3_0_4_0[abcd * 150 + 51] += AUX_S_3_0_4_0[51];
-                    S_3_0_4_0[abcd * 150 + 52] += AUX_S_3_0_4_0[52];
-                    S_3_0_4_0[abcd * 150 + 53] += AUX_S_3_0_4_0[53];
-                    S_3_0_4_0[abcd * 150 + 54] += AUX_S_3_0_4_0[54];
-                    S_3_0_4_0[abcd * 150 + 55] += AUX_S_3_0_4_0[55];
-                    S_3_0_4_0[abcd * 150 + 56] += AUX_S_3_0_4_0[56];
-                    S_3_0_4_0[abcd * 150 + 57] += AUX_S_3_0_4_0[57];
-                    S_3_0_4_0[abcd * 150 + 58] += AUX_S_3_0_4_0[58];
-                    S_3_0_4_0[abcd * 150 + 59] += AUX_S_3_0_4_0[59];
-                    S_3_0_4_0[abcd * 150 + 60] += AUX_S_3_0_4_0[60];
-                    S_3_0_4_0[abcd * 150 + 61] += AUX_S_3_0_4_0[61];
-                    S_3_0_4_0[abcd * 150 + 62] += AUX_S_3_0_4_0[62];
-                    S_3_0_4_0[abcd * 150 + 63] += AUX_S_3_0_4_0[63];
-                    S_3_0_4_0[abcd * 150 + 64] += AUX_S_3_0_4_0[64];
-                    S_3_0_4_0[abcd * 150 + 65] += AUX_S_3_0_4_0[65];
-                    S_3_0_4_0[abcd * 150 + 66] += AUX_S_3_0_4_0[66];
-                    S_3_0_4_0[abcd * 150 + 67] += AUX_S_3_0_4_0[67];
-                    S_3_0_4_0[abcd * 150 + 68] += AUX_S_3_0_4_0[68];
-                    S_3_0_4_0[abcd * 150 + 69] += AUX_S_3_0_4_0[69];
-                    S_3_0_4_0[abcd * 150 + 70] += AUX_S_3_0_4_0[70];
-                    S_3_0_4_0[abcd * 150 + 71] += AUX_S_3_0_4_0[71];
-                    S_3_0_4_0[abcd * 150 + 72] += AUX_S_3_0_4_0[72];
-                    S_3_0_4_0[abcd * 150 + 73] += AUX_S_3_0_4_0[73];
-                    S_3_0_4_0[abcd * 150 + 74] += AUX_S_3_0_4_0[74];
-                    S_3_0_4_0[abcd * 150 + 75] += AUX_S_3_0_4_0[75];
-                    S_3_0_4_0[abcd * 150 + 76] += AUX_S_3_0_4_0[76];
-                    S_3_0_4_0[abcd * 150 + 77] += AUX_S_3_0_4_0[77];
-                    S_3_0_4_0[abcd * 150 + 78] += AUX_S_3_0_4_0[78];
-                    S_3_0_4_0[abcd * 150 + 79] += AUX_S_3_0_4_0[79];
-                    S_3_0_4_0[abcd * 150 + 80] += AUX_S_3_0_4_0[80];
-                    S_3_0_4_0[abcd * 150 + 81] += AUX_S_3_0_4_0[81];
-                    S_3_0_4_0[abcd * 150 + 82] += AUX_S_3_0_4_0[82];
-                    S_3_0_4_0[abcd * 150 + 83] += AUX_S_3_0_4_0[83];
-                    S_3_0_4_0[abcd * 150 + 84] += AUX_S_3_0_4_0[84];
-                    S_3_0_4_0[abcd * 150 + 85] += AUX_S_3_0_4_0[85];
-                    S_3_0_4_0[abcd * 150 + 86] += AUX_S_3_0_4_0[86];
-                    S_3_0_4_0[abcd * 150 + 87] += AUX_S_3_0_4_0[87];
-                    S_3_0_4_0[abcd * 150 + 88] += AUX_S_3_0_4_0[88];
-                    S_3_0_4_0[abcd * 150 + 89] += AUX_S_3_0_4_0[89];
-                    S_3_0_4_0[abcd * 150 + 90] += AUX_S_3_0_4_0[90];
-                    S_3_0_4_0[abcd * 150 + 91] += AUX_S_3_0_4_0[91];
-                    S_3_0_4_0[abcd * 150 + 92] += AUX_S_3_0_4_0[92];
-                    S_3_0_4_0[abcd * 150 + 93] += AUX_S_3_0_4_0[93];
-                    S_3_0_4_0[abcd * 150 + 94] += AUX_S_3_0_4_0[94];
-                    S_3_0_4_0[abcd * 150 + 95] += AUX_S_3_0_4_0[95];
-                    S_3_0_4_0[abcd * 150 + 96] += AUX_S_3_0_4_0[96];
-                    S_3_0_4_0[abcd * 150 + 97] += AUX_S_3_0_4_0[97];
-                    S_3_0_4_0[abcd * 150 + 98] += AUX_S_3_0_4_0[98];
-                    S_3_0_4_0[abcd * 150 + 99] += AUX_S_3_0_4_0[99];
-                    S_3_0_4_0[abcd * 150 + 100] += AUX_S_3_0_4_0[100];
-                    S_3_0_4_0[abcd * 150 + 101] += AUX_S_3_0_4_0[101];
-                    S_3_0_4_0[abcd * 150 + 102] += AUX_S_3_0_4_0[102];
-                    S_3_0_4_0[abcd * 150 + 103] += AUX_S_3_0_4_0[103];
-                    S_3_0_4_0[abcd * 150 + 104] += AUX_S_3_0_4_0[104];
-                    S_3_0_4_0[abcd * 150 + 105] += AUX_S_3_0_4_0[105];
-                    S_3_0_4_0[abcd * 150 + 106] += AUX_S_3_0_4_0[106];
-                    S_3_0_4_0[abcd * 150 + 107] += AUX_S_3_0_4_0[107];
-                    S_3_0_4_0[abcd * 150 + 108] += AUX_S_3_0_4_0[108];
-                    S_3_0_4_0[abcd * 150 + 109] += AUX_S_3_0_4_0[109];
-                    S_3_0_4_0[abcd * 150 + 110] += AUX_S_3_0_4_0[110];
-                    S_3_0_4_0[abcd * 150 + 111] += AUX_S_3_0_4_0[111];
-                    S_3_0_4_0[abcd * 150 + 112] += AUX_S_3_0_4_0[112];
-                    S_3_0_4_0[abcd * 150 + 113] += AUX_S_3_0_4_0[113];
-                    S_3_0_4_0[abcd * 150 + 114] += AUX_S_3_0_4_0[114];
-                    S_3_0_4_0[abcd * 150 + 115] += AUX_S_3_0_4_0[115];
-                    S_3_0_4_0[abcd * 150 + 116] += AUX_S_3_0_4_0[116];
-                    S_3_0_4_0[abcd * 150 + 117] += AUX_S_3_0_4_0[117];
-                    S_3_0_4_0[abcd * 150 + 118] += AUX_S_3_0_4_0[118];
-                    S_3_0_4_0[abcd * 150 + 119] += AUX_S_3_0_4_0[119];
-                    S_3_0_4_0[abcd * 150 + 120] += AUX_S_3_0_4_0[120];
-                    S_3_0_4_0[abcd * 150 + 121] += AUX_S_3_0_4_0[121];
-                    S_3_0_4_0[abcd * 150 + 122] += AUX_S_3_0_4_0[122];
-                    S_3_0_4_0[abcd * 150 + 123] += AUX_S_3_0_4_0[123];
-                    S_3_0_4_0[abcd * 150 + 124] += AUX_S_3_0_4_0[124];
-                    S_3_0_4_0[abcd * 150 + 125] += AUX_S_3_0_4_0[125];
-                    S_3_0_4_0[abcd * 150 + 126] += AUX_S_3_0_4_0[126];
-                    S_3_0_4_0[abcd * 150 + 127] += AUX_S_3_0_4_0[127];
-                    S_3_0_4_0[abcd * 150 + 128] += AUX_S_3_0_4_0[128];
-                    S_3_0_4_0[abcd * 150 + 129] += AUX_S_3_0_4_0[129];
-                    S_3_0_4_0[abcd * 150 + 130] += AUX_S_3_0_4_0[130];
-                    S_3_0_4_0[abcd * 150 + 131] += AUX_S_3_0_4_0[131];
-                    S_3_0_4_0[abcd * 150 + 132] += AUX_S_3_0_4_0[132];
-                    S_3_0_4_0[abcd * 150 + 133] += AUX_S_3_0_4_0[133];
-                    S_3_0_4_0[abcd * 150 + 134] += AUX_S_3_0_4_0[134];
-                    S_3_0_4_0[abcd * 150 + 135] += AUX_S_3_0_4_0[135];
-                    S_3_0_4_0[abcd * 150 + 136] += AUX_S_3_0_4_0[136];
-                    S_3_0_4_0[abcd * 150 + 137] += AUX_S_3_0_4_0[137];
-                    S_3_0_4_0[abcd * 150 + 138] += AUX_S_3_0_4_0[138];
-                    S_3_0_4_0[abcd * 150 + 139] += AUX_S_3_0_4_0[139];
-                    S_3_0_4_0[abcd * 150 + 140] += AUX_S_3_0_4_0[140];
-                    S_3_0_4_0[abcd * 150 + 141] += AUX_S_3_0_4_0[141];
-                    S_3_0_4_0[abcd * 150 + 142] += AUX_S_3_0_4_0[142];
-                    S_3_0_4_0[abcd * 150 + 143] += AUX_S_3_0_4_0[143];
-                    S_3_0_4_0[abcd * 150 + 144] += AUX_S_3_0_4_0[144];
-                    S_3_0_4_0[abcd * 150 + 145] += AUX_S_3_0_4_0[145];
-                    S_3_0_4_0[abcd * 150 + 146] += AUX_S_3_0_4_0[146];
-                    S_3_0_4_0[abcd * 150 + 147] += AUX_S_3_0_4_0[147];
-                    S_3_0_4_0[abcd * 150 + 148] += AUX_S_3_0_4_0[148];
-                    S_3_0_4_0[abcd * 150 + 149] += AUX_S_3_0_4_0[149];
+                    for(int i = 0; i < 150; i++)
+                        PRIM_S_3_0_4_0[i] += AUX_S_3_0_4_0[i];
 
                     // Accumulating in contracted workspace
-                    S_4_0_2_0[abcd * 90 + 0] += AUX_S_4_0_2_0[0];
-                    S_4_0_2_0[abcd * 90 + 1] += AUX_S_4_0_2_0[1];
-                    S_4_0_2_0[abcd * 90 + 2] += AUX_S_4_0_2_0[2];
-                    S_4_0_2_0[abcd * 90 + 3] += AUX_S_4_0_2_0[3];
-                    S_4_0_2_0[abcd * 90 + 4] += AUX_S_4_0_2_0[4];
-                    S_4_0_2_0[abcd * 90 + 5] += AUX_S_4_0_2_0[5];
-                    S_4_0_2_0[abcd * 90 + 6] += AUX_S_4_0_2_0[6];
-                    S_4_0_2_0[abcd * 90 + 7] += AUX_S_4_0_2_0[7];
-                    S_4_0_2_0[abcd * 90 + 8] += AUX_S_4_0_2_0[8];
-                    S_4_0_2_0[abcd * 90 + 9] += AUX_S_4_0_2_0[9];
-                    S_4_0_2_0[abcd * 90 + 10] += AUX_S_4_0_2_0[10];
-                    S_4_0_2_0[abcd * 90 + 11] += AUX_S_4_0_2_0[11];
-                    S_4_0_2_0[abcd * 90 + 12] += AUX_S_4_0_2_0[12];
-                    S_4_0_2_0[abcd * 90 + 13] += AUX_S_4_0_2_0[13];
-                    S_4_0_2_0[abcd * 90 + 14] += AUX_S_4_0_2_0[14];
-                    S_4_0_2_0[abcd * 90 + 15] += AUX_S_4_0_2_0[15];
-                    S_4_0_2_0[abcd * 90 + 16] += AUX_S_4_0_2_0[16];
-                    S_4_0_2_0[abcd * 90 + 17] += AUX_S_4_0_2_0[17];
-                    S_4_0_2_0[abcd * 90 + 18] += AUX_S_4_0_2_0[18];
-                    S_4_0_2_0[abcd * 90 + 19] += AUX_S_4_0_2_0[19];
-                    S_4_0_2_0[abcd * 90 + 20] += AUX_S_4_0_2_0[20];
-                    S_4_0_2_0[abcd * 90 + 21] += AUX_S_4_0_2_0[21];
-                    S_4_0_2_0[abcd * 90 + 22] += AUX_S_4_0_2_0[22];
-                    S_4_0_2_0[abcd * 90 + 23] += AUX_S_4_0_2_0[23];
-                    S_4_0_2_0[abcd * 90 + 24] += AUX_S_4_0_2_0[24];
-                    S_4_0_2_0[abcd * 90 + 25] += AUX_S_4_0_2_0[25];
-                    S_4_0_2_0[abcd * 90 + 26] += AUX_S_4_0_2_0[26];
-                    S_4_0_2_0[abcd * 90 + 27] += AUX_S_4_0_2_0[27];
-                    S_4_0_2_0[abcd * 90 + 28] += AUX_S_4_0_2_0[28];
-                    S_4_0_2_0[abcd * 90 + 29] += AUX_S_4_0_2_0[29];
-                    S_4_0_2_0[abcd * 90 + 30] += AUX_S_4_0_2_0[30];
-                    S_4_0_2_0[abcd * 90 + 31] += AUX_S_4_0_2_0[31];
-                    S_4_0_2_0[abcd * 90 + 32] += AUX_S_4_0_2_0[32];
-                    S_4_0_2_0[abcd * 90 + 33] += AUX_S_4_0_2_0[33];
-                    S_4_0_2_0[abcd * 90 + 34] += AUX_S_4_0_2_0[34];
-                    S_4_0_2_0[abcd * 90 + 35] += AUX_S_4_0_2_0[35];
-                    S_4_0_2_0[abcd * 90 + 36] += AUX_S_4_0_2_0[36];
-                    S_4_0_2_0[abcd * 90 + 37] += AUX_S_4_0_2_0[37];
-                    S_4_0_2_0[abcd * 90 + 38] += AUX_S_4_0_2_0[38];
-                    S_4_0_2_0[abcd * 90 + 39] += AUX_S_4_0_2_0[39];
-                    S_4_0_2_0[abcd * 90 + 40] += AUX_S_4_0_2_0[40];
-                    S_4_0_2_0[abcd * 90 + 41] += AUX_S_4_0_2_0[41];
-                    S_4_0_2_0[abcd * 90 + 42] += AUX_S_4_0_2_0[42];
-                    S_4_0_2_0[abcd * 90 + 43] += AUX_S_4_0_2_0[43];
-                    S_4_0_2_0[abcd * 90 + 44] += AUX_S_4_0_2_0[44];
-                    S_4_0_2_0[abcd * 90 + 45] += AUX_S_4_0_2_0[45];
-                    S_4_0_2_0[abcd * 90 + 46] += AUX_S_4_0_2_0[46];
-                    S_4_0_2_0[abcd * 90 + 47] += AUX_S_4_0_2_0[47];
-                    S_4_0_2_0[abcd * 90 + 48] += AUX_S_4_0_2_0[48];
-                    S_4_0_2_0[abcd * 90 + 49] += AUX_S_4_0_2_0[49];
-                    S_4_0_2_0[abcd * 90 + 50] += AUX_S_4_0_2_0[50];
-                    S_4_0_2_0[abcd * 90 + 51] += AUX_S_4_0_2_0[51];
-                    S_4_0_2_0[abcd * 90 + 52] += AUX_S_4_0_2_0[52];
-                    S_4_0_2_0[abcd * 90 + 53] += AUX_S_4_0_2_0[53];
-                    S_4_0_2_0[abcd * 90 + 54] += AUX_S_4_0_2_0[54];
-                    S_4_0_2_0[abcd * 90 + 55] += AUX_S_4_0_2_0[55];
-                    S_4_0_2_0[abcd * 90 + 56] += AUX_S_4_0_2_0[56];
-                    S_4_0_2_0[abcd * 90 + 57] += AUX_S_4_0_2_0[57];
-                    S_4_0_2_0[abcd * 90 + 58] += AUX_S_4_0_2_0[58];
-                    S_4_0_2_0[abcd * 90 + 59] += AUX_S_4_0_2_0[59];
-                    S_4_0_2_0[abcd * 90 + 60] += AUX_S_4_0_2_0[60];
-                    S_4_0_2_0[abcd * 90 + 61] += AUX_S_4_0_2_0[61];
-                    S_4_0_2_0[abcd * 90 + 62] += AUX_S_4_0_2_0[62];
-                    S_4_0_2_0[abcd * 90 + 63] += AUX_S_4_0_2_0[63];
-                    S_4_0_2_0[abcd * 90 + 64] += AUX_S_4_0_2_0[64];
-                    S_4_0_2_0[abcd * 90 + 65] += AUX_S_4_0_2_0[65];
-                    S_4_0_2_0[abcd * 90 + 66] += AUX_S_4_0_2_0[66];
-                    S_4_0_2_0[abcd * 90 + 67] += AUX_S_4_0_2_0[67];
-                    S_4_0_2_0[abcd * 90 + 68] += AUX_S_4_0_2_0[68];
-                    S_4_0_2_0[abcd * 90 + 69] += AUX_S_4_0_2_0[69];
-                    S_4_0_2_0[abcd * 90 + 70] += AUX_S_4_0_2_0[70];
-                    S_4_0_2_0[abcd * 90 + 71] += AUX_S_4_0_2_0[71];
-                    S_4_0_2_0[abcd * 90 + 72] += AUX_S_4_0_2_0[72];
-                    S_4_0_2_0[abcd * 90 + 73] += AUX_S_4_0_2_0[73];
-                    S_4_0_2_0[abcd * 90 + 74] += AUX_S_4_0_2_0[74];
-                    S_4_0_2_0[abcd * 90 + 75] += AUX_S_4_0_2_0[75];
-                    S_4_0_2_0[abcd * 90 + 76] += AUX_S_4_0_2_0[76];
-                    S_4_0_2_0[abcd * 90 + 77] += AUX_S_4_0_2_0[77];
-                    S_4_0_2_0[abcd * 90 + 78] += AUX_S_4_0_2_0[78];
-                    S_4_0_2_0[abcd * 90 + 79] += AUX_S_4_0_2_0[79];
-                    S_4_0_2_0[abcd * 90 + 80] += AUX_S_4_0_2_0[80];
-                    S_4_0_2_0[abcd * 90 + 81] += AUX_S_4_0_2_0[81];
-                    S_4_0_2_0[abcd * 90 + 82] += AUX_S_4_0_2_0[82];
-                    S_4_0_2_0[abcd * 90 + 83] += AUX_S_4_0_2_0[83];
-                    S_4_0_2_0[abcd * 90 + 84] += AUX_S_4_0_2_0[84];
-                    S_4_0_2_0[abcd * 90 + 85] += AUX_S_4_0_2_0[85];
-                    S_4_0_2_0[abcd * 90 + 86] += AUX_S_4_0_2_0[86];
-                    S_4_0_2_0[abcd * 90 + 87] += AUX_S_4_0_2_0[87];
-                    S_4_0_2_0[abcd * 90 + 88] += AUX_S_4_0_2_0[88];
-                    S_4_0_2_0[abcd * 90 + 89] += AUX_S_4_0_2_0[89];
+                    for(int i = 0; i < 90; i++)
+                        PRIM_S_4_0_2_0[i] += AUX_S_4_0_2_0[i];
 
                     // Accumulating in contracted workspace
-                    S_4_0_3_0[abcd * 150 + 0] += AUX_S_4_0_3_0[0];
-                    S_4_0_3_0[abcd * 150 + 1] += AUX_S_4_0_3_0[1];
-                    S_4_0_3_0[abcd * 150 + 2] += AUX_S_4_0_3_0[2];
-                    S_4_0_3_0[abcd * 150 + 3] += AUX_S_4_0_3_0[3];
-                    S_4_0_3_0[abcd * 150 + 4] += AUX_S_4_0_3_0[4];
-                    S_4_0_3_0[abcd * 150 + 5] += AUX_S_4_0_3_0[5];
-                    S_4_0_3_0[abcd * 150 + 6] += AUX_S_4_0_3_0[6];
-                    S_4_0_3_0[abcd * 150 + 7] += AUX_S_4_0_3_0[7];
-                    S_4_0_3_0[abcd * 150 + 8] += AUX_S_4_0_3_0[8];
-                    S_4_0_3_0[abcd * 150 + 9] += AUX_S_4_0_3_0[9];
-                    S_4_0_3_0[abcd * 150 + 10] += AUX_S_4_0_3_0[10];
-                    S_4_0_3_0[abcd * 150 + 11] += AUX_S_4_0_3_0[11];
-                    S_4_0_3_0[abcd * 150 + 12] += AUX_S_4_0_3_0[12];
-                    S_4_0_3_0[abcd * 150 + 13] += AUX_S_4_0_3_0[13];
-                    S_4_0_3_0[abcd * 150 + 14] += AUX_S_4_0_3_0[14];
-                    S_4_0_3_0[abcd * 150 + 15] += AUX_S_4_0_3_0[15];
-                    S_4_0_3_0[abcd * 150 + 16] += AUX_S_4_0_3_0[16];
-                    S_4_0_3_0[abcd * 150 + 17] += AUX_S_4_0_3_0[17];
-                    S_4_0_3_0[abcd * 150 + 18] += AUX_S_4_0_3_0[18];
-                    S_4_0_3_0[abcd * 150 + 19] += AUX_S_4_0_3_0[19];
-                    S_4_0_3_0[abcd * 150 + 20] += AUX_S_4_0_3_0[20];
-                    S_4_0_3_0[abcd * 150 + 21] += AUX_S_4_0_3_0[21];
-                    S_4_0_3_0[abcd * 150 + 22] += AUX_S_4_0_3_0[22];
-                    S_4_0_3_0[abcd * 150 + 23] += AUX_S_4_0_3_0[23];
-                    S_4_0_3_0[abcd * 150 + 24] += AUX_S_4_0_3_0[24];
-                    S_4_0_3_0[abcd * 150 + 25] += AUX_S_4_0_3_0[25];
-                    S_4_0_3_0[abcd * 150 + 26] += AUX_S_4_0_3_0[26];
-                    S_4_0_3_0[abcd * 150 + 27] += AUX_S_4_0_3_0[27];
-                    S_4_0_3_0[abcd * 150 + 28] += AUX_S_4_0_3_0[28];
-                    S_4_0_3_0[abcd * 150 + 29] += AUX_S_4_0_3_0[29];
-                    S_4_0_3_0[abcd * 150 + 30] += AUX_S_4_0_3_0[30];
-                    S_4_0_3_0[abcd * 150 + 31] += AUX_S_4_0_3_0[31];
-                    S_4_0_3_0[abcd * 150 + 32] += AUX_S_4_0_3_0[32];
-                    S_4_0_3_0[abcd * 150 + 33] += AUX_S_4_0_3_0[33];
-                    S_4_0_3_0[abcd * 150 + 34] += AUX_S_4_0_3_0[34];
-                    S_4_0_3_0[abcd * 150 + 35] += AUX_S_4_0_3_0[35];
-                    S_4_0_3_0[abcd * 150 + 36] += AUX_S_4_0_3_0[36];
-                    S_4_0_3_0[abcd * 150 + 37] += AUX_S_4_0_3_0[37];
-                    S_4_0_3_0[abcd * 150 + 38] += AUX_S_4_0_3_0[38];
-                    S_4_0_3_0[abcd * 150 + 39] += AUX_S_4_0_3_0[39];
-                    S_4_0_3_0[abcd * 150 + 40] += AUX_S_4_0_3_0[40];
-                    S_4_0_3_0[abcd * 150 + 41] += AUX_S_4_0_3_0[41];
-                    S_4_0_3_0[abcd * 150 + 42] += AUX_S_4_0_3_0[42];
-                    S_4_0_3_0[abcd * 150 + 43] += AUX_S_4_0_3_0[43];
-                    S_4_0_3_0[abcd * 150 + 44] += AUX_S_4_0_3_0[44];
-                    S_4_0_3_0[abcd * 150 + 45] += AUX_S_4_0_3_0[45];
-                    S_4_0_3_0[abcd * 150 + 46] += AUX_S_4_0_3_0[46];
-                    S_4_0_3_0[abcd * 150 + 47] += AUX_S_4_0_3_0[47];
-                    S_4_0_3_0[abcd * 150 + 48] += AUX_S_4_0_3_0[48];
-                    S_4_0_3_0[abcd * 150 + 49] += AUX_S_4_0_3_0[49];
-                    S_4_0_3_0[abcd * 150 + 50] += AUX_S_4_0_3_0[50];
-                    S_4_0_3_0[abcd * 150 + 51] += AUX_S_4_0_3_0[51];
-                    S_4_0_3_0[abcd * 150 + 52] += AUX_S_4_0_3_0[52];
-                    S_4_0_3_0[abcd * 150 + 53] += AUX_S_4_0_3_0[53];
-                    S_4_0_3_0[abcd * 150 + 54] += AUX_S_4_0_3_0[54];
-                    S_4_0_3_0[abcd * 150 + 55] += AUX_S_4_0_3_0[55];
-                    S_4_0_3_0[abcd * 150 + 56] += AUX_S_4_0_3_0[56];
-                    S_4_0_3_0[abcd * 150 + 57] += AUX_S_4_0_3_0[57];
-                    S_4_0_3_0[abcd * 150 + 58] += AUX_S_4_0_3_0[58];
-                    S_4_0_3_0[abcd * 150 + 59] += AUX_S_4_0_3_0[59];
-                    S_4_0_3_0[abcd * 150 + 60] += AUX_S_4_0_3_0[60];
-                    S_4_0_3_0[abcd * 150 + 61] += AUX_S_4_0_3_0[61];
-                    S_4_0_3_0[abcd * 150 + 62] += AUX_S_4_0_3_0[62];
-                    S_4_0_3_0[abcd * 150 + 63] += AUX_S_4_0_3_0[63];
-                    S_4_0_3_0[abcd * 150 + 64] += AUX_S_4_0_3_0[64];
-                    S_4_0_3_0[abcd * 150 + 65] += AUX_S_4_0_3_0[65];
-                    S_4_0_3_0[abcd * 150 + 66] += AUX_S_4_0_3_0[66];
-                    S_4_0_3_0[abcd * 150 + 67] += AUX_S_4_0_3_0[67];
-                    S_4_0_3_0[abcd * 150 + 68] += AUX_S_4_0_3_0[68];
-                    S_4_0_3_0[abcd * 150 + 69] += AUX_S_4_0_3_0[69];
-                    S_4_0_3_0[abcd * 150 + 70] += AUX_S_4_0_3_0[70];
-                    S_4_0_3_0[abcd * 150 + 71] += AUX_S_4_0_3_0[71];
-                    S_4_0_3_0[abcd * 150 + 72] += AUX_S_4_0_3_0[72];
-                    S_4_0_3_0[abcd * 150 + 73] += AUX_S_4_0_3_0[73];
-                    S_4_0_3_0[abcd * 150 + 74] += AUX_S_4_0_3_0[74];
-                    S_4_0_3_0[abcd * 150 + 75] += AUX_S_4_0_3_0[75];
-                    S_4_0_3_0[abcd * 150 + 76] += AUX_S_4_0_3_0[76];
-                    S_4_0_3_0[abcd * 150 + 77] += AUX_S_4_0_3_0[77];
-                    S_4_0_3_0[abcd * 150 + 78] += AUX_S_4_0_3_0[78];
-                    S_4_0_3_0[abcd * 150 + 79] += AUX_S_4_0_3_0[79];
-                    S_4_0_3_0[abcd * 150 + 80] += AUX_S_4_0_3_0[80];
-                    S_4_0_3_0[abcd * 150 + 81] += AUX_S_4_0_3_0[81];
-                    S_4_0_3_0[abcd * 150 + 82] += AUX_S_4_0_3_0[82];
-                    S_4_0_3_0[abcd * 150 + 83] += AUX_S_4_0_3_0[83];
-                    S_4_0_3_0[abcd * 150 + 84] += AUX_S_4_0_3_0[84];
-                    S_4_0_3_0[abcd * 150 + 85] += AUX_S_4_0_3_0[85];
-                    S_4_0_3_0[abcd * 150 + 86] += AUX_S_4_0_3_0[86];
-                    S_4_0_3_0[abcd * 150 + 87] += AUX_S_4_0_3_0[87];
-                    S_4_0_3_0[abcd * 150 + 88] += AUX_S_4_0_3_0[88];
-                    S_4_0_3_0[abcd * 150 + 89] += AUX_S_4_0_3_0[89];
-                    S_4_0_3_0[abcd * 150 + 90] += AUX_S_4_0_3_0[90];
-                    S_4_0_3_0[abcd * 150 + 91] += AUX_S_4_0_3_0[91];
-                    S_4_0_3_0[abcd * 150 + 92] += AUX_S_4_0_3_0[92];
-                    S_4_0_3_0[abcd * 150 + 93] += AUX_S_4_0_3_0[93];
-                    S_4_0_3_0[abcd * 150 + 94] += AUX_S_4_0_3_0[94];
-                    S_4_0_3_0[abcd * 150 + 95] += AUX_S_4_0_3_0[95];
-                    S_4_0_3_0[abcd * 150 + 96] += AUX_S_4_0_3_0[96];
-                    S_4_0_3_0[abcd * 150 + 97] += AUX_S_4_0_3_0[97];
-                    S_4_0_3_0[abcd * 150 + 98] += AUX_S_4_0_3_0[98];
-                    S_4_0_3_0[abcd * 150 + 99] += AUX_S_4_0_3_0[99];
-                    S_4_0_3_0[abcd * 150 + 100] += AUX_S_4_0_3_0[100];
-                    S_4_0_3_0[abcd * 150 + 101] += AUX_S_4_0_3_0[101];
-                    S_4_0_3_0[abcd * 150 + 102] += AUX_S_4_0_3_0[102];
-                    S_4_0_3_0[abcd * 150 + 103] += AUX_S_4_0_3_0[103];
-                    S_4_0_3_0[abcd * 150 + 104] += AUX_S_4_0_3_0[104];
-                    S_4_0_3_0[abcd * 150 + 105] += AUX_S_4_0_3_0[105];
-                    S_4_0_3_0[abcd * 150 + 106] += AUX_S_4_0_3_0[106];
-                    S_4_0_3_0[abcd * 150 + 107] += AUX_S_4_0_3_0[107];
-                    S_4_0_3_0[abcd * 150 + 108] += AUX_S_4_0_3_0[108];
-                    S_4_0_3_0[abcd * 150 + 109] += AUX_S_4_0_3_0[109];
-                    S_4_0_3_0[abcd * 150 + 110] += AUX_S_4_0_3_0[110];
-                    S_4_0_3_0[abcd * 150 + 111] += AUX_S_4_0_3_0[111];
-                    S_4_0_3_0[abcd * 150 + 112] += AUX_S_4_0_3_0[112];
-                    S_4_0_3_0[abcd * 150 + 113] += AUX_S_4_0_3_0[113];
-                    S_4_0_3_0[abcd * 150 + 114] += AUX_S_4_0_3_0[114];
-                    S_4_0_3_0[abcd * 150 + 115] += AUX_S_4_0_3_0[115];
-                    S_4_0_3_0[abcd * 150 + 116] += AUX_S_4_0_3_0[116];
-                    S_4_0_3_0[abcd * 150 + 117] += AUX_S_4_0_3_0[117];
-                    S_4_0_3_0[abcd * 150 + 118] += AUX_S_4_0_3_0[118];
-                    S_4_0_3_0[abcd * 150 + 119] += AUX_S_4_0_3_0[119];
-                    S_4_0_3_0[abcd * 150 + 120] += AUX_S_4_0_3_0[120];
-                    S_4_0_3_0[abcd * 150 + 121] += AUX_S_4_0_3_0[121];
-                    S_4_0_3_0[abcd * 150 + 122] += AUX_S_4_0_3_0[122];
-                    S_4_0_3_0[abcd * 150 + 123] += AUX_S_4_0_3_0[123];
-                    S_4_0_3_0[abcd * 150 + 124] += AUX_S_4_0_3_0[124];
-                    S_4_0_3_0[abcd * 150 + 125] += AUX_S_4_0_3_0[125];
-                    S_4_0_3_0[abcd * 150 + 126] += AUX_S_4_0_3_0[126];
-                    S_4_0_3_0[abcd * 150 + 127] += AUX_S_4_0_3_0[127];
-                    S_4_0_3_0[abcd * 150 + 128] += AUX_S_4_0_3_0[128];
-                    S_4_0_3_0[abcd * 150 + 129] += AUX_S_4_0_3_0[129];
-                    S_4_0_3_0[abcd * 150 + 130] += AUX_S_4_0_3_0[130];
-                    S_4_0_3_0[abcd * 150 + 131] += AUX_S_4_0_3_0[131];
-                    S_4_0_3_0[abcd * 150 + 132] += AUX_S_4_0_3_0[132];
-                    S_4_0_3_0[abcd * 150 + 133] += AUX_S_4_0_3_0[133];
-                    S_4_0_3_0[abcd * 150 + 134] += AUX_S_4_0_3_0[134];
-                    S_4_0_3_0[abcd * 150 + 135] += AUX_S_4_0_3_0[135];
-                    S_4_0_3_0[abcd * 150 + 136] += AUX_S_4_0_3_0[136];
-                    S_4_0_3_0[abcd * 150 + 137] += AUX_S_4_0_3_0[137];
-                    S_4_0_3_0[abcd * 150 + 138] += AUX_S_4_0_3_0[138];
-                    S_4_0_3_0[abcd * 150 + 139] += AUX_S_4_0_3_0[139];
-                    S_4_0_3_0[abcd * 150 + 140] += AUX_S_4_0_3_0[140];
-                    S_4_0_3_0[abcd * 150 + 141] += AUX_S_4_0_3_0[141];
-                    S_4_0_3_0[abcd * 150 + 142] += AUX_S_4_0_3_0[142];
-                    S_4_0_3_0[abcd * 150 + 143] += AUX_S_4_0_3_0[143];
-                    S_4_0_3_0[abcd * 150 + 144] += AUX_S_4_0_3_0[144];
-                    S_4_0_3_0[abcd * 150 + 145] += AUX_S_4_0_3_0[145];
-                    S_4_0_3_0[abcd * 150 + 146] += AUX_S_4_0_3_0[146];
-                    S_4_0_3_0[abcd * 150 + 147] += AUX_S_4_0_3_0[147];
-                    S_4_0_3_0[abcd * 150 + 148] += AUX_S_4_0_3_0[148];
-                    S_4_0_3_0[abcd * 150 + 149] += AUX_S_4_0_3_0[149];
+                    for(int i = 0; i < 150; i++)
+                        PRIM_S_4_0_3_0[i] += AUX_S_4_0_3_0[i];
 
                     // Accumulating in contracted workspace
-                    S_4_0_4_0[abcd * 225 + 0] += AUX_S_4_0_4_0[0];
-                    S_4_0_4_0[abcd * 225 + 1] += AUX_S_4_0_4_0[1];
-                    S_4_0_4_0[abcd * 225 + 2] += AUX_S_4_0_4_0[2];
-                    S_4_0_4_0[abcd * 225 + 3] += AUX_S_4_0_4_0[3];
-                    S_4_0_4_0[abcd * 225 + 4] += AUX_S_4_0_4_0[4];
-                    S_4_0_4_0[abcd * 225 + 5] += AUX_S_4_0_4_0[5];
-                    S_4_0_4_0[abcd * 225 + 6] += AUX_S_4_0_4_0[6];
-                    S_4_0_4_0[abcd * 225 + 7] += AUX_S_4_0_4_0[7];
-                    S_4_0_4_0[abcd * 225 + 8] += AUX_S_4_0_4_0[8];
-                    S_4_0_4_0[abcd * 225 + 9] += AUX_S_4_0_4_0[9];
-                    S_4_0_4_0[abcd * 225 + 10] += AUX_S_4_0_4_0[10];
-                    S_4_0_4_0[abcd * 225 + 11] += AUX_S_4_0_4_0[11];
-                    S_4_0_4_0[abcd * 225 + 12] += AUX_S_4_0_4_0[12];
-                    S_4_0_4_0[abcd * 225 + 13] += AUX_S_4_0_4_0[13];
-                    S_4_0_4_0[abcd * 225 + 14] += AUX_S_4_0_4_0[14];
-                    S_4_0_4_0[abcd * 225 + 15] += AUX_S_4_0_4_0[15];
-                    S_4_0_4_0[abcd * 225 + 16] += AUX_S_4_0_4_0[16];
-                    S_4_0_4_0[abcd * 225 + 17] += AUX_S_4_0_4_0[17];
-                    S_4_0_4_0[abcd * 225 + 18] += AUX_S_4_0_4_0[18];
-                    S_4_0_4_0[abcd * 225 + 19] += AUX_S_4_0_4_0[19];
-                    S_4_0_4_0[abcd * 225 + 20] += AUX_S_4_0_4_0[20];
-                    S_4_0_4_0[abcd * 225 + 21] += AUX_S_4_0_4_0[21];
-                    S_4_0_4_0[abcd * 225 + 22] += AUX_S_4_0_4_0[22];
-                    S_4_0_4_0[abcd * 225 + 23] += AUX_S_4_0_4_0[23];
-                    S_4_0_4_0[abcd * 225 + 24] += AUX_S_4_0_4_0[24];
-                    S_4_0_4_0[abcd * 225 + 25] += AUX_S_4_0_4_0[25];
-                    S_4_0_4_0[abcd * 225 + 26] += AUX_S_4_0_4_0[26];
-                    S_4_0_4_0[abcd * 225 + 27] += AUX_S_4_0_4_0[27];
-                    S_4_0_4_0[abcd * 225 + 28] += AUX_S_4_0_4_0[28];
-                    S_4_0_4_0[abcd * 225 + 29] += AUX_S_4_0_4_0[29];
-                    S_4_0_4_0[abcd * 225 + 30] += AUX_S_4_0_4_0[30];
-                    S_4_0_4_0[abcd * 225 + 31] += AUX_S_4_0_4_0[31];
-                    S_4_0_4_0[abcd * 225 + 32] += AUX_S_4_0_4_0[32];
-                    S_4_0_4_0[abcd * 225 + 33] += AUX_S_4_0_4_0[33];
-                    S_4_0_4_0[abcd * 225 + 34] += AUX_S_4_0_4_0[34];
-                    S_4_0_4_0[abcd * 225 + 35] += AUX_S_4_0_4_0[35];
-                    S_4_0_4_0[abcd * 225 + 36] += AUX_S_4_0_4_0[36];
-                    S_4_0_4_0[abcd * 225 + 37] += AUX_S_4_0_4_0[37];
-                    S_4_0_4_0[abcd * 225 + 38] += AUX_S_4_0_4_0[38];
-                    S_4_0_4_0[abcd * 225 + 39] += AUX_S_4_0_4_0[39];
-                    S_4_0_4_0[abcd * 225 + 40] += AUX_S_4_0_4_0[40];
-                    S_4_0_4_0[abcd * 225 + 41] += AUX_S_4_0_4_0[41];
-                    S_4_0_4_0[abcd * 225 + 42] += AUX_S_4_0_4_0[42];
-                    S_4_0_4_0[abcd * 225 + 43] += AUX_S_4_0_4_0[43];
-                    S_4_0_4_0[abcd * 225 + 44] += AUX_S_4_0_4_0[44];
-                    S_4_0_4_0[abcd * 225 + 45] += AUX_S_4_0_4_0[45];
-                    S_4_0_4_0[abcd * 225 + 46] += AUX_S_4_0_4_0[46];
-                    S_4_0_4_0[abcd * 225 + 47] += AUX_S_4_0_4_0[47];
-                    S_4_0_4_0[abcd * 225 + 48] += AUX_S_4_0_4_0[48];
-                    S_4_0_4_0[abcd * 225 + 49] += AUX_S_4_0_4_0[49];
-                    S_4_0_4_0[abcd * 225 + 50] += AUX_S_4_0_4_0[50];
-                    S_4_0_4_0[abcd * 225 + 51] += AUX_S_4_0_4_0[51];
-                    S_4_0_4_0[abcd * 225 + 52] += AUX_S_4_0_4_0[52];
-                    S_4_0_4_0[abcd * 225 + 53] += AUX_S_4_0_4_0[53];
-                    S_4_0_4_0[abcd * 225 + 54] += AUX_S_4_0_4_0[54];
-                    S_4_0_4_0[abcd * 225 + 55] += AUX_S_4_0_4_0[55];
-                    S_4_0_4_0[abcd * 225 + 56] += AUX_S_4_0_4_0[56];
-                    S_4_0_4_0[abcd * 225 + 57] += AUX_S_4_0_4_0[57];
-                    S_4_0_4_0[abcd * 225 + 58] += AUX_S_4_0_4_0[58];
-                    S_4_0_4_0[abcd * 225 + 59] += AUX_S_4_0_4_0[59];
-                    S_4_0_4_0[abcd * 225 + 60] += AUX_S_4_0_4_0[60];
-                    S_4_0_4_0[abcd * 225 + 61] += AUX_S_4_0_4_0[61];
-                    S_4_0_4_0[abcd * 225 + 62] += AUX_S_4_0_4_0[62];
-                    S_4_0_4_0[abcd * 225 + 63] += AUX_S_4_0_4_0[63];
-                    S_4_0_4_0[abcd * 225 + 64] += AUX_S_4_0_4_0[64];
-                    S_4_0_4_0[abcd * 225 + 65] += AUX_S_4_0_4_0[65];
-                    S_4_0_4_0[abcd * 225 + 66] += AUX_S_4_0_4_0[66];
-                    S_4_0_4_0[abcd * 225 + 67] += AUX_S_4_0_4_0[67];
-                    S_4_0_4_0[abcd * 225 + 68] += AUX_S_4_0_4_0[68];
-                    S_4_0_4_0[abcd * 225 + 69] += AUX_S_4_0_4_0[69];
-                    S_4_0_4_0[abcd * 225 + 70] += AUX_S_4_0_4_0[70];
-                    S_4_0_4_0[abcd * 225 + 71] += AUX_S_4_0_4_0[71];
-                    S_4_0_4_0[abcd * 225 + 72] += AUX_S_4_0_4_0[72];
-                    S_4_0_4_0[abcd * 225 + 73] += AUX_S_4_0_4_0[73];
-                    S_4_0_4_0[abcd * 225 + 74] += AUX_S_4_0_4_0[74];
-                    S_4_0_4_0[abcd * 225 + 75] += AUX_S_4_0_4_0[75];
-                    S_4_0_4_0[abcd * 225 + 76] += AUX_S_4_0_4_0[76];
-                    S_4_0_4_0[abcd * 225 + 77] += AUX_S_4_0_4_0[77];
-                    S_4_0_4_0[abcd * 225 + 78] += AUX_S_4_0_4_0[78];
-                    S_4_0_4_0[abcd * 225 + 79] += AUX_S_4_0_4_0[79];
-                    S_4_0_4_0[abcd * 225 + 80] += AUX_S_4_0_4_0[80];
-                    S_4_0_4_0[abcd * 225 + 81] += AUX_S_4_0_4_0[81];
-                    S_4_0_4_0[abcd * 225 + 82] += AUX_S_4_0_4_0[82];
-                    S_4_0_4_0[abcd * 225 + 83] += AUX_S_4_0_4_0[83];
-                    S_4_0_4_0[abcd * 225 + 84] += AUX_S_4_0_4_0[84];
-                    S_4_0_4_0[abcd * 225 + 85] += AUX_S_4_0_4_0[85];
-                    S_4_0_4_0[abcd * 225 + 86] += AUX_S_4_0_4_0[86];
-                    S_4_0_4_0[abcd * 225 + 87] += AUX_S_4_0_4_0[87];
-                    S_4_0_4_0[abcd * 225 + 88] += AUX_S_4_0_4_0[88];
-                    S_4_0_4_0[abcd * 225 + 89] += AUX_S_4_0_4_0[89];
-                    S_4_0_4_0[abcd * 225 + 90] += AUX_S_4_0_4_0[90];
-                    S_4_0_4_0[abcd * 225 + 91] += AUX_S_4_0_4_0[91];
-                    S_4_0_4_0[abcd * 225 + 92] += AUX_S_4_0_4_0[92];
-                    S_4_0_4_0[abcd * 225 + 93] += AUX_S_4_0_4_0[93];
-                    S_4_0_4_0[abcd * 225 + 94] += AUX_S_4_0_4_0[94];
-                    S_4_0_4_0[abcd * 225 + 95] += AUX_S_4_0_4_0[95];
-                    S_4_0_4_0[abcd * 225 + 96] += AUX_S_4_0_4_0[96];
-                    S_4_0_4_0[abcd * 225 + 97] += AUX_S_4_0_4_0[97];
-                    S_4_0_4_0[abcd * 225 + 98] += AUX_S_4_0_4_0[98];
-                    S_4_0_4_0[abcd * 225 + 99] += AUX_S_4_0_4_0[99];
-                    S_4_0_4_0[abcd * 225 + 100] += AUX_S_4_0_4_0[100];
-                    S_4_0_4_0[abcd * 225 + 101] += AUX_S_4_0_4_0[101];
-                    S_4_0_4_0[abcd * 225 + 102] += AUX_S_4_0_4_0[102];
-                    S_4_0_4_0[abcd * 225 + 103] += AUX_S_4_0_4_0[103];
-                    S_4_0_4_0[abcd * 225 + 104] += AUX_S_4_0_4_0[104];
-                    S_4_0_4_0[abcd * 225 + 105] += AUX_S_4_0_4_0[105];
-                    S_4_0_4_0[abcd * 225 + 106] += AUX_S_4_0_4_0[106];
-                    S_4_0_4_0[abcd * 225 + 107] += AUX_S_4_0_4_0[107];
-                    S_4_0_4_0[abcd * 225 + 108] += AUX_S_4_0_4_0[108];
-                    S_4_0_4_0[abcd * 225 + 109] += AUX_S_4_0_4_0[109];
-                    S_4_0_4_0[abcd * 225 + 110] += AUX_S_4_0_4_0[110];
-                    S_4_0_4_0[abcd * 225 + 111] += AUX_S_4_0_4_0[111];
-                    S_4_0_4_0[abcd * 225 + 112] += AUX_S_4_0_4_0[112];
-                    S_4_0_4_0[abcd * 225 + 113] += AUX_S_4_0_4_0[113];
-                    S_4_0_4_0[abcd * 225 + 114] += AUX_S_4_0_4_0[114];
-                    S_4_0_4_0[abcd * 225 + 115] += AUX_S_4_0_4_0[115];
-                    S_4_0_4_0[abcd * 225 + 116] += AUX_S_4_0_4_0[116];
-                    S_4_0_4_0[abcd * 225 + 117] += AUX_S_4_0_4_0[117];
-                    S_4_0_4_0[abcd * 225 + 118] += AUX_S_4_0_4_0[118];
-                    S_4_0_4_0[abcd * 225 + 119] += AUX_S_4_0_4_0[119];
-                    S_4_0_4_0[abcd * 225 + 120] += AUX_S_4_0_4_0[120];
-                    S_4_0_4_0[abcd * 225 + 121] += AUX_S_4_0_4_0[121];
-                    S_4_0_4_0[abcd * 225 + 122] += AUX_S_4_0_4_0[122];
-                    S_4_0_4_0[abcd * 225 + 123] += AUX_S_4_0_4_0[123];
-                    S_4_0_4_0[abcd * 225 + 124] += AUX_S_4_0_4_0[124];
-                    S_4_0_4_0[abcd * 225 + 125] += AUX_S_4_0_4_0[125];
-                    S_4_0_4_0[abcd * 225 + 126] += AUX_S_4_0_4_0[126];
-                    S_4_0_4_0[abcd * 225 + 127] += AUX_S_4_0_4_0[127];
-                    S_4_0_4_0[abcd * 225 + 128] += AUX_S_4_0_4_0[128];
-                    S_4_0_4_0[abcd * 225 + 129] += AUX_S_4_0_4_0[129];
-                    S_4_0_4_0[abcd * 225 + 130] += AUX_S_4_0_4_0[130];
-                    S_4_0_4_0[abcd * 225 + 131] += AUX_S_4_0_4_0[131];
-                    S_4_0_4_0[abcd * 225 + 132] += AUX_S_4_0_4_0[132];
-                    S_4_0_4_0[abcd * 225 + 133] += AUX_S_4_0_4_0[133];
-                    S_4_0_4_0[abcd * 225 + 134] += AUX_S_4_0_4_0[134];
-                    S_4_0_4_0[abcd * 225 + 135] += AUX_S_4_0_4_0[135];
-                    S_4_0_4_0[abcd * 225 + 136] += AUX_S_4_0_4_0[136];
-                    S_4_0_4_0[abcd * 225 + 137] += AUX_S_4_0_4_0[137];
-                    S_4_0_4_0[abcd * 225 + 138] += AUX_S_4_0_4_0[138];
-                    S_4_0_4_0[abcd * 225 + 139] += AUX_S_4_0_4_0[139];
-                    S_4_0_4_0[abcd * 225 + 140] += AUX_S_4_0_4_0[140];
-                    S_4_0_4_0[abcd * 225 + 141] += AUX_S_4_0_4_0[141];
-                    S_4_0_4_0[abcd * 225 + 142] += AUX_S_4_0_4_0[142];
-                    S_4_0_4_0[abcd * 225 + 143] += AUX_S_4_0_4_0[143];
-                    S_4_0_4_0[abcd * 225 + 144] += AUX_S_4_0_4_0[144];
-                    S_4_0_4_0[abcd * 225 + 145] += AUX_S_4_0_4_0[145];
-                    S_4_0_4_0[abcd * 225 + 146] += AUX_S_4_0_4_0[146];
-                    S_4_0_4_0[abcd * 225 + 147] += AUX_S_4_0_4_0[147];
-                    S_4_0_4_0[abcd * 225 + 148] += AUX_S_4_0_4_0[148];
-                    S_4_0_4_0[abcd * 225 + 149] += AUX_S_4_0_4_0[149];
-                    S_4_0_4_0[abcd * 225 + 150] += AUX_S_4_0_4_0[150];
-                    S_4_0_4_0[abcd * 225 + 151] += AUX_S_4_0_4_0[151];
-                    S_4_0_4_0[abcd * 225 + 152] += AUX_S_4_0_4_0[152];
-                    S_4_0_4_0[abcd * 225 + 153] += AUX_S_4_0_4_0[153];
-                    S_4_0_4_0[abcd * 225 + 154] += AUX_S_4_0_4_0[154];
-                    S_4_0_4_0[abcd * 225 + 155] += AUX_S_4_0_4_0[155];
-                    S_4_0_4_0[abcd * 225 + 156] += AUX_S_4_0_4_0[156];
-                    S_4_0_4_0[abcd * 225 + 157] += AUX_S_4_0_4_0[157];
-                    S_4_0_4_0[abcd * 225 + 158] += AUX_S_4_0_4_0[158];
-                    S_4_0_4_0[abcd * 225 + 159] += AUX_S_4_0_4_0[159];
-                    S_4_0_4_0[abcd * 225 + 160] += AUX_S_4_0_4_0[160];
-                    S_4_0_4_0[abcd * 225 + 161] += AUX_S_4_0_4_0[161];
-                    S_4_0_4_0[abcd * 225 + 162] += AUX_S_4_0_4_0[162];
-                    S_4_0_4_0[abcd * 225 + 163] += AUX_S_4_0_4_0[163];
-                    S_4_0_4_0[abcd * 225 + 164] += AUX_S_4_0_4_0[164];
-                    S_4_0_4_0[abcd * 225 + 165] += AUX_S_4_0_4_0[165];
-                    S_4_0_4_0[abcd * 225 + 166] += AUX_S_4_0_4_0[166];
-                    S_4_0_4_0[abcd * 225 + 167] += AUX_S_4_0_4_0[167];
-                    S_4_0_4_0[abcd * 225 + 168] += AUX_S_4_0_4_0[168];
-                    S_4_0_4_0[abcd * 225 + 169] += AUX_S_4_0_4_0[169];
-                    S_4_0_4_0[abcd * 225 + 170] += AUX_S_4_0_4_0[170];
-                    S_4_0_4_0[abcd * 225 + 171] += AUX_S_4_0_4_0[171];
-                    S_4_0_4_0[abcd * 225 + 172] += AUX_S_4_0_4_0[172];
-                    S_4_0_4_0[abcd * 225 + 173] += AUX_S_4_0_4_0[173];
-                    S_4_0_4_0[abcd * 225 + 174] += AUX_S_4_0_4_0[174];
-                    S_4_0_4_0[abcd * 225 + 175] += AUX_S_4_0_4_0[175];
-                    S_4_0_4_0[abcd * 225 + 176] += AUX_S_4_0_4_0[176];
-                    S_4_0_4_0[abcd * 225 + 177] += AUX_S_4_0_4_0[177];
-                    S_4_0_4_0[abcd * 225 + 178] += AUX_S_4_0_4_0[178];
-                    S_4_0_4_0[abcd * 225 + 179] += AUX_S_4_0_4_0[179];
-                    S_4_0_4_0[abcd * 225 + 180] += AUX_S_4_0_4_0[180];
-                    S_4_0_4_0[abcd * 225 + 181] += AUX_S_4_0_4_0[181];
-                    S_4_0_4_0[abcd * 225 + 182] += AUX_S_4_0_4_0[182];
-                    S_4_0_4_0[abcd * 225 + 183] += AUX_S_4_0_4_0[183];
-                    S_4_0_4_0[abcd * 225 + 184] += AUX_S_4_0_4_0[184];
-                    S_4_0_4_0[abcd * 225 + 185] += AUX_S_4_0_4_0[185];
-                    S_4_0_4_0[abcd * 225 + 186] += AUX_S_4_0_4_0[186];
-                    S_4_0_4_0[abcd * 225 + 187] += AUX_S_4_0_4_0[187];
-                    S_4_0_4_0[abcd * 225 + 188] += AUX_S_4_0_4_0[188];
-                    S_4_0_4_0[abcd * 225 + 189] += AUX_S_4_0_4_0[189];
-                    S_4_0_4_0[abcd * 225 + 190] += AUX_S_4_0_4_0[190];
-                    S_4_0_4_0[abcd * 225 + 191] += AUX_S_4_0_4_0[191];
-                    S_4_0_4_0[abcd * 225 + 192] += AUX_S_4_0_4_0[192];
-                    S_4_0_4_0[abcd * 225 + 193] += AUX_S_4_0_4_0[193];
-                    S_4_0_4_0[abcd * 225 + 194] += AUX_S_4_0_4_0[194];
-                    S_4_0_4_0[abcd * 225 + 195] += AUX_S_4_0_4_0[195];
-                    S_4_0_4_0[abcd * 225 + 196] += AUX_S_4_0_4_0[196];
-                    S_4_0_4_0[abcd * 225 + 197] += AUX_S_4_0_4_0[197];
-                    S_4_0_4_0[abcd * 225 + 198] += AUX_S_4_0_4_0[198];
-                    S_4_0_4_0[abcd * 225 + 199] += AUX_S_4_0_4_0[199];
-                    S_4_0_4_0[abcd * 225 + 200] += AUX_S_4_0_4_0[200];
-                    S_4_0_4_0[abcd * 225 + 201] += AUX_S_4_0_4_0[201];
-                    S_4_0_4_0[abcd * 225 + 202] += AUX_S_4_0_4_0[202];
-                    S_4_0_4_0[abcd * 225 + 203] += AUX_S_4_0_4_0[203];
-                    S_4_0_4_0[abcd * 225 + 204] += AUX_S_4_0_4_0[204];
-                    S_4_0_4_0[abcd * 225 + 205] += AUX_S_4_0_4_0[205];
-                    S_4_0_4_0[abcd * 225 + 206] += AUX_S_4_0_4_0[206];
-                    S_4_0_4_0[abcd * 225 + 207] += AUX_S_4_0_4_0[207];
-                    S_4_0_4_0[abcd * 225 + 208] += AUX_S_4_0_4_0[208];
-                    S_4_0_4_0[abcd * 225 + 209] += AUX_S_4_0_4_0[209];
-                    S_4_0_4_0[abcd * 225 + 210] += AUX_S_4_0_4_0[210];
-                    S_4_0_4_0[abcd * 225 + 211] += AUX_S_4_0_4_0[211];
-                    S_4_0_4_0[abcd * 225 + 212] += AUX_S_4_0_4_0[212];
-                    S_4_0_4_0[abcd * 225 + 213] += AUX_S_4_0_4_0[213];
-                    S_4_0_4_0[abcd * 225 + 214] += AUX_S_4_0_4_0[214];
-                    S_4_0_4_0[abcd * 225 + 215] += AUX_S_4_0_4_0[215];
-                    S_4_0_4_0[abcd * 225 + 216] += AUX_S_4_0_4_0[216];
-                    S_4_0_4_0[abcd * 225 + 217] += AUX_S_4_0_4_0[217];
-                    S_4_0_4_0[abcd * 225 + 218] += AUX_S_4_0_4_0[218];
-                    S_4_0_4_0[abcd * 225 + 219] += AUX_S_4_0_4_0[219];
-                    S_4_0_4_0[abcd * 225 + 220] += AUX_S_4_0_4_0[220];
-                    S_4_0_4_0[abcd * 225 + 221] += AUX_S_4_0_4_0[221];
-                    S_4_0_4_0[abcd * 225 + 222] += AUX_S_4_0_4_0[222];
-                    S_4_0_4_0[abcd * 225 + 223] += AUX_S_4_0_4_0[223];
-                    S_4_0_4_0[abcd * 225 + 224] += AUX_S_4_0_4_0[224];
+                    for(int i = 0; i < 225; i++)
+                        PRIM_S_4_0_4_0[i] += AUX_S_4_0_4_0[i];
 
                  }
             }

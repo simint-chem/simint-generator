@@ -69,6 +69,10 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
 
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
+            // set up pointers to the contracted integrals - VRR
+            // set up pointers to the contracted integrals - Electron Transfer
+        double * const restrict PRIM_S_1_0_1_0 = S_1_0_1_0 + (abcd * 9);
+
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
@@ -182,7 +186,7 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
                     {
                         //D_200 : STEP: x
                         AUX_S_2_0_0_0[m * 6 + 0] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
                         AUX_S_2_0_0_0[m * 6 + 1] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
@@ -192,14 +196,14 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
 
                         //D_020 : STEP: y
                         AUX_S_2_0_0_0[m * 6 + 3] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
                         AUX_S_2_0_0_0[m * 6 + 4] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
                         AUX_S_2_0_0_0[m * 6 + 5] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
-                                      +1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
 
                     }
 
@@ -239,15 +243,8 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
 
 
                     // Accumulating in contracted workspace
-                    S_1_0_1_0[abcd * 9 + 0] += AUX_S_1_0_1_0[0];
-                    S_1_0_1_0[abcd * 9 + 1] += AUX_S_1_0_1_0[1];
-                    S_1_0_1_0[abcd * 9 + 2] += AUX_S_1_0_1_0[2];
-                    S_1_0_1_0[abcd * 9 + 3] += AUX_S_1_0_1_0[3];
-                    S_1_0_1_0[abcd * 9 + 4] += AUX_S_1_0_1_0[4];
-                    S_1_0_1_0[abcd * 9 + 5] += AUX_S_1_0_1_0[5];
-                    S_1_0_1_0[abcd * 9 + 6] += AUX_S_1_0_1_0[6];
-                    S_1_0_1_0[abcd * 9 + 7] += AUX_S_1_0_1_0[7];
-                    S_1_0_1_0[abcd * 9 + 8] += AUX_S_1_0_1_0[8];
+                    for(int i = 0; i < 9; i++)
+                        PRIM_S_1_0_1_0[i] += AUX_S_1_0_1_0[i];
 
                  }
             }

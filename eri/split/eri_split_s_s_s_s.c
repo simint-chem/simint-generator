@@ -69,6 +69,10 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
 
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
+            // set up pointers to the contracted integrals - VRR
+        double * const restrict PRIM_S_0_0_0_0 = S_0_0_0_0 + (abcd * 1);
+            // set up pointers to the contracted integrals - Electron Transfer
+
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
 
@@ -130,7 +134,7 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
 
 
                     // Accumulating S_0_0_0_0 in contracted workspace
-                    S_0_0_0_0[abcd] += AUX_S_0_0_0_0[0];
+                    *PRIM_S_0_0_0_0 += *AUX_S_0_0_0_0;
 
 
 

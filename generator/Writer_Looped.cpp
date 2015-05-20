@@ -175,7 +175,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
     {
         os << "\n";
         os << "                    // Accumulating S_0_0_0_0 in contracted workspace\n";
-        os <<"                    " << ArrVarName({0, 0, 0, 0}) << "[abcd] += " << AuxName(0) << "[0];\n";
+        os <<"                    *PRIM_" << ArrVarName({0, 0, 0, 0}) << " += *" << AuxName(0) << ";\n";
         os << "\n";
     }
 
@@ -225,7 +225,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             if(g2)
             {
                 os << "\n";
-                os << "                                      +" << vrr_i << " * one_over_2p * ( "
+                os << "                                      + " << vrr_i << " * one_over_2p * ( "
                    << AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
                    << " - a_over_p * " << AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
             }
@@ -243,10 +243,19 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         {
             os << "\n";
             os << "                    // Accumulating in contracted workspace\n";
-            for(const auto & it : greq)
+
+            if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
-                os << "                    " << ArrVarName({am, 0, 0, 0}) << "[abcd * " << NCART(am) << " + " 
-                   << it.idx() << "] += " << AuxName(am) << "[" << it.idx() << "];\n";
+                os << "                    for(int i = 0; i < " << NCART(am) << "; i++)\n";
+                os << "                        " << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[i] += "
+                                                 << AuxName(am) << "[i];\n";
+            }
+            else
+            { 
+                for(const auto & it : greq)
+                {
+                    os << "                    PRIM_" << AuxName(am) << "[" << it.idx() << "] += " << AuxName(am) << "[" << it.idx() << "];\n";
+                }
             }
         }
 
@@ -278,11 +287,19 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
 
             os << "\n";
             os << "                    // Accumulating in contracted workspace\n";
+
+
+            os << "                    for(int i = 0; i < " << ncart << "; i++)\n";
+            os << "                        " << "PRIM_" << ArrVarName(it) << "[i] += "
+                                             << "AUX_" << ArrVarName(it) << "[i];\n";
+
+            /*
             for(int i = 0; i < ncart; i++) 
             {
                 os << "                    " << ArrVarName(it) << "[abcd * " << ncart << " + " 
                    << i << "] += AUX_" << ArrVarName(it) << "[" << i << "];\n";
             }
+            */
         }
     }
 
@@ -304,6 +321,7 @@ void Writer_Looped(std::ostream & os,
 
     // add the am list to the contracted info
     continfo.insert(am);
+
 
     // for electron transfer
     // ETMap[am1][am2] is a list of steps for forming
@@ -427,10 +445,6 @@ void Writer_Looped(std::ostream & os,
         }
     }
 
-    // but if there are none, this of the type ( X 0 | 0 0 )
-    //if(vreq.size() == 0)
-    //    vreq[L] = AllGaussiansForAM(L);
-
     std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
 
 
@@ -444,6 +458,12 @@ void Writer_Looped(std::ostream & os,
 
     size_t memory_cont = memory_cont_elements * sizeof(double);
 
+
+    // some helper bools
+    bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
+    bool haset = (etsl.size() > 0);
+    //bool hashrr = ( hrrsteps.first.size() > 0 || hrrsteps.second.size() > 0 );
+    bool hasoneover2p = true;  // TODO
 
 
     ///////////////////////////////////////////////
@@ -479,10 +499,6 @@ void Writer_Looped(std::ostream & os,
     std::cout << "\n\n";
 
 
-    // some helper bools
-    bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
-    bool haset = (etsl.size() > 0);
-    bool hasoneover2p = true;  // TODO
 
 
     //////////////////////////////////////////////////
@@ -566,7 +582,7 @@ void Writer_Looped(std::ostream & os,
     {
         if(it != am)
         {
-            os << "    double * const restrict " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
+            os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
             ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
         }
     }
@@ -585,6 +601,29 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
+    os << "            // set up pointers to the contracted integrals - VRR\n";
+
+    // pointers for accumulation in VRR
+    for(const auto & it : vrrinfo.second)
+    {
+        int am = it.first;
+        if(IsContArray({am, 0, 0, 0}))
+            os << "        double * const restrict PRIM_" << ArrVarName({am, 0, 0, 0}) << " = " 
+               << ArrVarName({am, 0, 0, 0}) << " + (abcd * " << NCART(am) << ");\n";
+    }
+
+
+    // pointers for accumulation in ET
+    os << "            // set up pointers to the contracted integrals - Electron Transfer\n";
+    for(const auto & it : etint)
+    {
+        if(IsContArray(it))
+            os << "        double * const restrict PRIM_" << ArrVarName(it) << " = " 
+               << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
+    }
+
+    
+    os << "\n";
     os << "            const int cdstart = Q.primstart[cd];\n";
     os << "            const int cdend = Q.primend[cd];\n";
     os << "\n";

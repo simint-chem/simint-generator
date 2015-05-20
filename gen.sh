@@ -12,7 +12,7 @@ python3 ./generate_twoel.py -l 2 \
                             -g build/generator/generator \
                             -d eri/split
 
-python3 ./generate_twoel.py -l 2 \
+python3 ./generate_twoel.py -l 3 \
                             -b vref \
                             -p vref \
                             -g build/generator/generator \
