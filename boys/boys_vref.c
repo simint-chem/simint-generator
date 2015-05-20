@@ -1,0 +1,62 @@
+#include <math.h>
+
+#define EPS 1e-17
+#define MAXFAC 200
+
+void Boys_F_VRef(double *F, int n, double x)
+{   
+    int i, m;
+    int m2;
+    double t2;
+    double num;
+    double sum;
+    double term1;
+    const double K = 1.0 / 1.12837916709551257390;
+    double et;
+    
+    
+    if (x > 20.0)   /* For big t's do upward recursion */
+    {
+        t2 = 2 * x;
+        et = exp(-x);
+        x = sqrt(x);
+        F[0] = K * erf(x) / x;
+        for (m = 0; m <= n - 1; m++)
+        {   
+            F[m + 1] = ((2 * m + 1) * F[m] - et) / (t2);
+        }
+    }
+    else
+    {   
+        /* For smaller t's compute F with highest n using
+         * asymptotic series (see I. Shavitt in
+         * Methods in Computational Physics, ed. B. Alder eta l,
+         * vol 2, 1963, page 8) */
+        et = exp(-x);
+        t2 = 2 * x;
+        m2 = 2 * n;
+
+        double df = (m2-1 > 0 ? m2-1 : 1);
+        for(i = m2-3; i > 0; i++)
+            df *= i;
+
+        num = df;
+        df *= (m2+1);
+        i = 0;
+        sum = 1.0 / (m2 + 1);
+        do  
+        {   
+            i++;
+            df *= m2 + 2 * i + 1;
+            num = num * t2;
+            term1 = num / df;
+            sum += term1;
+        }
+        while (fabs(term1) > EPS && i < MAXFAC);
+        F[n] = sum * et;
+        for (m = n - 1; m >= 0; m--)   /* And then do downward recursion */
+        {   
+            F[m] = (t2 * F[m + 1] + et) / (2 * m + 1);
+        }
+    }
+}

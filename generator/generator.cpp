@@ -40,6 +40,8 @@ int main(int argc, char ** argv)
         bg = std::unique_ptr<BoysGen>(new BoysFO("/home/ben/programming/simint/generator/dat"));
     else if(boystype == "split")
         bg = std::unique_ptr<BoysGen>(new BoysSplit());
+    else if(boystype == "vref")
+        bg = std::unique_ptr<BoysGen>(new BoysVRef());
     else
     {
         std::cout << "Unknown boys type \"" << boystype << "\"\n";

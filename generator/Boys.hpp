@@ -55,6 +55,14 @@ struct BoysSplit : public BoysGen
 };
 
 
+struct BoysVRef : public BoysGen
+{
+    public:
+        // default constructors ok
+
+        virtual std::string all_code_lines(int maxam) const;
+        virtual std::vector<std::string> includes(void) const;
+};
 
 
 #endif

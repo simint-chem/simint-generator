@@ -123,3 +123,25 @@ std::vector<std::string> BoysSplit::includes(void) const
     return v;
 }
 
+
+////////////////////////////////////
+// Boys Valeev Reference
+////////////////////////////////////
+
+std::string BoysVRef::all_code_lines(int maxam) const
+{
+    const std::string indent(20, ' ');
+    std::stringstream ss;
+    ss << indent << "Boys_F_VRef(AUX_S_0_0_0_0, " << maxam << ", F_x);\n";
+    for(int i = 0; i <= maxam; i++)
+        ss << indent << "AUX_S_0_0_0_0[" << i << "] *= allprefac;\n";
+
+    return ss.str();
+}
+
+std::vector<std::string> BoysVRef::includes(void) const
+{
+    std::vector<std::string> v{"boys/boys_vref.h"};
+    return v;
+}
+

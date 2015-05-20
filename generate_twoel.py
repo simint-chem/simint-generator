@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 
 amchar = "spdfghijklmnoqrtuvwxyzabce"
-validboys = [ "FO", "split" ]
+validboys = [ "FO", "split", "vref" ]
 
 def ValidQuartet(q):
   if q[0] < q[1]:

@@ -8,6 +8,7 @@ extern "C" {
 #include "eri/shell.h"
 #include "eri/FO/eri_FO.h"
 #include "eri/split/eri_split.h"
+#include "eri/vref/eri_vref.h"
 
 
 int eri_split_ssss(struct multishell_pair const P,

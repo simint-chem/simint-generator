@@ -12,4 +12,10 @@ python3 ./generate_twoel.py -l 2 \
                             -g build/generator/generator \
                             -d eri/split
 
+python3 ./generate_twoel.py -l 2 \
+                            -b vref \
+                            -p vref \
+                            -g build/generator/generator \
+                            -d eri/vref
+
 touch eri/CMakeLists.txt
