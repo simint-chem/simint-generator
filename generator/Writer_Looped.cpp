@@ -569,7 +569,7 @@ void Writer_Looped(std::ostream & os,
     os << "    int i, j;\n";
     os << "\n";
 
-    if(continfo.size() > 0)
+    if(hashrr && continfo.size() > 0)
     {
         os << "    // Workspace for contracted integrals\n";
         os << "    double * const contwork = malloc(nshell1234 * " << memory_cont << ");\n";
@@ -602,25 +602,31 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
-    os << "            // set up pointers to the contracted integrals - VRR\n";
 
-    // pointers for accumulation in VRR
-    for(const auto & it : vrrinfo.second)
+    if(vrrinfo.second.size() > 0)
     {
-        int vam = it.first;
-        if(IsContArray({vam, 0, 0, 0}))
-            os << "        double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
-               << ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
+        os << "            // set up pointers to the contracted integrals - VRR\n";
+
+        // pointers for accumulation in VRR
+        for(const auto & it : vrrinfo.second)
+        {
+            int vam = it.first;
+            if(IsContArray({vam, 0, 0, 0}))
+                os << "            double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
+                   << ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
+        }
     }
 
-
-    // pointers for accumulation in ET
-    os << "            // set up pointers to the contracted integrals - Electron Transfer\n";
-    for(const auto & it : etint)
+    if(etint.size() > 0)
     {
-        if(IsContArray(it))
-            os << "        double * const restrict PRIM_" << ArrVarName(it) << " = " 
-               << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
+        // pointers for accumulation in ET
+        os << "            // set up pointers to the contracted integrals - Electron Transfer\n";
+        for(const auto & it : etint)
+        {
+            if(IsContArray(it))
+                os << "            double * const restrict PRIM_" << ArrVarName(it) << " = " 
+                   << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
+        }
     }
 
     
@@ -809,7 +815,7 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    if(continfo.size() > 0)
+    if(hashrr && continfo.size() > 0)
     {
         os << "    // Free contracted work space\n";
         os << "    free(contwork);\n";

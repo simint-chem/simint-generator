@@ -73,8 +73,8 @@ int eri_split_d_p_d_s(struct multishell_pair const P,
         {
             // set up pointers to the contracted integrals - VRR
             // set up pointers to the contracted integrals - Electron Transfer
-        double * const restrict PRIM_S_2_0_2_0 = S_2_0_2_0 + (abcd * 36);
-        double * const restrict PRIM_S_3_0_2_0 = S_3_0_2_0 + (abcd * 60);
+            double * const restrict PRIM_S_2_0_2_0 = S_2_0_2_0 + (abcd * 36);
+            double * const restrict PRIM_S_3_0_2_0 = S_3_0_2_0 + (abcd * 60);
 
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];

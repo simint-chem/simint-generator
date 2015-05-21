@@ -45,11 +45,6 @@ int eri_split_p_s_s_s(struct multishell_pair const P,
     int ab, cd, abcd;
     int i, j;
 
-    // Workspace for contracted integrals
-    double * const contwork = malloc(nshell1234 * 0);
-    memset(contwork, 0, nshell1234 * 0);
-
-    // partition workspace into shells
 
 
     ////////////////////////////////////////
@@ -66,8 +61,7 @@ int eri_split_p_s_s_s(struct multishell_pair const P,
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
             // set up pointers to the contracted integrals - VRR
-        double * const restrict PRIM_S_1_0_0_0 = S_1_0_0_0 + (abcd * 3);
-            // set up pointers to the contracted integrals - Electron Transfer
+            double * const restrict PRIM_S_1_0_0_0 = S_1_0_0_0 + (abcd * 3);
 
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
@@ -185,9 +179,6 @@ int eri_split_p_s_s_s(struct multishell_pair const P,
 
     //Nothing to do.....
 
-
-    // Free contracted work space
-    free(contwork);
 
     return nshell1234;
 }
