@@ -71,6 +71,14 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
 
             for(i = abstart; i < abend; ++i)
             {
+
+                // Load these one per loop over i
+                const double P_alpha = P.alpha[i];
+                const double P_prefac = P.prefac[i];
+                const double P_x = P.x[i];
+                const double P_y = P.y[i];
+                const double P_z = P.z[i];
+
                 for(j = cdstart; j < cdend; ++j)
                 {
 
@@ -84,19 +92,19 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
                     // Holds temporary integrals for electron transfer
 
 
-                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
-                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
+                    const double PQalpha_mul = P_alpha * Q.alpha[j];
+                    const double PQalpha_sum = P_alpha + Q.alpha[j];
 
                     const double pfac = TWO_PI_52 / (PQalpha_mul * sqrt(PQalpha_sum));
 
                     /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
-                    const double PQ_x = P.x[i] - Q.x[j];
-                    const double PQ_y = P.y[i] - Q.y[j];
-                    const double PQ_z = P.z[i] - Q.z[j];
+                    const double PQ_x = P_x - Q.x[j];
+                    const double PQ_y = P_y - Q.y[j];
+                    const double PQ_z = P_z - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
                     // collected prefactors
-                    const double allprefac =  pfac * P.prefac[i] * Q.prefac[j];
+                    const double allprefac =  pfac * P_prefac * Q.prefac[j];
 
                     // various factors
                     const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST
@@ -135,23 +143,7 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
     }
 
 
-    //////////////////////////////////////////////
-    // Contracted integrals: Horizontal recurrance
-    // Bra part
-    // Steps: 0
-    //////////////////////////////////////////////
 
-    // Nothing to do.....
-
-
-    //////////////////////////////////////////////
-    // Contracted integrals: Horizontal recurrance
-    // Ket part
-    // Steps: 0
-    // Forming final integrals
-    //////////////////////////////////////////////
-
-    //Nothing to do.....
 
 
     return nshell1234;

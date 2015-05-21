@@ -72,6 +72,20 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
 
             for(i = abstart; i < abend; ++i)
             {
+
+                // Load these one per loop over i
+                const double P_alpha = P.alpha[i];
+                const double P_prefac = P.prefac[i];
+                const double P_x = P.x[i];
+                const double P_y = P.y[i];
+                const double P_z = P.z[i];
+                const double P_PA_x = P.PA_x[i];
+                const double P_PA_y = P.PA_y[i];
+                const double P_PA_z = P.PA_z[i];
+                const double P_bAB_x = P.bAB_x[i];
+                const double P_bAB_y = P.bAB_y[i];
+                const double P_bAB_z = P.bAB_z[i];
+
                 for(j = cdstart; j < cdend; ++j)
                 {
 
@@ -95,35 +109,35 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
                     double AUX_INT__d_s_p_s[18];
 
 
-                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];
-                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];
+                    const double PQalpha_mul = P_alpha * Q.alpha[j];
+                    const double PQalpha_sum = P_alpha + Q.alpha[j];
 
                     const double pfac = TWO_PI_52 / (PQalpha_mul * sqrt(PQalpha_sum));
 
                     /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */
-                    const double PQ_x = P.x[i] - Q.x[j];
-                    const double PQ_y = P.y[i] - Q.y[j];
-                    const double PQ_z = P.z[i] - Q.z[j];
+                    const double PQ_x = P_x - Q.x[j];
+                    const double PQ_y = P_y - Q.y[j];
+                    const double PQ_z = P_z - Q.z[j];
                     const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;
 
                     // collected prefactors
-                    const double allprefac =  pfac * P.prefac[i] * Q.prefac[j];
+                    const double allprefac =  pfac * P_prefac * Q.prefac[j];
 
                     // various factors
                     const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST
                     // for VRR
-                    const double one_over_p = 1.0 / P.alpha[i];
+                    const double one_over_p = 1.0 / P_alpha;
                     const double a_over_p =  alpha * one_over_p;     // a/p from MEST
                     const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR
                     // for electron transfer
                     const double one_over_q = 1.0 / Q.alpha[j];
                     const double one_over_2q = 0.5 * one_over_q;
-                    const double p_over_q = P.alpha[i] * one_over_q;
+                    const double p_over_q = P_alpha * one_over_q;
 
                     const double etfac[3] = {
-                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,
-                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,
-                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,
+                                             -(P_bAB_x + Q.bAB_x[j]) * one_over_q,
+                                             -(P_bAB_y + Q.bAB_y[j]) * one_over_q,
+                                             -(P_bAB_z + Q.bAB_z[j]) * one_over_q,
                                             };
 
 
@@ -153,13 +167,13 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
                     for(int m = 0; m < 3; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
-                        AUX_INT__p_s_s_s[m * 3 + 0] = P.PA_x[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_x * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 0] = P_PA_x * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_x * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                         //P_010 : STEP: y
-                        AUX_INT__p_s_s_s[m * 3 + 1] = P.PA_y[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_y * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 1] = P_PA_y * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_y * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                         //P_001 : STEP: z
-                        AUX_INT__p_s_s_s[m * 3 + 2] = P.PA_z[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_z * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 2] = P_PA_z * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_z * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                     }
 
@@ -175,24 +189,24 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
                     for(int m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
-                        AUX_INT__d_s_s_s[m * 6 + 0] = P.PA_x[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_x * AUX_INT__p_s_s_s[(m+1) * 3 + 0]
+                        AUX_INT__d_s_s_s[m * 6 + 0] = P_PA_x * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_x * AUX_INT__p_s_s_s[(m+1) * 3 + 0]
                                       + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
-                        AUX_INT__d_s_s_s[m * 6 + 1] = P.PA_y[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
+                        AUX_INT__d_s_s_s[m * 6 + 1] = P_PA_y * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
 
                         //D_101 : STEP: z
-                        AUX_INT__d_s_s_s[m * 6 + 2] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
+                        AUX_INT__d_s_s_s[m * 6 + 2] = P_PA_z * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
 
                         //D_020 : STEP: y
-                        AUX_INT__d_s_s_s[m * 6 + 3] = P.PA_y[i] * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 1]
+                        AUX_INT__d_s_s_s[m * 6 + 3] = P_PA_y * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 1]
                                       + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
-                        AUX_INT__d_s_s_s[m * 6 + 4] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 1];
+                        AUX_INT__d_s_s_s[m * 6 + 4] = P_PA_z * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
-                        AUX_INT__d_s_s_s[m * 6 + 5] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 2] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 2]
+                        AUX_INT__d_s_s_s[m * 6 + 5] = P_PA_z * AUX_INT__p_s_s_s[m * 3 + 2] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 2]
                                       + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                     }
@@ -213,36 +227,36 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
                     for(int m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //F_300 : STEP: x
-                        AUX_INT__f_s_s_s[m * 10 + 0] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 0]
+                        AUX_INT__f_s_s_s[m * 10 + 0] = P_PA_x * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 0]
                                       + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  0] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 0] );
 
                         //F_210 : STEP: y
-                        AUX_INT__f_s_s_s[m * 10 + 1] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
+                        AUX_INT__f_s_s_s[m * 10 + 1] = P_PA_y * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
 
                         //F_201 : STEP: z
-                        AUX_INT__f_s_s_s[m * 10 + 2] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
+                        AUX_INT__f_s_s_s[m * 10 + 2] = P_PA_z * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
 
                         //F_120 : STEP: x
-                        AUX_INT__f_s_s_s[m * 10 + 3] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
+                        AUX_INT__f_s_s_s[m * 10 + 3] = P_PA_x * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
 
                         //F_111 : STEP: z
-                        AUX_INT__f_s_s_s[m * 10 + 4] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 1] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 1];
+                        AUX_INT__f_s_s_s[m * 10 + 4] = P_PA_z * AUX_INT__d_s_s_s[m * 6 + 1] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 1];
 
                         //F_102 : STEP: x
-                        AUX_INT__f_s_s_s[m * 10 + 5] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
+                        AUX_INT__f_s_s_s[m * 10 + 5] = P_PA_x * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
 
                         //F_030 : STEP: y
-                        AUX_INT__f_s_s_s[m * 10 + 6] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 3]
+                        AUX_INT__f_s_s_s[m * 10 + 6] = P_PA_y * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 3]
                                       + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  1] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 1] );
 
                         //F_021 : STEP: z
-                        AUX_INT__f_s_s_s[m * 10 + 7] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
+                        AUX_INT__f_s_s_s[m * 10 + 7] = P_PA_z * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
 
                         //F_012 : STEP: y
-                        AUX_INT__f_s_s_s[m * 10 + 8] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
+                        AUX_INT__f_s_s_s[m * 10 + 8] = P_PA_y * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
 
                         //F_003 : STEP: z
-                        AUX_INT__f_s_s_s[m * 10 + 9] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 5]
+                        AUX_INT__f_s_s_s[m * 10 + 9] = P_PA_z * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 5]
                                       + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  2] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 2] );
 
                     }
@@ -310,8 +324,8 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
 
 
                     // Accumulating in contracted workspace
-                    for(int i = 0; i < 18; i++)
-                        PRIM_INT__d_s_p_s[i] += AUX_INT__d_s_p_s[i];
+                    for(int n = 0; n < 18; n++)
+                        PRIM_INT__d_s_p_s[n] += AUX_INT__d_s_p_s[n];
 
                  }
             }
@@ -319,23 +333,7 @@ int eri_split_d_s_p_s(struct multishell_pair const P,
     }
 
 
-    //////////////////////////////////////////////
-    // Contracted integrals: Horizontal recurrance
-    // Bra part
-    // Steps: 0
-    //////////////////////////////////////////////
 
-    // Nothing to do.....
-
-
-    //////////////////////////////////////////////
-    // Contracted integrals: Horizontal recurrance
-    // Ket part
-    // Steps: 0
-    // Forming final integrals
-    //////////////////////////////////////////////
-
-    //Nothing to do.....
 
 
     return nshell1234;

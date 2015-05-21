@@ -201,7 +201,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
             os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-            os << indent2 << AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P.PA_" << step << "[i] * ";
+            os << indent2 << AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
 
             if(g1)
                 os << AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
@@ -227,8 +227,8 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 
             if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
-                os << indent1 << "for(int i = 0; i < " << NCART(am) << "; i++)\n";
-                os << indent2 << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[i] += " << AuxName(am) << "[i];\n";
+                os << indent1 << "for(int n = 0; n < " << NCART(am) << "; n++)\n";
+                os << indent2 << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[n] += " << AuxName(am) << "[n];\n";
             }
             else
             { 
@@ -277,8 +277,8 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
 
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
-            os << indent1 << "for(int i = 0; i < " << ncart << "; i++)\n";
-            os << indent2 << "PRIM_" << ArrVarName(it) << "[i] += AUX_" << ArrVarName(it) << "[i];\n";
+            os << indent1 << "for(int n = 0; n < " << ncart << "; n++)\n";
+            os << indent2 << "PRIM_" << ArrVarName(it) << "[n] += AUX_" << ArrVarName(it) << "[n];\n";
 
             /*
             for(int i = 0; i < ncart; i++) 
@@ -649,6 +649,29 @@ void Writer_Looped(std::ostream & os,
 
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
+    os << "\n";
+    os << "                // Load these one per loop over i\n";
+    os << "                const double P_alpha = P.alpha[i];\n";
+    os << "                const double P_prefac = P.prefac[i];\n";
+    os << "                const double P_x = P.x[i];\n";
+    os << "                const double P_y = P.y[i];\n";
+    os << "                const double P_z = P.z[i];\n";
+
+    if(hasvrr)
+    {
+        os << "                const double P_PA_x = P.PA_x[i];\n";
+        os << "                const double P_PA_y = P.PA_y[i];\n";
+        os << "                const double P_PA_z = P.PA_z[i];\n";
+    }
+
+    if(haset)
+    {
+        os << "                const double P_bAB_x = P.bAB_x[i];\n";
+        os << "                const double P_bAB_y = P.bAB_y[i];\n";
+        os << "                const double P_bAB_z = P.bAB_z[i];\n";
+    }
+
+    os << "\n";
     os << "                for(j = cdstart; j < cdend; ++j)\n";
     os << "                {\n";
     os << "\n";
@@ -674,19 +697,19 @@ void Writer_Looped(std::ostream & os,
 
 
     os << "\n\n";
-    os << "                    const double PQalpha_mul = P.alpha[i] * Q.alpha[j];\n";
-    os << "                    const double PQalpha_sum = P.alpha[i] + Q.alpha[j];\n";
+    os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
+    os << "                    const double PQalpha_sum = P_alpha + Q.alpha[j];\n";
     os << "\n";
     os << "                    const double pfac = TWO_PI_52 / (PQalpha_mul * sqrt(PQalpha_sum));\n";
     os << "\n";
     os << "                    /* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
-    os << "                    const double PQ_x = P.x[i] - Q.x[j];\n";
-    os << "                    const double PQ_y = P.y[i] - Q.y[j];\n";
-    os << "                    const double PQ_z = P.z[i] - Q.z[j];\n";
+    os << "                    const double PQ_x = P_x - Q.x[j];\n";
+    os << "                    const double PQ_y = P_y - Q.y[j];\n";
+    os << "                    const double PQ_z = P_z - Q.z[j];\n";
     os << "                    const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
     os << "\n";
     os << "                    // collected prefactors\n";
-    os << "                    const double allprefac =  pfac * P.prefac[i] * Q.prefac[j];\n";
+    os << "                    const double allprefac =  pfac * P_prefac * Q.prefac[j];\n";
     os << "\n";
     os << "                    // various factors\n";
     os << "                    const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
@@ -694,7 +717,7 @@ void Writer_Looped(std::ostream & os,
     if(hasvrr)
     {
         os << "                    // for VRR\n";
-        os << "                    const double one_over_p = 1.0 / P.alpha[i];\n";
+        os << "                    const double one_over_p = 1.0 / P_alpha;\n";
         os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)
             os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
@@ -705,13 +728,13 @@ void Writer_Looped(std::ostream & os,
         os << "                    // for electron transfer\n";
         os << "                    const double one_over_q = 1.0 / Q.alpha[j];\n";
         os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
-        os << "                    const double p_over_q = P.alpha[i] * one_over_q;\n";
+        os << "                    const double p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 
         os << "                    const double etfac[3] = {\n";
-        os << "                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,\n";
-        os << "                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,\n";
-        os << "                                             -(P.bAB_z[i] + Q.bAB_z[j]) * one_over_q,\n";
+        os << "                                             -(P_bAB_x + Q.bAB_x[j]) * one_over_q,\n";
+        os << "                                             -(P_bAB_y + Q.bAB_y[j]) * one_over_q,\n";
+        os << "                                             -(P_bAB_z + Q.bAB_z[j]) * one_over_q,\n";
         os << "                                            };\n";
     }
 
@@ -753,16 +776,15 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    os << "    //////////////////////////////////////////////\n";
-    os << "    // Contracted integrals: Horizontal recurrance\n";
-    os << "    // Bra part\n";
-    os << "    // Steps: " << hrrsteps.first.size() << "\n";
-    os << "    //////////////////////////////////////////////\n";
     os << "\n";
-    if(hrrsteps.first.size() == 0)
-        os << "    // Nothing to do.....\n";
-    else
+    if(hrrsteps.first.size() > 0)
     {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // Contracted integrals: Horizontal recurrance\n";
+        os << "    // Bra part\n";
+        os << "    // Steps: " << hrrsteps.first.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
@@ -781,21 +803,19 @@ void Writer_Looped(std::ostream & os,
         }
         os << "\n";
         os << "    }\n";
+        os << "\n";
+        os << "\n";
     }
-    os << "\n";
-    os << "\n";
 
-    os << "    //////////////////////////////////////////////\n";
-    os << "    // Contracted integrals: Horizontal recurrance\n";
-    os << "    // Ket part\n";
-    os << "    // Steps: " << hrrsteps.second.size() << "\n";
-    os << "    // Forming final integrals\n";
-    os << "    //////////////////////////////////////////////\n";
-    os << "\n";
-    if(hrrsteps.second.size() == 0)
-        os << "    //Nothing to do.....\n";
-    else
-    { 
+    if(hrrsteps.second.size() > 0)
+    {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // Contracted integrals: Horizontal recurrance\n";
+        os << "    // Ket part\n";
+        os << "    // Steps: " << hrrsteps.second.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
+
         DAMList braam{am[0], am[1]};
 
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
