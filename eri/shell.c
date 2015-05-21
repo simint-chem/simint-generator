@@ -230,8 +230,8 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
     ASSUME_ALIGN(P->PA_y);
     ASSUME_ALIGN(P->PA_z);
     ASSUME_ALIGN(P->bAB_x);
-    ASSUME_ALIGN(P->bAB_Y);
-    ASSUME_ALIGN(P->bAB_Z);
+    ASSUME_ALIGN(P->bAB_y);
+    ASSUME_ALIGN(P->bAB_z);
     ASSUME_ALIGN(P->alpha);
     ASSUME_ALIGN(P->prefac);
 

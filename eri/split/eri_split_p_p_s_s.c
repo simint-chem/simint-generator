@@ -36,7 +36,7 @@ int eri_split_p_p_s_s(struct multishell_pair const P,
     ASSUME_ALIGN(Q.alpha);
     ASSUME_ALIGN(Q.prefac);
 
-    ASSUME_ALIGN(integrals)
+    ASSUME_ALIGN(INT__p_p_s_s);
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 

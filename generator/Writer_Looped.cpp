@@ -544,7 +544,7 @@ void Writer_Looped(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.alpha);\n";
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "\n";
-    os << "    ASSUME_ALIGN(integrals)\n";
+    os << "    ASSUME_ALIGN(" << ArrVarName(am) << ");\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
