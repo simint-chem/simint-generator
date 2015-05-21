@@ -39,7 +39,6 @@ int eri_split_p_p_s_s(struct multishell_pair const P,
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
-    memset(S_1_1_0_0, 0, nshell1234*9*sizeof(double));
 
     // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later
     double AB_x[nshell1234];  double CD_x[nshell1234];

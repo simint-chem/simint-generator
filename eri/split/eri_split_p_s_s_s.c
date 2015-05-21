@@ -121,7 +121,6 @@ int eri_split_p_s_s_s(struct multishell_pair const P,
                     // for VRR
                     const double one_over_p = 1.0 / P.alpha[i];
                     const double a_over_p =  alpha * one_over_p;     // a/p from MEST
-                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR
 
 
                     //////////////////////////////////////////////

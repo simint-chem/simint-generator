@@ -24,16 +24,6 @@ static std::string ArrVarName(const QAMList & am)
     return ss.str();
 }
 
-static std::string QuartetArrVar(const Quartet & q, bool iscont)
-{
-    std::stringstream ss;
-    ss << ArrVarName(q.amlist()) << "[";
-    if(iscont)
-        ss << "abcd * " << q.ncart() << " + ";
-    ss << q.idx() << "]";
-    return ss.str();
-}
-
 static std::string AuxName(int i)
 {
     return std::string("AUX_") + ArrVarName({i, 0, 0, 0});
@@ -92,9 +82,11 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
 }
 
 
-static std::string ETStepVar(const Quartet & q, bool istarget)
+static std::string ETStepVar(const Quartet & q)
 {
-    return std::string("AUX_") + QuartetArrVar(q, false);
+    std::stringstream ss; 
+    ss << "AUX_" << ArrVarName(q.amlist()) << "[" << q.idx() << "]";
+    return ss.str();
 }
 
 
@@ -146,18 +138,18 @@ static std::string ETStepString(const ETStep & et)
 
     std::stringstream ss;
     ss << std::string(20, ' ');
-    ss << ETStepVar(et.target, true);
+    ss << ETStepVar(et.target);
 
     ss << " = ";
 
-    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, false);
+    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1);
 
     if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + " << ival << " * one_over_2q * " << ETStepVar(et.src2, false);
+        ss << " + " << ival << " * one_over_2q * " << ETStepVar(et.src2);
     if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3, false);
+        ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3);
     if(et.src4.bra.left && et.src4.ket.left)
-        ss << " - p_over_q * " << ETStepVar(et.src4, false);
+        ss << " - p_over_q * " << ETStepVar(et.src4);
     ss << ";\n";
 
     return ss.str();
@@ -170,14 +162,8 @@ static std::string ETStepString(const ETStep & et)
 
 static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> & vrrinfo, int L)
 {
-    // accumulate S_0_0_0_0 if needed
-    if(IsContArray({0, 0, 0, 0}))
-    {
-        os << "\n";
-        os << "                    // Accumulating S_0_0_0_0 in contracted workspace\n";
-        os <<"                    *PRIM_" << ArrVarName({0, 0, 0, 0}) << " += *" << AuxName(0) << ";\n";
-        os << "\n";
-    }
+    std::string indent1(20, ' ');
+    std::string indent2(24, ' ');
 
     // iterate over increasing am
     for(const auto & it3 : vrrinfo.second)
@@ -192,12 +178,12 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         const GaussianSet & greq = it3.second;
 
         // requirements for this am
-        os << "                    // Forming " << AuxName(am) << "[" << (L-am+1) << " * " << NCART(am) << "];\n";
-        os << "                    // Needed from this AM:\n";
+        os << indent1 << "// Forming " << AuxName(am) << "[" << (L-am+1) << " * " << NCART(am) << "];\n";
+        os << indent1 << "// Needed from this AM:\n";
         for(const auto & it : greq)
-            os << "                    //    " << it << "\n";
-        os << "                    for(int m = 0; m < " << (L-am+1) << "; m++)  // loop over orders of boys function\n";
-        os << "                    {\n";
+            os << indent1 << "//    " << it << "\n";
+        os << indent1 << "for(int m = 0; m < " << (L-am+1) << "; m++)  // loop over orders of boys function\n";
+        os << indent1 << "{\n";
 
         // iterate over the requirements
         // should be in order since it's a set
@@ -214,65 +200,69 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
             // = value of exponent of g1 in the position of the step
             int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
-            os << "                        //" << it <<  " : STEP: " << step << "\n";
-            os << "                        " << AuxName(am);
-
-            os << "[m * " << NCART(am) << " + " << it.idx() << "] = P.PA_" << step << "[i] * ";
+            os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
+            os << indent2 << AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P.PA_" << step << "[i] * ";
 
             if(g1)
                 os << AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
                    << "] - a_over_p * PQ_" << step << " * " << AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
             if(g2)
             {
-                os << "\n";
-                os << "                                      + " << vrr_i << " * one_over_2p * ( "
-                   << AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
+                os << "\n"
+                   << indent2 << "              + " << vrr_i 
+                   << " * one_over_2p * ( " << AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
                    << " - a_over_p * " << AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
             }
             os << ";\n\n"; 
         }
 
-        os << "                    }\n";
+        os << indent1 << "}\n";
 
 
         // if this target is also a contracted array, accumulate there
-        // note that contracted array has storage for all elements of a
-        // given AM, not just what we calculated
-        // (ie abcd*NCART(i) not abcd*greq.size() or something)
         if(IsContArray({am, 0, 0, 0}))
         {
             os << "\n";
-            os << "                    // Accumulating in contracted workspace\n";
+            os << indent1 << "// Accumulating in contracted workspace\n";
 
             if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
-                os << "                    for(int i = 0; i < " << NCART(am) << "; i++)\n";
-                os << "                        " << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[i] += "
-                                                 << AuxName(am) << "[i];\n";
+                os << indent1 << "for(int i = 0; i < " << NCART(am) << "; i++)\n";
+                os << indent2 << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[i] += " << AuxName(am) << "[i];\n";
             }
             else
             { 
                 for(const auto & it : greq)
-                {
-                    os << "                    PRIM_" << AuxName(am) << "[" << it.idx() << "] += " << AuxName(am) << "[" << it.idx() << "];\n";
-                }
+                    os << indent1 << "PRIM_" << AuxName(am) << "[" << it.idx() << "] += " << AuxName(am) << "[" << it.idx() << "];\n";
             }
         }
 
         os << "\n\n";
     }
 
+    // accumulate S_0_0_0_0 if needed
+    if(IsContArray({0, 0, 0, 0}))
+    {
+        os << "\n";
+        os << indent1 << "// Accumulating S_0_0_0_0 in contracted workspace\n";
+        os << indent1 << "*PRIM_" << ArrVarName({0, 0, 0, 0}) << " += *" << AuxName(0) << ";\n";
+        os << "\n";
+    }
+
 }
 
 void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> etint)
 {
+    std::string indent1(20, ' ');
+    std::string indent2(24, ' ');
+
     if(etsl.size() == 0)
-        os << "                    //...nothing to do...\n";
+        os << indent1 << "//...nothing to do...\n";
     else
     {
         for(const auto & it : etsl)
         {
-            os << std::string(20, ' ') << "// " << it << "\n";
+            os << indent1 << "// " << it << "\n";
             os << ETStepString(it);
             os << "\n";
         }
@@ -286,18 +276,14 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
             int ncart = NCART(it[0])*NCART(it[2]);
 
             os << "\n";
-            os << "                    // Accumulating in contracted workspace\n";
-
-
-            os << "                    for(int i = 0; i < " << ncart << "; i++)\n";
-            os << "                        " << "PRIM_" << ArrVarName(it) << "[i] += "
-                                             << "AUX_" << ArrVarName(it) << "[i];\n";
+            os << indent1 << "// Accumulating in contracted workspace\n";
+            os << indent1 << "for(int i = 0; i < " << ncart << "; i++)\n";
+            os << indent2 << "PRIM_" << ArrVarName(it) << "[i] += AUX_" << ArrVarName(it) << "[i];\n";
 
             /*
             for(int i = 0; i < ncart; i++) 
             {
-                os << "                    " << ArrVarName(it) << "[abcd * " << ncart << " + " 
-                   << i << "] += AUX_" << ArrVarName(it) << "[" << i << "];\n";
+                os << indent1 << ArrVarName(it) << "[abcd * " << ncart << " + " << i << "] += AUX_" << ArrVarName(it) << "[" << i << "];\n";
             }
             */
         }
@@ -461,9 +447,9 @@ void Writer_Looped(std::ostream & os,
 
     // some helper bools
     bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
+    bool hashrr = ( hrrsteps.first.size() > 0 || hrrsteps.second.size() > 0 );
     bool haset = (etsl.size() > 0);
-    //bool hashrr = ( hrrsteps.first.size() > 0 || hrrsteps.second.size() > 0 );
-    bool hasoneover2p = true;  // TODO
+    bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
     ///////////////////////////////////////////////
@@ -561,7 +547,12 @@ void Writer_Looped(std::ostream & os,
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
-    os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
+
+    // if there is no HRR, integrals are accumulated from inside the primitive loop
+    // into the final integral array, so it must be zeroed first
+    if(!hashrr)
+        os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
+    
     os << "\n";
     os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
     os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
@@ -606,10 +597,10 @@ void Writer_Looped(std::ostream & os,
     // pointers for accumulation in VRR
     for(const auto & it : vrrinfo.second)
     {
-        int am = it.first;
-        if(IsContArray({am, 0, 0, 0}))
-            os << "        double * const restrict PRIM_" << ArrVarName({am, 0, 0, 0}) << " = " 
-               << ArrVarName({am, 0, 0, 0}) << " + (abcd * " << NCART(am) << ");\n";
+        int vam = it.first;
+        if(IsContArray({vam, 0, 0, 0}))
+            os << "        double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
+               << ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
     }
 
 
