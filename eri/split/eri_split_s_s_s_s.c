@@ -9,7 +9,7 @@
 
 int eri_split_s_s_s_s(struct multishell_pair const P,
                       struct multishell_pair const Q,
-                      double * const restrict S_0_0_0_0)
+                      double * const restrict INT__s_s_s_s)
 {
 
     ASSUME_ALIGN(P.x);
@@ -40,7 +40,7 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
 
-    memset(S_0_0_0_0, 0, nshell1234*1*sizeof(double));
+    memset(INT__s_s_s_s, 0, nshell1234*1*sizeof(double));
 
     int ab, cd, abcd;
     int i, j;
@@ -61,7 +61,7 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
             // set up pointers to the contracted integrals - VRR
-            double * const restrict PRIM_S_0_0_0_0 = S_0_0_0_0 + (abcd * 1);
+            double * const restrict PRIM_INT__s_s_s_s = INT__s_s_s_s + (abcd * 1);
 
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
@@ -77,7 +77,7 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
-                    double AUX_S_0_0_0_0[1 * 1];
+                    double AUX_INT__s_s_s_s[1 * 1];
 
 
 
@@ -110,16 +110,16 @@ int eri_split_s_s_s_s(struct multishell_pair const P,
                     const double F_x = R2 * alpha;
 
 
-                    Boys_F_split(AUX_S_0_0_0_0, 0, F_x);
-                    AUX_S_0_0_0_0[0] *= allprefac;
+                    Boys_F_split(AUX_INT__s_s_s_s, 0, F_x);
+                    AUX_INT__s_s_s_s[0] *= allprefac;
 
                     //////////////////////////////////////////////
                     // Primitive integrals: Vertical recurrance
                     //////////////////////////////////////////////
 
 
-                    // Accumulating S_0_0_0_0 in contracted workspace
-                    *PRIM_S_0_0_0_0 += *AUX_S_0_0_0_0;
+                    // Accumulating INT__0_0_0_0 in contracted workspace
+                    *PRIM_INT__s_s_s_s += *AUX_INT__s_s_s_s;
 
 
 

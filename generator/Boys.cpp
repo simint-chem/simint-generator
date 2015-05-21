@@ -58,7 +58,7 @@ std::string BoysFO::BoysFit::code_line(void) const
 {
     const std::string indent(20, ' ');
     std::stringstream ss;
-    ss << indent << "AUX_S_0_0_0_0[" << v << "] = allprefac\n"; 
+    ss << indent << "AUX_INT__s_s_s_s[" << v << "] = allprefac\n"; 
     ss << indent << "         * pow(\n";
     ss << indent << "                 (\n";
     ss << indent << "                   (\n";
@@ -110,9 +110,9 @@ std::string BoysSplit::all_code_lines(int maxam) const
 {
     const std::string indent(20, ' ');
     std::stringstream ss;
-    ss << indent << "Boys_F_split(AUX_S_0_0_0_0, " << maxam << ", F_x);\n";
+    ss << indent << "Boys_F_split(AUX_INT__s_s_s_s, " << maxam << ", F_x);\n";
     for(int i = 0; i <= maxam; i++)
-        ss << indent << "AUX_S_0_0_0_0[" << i << "] *= allprefac;\n";
+        ss << indent << "AUX_INT__s_s_s_s[" << i << "] *= allprefac;\n";
 
     return ss.str();
 }
@@ -132,9 +132,9 @@ std::string BoysVRef::all_code_lines(int maxam) const
 {
     const std::string indent(20, ' ');
     std::stringstream ss;
-    ss << indent << "Boys_F_VRef(AUX_S_0_0_0_0, " << maxam << ", F_x);\n";
+    ss << indent << "Boys_F_VRef(AUX_INT__s_s_s_s, " << maxam << ", F_x);\n";
     for(int i = 0; i <= maxam; i++)
-        ss << indent << "AUX_S_0_0_0_0[" << i << "] *= allprefac;\n";
+        ss << indent << "AUX_INT__s_s_s_s[" << i << "] *= allprefac;\n";
 
     return ss.str();
 }

@@ -9,7 +9,7 @@
 
 int eri_split_d_p_s_s(struct multishell_pair const P,
                       struct multishell_pair const Q,
-                      double * const restrict S_2_1_0_0)
+                      double * const restrict INT__d_p_s_s)
 {
 
     ASSUME_ALIGN(P.x);
@@ -54,8 +54,8 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
     memset(contwork, 0, nshell1234 * 128);
 
     // partition workspace into shells
-    double * const S_2_0_0_0 = contwork + (nshell1234 * 0);
-    double * const S_3_0_0_0 = contwork + (nshell1234 * 6);
+    double * const INT__d_s_s_s = contwork + (nshell1234 * 0);
+    double * const INT__f_s_s_s = contwork + (nshell1234 * 6);
 
 
     ////////////////////////////////////////
@@ -72,8 +72,8 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
         for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)
         {
             // set up pointers to the contracted integrals - VRR
-            double * const restrict PRIM_S_2_0_0_0 = S_2_0_0_0 + (abcd * 6);
-            double * const restrict PRIM_S_3_0_0_0 = S_3_0_0_0 + (abcd * 10);
+            double * const restrict PRIM_INT__d_s_s_s = INT__d_s_s_s + (abcd * 6);
+            double * const restrict PRIM_INT__f_s_s_s = INT__f_s_s_s + (abcd * 10);
 
             const int cdstart = Q.primstart[cd];
             const int cdend = Q.primend[cd];
@@ -94,16 +94,16 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
                     // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis
                     // with m as the slowest index
                     // AM = 0: Needed from this AM: 1
-                    double AUX_S_0_0_0_0[4 * 1];
+                    double AUX_INT__s_s_s_s[4 * 1];
 
                     // AM = 1: Needed from this AM: 3
-                    double AUX_S_1_0_0_0[3 * 3];
+                    double AUX_INT__p_s_s_s[3 * 3];
 
                     // AM = 2: Needed from this AM: 6
-                    double AUX_S_2_0_0_0[2 * 6];
+                    double AUX_INT__d_s_s_s[2 * 6];
 
                     // AM = 3: Needed from this AM: 10
-                    double AUX_S_3_0_0_0[1 * 10];
+                    double AUX_INT__f_s_s_s[1 * 10];
 
 
 
@@ -140,17 +140,17 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
                     const double F_x = R2 * alpha;
 
 
-                    Boys_F_split(AUX_S_0_0_0_0, 3, F_x);
-                    AUX_S_0_0_0_0[0] *= allprefac;
-                    AUX_S_0_0_0_0[1] *= allprefac;
-                    AUX_S_0_0_0_0[2] *= allprefac;
-                    AUX_S_0_0_0_0[3] *= allprefac;
+                    Boys_F_split(AUX_INT__s_s_s_s, 3, F_x);
+                    AUX_INT__s_s_s_s[0] *= allprefac;
+                    AUX_INT__s_s_s_s[1] *= allprefac;
+                    AUX_INT__s_s_s_s[2] *= allprefac;
+                    AUX_INT__s_s_s_s[3] *= allprefac;
 
                     //////////////////////////////////////////////
                     // Primitive integrals: Vertical recurrance
                     //////////////////////////////////////////////
 
-                    // Forming AUX_S_1_0_0_0[3 * 3];
+                    // Forming AUX_INT__p_s_s_s[3 * 3];
                     // Needed from this AM:
                     //    P_100
                     //    P_010
@@ -158,18 +158,18 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
                     for(int m = 0; m < 3; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
-                        AUX_S_1_0_0_0[m * 3 + 0] = P.PA_x[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_x * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 0] = P.PA_x[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_x * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                         //P_010 : STEP: y
-                        AUX_S_1_0_0_0[m * 3 + 1] = P.PA_y[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_y * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 1] = P.PA_y[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_y * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                         //P_001 : STEP: z
-                        AUX_S_1_0_0_0[m * 3 + 2] = P.PA_z[i] * AUX_S_0_0_0_0[m * 1 + 0] - a_over_p * PQ_z * AUX_S_0_0_0_0[(m+1) * 1 + 0];
+                        AUX_INT__p_s_s_s[m * 3 + 2] = P.PA_z[i] * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_z * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
 
                     }
 
 
-                    // Forming AUX_S_2_0_0_0[2 * 6];
+                    // Forming AUX_INT__d_s_s_s[2 * 6];
                     // Needed from this AM:
                     //    D_200
                     //    D_110
@@ -180,34 +180,34 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
                     for(int m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
-                        AUX_S_2_0_0_0[m * 6 + 0] = P.PA_x[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_x * AUX_S_1_0_0_0[(m+1) * 3 + 0]
-                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                        AUX_INT__d_s_s_s[m * 6 + 0] = P.PA_x[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_x * AUX_INT__p_s_s_s[(m+1) * 3 + 0]
+                                      + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                         //D_110 : STEP: y
-                        AUX_S_2_0_0_0[m * 6 + 1] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_INT__d_s_s_s[m * 6 + 1] = P.PA_y[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
 
                         //D_101 : STEP: z
-                        AUX_S_2_0_0_0[m * 6 + 2] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 0] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 0];
+                        AUX_INT__d_s_s_s[m * 6 + 2] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 0];
 
                         //D_020 : STEP: y
-                        AUX_S_2_0_0_0[m * 6 + 3] = P.PA_y[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_y * AUX_S_1_0_0_0[(m+1) * 3 + 1]
-                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                        AUX_INT__d_s_s_s[m * 6 + 3] = P.PA_y[i] * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_y * AUX_INT__p_s_s_s[(m+1) * 3 + 1]
+                                      + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                         //D_011 : STEP: z
-                        AUX_S_2_0_0_0[m * 6 + 4] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 1] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 1];
+                        AUX_INT__d_s_s_s[m * 6 + 4] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 1] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 1];
 
                         //D_002 : STEP: z
-                        AUX_S_2_0_0_0[m * 6 + 5] = P.PA_z[i] * AUX_S_1_0_0_0[m * 3 + 2] - a_over_p * PQ_z * AUX_S_1_0_0_0[(m+1) * 3 + 2]
-                                      + 1 * one_over_2p * ( AUX_S_0_0_0_0[m * 1 +  0] - a_over_p * AUX_S_0_0_0_0[(m+1) * 1 + 0] );
+                        AUX_INT__d_s_s_s[m * 6 + 5] = P.PA_z[i] * AUX_INT__p_s_s_s[m * 3 + 2] - a_over_p * PQ_z * AUX_INT__p_s_s_s[(m+1) * 3 + 2]
+                                      + 1 * one_over_2p * ( AUX_INT__s_s_s_s[m * 1 +  0] - a_over_p * AUX_INT__s_s_s_s[(m+1) * 1 + 0] );
 
                     }
 
                     // Accumulating in contracted workspace
                     for(int i = 0; i < 6; i++)
-                        PRIM_S_2_0_0_0[i] += AUX_S_2_0_0_0[i];
+                        PRIM_INT__d_s_s_s[i] += AUX_INT__d_s_s_s[i];
 
 
-                    // Forming AUX_S_3_0_0_0[1 * 10];
+                    // Forming AUX_INT__f_s_s_s[1 * 10];
                     // Needed from this AM:
                     //    F_300
                     //    F_210
@@ -222,43 +222,43 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
                     for(int m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //F_300 : STEP: x
-                        AUX_S_3_0_0_0[m * 10 + 0] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 0]
-                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  0] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 0] );
+                        AUX_INT__f_s_s_s[m * 10 + 0] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 0]
+                                      + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  0] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 0] );
 
                         //F_210 : STEP: y
-                        AUX_S_3_0_0_0[m * 10 + 1] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 0];
+                        AUX_INT__f_s_s_s[m * 10 + 1] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
 
                         //F_201 : STEP: z
-                        AUX_S_3_0_0_0[m * 10 + 2] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 0] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 0];
+                        AUX_INT__f_s_s_s[m * 10 + 2] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 0];
 
                         //F_120 : STEP: x
-                        AUX_S_3_0_0_0[m * 10 + 3] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 3];
+                        AUX_INT__f_s_s_s[m * 10 + 3] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
 
                         //F_111 : STEP: z
-                        AUX_S_3_0_0_0[m * 10 + 4] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 1] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 1];
+                        AUX_INT__f_s_s_s[m * 10 + 4] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 1] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 1];
 
                         //F_102 : STEP: x
-                        AUX_S_3_0_0_0[m * 10 + 5] = P.PA_x[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_x * AUX_S_2_0_0_0[(m+1) * 6 + 5];
+                        AUX_INT__f_s_s_s[m * 10 + 5] = P.PA_x[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
 
                         //F_030 : STEP: y
-                        AUX_S_3_0_0_0[m * 10 + 6] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 3]
-                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  1] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 1] );
+                        AUX_INT__f_s_s_s[m * 10 + 6] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 3]
+                                      + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  1] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 1] );
 
                         //F_021 : STEP: z
-                        AUX_S_3_0_0_0[m * 10 + 7] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 3] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 3];
+                        AUX_INT__f_s_s_s[m * 10 + 7] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 3] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 3];
 
                         //F_012 : STEP: y
-                        AUX_S_3_0_0_0[m * 10 + 8] = P.PA_y[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_y * AUX_S_2_0_0_0[(m+1) * 6 + 5];
+                        AUX_INT__f_s_s_s[m * 10 + 8] = P.PA_y[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_y * AUX_INT__d_s_s_s[(m+1) * 6 + 5];
 
                         //F_003 : STEP: z
-                        AUX_S_3_0_0_0[m * 10 + 9] = P.PA_z[i] * AUX_S_2_0_0_0[m * 6 + 5] - a_over_p * PQ_z * AUX_S_2_0_0_0[(m+1) * 6 + 5]
-                                      + 2 * one_over_2p * ( AUX_S_1_0_0_0[m * 3 +  2] - a_over_p * AUX_S_1_0_0_0[(m+1) * 3 + 2] );
+                        AUX_INT__f_s_s_s[m * 10 + 9] = P.PA_z[i] * AUX_INT__d_s_s_s[m * 6 + 5] - a_over_p * PQ_z * AUX_INT__d_s_s_s[(m+1) * 6 + 5]
+                                      + 2 * one_over_2p * ( AUX_INT__p_s_s_s[m * 3 +  2] - a_over_p * AUX_INT__p_s_s_s[(m+1) * 3 + 2] );
 
                     }
 
                     // Accumulating in contracted workspace
                     for(int i = 0; i < 10; i++)
-                        PRIM_S_3_0_0_0[i] += AUX_S_3_0_0_0[i];
+                        PRIM_INT__f_s_s_s[i] += AUX_INT__f_s_s_s[i];
 
 
 
@@ -283,62 +283,62 @@ int eri_split_d_p_s_s(struct multishell_pair const P,
 
     for(abcd = 0; abcd < nshell1234; ++abcd)
     {
-        // form S_2_1_0_0
+        // form INT__d_p_s_s
         for(int iket = 0; iket < 1; ++iket)
         {
             // (D_200 P_100|_{i} = (F_300 S_000|_{t} + x_ab * (D_200 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 0 * 1 + iket] = S_3_0_0_0[abcd * 10 + 0 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 0 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 0 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 0 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 0 * 1 + iket] );
 
             // (D_200 P_010|_{i} = (F_210 S_000|_{t} + y_ab * (D_200 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 1 * 1 + iket] = S_3_0_0_0[abcd * 10 + 1 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 0 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 1 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 1 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 0 * 1 + iket] );
 
             // (D_200 P_001|_{i} = (F_201 S_000|_{t} + z_ab * (D_200 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 2 * 1 + iket] = S_3_0_0_0[abcd * 10 + 2 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 0 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 2 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 2 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 0 * 1 + iket] );
 
             // (D_110 P_100|_{i} = (F_210 S_000|_{t} + x_ab * (D_110 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 3 * 1 + iket] = S_3_0_0_0[abcd * 10 + 1 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 1 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 3 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 1 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 1 * 1 + iket] );
 
             // (D_110 P_010|_{i} = (F_120 S_000|_{t} + y_ab * (D_110 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 4 * 1 + iket] = S_3_0_0_0[abcd * 10 + 3 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 1 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 4 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 3 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 1 * 1 + iket] );
 
             // (D_110 P_001|_{i} = (F_111 S_000|_{t} + z_ab * (D_110 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 5 * 1 + iket] = S_3_0_0_0[abcd * 10 + 4 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 1 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 5 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 4 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 1 * 1 + iket] );
 
             // (D_101 P_100|_{i} = (F_201 S_000|_{t} + x_ab * (D_101 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 6 * 1 + iket] = S_3_0_0_0[abcd * 10 + 2 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 2 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 6 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 2 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 2 * 1 + iket] );
 
             // (D_101 P_010|_{i} = (F_111 S_000|_{t} + y_ab * (D_101 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 7 * 1 + iket] = S_3_0_0_0[abcd * 10 + 4 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 2 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 7 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 4 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 2 * 1 + iket] );
 
             // (D_101 P_001|_{i} = (F_102 S_000|_{t} + z_ab * (D_101 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 8 * 1 + iket] = S_3_0_0_0[abcd * 10 + 5 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 2 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 8 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 5 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 2 * 1 + iket] );
 
             // (D_020 P_100|_{i} = (F_120 S_000|_{t} + x_ab * (D_020 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 9 * 1 + iket] = S_3_0_0_0[abcd * 10 + 3 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 3 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 9 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 3 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 3 * 1 + iket] );
 
             // (D_020 P_010|_{i} = (F_030 S_000|_{t} + y_ab * (D_020 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 10 * 1 + iket] = S_3_0_0_0[abcd * 10 + 6 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 3 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 10 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 6 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 3 * 1 + iket] );
 
             // (D_020 P_001|_{i} = (F_021 S_000|_{t} + z_ab * (D_020 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 11 * 1 + iket] = S_3_0_0_0[abcd * 10 + 7 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 3 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 11 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 7 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 3 * 1 + iket] );
 
             // (D_011 P_100|_{i} = (F_111 S_000|_{t} + x_ab * (D_011 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 12 * 1 + iket] = S_3_0_0_0[abcd * 10 + 4 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 4 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 12 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 4 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 4 * 1 + iket] );
 
             // (D_011 P_010|_{i} = (F_021 S_000|_{t} + y_ab * (D_011 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 13 * 1 + iket] = S_3_0_0_0[abcd * 10 + 7 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 4 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 13 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 7 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 4 * 1 + iket] );
 
             // (D_011 P_001|_{i} = (F_012 S_000|_{t} + z_ab * (D_011 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 14 * 1 + iket] = S_3_0_0_0[abcd * 10 + 8 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 4 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 14 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 8 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 4 * 1 + iket] );
 
             // (D_002 P_100|_{i} = (F_102 S_000|_{t} + x_ab * (D_002 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 15 * 1 + iket] = S_3_0_0_0[abcd * 10 + 5 * 1 + iket] + ( AB_x[abcd] * S_2_0_0_0[abcd * 6 + 5 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 15 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 5 * 1 + iket] + ( AB_x[abcd] * INT__d_s_s_s[abcd * 6 + 5 * 1 + iket] );
 
             // (D_002 P_010|_{i} = (F_012 S_000|_{t} + y_ab * (D_002 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 16 * 1 + iket] = S_3_0_0_0[abcd * 10 + 8 * 1 + iket] + ( AB_y[abcd] * S_2_0_0_0[abcd * 6 + 5 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 16 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 8 * 1 + iket] + ( AB_y[abcd] * INT__d_s_s_s[abcd * 6 + 5 * 1 + iket] );
 
             // (D_002 P_001|_{i} = (F_003 S_000|_{t} + z_ab * (D_002 S_000|_{t}
-            S_2_1_0_0[abcd * 18 + 17 * 1 + iket] = S_3_0_0_0[abcd * 10 + 9 * 1 + iket] + ( AB_z[abcd] * S_2_0_0_0[abcd * 6 + 5 * 1 + iket] );
+            INT__d_p_s_s[abcd * 18 + 17 * 1 + iket] = INT__f_s_s_s[abcd * 10 + 9 * 1 + iket] + ( AB_z[abcd] * INT__d_s_s_s[abcd * 6 + 5 * 1 + iket] );
 
         }
 

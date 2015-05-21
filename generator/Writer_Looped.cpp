@@ -20,7 +20,7 @@ static bool IsContArray(const QAMList & am)
 static std::string ArrVarName(const QAMList & am)
 {
     std::stringstream ss;
-    ss << "S_"  << am[0] << "_" << am[1] << "_" << am[2] << "_" << am[3];
+    ss << "INT__"  << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]];
     return ss.str();
 }
 
@@ -50,9 +50,9 @@ static std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget)
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
-                   << ketam;
+        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
+                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
+                   << amchar[ketam];
         return ss.str();
     }
 }
@@ -74,9 +74,9 @@ static std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bo
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_"
-                   << braam[0] << "_" << braam[1];
+        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
+                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
+                   << amchar[braam[0]] << "_" << amchar[braam[1]];
         return ss.str();
     }
 }
@@ -240,11 +240,11 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         os << "\n\n";
     }
 
-    // accumulate S_0_0_0_0 if needed
+    // accumulate INT__0_0_0_0 if needed
     if(IsContArray({0, 0, 0, 0}))
     {
         os << "\n";
-        os << indent1 << "// Accumulating S_0_0_0_0 in contracted workspace\n";
+        os << indent1 << "// Accumulating INT__0_0_0_0 in contracted workspace\n";
         os << indent1 << "*PRIM_" << ArrVarName({0, 0, 0, 0}) << " += *" << AuxName(0) << ";\n";
         os << "\n";
     }

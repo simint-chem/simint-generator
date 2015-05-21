@@ -155,8 +155,7 @@ with open(headerfile, 'w') as hfile:
 
   for q in valid:
     funcname = "eri_{}_{}_{}_{}_{}".format(args.p, amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    #intname = "S_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    intname = "S_{}_{}_{}_{}".format(q[0], q[1], q[2], q[3])
+    intname = "INT__{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
     hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict {});\n".format(funcname, intname))
 
   hfile.write("\n\n")
