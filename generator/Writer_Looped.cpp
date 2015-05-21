@@ -543,6 +543,7 @@ void Writer_Looped(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.bAB_z);\n";
     os << "    ASSUME_ALIGN(Q.alpha);\n";
     os << "    ASSUME_ALIGN(Q.prefac);\n";
+    os << "\n";
     os << "    ASSUME_ALIGN(integrals)\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
@@ -567,19 +568,23 @@ void Writer_Looped(std::ostream & os,
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
     os << "\n";
-    os << "    // Workspace for contracted integrals\n";
-    os << "    double * const contwork = malloc(nshell1234 * " << memory_cont << ");\n";
-    os << "    memset(contwork, 0, nshell1234 * " << memory_cont << ");\n";
-    os << "\n";
-    os << "    // partition workspace into shells\n";
 
-    size_t ptidx = 0;
-    for(const auto & it : continfo)
+    if(continfo.size() > 0)
     {
-        if(it != am)
+        os << "    // Workspace for contracted integrals\n";
+        os << "    double * const contwork = malloc(nshell1234 * " << memory_cont << ");\n";
+        os << "    memset(contwork, 0, nshell1234 * " << memory_cont << ");\n";
+        os << "\n";
+        os << "    // partition workspace into shells\n";
+
+        size_t ptidx = 0;
+        for(const auto & it : continfo)
         {
-            os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
-            ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+            if(it != am)
+            {
+                os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
+                ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+            }
         }
     }
 
@@ -803,6 +808,14 @@ void Writer_Looped(std::ostream & os,
     }
     os << "\n";
     os << "\n";
+
+    if(continfo.size() > 0)
+    {
+        os << "    // Free contracted work space\n";
+        os << "    free(contwork);\n";
+        os << "\n";
+    }
+
     os << "    return nshell1234;\n";
     os << "}\n";
     os << "\n";

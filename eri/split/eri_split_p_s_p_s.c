@@ -35,6 +35,7 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
     ASSUME_ALIGN(Q.bAB_z);
     ASSUME_ALIGN(Q.alpha);
     ASSUME_ALIGN(Q.prefac);
+
     ASSUME_ALIGN(integrals)
 
     const int nshell1234 = P.nshell12 * Q.nshell12;
@@ -260,6 +261,9 @@ int eri_split_p_s_p_s(struct multishell_pair const P,
 
     //Nothing to do.....
 
+
+    // Free contracted work space
+    free(contwork);
 
     return nshell1234;
 }

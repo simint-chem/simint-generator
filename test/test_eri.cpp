@@ -224,6 +224,7 @@ int main(int argc, char ** argv)
 
     FREE(res_valeev);
     //FREE(res_liberd);
+    FREE(res_vref);
     FREE(res_FO);
 
     return 0;
