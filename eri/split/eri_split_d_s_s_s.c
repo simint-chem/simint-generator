@@ -41,11 +41,6 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
 
     memset(S_2_0_0_0, 0, nshell1234*6*sizeof(double));
 
-    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later
-    double AB_x[nshell1234];  double CD_x[nshell1234];
-    double AB_y[nshell1234];  double CD_y[nshell1234];
-    double AB_z[nshell1234];  double CD_z[nshell1234];
-
     int ab, cd, abcd;
     int i, j;
 
@@ -78,11 +73,6 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
 
             // this should have been set/aligned in fill_multishell_pair or something else
             ASSUME(cdstart%SIMD_ALIGN_DBL == 0);
-
-            // Store for later
-            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = Q.AB_x[cd];
-            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = Q.AB_y[cd];
-            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = Q.AB_z[cd];
 
             for(i = abstart; i < abend; ++i)
             {

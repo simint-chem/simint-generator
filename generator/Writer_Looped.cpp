@@ -554,11 +554,16 @@ void Writer_Looped(std::ostream & os,
         os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
     
     os << "\n";
-    os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
-    os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
-    os << "    double AB_y[nshell1234];  double CD_y[nshell1234];\n";
-    os << "    double AB_z[nshell1234];  double CD_z[nshell1234];\n";
-    os << "\n";
+
+    if(hashrr)
+    {
+        os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
+        os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
+        os << "    double AB_y[nshell1234];  double CD_y[nshell1234];\n";
+        os << "    double AB_z[nshell1234];  double CD_z[nshell1234];\n";
+        os << "\n";
+    }
+
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
     os << "\n";
@@ -621,11 +626,16 @@ void Writer_Looped(std::ostream & os,
     os << "            // this should have been set/aligned in fill_multishell_pair or something else\n";
     os << "            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
-    os << "            // Store for later\n";
-    os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = Q.AB_x[cd];\n";
-    os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = Q.AB_y[cd];\n";
-    os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = Q.AB_z[cd];\n";
-    os << "\n";
+
+    if(hashrr) 
+    {
+        os << "            // Store for later\n";
+        os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = Q.AB_x[cd];\n";
+        os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = Q.AB_y[cd];\n";
+        os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = Q.AB_z[cd];\n";
+        os << "\n";
+    }
+
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
     os << "                for(j = cdstart; j < cdend; ++j)\n";
@@ -686,6 +696,7 @@ void Writer_Looped(std::ostream & os,
         os << "                    const double one_over_2q = 0.5 * one_over_q;\n";
         os << "                    const double p_over_q = P.alpha[i] * one_over_q;\n";
         os << "\n";
+
         os << "                    const double etfac[3] = {\n";
         os << "                                             -(P.bAB_x[i] + Q.bAB_x[j]) * one_over_q,\n";
         os << "                                             -(P.bAB_y[i] + Q.bAB_y[j]) * one_over_q,\n";
