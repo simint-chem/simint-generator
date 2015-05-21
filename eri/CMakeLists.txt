@@ -5,8 +5,6 @@ file(GLOB SIMINT_SPLIT_FILES split/*.c)
 add_library(simint_eri STATIC 
                               shell.c
                               shell_constants.c
-                              eri_split.c
-                              eri_splitcombined.c
                               ${SIMINT_FO_FILES}
                               ${SIMINT_VREF_FILES}
                               ${SIMINT_SPLIT_FILES}
