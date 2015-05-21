@@ -44,6 +44,8 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
 
     int ab, cd, abcd;
     int i, j;
+    int m;
+    int n;
 
 
 
@@ -145,7 +147,7 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
                     //    P_100
                     //    P_010
                     //    P_001
-                    for(int m = 0; m < 2; m++)  // loop over orders of boys function
+                    for(m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
                         AUX_INT__p_s_s_s[m * 3 + 0] = P_PA_x * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_x * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
@@ -167,7 +169,7 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
                     //    D_020
                     //    D_011
                     //    D_002
-                    for(int m = 0; m < 1; m++)  // loop over orders of boys function
+                    for(m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
                         AUX_INT__d_s_s_s[m * 6 + 0] = P_PA_x * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_x * AUX_INT__p_s_s_s[(m+1) * 3 + 0]
@@ -193,7 +195,7 @@ int eri_split_d_s_s_s(struct multishell_pair const P,
                     }
 
                     // Accumulating in contracted workspace
-                    for(int n = 0; n < 6; n++)
+                    for(n = 0; n < 6; n++)
                         PRIM_INT__d_s_s_s[n] += AUX_INT__d_s_s_s[n];
 
 

@@ -182,7 +182,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
         os << indent1 << "// Needed from this AM:\n";
         for(const auto & it : greq)
             os << indent1 << "//    " << it << "\n";
-        os << indent1 << "for(int m = 0; m < " << (L-am+1) << "; m++)  // loop over orders of boys function\n";
+        os << indent1 << "for(m = 0; m < " << (L-am+1) << "; m++)  // loop over orders of boys function\n";
         os << indent1 << "{\n";
 
         // iterate over the requirements
@@ -227,7 +227,7 @@ static void WriteVRRInfo(std::ostream & os, const std::pair<VRRMap, VRRReqMap> &
 
             if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
-                os << indent1 << "for(int n = 0; n < " << NCART(am) << "; n++)\n";
+                os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
                 os << indent2 << "PRIM_" << ArrVarName({am, 0, 0, 0}) << "[n] += " << AuxName(am) << "[n];\n";
             }
             else
@@ -277,7 +277,7 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
 
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
-            os << indent1 << "for(int n = 0; n < " << ncart << "; n++)\n";
+            os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
             os << indent2 << "PRIM_" << ArrVarName(it) << "[n] += AUX_" << ArrVarName(it) << "[n];\n";
 
             /*
@@ -567,6 +567,17 @@ void Writer_Looped(std::ostream & os,
 
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
+
+    if(hasvrr)
+        os << "    int m;\n";
+    if(hasvrr || haset)
+        os << "    int n;\n";
+
+    if(hrrsteps.first.size() > 0)
+        os << "    int iket;\n";
+    if(hrrsteps.second.size() > 0)
+        os << "    int ibra;\n";
+
     os << "\n";
 
     if(hashrr && continfo.size() > 0)
@@ -791,7 +802,7 @@ void Writer_Looped(std::ostream & os,
         for(const auto & it : hrrtopkets)
         {
             os << "        // form " << ArrVarName({am[0], am[1], it.first, 0}) << "\n";
-            os << "        for(int iket = 0; iket < " << it.second.size() << "; ++iket)\n";
+            os << "        for(iket = 0; iket < " << it.second.size() << "; ++iket)\n";
             os << "        {\n";
             for(const auto & hit : hrrsteps.first)
             {
@@ -820,7 +831,7 @@ void Writer_Looped(std::ostream & os,
 
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
-        os << "        for(int ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
+        os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << "        {\n"; 
 
         for(const auto & hit : hrrsteps.second)

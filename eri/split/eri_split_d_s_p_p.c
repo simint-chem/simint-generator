@@ -48,6 +48,9 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
 
     int ab, cd, abcd;
     int i, j;
+    int m;
+    int n;
+    int ibra;
 
     // Workspace for contracted integrals
     double * const contwork = malloc(nshell1234 * 432);
@@ -188,7 +191,7 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
                     //    P_100
                     //    P_010
                     //    P_001
-                    for(int m = 0; m < 4; m++)  // loop over orders of boys function
+                    for(m = 0; m < 4; m++)  // loop over orders of boys function
                     {
                         //P_100 : STEP: x
                         AUX_INT__p_s_s_s[m * 3 + 0] = P_PA_x * AUX_INT__s_s_s_s[m * 1 + 0] - a_over_p * PQ_x * AUX_INT__s_s_s_s[(m+1) * 1 + 0];
@@ -210,7 +213,7 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
                     //    D_020
                     //    D_011
                     //    D_002
-                    for(int m = 0; m < 3; m++)  // loop over orders of boys function
+                    for(m = 0; m < 3; m++)  // loop over orders of boys function
                     {
                         //D_200 : STEP: x
                         AUX_INT__d_s_s_s[m * 6 + 0] = P_PA_x * AUX_INT__p_s_s_s[m * 3 + 0] - a_over_p * PQ_x * AUX_INT__p_s_s_s[(m+1) * 3 + 0]
@@ -248,7 +251,7 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
                     //    F_021
                     //    F_012
                     //    F_003
-                    for(int m = 0; m < 2; m++)  // loop over orders of boys function
+                    for(m = 0; m < 2; m++)  // loop over orders of boys function
                     {
                         //F_300 : STEP: x
                         AUX_INT__f_s_s_s[m * 10 + 0] = P_PA_x * AUX_INT__d_s_s_s[m * 6 + 0] - a_over_p * PQ_x * AUX_INT__d_s_s_s[(m+1) * 6 + 0]
@@ -303,7 +306,7 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
                     //    G_022
                     //    G_013
                     //    G_004
-                    for(int m = 0; m < 1; m++)  // loop over orders of boys function
+                    for(m = 0; m < 1; m++)  // loop over orders of boys function
                     {
                         //G_400 : STEP: x
                         AUX_INT__g_s_s_s[m * 15 + 0] = P_PA_x * AUX_INT__f_s_s_s[m * 10 + 0] - a_over_p * PQ_x * AUX_INT__f_s_s_s[(m+1) * 10 + 0]
@@ -631,11 +634,11 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
 
 
                     // Accumulating in contracted workspace
-                    for(int n = 0; n < 18; n++)
+                    for(n = 0; n < 18; n++)
                         PRIM_INT__d_s_p_s[n] += AUX_INT__d_s_p_s[n];
 
                     // Accumulating in contracted workspace
-                    for(int n = 0; n < 36; n++)
+                    for(n = 0; n < 36; n++)
                         PRIM_INT__d_s_d_s[n] += AUX_INT__d_s_d_s[n];
 
                  }
@@ -653,7 +656,7 @@ int eri_split_d_s_p_p(struct multishell_pair const P,
 
     for(abcd = 0; abcd < nshell1234; ++abcd)
     {
-        for(int ibra = 0; ibra < 6; ++ibra)
+        for(ibra = 0; ibra < 6; ++ibra)
         {
             // |P_100 P_100)_{i} = |D_200 S_000)_{t} + x_cd * |P_100 S_000)_{t}
             INT__d_s_p_p[abcd * 54 + ibra * 9 + 0] = INT__d_s_d_s[abcd * 36 + ibra * 6 + 0] + ( CD_x[abcd] * INT__d_s_p_s[abcd * 18 + ibra * 3 + 0] );
