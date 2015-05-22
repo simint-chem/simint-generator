@@ -104,12 +104,10 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->AB_z   = mem + 11*prim_size + 2*shell12_size;
 
     /* Should this be aligned? I don't think so */
-    int * intmem = malloc((na+nb+3*na*nb)*sizeof(int));
-    P->nprim1 = intmem;
-    P->nprim2 = intmem + na;
-    P->nprim12 = intmem + na + nb;
-    P->primstart = intmem + na + nb + na*nb;
-    P->primend = intmem + na + nb + 2*na*nb;
+    int * intmem = malloc((3*na*nb)*sizeof(int));
+    P->nprim12 = intmem;
+    P->primstart = intmem + na*nb;
+    P->primend = intmem + 2*na*nb;
 
 }
 
@@ -119,8 +117,8 @@ void free_multishell_pair(struct multishell_pair P)
    // Only need to free P.x since that points to the beginning of mem
    FREE(P.x);
 
-   // similar with nprim1 and nprim2
-   free(P.nprim1);
+   // similar with nprim12
+   free(P.nprim12);
 }
 
 
@@ -155,7 +153,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
     for(sa = 0; sa < na; ++sa)
     {
         P->am1 = A[sa].am;
-        P->nprim1[sa] = A[sa].nprim;
 
         for(sb = 0; sb < nb; ++sb)
         {
@@ -165,7 +162,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             P->primstart[sasb] = idx;
 
             P->am2 = B[sb].am;
-            P->nprim2[sb] = B[sb].nprim;
 
             // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
             const double Xab_x = A[sa].x - B[sb].x;

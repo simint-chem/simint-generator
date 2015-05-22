@@ -20,8 +20,6 @@ struct multishell_pair
     int nprim;             // Total number of primitives
     int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
     int nshell1, nshell2;  // number of shells
-    int * nprim1;          // number of primitives in shells (of length nshell1)
-    int * nprim2;          // number of primitives in shells (of length nshell2)
 
     int nshell12;
     int * nprim12;   // length nshell12;
