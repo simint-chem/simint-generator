@@ -788,7 +788,9 @@ static void Writer_Looped_Flat(std::ostream & os,
         os << "\n";
     }
 
-    os << "    int ab, cd, abcd;\n";
+    if(hashrr)
+        os << "    int abcd;\n";
+
     os << "    int i, j;\n";
 
     if(hasvrr)
@@ -828,13 +830,14 @@ static void Writer_Looped_Flat(std::ostream & os,
     if(hashrr)
     {
         os << "        // Store for later\n";
+        os << "        abcd = 0;\n";
         os << "        for(i = 0; i < P.nshell12; i++)\n";
         os << "        for(j = 0; j < Q.nshell12; j++)\n";
         os << "        {\n";
-        os << "            abcd = i * Q.nshell12 + j;\n";
         os << "            AB_x[abcd] = P.AB_x[i];  CD_x[abcd] = Q.AB_x[j];\n";
         os << "            AB_y[abcd] = P.AB_y[i];  CD_y[abcd] = Q.AB_y[j];\n";
         os << "            AB_z[abcd] = P.AB_z[i];  CD_z[abcd] = Q.AB_z[j];\n";
+        os << "            abcd++;\n";
         os << "        }\n";
         os << "\n";
     }
@@ -844,16 +847,7 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "    // Loop over shells and primitives\n";
     os << "    ////////////////////////////////////////\n";
 
-
-    
     os << "\n";
-    os << "            const int cdstart = Q.primstart[cd];\n";
-    os << "            const int cdend = Q.primend[cd];\n";
-    os << "\n";
-    os << "            // this should have been set/aligned in fill_multishell_pair or something else\n";
-    os << "            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);\n";
-    os << "\n";
-
 
     os << "            for(i = 0; i < P.nprim; ++i)\n";
     os << "            {\n";
@@ -886,18 +880,19 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "                {\n";
 
     os << "                    // Contracted shell quartet index\n";
-    os << "                    const int abcd = Pshellidx + Q.shell_idx[j];\n";
+    os << "                    const int abcd = Pshellidx + Q.shellidx[j];\n";
+    os << "\n";
 
     if(vrrinfo.second.size() > 0)
     {
-        os << "            // set up pointers to the contracted integrals - VRR\n";
+        os << "                    // set up pointers to the contracted integrals - VRR\n";
 
         // pointers for accumulation in VRR
         for(const auto & it : vrrinfo.second)
         {
             int vam = it.first;
             if(IsContArray({vam, 0, 0, 0}))
-                os << "            double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
+                os << "                    double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
                    << ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
         }
     }
@@ -905,14 +900,15 @@ static void Writer_Looped_Flat(std::ostream & os,
     if(etint.size() > 0)
     {
         // pointers for accumulation in ET
-        os << "            // set up pointers to the contracted integrals - Electron Transfer\n";
+        os << "                        // set up pointers to the contracted integrals - Electron Transfer\n";
         for(const auto & it : etint)
         {
             if(IsContArray(it))
-                os << "            double * const restrict PRIM_" << ArrVarName(it) << " = " 
+                os << "                        double * const restrict PRIM_" << ArrVarName(it) << " = " 
                    << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
         }
     }
+
     os << "\n";
     os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
     os << "                    // with m as the slowest index\n";
@@ -1010,8 +1006,6 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
-    os << "        }\n";
-    os << "    }\n";
     os << "\n";
     os << "\n";
     os << "\n";
@@ -1286,8 +1280,16 @@ void Writer_Looped(std::ostream & os,
     // Create the function
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
-    Writer_Looped_NotFlat(os, am, nameappend, options, bg,
-                          vrrinfo, etsl, etint,
-                          hrrsteps, hrrtopbras, hrrtopkets);
+    if(options.count(OPTION_FLATPRIM) && options.at(OPTION_FLATPRIM) != 0)
+    {
+        std::cout << "YO HERE\n";
+        Writer_Looped_Flat(os, am, nameappend, options, bg,
+                           vrrinfo, etsl, etint,
+                           hrrsteps, hrrtopbras, hrrtopkets);
+    }
+    else
+        Writer_Looped_NotFlat(os, am, nameappend, options, bg,
+                              vrrinfo, etsl, etint,
+                              hrrsteps, hrrtopbras, hrrtopkets);
 }
 

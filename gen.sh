@@ -6,16 +6,23 @@ python3 ../generate_twoel.py -l 2 \
                              -g generator/generator \
                              -d ../eri/FO
 
-python3 ../generate_twoel.py -l 2 \
-                             -b split \
-                             -p split \
-                             -g generator/generator \
-                             -d ../eri/split
+#python3 ../generate_twoel.py -l 2 \
+#                             -b split \
+#                             -p split \
+#                             -g generator/generator \
+#                             -d ../eri/split
 
 python3 ../generate_twoel.py -l 3 \
                              -b vref \
                              -p vref \
                              -g generator/generator \
                              -d ../eri/vref
+
+python3 ../generate_twoel.py -l 3 \
+                             -f \
+                             -b vref \
+                             -p flat \
+                             -g generator/generator \
+                             -d ../eri/vref_flat
 
 touch eri/CMakeLists.txt
