@@ -829,16 +829,17 @@ static void Writer_Looped_Flat(std::ostream & os,
     // save these for later
     if(hashrr)
     {
-        os << "        // Store for later\n";
-        os << "        abcd = 0;\n";
-        os << "        for(i = 0; i < P.nshell12; i++)\n";
-        os << "        for(j = 0; j < Q.nshell12; j++)\n";
-        os << "        {\n";
-        os << "            AB_x[abcd] = P.AB_x[i];  CD_x[abcd] = Q.AB_x[j];\n";
-        os << "            AB_y[abcd] = P.AB_y[i];  CD_y[abcd] = Q.AB_y[j];\n";
-        os << "            AB_z[abcd] = P.AB_z[i];  CD_z[abcd] = Q.AB_z[j];\n";
-        os << "            abcd++;\n";
-        os << "        }\n";
+        os << "\n";
+        os << "    // Store for later\n";
+        os << "    abcd = 0;\n";
+        os << "    for(i = 0; i < P.nshell12; i++)\n";
+        os << "    for(j = 0; j < Q.nshell12; j++)\n";
+        os << "    {\n";
+        os << "        AB_x[abcd] = P.AB_x[i];  CD_x[abcd] = Q.AB_x[j];\n";
+        os << "        AB_y[abcd] = P.AB_y[i];  CD_y[abcd] = Q.AB_y[j];\n";
+        os << "        AB_z[abcd] = P.AB_z[i];  CD_z[abcd] = Q.AB_z[j];\n";
+        os << "        abcd++;\n";
+        os << "    }\n";
         os << "\n";
     }
 
@@ -900,11 +901,11 @@ static void Writer_Looped_Flat(std::ostream & os,
     if(etint.size() > 0)
     {
         // pointers for accumulation in ET
-        os << "                        // set up pointers to the contracted integrals - Electron Transfer\n";
+        os << "                    // set up pointers to the contracted integrals - Electron Transfer\n";
         for(const auto & it : etint)
         {
             if(IsContArray(it))
-                os << "                        double * const restrict PRIM_" << ArrVarName(it) << " = " 
+                os << "                    double * const restrict PRIM_" << ArrVarName(it) << " = " 
                    << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
         }
     }
@@ -1282,7 +1283,6 @@ void Writer_Looped(std::ostream & os,
     //////////////////////////////////////////////////
     if(options.count(OPTION_FLATPRIM) && options.at(OPTION_FLATPRIM) != 0)
     {
-        std::cout << "YO HERE\n";
         Writer_Looped_Flat(os, am, nameappend, options, bg,
                            vrrinfo, etsl, etint,
                            hrrsteps, hrrtopbras, hrrtopkets);

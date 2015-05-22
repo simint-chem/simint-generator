@@ -21,7 +21,7 @@ python3 ../generate_twoel.py -l 3 \
 python3 ../generate_twoel.py -l 3 \
                              -f \
                              -b vref \
-                             -p flat \
+                             -p vref_flat \
                              -g generator/generator \
                              -d ../eri/vref_flat
 
