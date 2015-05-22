@@ -48,6 +48,11 @@ int main(int argc, char ** argv)
         return 3;
     }
 
+    // options
+    OptionsMap options;
+    options[OPTION_FLATPRIM] = 1;
+
+
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
@@ -70,7 +75,7 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
-    Writer_Looped(of, amlist, prefix, *bg, *vrralgo, *etalgo, *hrralgo);
+    Writer_Looped(of, amlist, prefix, options, *bg, *vrralgo, *etalgo, *hrralgo);
 
 
     }

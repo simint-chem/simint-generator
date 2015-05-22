@@ -1,5 +1,7 @@
 #include <sstream>
 #include <iostream>
+
+#include "generator/Writer.hpp"
 #include "generator/Classes.hpp"
 #include "generator/Boys.hpp"
 #include "generator/Helpers.hpp"
@@ -11,6 +13,7 @@ static const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
 
 // contains all variables stored in arrays, rather than local 'double'
 std::set<QAMList> continfo;  // is stored contracted
+size_t memory_cont;          // memory required for contracted integral storage (bytes)
 
 static bool IsContArray(const QAMList & am)
 {
@@ -293,157 +296,23 @@ void WriteETInfo(std::ostream & os, const ETStepList & etsl, std::set<QAMList> e
 
 
 
-void Writer_Looped(std::ostream & os,
-                   const QAMList & am,
-                   const std::string & nameappend,
-                   const BoysGen & bg,
-                   VRR_Algorithm_Base & vrralgo,
-                   ET_Algorithm_Base & etalgo,
-                   HRR_Algorithm_Base & hrralgo)
+
+
+static void Writer_Looped_NotFlat(std::ostream & os,
+                                 const QAMList & am,
+                                 const std::string & nameappend,
+                                 const OptionsMap & options,
+                                 const BoysGen & bg,
+                                 const std::pair<VRRMap, VRRReqMap> & vrrinfo,
+                                 const ETStepList & etsl,
+                                 const std::set<QAMList> & etint,
+                                 const HRRBraKetStepList & hrrsteps,
+                                 const DoubletSetMap & hrrtopbras,
+                                 const DoubletSetMap & hrrtopkets)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
     int ncart_bra = NCART(am[0]) * NCART(am[1]);
     const int L = am[0] + am[1] + am[2] + am[3];
-
-    // add the am list to the contracted info
-    continfo.insert(am);
-
-
-    // for electron transfer
-    // ETMap[am1][am2] is a list of steps for forming
-    typedef std::map<int, std::map<int, ETStepList>> ETMap;
-
-
-
-
-    // Working backwards, I need:
-    // 0.) HRR Steps
-    HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
-
-    // 1.) HRR Top level Doublets, sorted by their AM
-    DoubletSetMap hrrtopbras, hrrtopkets;
-    for(const auto & it : hrrsteps.first)
-    {
-        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopbras[it.src1.am()].insert(it.src1);
-        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopbras[it.src2.am()].insert(it.src2);
-    }
-
-    for(const auto & it : hrrsteps.second)
-    {
-        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopkets[it.src1.am()].insert(it.src1);
-        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopkets[it.src2.am()].insert(it.src2);
-    }
-
-
-    // we may need to add ( a s | as a top bra for AM quartets
-    // that do not have HRR in the bra part
-    // these might be ( X s |  or  | X s )
-    if(hrrtopbras.size() == 0)
-    {
-        GaussianSet gs = AllGaussiansForAM(am[0]);
-        for(const auto & it : gs)
-            hrrtopbras[it.am()].insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
-    if(hrrtopkets.size() == 0)
-    {
-        GaussianSet gs = AllGaussiansForAM(am[2]);
-        for(const auto & it : gs)
-            hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
-
-    // add these to contracted array variable set
-    for(const auto & it : hrrtopbras)
-    for(const auto & it2 : hrrtopkets)
-    {
-        QAMList qam{it.first, 0, it2.first, 0};
-        continfo.insert(qam);
-    }
-    
-    // also add final bra, plus all the kets
-    for(const auto & it : hrrtopkets)
-    {
-        QAMList qam{am[0], am[1], it.first, 0};
-        continfo.insert(qam);
-    }
-
-
-    // 2.) ET steps
-    //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit;
-
-    for(const auto & it : hrrtopbras)
-    for(const auto & it2 : hrrtopkets)
-    {
-        for(const auto & dit : it.second)
-        for(const auto & dit2 : it2.second)
-            etinit.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
-    }
-
-    ETStepList etsl = etalgo.Create_ETStepList(etinit);
-
-    // 3.) Top level gaussians from ET, sorted by AM
-    ETReqMap etrm;
-    std::set<QAMList> etint;
-    for(const auto & it : etsl)
-    {
-        // should only add the first element of the bra
-        if(it.src1 && (it.src1.flags & QUARTET_ETTOPLEVEL))
-            etrm[it.src1.bra.left.am()].insert(it.src1.bra.left);
-        if(it.src2 && (it.src2.flags & QUARTET_ETTOPLEVEL))
-            etrm[it.src2.bra.left.am()].insert(it.src2.bra.left);
-        if(it.src3 && (it.src3.flags & QUARTET_ETTOPLEVEL))
-            etrm[it.src3.bra.left.am()].insert(it.src3.bra.left);
-        if(it.src4 && (it.src4.flags & QUARTET_ETTOPLEVEL))
-            etrm[it.src4.bra.left.am()].insert(it.src4.bra.left);
-
-        // add all integrals for this step to the set
-        if(it.src1)
-            etint.insert(it.src1.amlist());
-        if(it.src2)
-            etint.insert(it.src2.amlist());
-        if(it.src3)
-            etint.insert(it.src3.amlist());
-        if(it.src3)
-            etint.insert(it.src4.amlist());
-        if(it.target)
-            etint.insert(it.target.amlist());
-    }
-  
-
-
-    // 4.) VRR Steps
-    // requirements for vrr are the elements of etrm
-    ETReqMap vreq = etrm;
-
-    // and also any elements from top bra/kets in the form ( X 0 | 0 0 )
-    for(const auto & it : hrrtopbras)
-    for(const auto & it2 : hrrtopkets)
-    {
-        for(const auto & dit : it.second)
-        for(const auto & dit2 : it2.second)
-        {
-            if(dit.right.am() == 0 && dit2.left.am() == 0 && dit2.right.am() == 0)
-                vreq[dit.left.am()].insert(dit.left);
-        }
-    }
-
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
-
-
-    // 5.) Memory required
-    size_t memory_cont_elements = 0;
-    for(const auto & it : continfo)
-    {
-        if(it != am)  // final integral storage is already set
-            memory_cont_elements += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
-    }
-
-    size_t memory_cont = memory_cont_elements * sizeof(double);
-
 
     // some helper bools
     bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
@@ -452,46 +321,6 @@ void Writer_Looped(std::ostream & os,
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
-    ///////////////////////////////////////////////
-    // Done with prerequisites
-    ///////////////////////////////////////////////
-
-
-    // print out some info
-    std::cout << "HRR Top Bras: " << hrrtopbras.size() << "\n";
-    for(const auto & it : hrrtopbras)
-        std::cout << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
-    std::cout << "HRR Top Kets: " << hrrtopkets.size() << "\n";
-    for(const auto & it : hrrtopkets)
-        std::cout << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
-    std::cout << "\n";
-
-    std::cout << "ET Requirements: " << etrm.size() << "\n";
-    for(const auto & greq : etrm)
-    {
-        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
-        for(const auto & it : greq.second)
-            std::cout << "    " << it << "\n";
-    }
-    std::cout << "\n";
-
-    std::cout << "VRR Requirements: " << vrrinfo.second.size() << "\n";
-    for(const auto & greq : vrrinfo.second)
-        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
-    std::cout << "\n";
-
-    std::cout << "MEMORY (unaligned, per shell quartet):\n";
-    std::cout << "Contracted elements: " << memory_cont_elements << "    Bytes: " << memory_cont << "\n";
-    std::cout << "\n\n";
-
-
-
-
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
-    // Create the function
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
     std::stringstream ss;
     ss << "int eri_" << nameappend << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
@@ -543,6 +372,7 @@ void Writer_Looped(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.bAB_z);\n";
     os << "    ASSUME_ALIGN(Q.alpha);\n";
     os << "    ASSUME_ALIGN(Q.prefac);\n";
+
     os << "\n";
     os << "    ASSUME_ALIGN(" << ArrVarName(am) << ");\n";
     os << "\n";
@@ -857,3 +687,208 @@ void Writer_Looped(std::ostream & os,
     os << "}\n";
     os << "\n";
 }
+
+
+
+
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+// MAIN ENTRY POINT
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+void Writer_Looped(std::ostream & os,
+                   const QAMList & am,
+                   const std::string & nameappend,
+                   const OptionsMap & options,
+                   const BoysGen & bg,
+                   VRR_Algorithm_Base & vrralgo,
+                   ET_Algorithm_Base & etalgo,
+                   HRR_Algorithm_Base & hrralgo)
+{
+    // add the am list to the contracted info
+    continfo.insert(am);
+
+
+    // for electron transfer
+    // ETMap[am1][am2] is a list of steps for forming
+    typedef std::map<int, std::map<int, ETStepList>> ETMap;
+
+
+    // Working backwards, I need:
+    // 0.) HRR Steps
+    HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
+
+
+    // 1.) HRR Top level Doublets, sorted by their AM
+    DoubletSetMap hrrtopbras, hrrtopkets;
+    for(const auto & it : hrrsteps.first)
+    {
+        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
+            hrrtopbras[it.src1.am()].insert(it.src1);
+        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
+            hrrtopbras[it.src2.am()].insert(it.src2);
+    }
+
+    for(const auto & it : hrrsteps.second)
+    {
+        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
+            hrrtopkets[it.src1.am()].insert(it.src1);
+        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
+            hrrtopkets[it.src2.am()].insert(it.src2);
+    }
+
+
+    // we may need to add ( a s | as a top bra for AM quartets
+    // that do not have HRR in the bra part
+    // these might be ( X s |  or  | X s )
+    if(hrrtopbras.size() == 0)
+    {
+        GaussianSet gs = AllGaussiansForAM(am[0]);
+        for(const auto & it : gs)
+            hrrtopbras[it.am()].insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
+    if(hrrtopkets.size() == 0)
+    {
+        GaussianSet gs = AllGaussiansForAM(am[2]);
+        for(const auto & it : gs)
+            hrrtopkets[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
+    }
+
+    // add these to contracted array variable set
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        QAMList qam{it.first, 0, it2.first, 0};
+        continfo.insert(qam);
+    }
+    
+    // also add final bra, plus all the kets
+    for(const auto & it : hrrtopkets)
+    {
+        QAMList qam{am[0], am[1], it.first, 0};
+        continfo.insert(qam);
+    }
+
+
+    // 2.) ET steps
+    //     with the HRR top level stuff as the initial targets
+    QuartetSet etinit;
+
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        for(const auto & dit : it.second)
+        for(const auto & dit2 : it2.second)
+            etinit.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
+    }
+
+    ETStepList etsl = etalgo.Create_ETStepList(etinit);
+
+    // 3.) Top level gaussians from ET, sorted by AM
+    ETReqMap etrm;
+    std::set<QAMList> etint;
+    for(const auto & it : etsl)
+    {
+        // should only add the first element of the bra
+        if(it.src1 && (it.src1.flags & QUARTET_ETTOPLEVEL))
+            etrm[it.src1.bra.left.am()].insert(it.src1.bra.left);
+        if(it.src2 && (it.src2.flags & QUARTET_ETTOPLEVEL))
+            etrm[it.src2.bra.left.am()].insert(it.src2.bra.left);
+        if(it.src3 && (it.src3.flags & QUARTET_ETTOPLEVEL))
+            etrm[it.src3.bra.left.am()].insert(it.src3.bra.left);
+        if(it.src4 && (it.src4.flags & QUARTET_ETTOPLEVEL))
+            etrm[it.src4.bra.left.am()].insert(it.src4.bra.left);
+
+        // add all integrals for this step to the set
+        if(it.src1)
+            etint.insert(it.src1.amlist());
+        if(it.src2)
+            etint.insert(it.src2.amlist());
+        if(it.src3)
+            etint.insert(it.src3.amlist());
+        if(it.src3)
+            etint.insert(it.src4.amlist());
+        if(it.target)
+            etint.insert(it.target.amlist());
+    }
+  
+
+
+    // 4.) VRR Steps
+    // requirements for vrr are the elements of etrm
+    ETReqMap vreq = etrm;
+
+    // and also any elements from top bra/kets in the form ( X 0 | 0 0 )
+    for(const auto & it : hrrtopbras)
+    for(const auto & it2 : hrrtopkets)
+    {
+        for(const auto & dit : it.second)
+        for(const auto & dit2 : it2.second)
+        {
+            if(dit.right.am() == 0 && dit2.left.am() == 0 && dit2.right.am() == 0)
+                vreq[dit.left.am()].insert(dit.left);
+        }
+    }
+
+    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
+
+
+    // 5.) Memory required
+    size_t memory_cont_elements = 0;
+    for(const auto & it : continfo)
+    {
+        if(it != am)  // final integral storage is already set
+            memory_cont_elements += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+    }
+
+    memory_cont = memory_cont_elements * sizeof(double);
+
+
+
+
+    ///////////////////////////////////////////////
+    // Done with prerequisites
+    ///////////////////////////////////////////////
+
+
+    // print out some info
+    std::cout << "HRR Top Bras: " << hrrtopbras.size() << "\n";
+    for(const auto & it : hrrtopbras)
+        std::cout << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
+    std::cout << "HRR Top Kets: " << hrrtopkets.size() << "\n";
+    for(const auto & it : hrrtopkets)
+        std::cout << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
+    std::cout << "\n";
+
+    std::cout << "ET Requirements: " << etrm.size() << "\n";
+    for(const auto & greq : etrm)
+    {
+        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+        for(const auto & it : greq.second)
+            std::cout << "    " << it << "\n";
+    }
+    std::cout << "\n";
+
+    std::cout << "VRR Requirements: " << vrrinfo.second.size() << "\n";
+    for(const auto & greq : vrrinfo.second)
+        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
+    std::cout << "\n";
+
+    std::cout << "MEMORY (unaligned, per shell quartet):\n";
+    std::cout << "Contracted elements: " << memory_cont_elements << "    Bytes: " << memory_cont << "\n";
+    std::cout << "\n\n";
+
+
+
+
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    // Create the function
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    Writer_Looped_NotFlat(os, am, nameappend, options, bg,
+                          vrrinfo, etsl, etint,
+                          hrrsteps, hrrtopbras, hrrtopkets);
+}
+
