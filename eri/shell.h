@@ -51,58 +51,21 @@ struct multishell_pair
 };
 
 
-struct shell_pair
-{
-    int am1, am2;          // angular momentum of each shell
-    int nprim;             // Total number of primitives
-    int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
-    int nprim1, nprim2;    // number of primitives in each shell
-
-    double AB_x;
-    double AB_y;
-    double AB_z;
-
-    // these are all of length nprim
-    double * x;
-    double * y;
-    double * z;
-    double * PA_x;
-    double * PA_y;
-    double * PA_z;
-    double * alpha;
-    double * prefac;
-};
-
-
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G);
 void free_gaussian_shell(struct gaussian_shell G);
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G);
 
 
-void allocate_shell_pair_from_shells(struct gaussian_shell const A,
-                                     struct gaussian_shell const B,
-                                     struct shell_pair * const restrict P);
-
 void allocate_multishell_pair_from_shells(int na, struct gaussian_shell const * const restrict A,
                                           int nb, struct gaussian_shell const * const restrict B,
                                           struct multishell_pair * const restrict P);
 
-void free_shell_pair(struct shell_pair P);
 void free_multishell_pair(struct multishell_pair P);
 
-
-
-void fill_shell_pair(struct gaussian_shell const A,
-                        struct gaussian_shell const B,
-                        struct shell_pair * const restrict P);
 
 void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                              int nb, struct gaussian_shell const * const restrict B,
                              struct multishell_pair * const restrict P);
-
-struct shell_pair
-createshell_pair(struct gaussian_shell const A,
-                     struct gaussian_shell const B);
 
 struct multishell_pair
 create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
