@@ -10,11 +10,6 @@ extern "C" {
 
 extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
-inline double Boys_F0_long(double x)
-{
-    return boys_longfac[0] / sqrt(x);
-}
-
 inline void Boys_F_long(double * const restrict F, int n, double x)
 {
     const double x1 = 1.0/x;

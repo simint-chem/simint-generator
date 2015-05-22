@@ -11,14 +11,6 @@ extern "C" {
 /////////////////////////
 // Inline functions
 /////////////////////////
-inline double Boys_F0_split(double x)
-{
-    if(x < BOYS_SHORTGRID_MAXX)
-        return Boys_F0_taylor(x);
-    else
-        return Boys_F0_long(x); 
-}
-
 inline void Boys_F_split(double * const restrict F, int n, double x)
 {
     if(x < BOYS_SHORTGRID_MAXX)
