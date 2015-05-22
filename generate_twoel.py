@@ -13,6 +13,7 @@ parser.add_argument("-g", type=str, required=True, help="Path to generator binar
 parser.add_argument("-d", type=str, required=True, help="Directory in which to create files")
 parser.add_argument("-p", type=str, required=True, help="Type prefix")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
+parser.add_argument("-f", required=False, action='store_true', help="Flattened primitive loop")
 args = parser.parse_args()
 
 
@@ -125,7 +126,17 @@ for q in valid:
   print("     Logfile: {}".format(logfile))
 
   with open(logfile, 'w') as lf:
-    ret = subprocess.call([args.g, args.b, args.p, str(q[0]), str(q[1]), str(q[2]), str(q[3]), outfile], stdout=lf, stderr=lf)
+    cmdline = [args.g];
+    cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
+    cmdline.extend(["-p", args.p])
+    cmdline.extend(["-b", args.b])
+    cmdline.extend(["-o", outfile])
+
+    if args.f:
+        cmdline.append("-f")
+
+    ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
+
     if ret != 0:
       print("\n")
       print("*********************************")

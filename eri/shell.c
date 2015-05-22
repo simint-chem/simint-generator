@@ -112,7 +112,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
 
 // Allocates a shell pair with correct alignment
-// Only fills in nprim_length member
+// Fills nothing in
 void allocate_multishell_pair_flat(int na, struct gaussian_shell const * const restrict A,
                                    int nb, struct gaussian_shell const * const restrict B,
                                    struct multishell_pair_flat * const restrict P)
@@ -125,11 +125,9 @@ void allocate_multishell_pair_flat(int na, struct gaussian_shell const * const r
     // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
+        prim_size += A[i].nprim * B[j].nprim;
 
     const int shell12_size = na*nb;
-
-    P->nprim_length = prim_size;
 
     const int size = prim_size * sizeof(double);
     const int size2 = shell12_size*sizeof(double); // for holding Xab, etc
@@ -310,9 +308,6 @@ void fill_multishell_pair_flat(int na, struct gaussian_shell const * const restr
 
         for(sb = 0; sb < nb; ++sb)
         {
-            // align to the next boundary
-            idx = SIMD_ROUND_DBL(idx);
-
             P->am2 = B[sb].am;
 
             // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
@@ -320,8 +315,6 @@ void fill_multishell_pair_flat(int na, struct gaussian_shell const * const restr
             const double Xab_y = A[sa].y - B[sb].y;
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
-
-            ASSUME(idx%SIMD_ALIGN_DBL == 0);
 
             ASSUME_ALIGN(A[sa].alpha);
             ASSUME_ALIGN(A[sa].coef);

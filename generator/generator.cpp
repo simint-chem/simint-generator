@@ -11,27 +11,102 @@
 using namespace std;
 
 
+
+string GetNextArg(int & i, int argc, char ** argv)
+{
+    if(i >= argc)
+        throw std::runtime_error("Error - no more arguments!");
+
+    return argv[i++];
+}
+
+int GetIArg(int & i, int argc, char ** argv)
+{   
+    std::string str = GetNextArg(i, argc, argv);
+    try {
+
+        return stoi(str);
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << "Cannot convert to int: " << str;
+        throw std::runtime_error(ss.str());
+    }
+}
+
+
 int main(int argc, char ** argv)
 {
     try {
 
-    if(argc != 8)
+    // default options
+    OptionsMap options;
+    options[OPTION_FLATPRIM] = 0;
+
+    // other stuff
+    std::string prefix;
+    std::string boystype;
+    std::string fpath;
+    QAMList amlist;
+    bool amlistset = false;
+
+    // parse command line
+    int i = 1;
+    while(i < argc)
     {
-        std::cout << "usage: generator boystype prefix am1 am2 am3 am4 outfile\n";
-        return 1;
+        std::string argstr(GetNextArg(i, argc, argv));
+        if(argstr == "-f")
+            options[OPTION_FLATPRIM] = 1;
+        else if(argstr == "-p")
+            prefix = GetNextArg(i, argc, argv);
+        else if(argstr == "-q")
+        {
+            amlist[0] = GetIArg(i, argc, argv);   
+            amlist[1] = GetIArg(i, argc, argv);   
+            amlist[2] = GetIArg(i, argc, argv);   
+            amlist[3] = GetIArg(i, argc, argv);   
+            amlistset = true;
+        }
+        else if(argstr == "-b")
+            boystype = GetNextArg(i, argc, argv);
+        else if(argstr == "-o")
+            fpath = GetNextArg(i, argc, argv);
+        else
+        {
+            std::cout << "\n\n";
+            std::cout << "--------------------------------\n";
+            std::cout << "Unknown argument: " << argstr << "\n";
+            std::cout << "--------------------------------\n";
+            return 1; 
+        } 
     }
 
-    std::string boystype(argv[1]);
-    std::string prefix(argv[2]);
+    // check for required options
+    if(prefix == "")
+    {
+        std::cout << "\nprefix (-p) required\n\n";
+        return 2;
+    }
 
-    QAMList amlist{
-                    atoi(argv[3]),
-                    atoi(argv[4]),
-                    atoi(argv[5]),
-                    atoi(argv[6])
-                  };
+    if(boystype == "")
+    {
+        std::cout << "\nBoys type (-b) required\n\n";
+        return 2;
+    }
 
-    std::string fpath(argv[7]);
+    if(fpath == "")
+    {
+        std::cout << "\noutput path (-o) required\n\n";
+        return 2;
+    }
+
+    if(amlistset == false)
+    {
+        std::cout << "\nAM quartet (-q) required\n\n";
+        return 2;
+    }
+
 
     // Read in the boys map
     std::unique_ptr<BoysGen> bg;
@@ -48,9 +123,6 @@ int main(int argc, char ** argv)
         return 3;
     }
 
-    // options
-    OptionsMap options;
-    options[OPTION_FLATPRIM] = 1;
 
 
     // algorithms used

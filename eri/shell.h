@@ -52,7 +52,6 @@ struct multishell_pair_flat
 {
     int am1, am2;          // angular momentum.
     int nprim;             // Total number of primitives
-    int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
     int nshell1, nshell2;  // number of shells
     int nshell12;
 
