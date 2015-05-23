@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
         printf("%22e %22e\n", res_liberd[0], res_FO[0]);
 
         // free memory
-        FreeRandomQuartets(gshells);
+        FreeQuartets(gshells);
 
     }
 

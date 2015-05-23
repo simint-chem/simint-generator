@@ -3,6 +3,9 @@
 #include <ctime>
 #include <array>
 #include <vector>
+#include <stdexcept>
+#include <string>
+#include <fstream>
 
 #include "eri/shell.h"
 
@@ -44,13 +47,6 @@ random_shell(int nprim, int am)
 }
 
 inline
-void free_random_shell(struct gaussian_shell G)
-{
-    free_gaussian_shell(G);
-}
-
-
-inline
 VecQuartet
 CreateRandomQuartets(std::array<int, 4> nshell,
                      std::array<int, 4> nprim,
@@ -75,13 +71,60 @@ CreateRandomQuartets(std::array<int, 4> nshell,
 
 
 inline
+VecQuartet
+ReadQuartets(std::array<int, 4> am,
+             const std::array<std::string, 4> & files,
+             bool normalize = true)
+{
+    VecQuartet arr;
+
+    for(int q = 0; q < 4; q++)
+    {
+        std::ifstream file(files[q].c_str());
+        if(!file.is_open())
+            throw std::runtime_error(std::string("Error opening file ") + files[q]);
+
+        file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
+
+        int fnshell, fnprim;
+        file >> fnshell >> fnprim;
+
+        arr[q].reserve(fnshell);
+
+        for(int i = 0; i < fnshell; i++)
+        {
+            gaussian_shell G;
+            allocate_gaussian_shell(fnprim, &G);
+            G.am = am[q];
+
+            G.nprim = fnprim;
+            file >> G.x >> G.y >> G.z;
+
+            for(int j = 0; j < fnprim; j++)
+                file >> G.alpha[j] >> G.coef[j];
+
+            arr[q].push_back(G);
+        }
+    }
+
+    if(normalize)
+    {
+        for(auto & it : arr)
+            normalize_gaussian_shells(it.size(), it.data());
+    }
+
+    return arr;
+}
+
+
+inline
 void
-FreeRandomQuartets(VecQuartet & arr)
+FreeQuartets(VecQuartet & arr)
 {
     for(auto & it : arr)
     {
         for(auto & it2 : it)
-            free_random_shell(it2);
+            free_gaussian_shell(it2);
         it.clear();
     }
 }

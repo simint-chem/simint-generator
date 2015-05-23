@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
         printf("\n");
     }
 
-    FreeRandomQuartets(gshells);
+    FreeQuartets(gshells);
 
     Valeev_Finalize();
     Boys_Finalize();
