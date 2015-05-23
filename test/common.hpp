@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 #include <fstream>
 
 #include "eri/shell.h"
@@ -150,6 +151,28 @@ bool IterateGaussian(std::array<int, 3> & g)
     return IsValidGaussian(g);
 }
 
+inline
+int ReadValeevIntegrals(const std::string & basedir,
+                        const std::array<int, 4> & am,
+                        double * res)
+{
+    const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
+
+    uint32_t nsize = 0;
+
+    std::stringstream ss;
+    ss << basedir << "ref_" << amchar[am[0]] << "_"
+                            << amchar[am[1]] << "_"
+                            << amchar[am[2]] << "_"
+                            << amchar[am[3]] << ".dat";
+
+    std::ifstream infile(ss.str().c_str(), std::ifstream::binary);
+    infile.read(reinterpret_cast<char *>(&nsize), sizeof(uint32_t));
+    infile.read(reinterpret_cast<char *>(res), nsize * sizeof(double));
+    infile.close();
+
+    return nsize;
+}
 
 inline
 void ValeevIntegrals(const VecQuartet & gshells,

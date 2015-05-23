@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cmath>
+#include <sstream>
 
 #include "eri/eri.h"
 #include "boys/boys.h"
@@ -7,30 +8,12 @@
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
-#define MAXAM 2
-
-bool ValidQuartet(std::array<int, 4> am)
-{
-    if(am[0] < am[1])
-        return false;
-    if(am[2] < am[3])
-        return false;
-    if( (am[0] + am[1]) < (am[2] + am[3]) )
-        return false;
-    if(am[0] < am[2])
-        return false;
-    return true;
-}
-
-
 int main(int argc, char ** argv)
 {
-    const int maxncart = pow(NCART(MAXAM), 4);
-
     // parse command line
-    if(argc != 2)
+    if(argc != 6)
     {
-        printf("Give me 1 argument! I got %d\n", argc-1);
+        printf("Give me 5 arguments! I got %d\n", argc-1);
         return 1;
     }
 
@@ -48,46 +31,40 @@ int main(int argc, char ** argv)
     Valeev_Init();
 
     // read in the shell info
-    std::array<int, 4> initam{0, 0, 0, 0}; // will be set later
-    VecQuartet gshells(  ReadQuartets(initam, files, true) );
+    std::array<int, 4> am{atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5])};
+    VecQuartet gshells(  ReadQuartets(am, files, true) );
 
 
     /* Storage of integrals results */
     const int nshell1234 = gshells[0].size() * gshells[1].size() 
                          * gshells[2].size() * gshells[3].size();
 
-    double * res_valeev = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
+    const int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    const int nsize = ncart * nshell1234;
+    double * res_valeev = (double *)ALLOC(nsize * sizeof(double));
 
 
-    // loop over all quartets, choosing only valid ones
-    for(int i = 0; i <= MAXAM; i++)
-    for(int j = 0; j <= MAXAM; j++)
-    for(int k = 0; k <= MAXAM; k++)
-    for(int l = 0; l <= MAXAM; l++)
-    {
-        std::array<int, 4> am{i, j, k, l};
-
-        if(!ValidQuartet(am))
-            continue;
- 
-        int ncart = NCART(i) * NCART(j) * NCART(k) * NCART(l);   
+    // calculate
+    ValeevIntegrals(gshells, res_valeev);
 
 
-        // set all the am
-        for(int m = 0; m < 4; m++)
-            for(auto & it : gshells[m])
-                it.am = am[m];
+    // open the output file
+    const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
+    std::stringstream ss;
+    ss << basedir << "ref_" << amchar[am[0]] << "_"
+                            << amchar[am[1]] << "_"
+                            << amchar[am[2]] << "_"
+                            << amchar[am[3]] << ".dat";
 
+    uint32_t nsize32 = nsize; // just to make sure
+    std::ofstream out(ss.str().c_str(), std::ofstream::binary);
+    out.write(reinterpret_cast<const char *>(&nsize32), sizeof(uint32_t));
+    out.write(reinterpret_cast<const char *>(res_valeev), nsize*sizeof(double));
+    out.close();
 
-        // calculate
-        ValeevIntegrals(gshells, res_valeev);
-
-        printf("( %d %d | %d %d )\n", am[0], am[1], am[2], am[3]);
-        for(int m = 0; m < ncart; m++)
-            printf("    %20.8e\n", res_valeev[m]);
-    }
-
-    printf("\n");
+    //printf("( %d %d | %d %d )\n", am[0], am[1], am[2], am[3]);
+    //for(int m = 0; m < ncart; m++)
+    //    printf("%20.8e\n", res_valeev[m]);
 
     FreeQuartets(gshells);
     Valeev_Finalize();
