@@ -167,7 +167,11 @@ int ReadValeevIntegrals(const std::string & basedir,
                             << amchar[am[3]] << ".dat";
 
     std::ifstream infile(ss.str().c_str(), std::ifstream::binary);
+    if(!infile.is_open())
+        throw std::runtime_error(std::string("Unable to open ") + ss.str());
+
     infile.read(reinterpret_cast<char *>(&nsize), sizeof(uint32_t));
+    std::cout << "nsize: " << nsize << "\n";
     infile.read(reinterpret_cast<char *>(res), nsize * sizeof(double));
     infile.close();
 

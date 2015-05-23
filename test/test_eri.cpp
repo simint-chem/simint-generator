@@ -217,7 +217,8 @@ int main(int argc, char ** argv)
         funcs_vref_flat[am[0]][am[1]][am[2]][am[3]](Pf, Qf, res_vref_flat);
 
         // test with valeev & liberd
-        ValeevIntegrals(gshells, res_valeev);
+        //ValeevIntegrals(gshells, res_valeev);
+        ReadValeevIntegrals(basedir, am, res_valeev);
         //ERDIntegrals(gshells, res_liberd);
 
 
