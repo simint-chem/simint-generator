@@ -229,7 +229,7 @@ int main(int argc, char ** argv)
         {
             for(int j = 0; j < ncart; j++)
             {
-                //printf("%22.4e  %22.4e  %22.4e\n", res_liberd[idx], res_FO[idx], res_valeev[idx]);
+                //printf("%22.4e  %22.4e  %22.4e  %22.4e\n", res_FO[idx], res_vref[idx], res_vref_flat[idx], res_valeev[idx]);
 
                 const double v = res_valeev[idx];
                 //double diff_liberd  = fabs(res_liberd[idx]         - v);
