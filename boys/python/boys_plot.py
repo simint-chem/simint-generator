@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser()
 parser.add_argument("-n",         type=int, required=True,                help="Boys N value")
 parser.add_argument("--dps",      type=int, required=False, default=256,  help="Decimal precision/sig figs to use/calculate")
-parser.add_argument("-t",         type=int, required=False, default=200,  help="Number of test points (per bin)")
+parser.add_argument("-t",         type=int, required=False, default=200,  help="Number of test points")
 parser.add_argument("minx",       type=str,                               help="Starting x value")
 parser.add_argument("maxx",       type=str,                               help="Ending x value")
 args = parser.parse_args()
