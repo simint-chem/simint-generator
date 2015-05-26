@@ -1,3 +1,5 @@
+#include "boys/boys_vref.h"
+
 void Boys_Init(double max_x, int max_n)
 {
     Boys_F_VRef_Init();
