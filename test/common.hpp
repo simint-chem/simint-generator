@@ -18,6 +18,8 @@
 #define MAX_EXP   50.0
 #define MAX_COEF  2.0
 
+#define MAXAM 2
+
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
 typedef std::vector<gaussian_shell, AlignedAllocator<gaussian_shell>> AlignedGaussianVec;
@@ -117,6 +119,21 @@ ReadQuartets(std::array<int, 4> am,
     return arr;
 }
 
+inline
+VecQuartet
+CopyQuartets(const VecQuartet & orig)
+{
+    VecQuartet v;
+    for(int q = 0; q < 4; q++)
+    {
+        v[q].reserve(orig[q].size());
+        for(const auto & it : orig[q])
+            v[q].push_back(copy_gaussian_shell(it));
+    }
+
+    return v;
+}
+
 
 inline
 void
@@ -171,9 +188,12 @@ int ReadValeevIntegrals(const std::string & basedir,
         throw std::runtime_error(std::string("Unable to open ") + ss.str());
 
     infile.read(reinterpret_cast<char *>(&nsize), sizeof(uint32_t));
-    std::cout << "nsize: " << nsize << "\n";
     infile.read(reinterpret_cast<char *>(res), nsize * sizeof(double));
     infile.close();
+
+    //std::cout << "Valeev: Read from " << ss.str() << "\n";
+    //for(int i = 0; i < nsize; i++)
+    //    std::cout << i << " : " << res[i] << "\n";
 
     return nsize;
 }
@@ -217,16 +237,6 @@ void ValeevIntegrals(const VecQuartet & gshells,
                     {
                         integrals[idx] = 0.0;
 
-                        /* 
-                        std::cout << "i,j,k,l,idx = ";
-                        std::cout << g1[0] << "," << g1[1] << "," << g1[2] << "  ";
-                        std::cout << g2[0] << "," << g2[1] << "," << g2[2] << "  ";
-                        std::cout << g3[0] << "," << g3[1] << "," << g3[2] << "  ";
-                        std::cout << g4[0] << "," << g4[1] << "," << g4[2] << "  ";
-                        std::cout << idx << "  ";
-                        */
-
-
                         for(int m = 0; m < A[i].nprim; m++)
                         for(int n = 0; n < B[j].nprim; n++)
                         for(int o = 0; o < C[k].nprim; o++)
@@ -238,6 +248,7 @@ void ValeevIntegrals(const VecQuartet & gshells,
                                                     g3[0], g3[1], g3[2], C[k].alpha[o], vC,
                                                     g4[0], g4[1], g4[2], D[l].alpha[p], vD, 0);
                             integrals[idx] += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
+
                             /*
                             printf("IDX: %d\n", idx);
                             printf("VAL: %8.3e\n", val);
@@ -246,10 +257,15 @@ void ValeevIntegrals(const VecQuartet & gshells,
                             printf("%8.3e %8.3e %8.3e %8.3e\n", vC[0], vC[1], vC[2], C[k].alpha[o]);
                             printf("%8.3e %8.3e %8.3e %8.3e\n", vD[0], vD[1], vD[2], D[l].alpha[p]);
                             printf("%8.3e %8.3e %8.3e %8.3e\n", A[i].coef[m], B[j].coef[n], C[k].coef[o], D[l].coef[p]);
+                            std::cout << "i,j,k,l,idx = ";
+                            std::cout << g1[0] << "," << g1[1] << "," << g1[2] << "  ";
+                            std::cout << g2[0] << "," << g2[1] << "," << g2[2] << "  ";
+                            std::cout << g3[0] << "," << g3[1] << "," << g3[2] << "  ";
+                            std::cout << g4[0] << "," << g4[1] << "," << g4[2] << "  ";
+                            std::cout << idx << "  int = " << integrals[idx] << "\n";
                             */
-                        }
 
-                        //std::cout << "int = " << integrals[idx] << "\n";
+                        }
 
                         idx++;
                     } while(IterateGaussian(g4));
@@ -300,5 +316,19 @@ void ERDIntegrals(const VecQuartet & gshells,
              * NCART(C[k].am)
              * NCART(D[l].am);
     }
+}
+
+
+bool ValidQuartet(std::array<int, 4> am)
+{
+    if(am[0] < am[1])
+        return false;
+    if(am[2] < am[3])
+        return false;
+    if( (am[0] + am[1]) < (am[2] + am[3]) )
+        return false;
+    if(am[0] < am[2])
+        return false;
+    return true;
 }
 

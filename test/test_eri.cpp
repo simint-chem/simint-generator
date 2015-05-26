@@ -5,9 +5,6 @@
 #include "boys/boys.h"
 #include "common.hpp"
 
-#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
-
-#define MAXAM 2
 
 typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
 typedef int (*eriflatfunc)(struct multishell_pair_flat const, struct multishell_pair_flat const, double * const restrict);
@@ -38,24 +35,10 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
 }
 
 
-bool ValidQuartet(std::array<int, 4> am)
-{
-    if(am[0] < am[1])
-        return false;
-    if(am[2] < am[3])
-        return false;
-    if( (am[0] + am[1]) < (am[2] + am[3]) )
-        return false;
-    if(am[0] < am[2])
-        return false;
-    return true;
-}
-
 
 int main(int argc, char ** argv)
 {
-    const int maxncart = pow(NCART(MAXAM), 4);
-
+    // set up the function pointers
     erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
     erifunc funcs_vref[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
     eriflatfunc funcs_vref_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
@@ -160,25 +143,17 @@ int main(int argc, char ** argv)
     Boys_Init(0, 7); // need F0 + 7 for interpolation
 
     // read in the shell info
-    std::array<int, 4> initam{0, 0, 0, 0}; // will be set later
-    VecQuartet gshells(  ReadQuartets(initam, files, true) );
+    // angular momentum and normalization will be handled later
+    std::array<int, 4> initam{0, 0, 0, 0};
+    VecQuartet gshells_orig(  ReadQuartets(initam, files, false) );
 
-    std::array<int, 4> nshell{gshells[0].size(), gshells[1].size(), 
-                              gshells[2].size(), gshells[3].size()};
+    std::array<int, 4> nshell{gshells_orig[0].size(), gshells_orig[1].size(), 
+                              gshells_orig[2].size(), gshells_orig[3].size()};
 
-    // set up shell pairs
-    struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),
-                                                      nshell[1], gshells[1].data());
-    struct multishell_pair Q = create_multishell_pair(nshell[2], gshells[2].data(),
-                                                      nshell[3], gshells[3].data());
-
-    struct multishell_pair_flat Pf = create_multishell_pair_flat(nshell[0], gshells[0].data(),
-                                                                 nshell[1], gshells[1].data());
-    struct multishell_pair_flat Qf = create_multishell_pair_flat(nshell[2], gshells[2].data(),
-                                                                 nshell[3], gshells[3].data());
 
 
     /* Storage of integrals results */
+    const int maxncart = pow(NCART(MAXAM), 4);
     const int nshell1234 = nshell[0] * nshell[1] * nshell[2] * nshell[3];
     double * res_FO              = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     double * res_vref            = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
@@ -204,11 +179,27 @@ int main(int argc, char ** argv)
  
         int ncart = NCART(i) * NCART(j) * NCART(k) * NCART(l);   
 
+        // copy the shells, set all the am, and renormalize
+        VecQuartet gshells(CopyQuartets(gshells_orig));
 
-        // set all the am
         for(int m = 0; m < 4; m++)
+        {
             for(auto & it : gshells[m])
                 it.am = am[m];
+            normalize_gaussian_shells(gshells[m].size(), gshells[m].data());
+        }
+
+        
+        // set up shell pairs
+        struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),
+                                                          nshell[1], gshells[1].data());
+        struct multishell_pair Q = create_multishell_pair(nshell[2], gshells[2].data(),
+                                                          nshell[3], gshells[3].data());
+
+        struct multishell_pair_flat Pf = create_multishell_pair_flat(nshell[0], gshells[0].data(),
+                                                                     nshell[1], gshells[1].data());
+        struct multishell_pair_flat Qf = create_multishell_pair_flat(nshell[2], gshells[2].data(),
+                                                                     nshell[3], gshells[3].data());
 
 
         // calculate with my code
@@ -275,18 +266,18 @@ int main(int argc, char ** argv)
                                                       maxerr_FO, maxerr_vref, maxerr_vref_flat,
                                                       maxrelerr_FO, maxrelerr_vref, maxrelerr_vref_flat);
 
+        free_multishell_pair(P);
+        free_multishell_pair(Q);
+        free_multishell_pair_flat(Pf);
+        free_multishell_pair_flat(Qf);
+        FreeQuartets(gshells);
 
     }
 
     printf("\n");
 
-    free_multishell_pair(P);
-    free_multishell_pair(Q);
-    free_multishell_pair_flat(Pf);
-    free_multishell_pair_flat(Qf);
 
-    FreeQuartets(gshells);
-
+    FreeQuartets(gshells_orig);
 
     Valeev_Finalize();
     Boys_Finalize();

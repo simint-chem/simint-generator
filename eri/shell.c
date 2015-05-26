@@ -1,4 +1,5 @@
 #include <math.h>
+#include <string.h>
 
 #include "vectorization.h"
 #include "constants.h"
@@ -23,6 +24,22 @@ void free_gaussian_shell(struct gaussian_shell G)
 {
     // only need to free G.alpha since only one memory space was used
     FREE(G.alpha);
+}
+
+struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
+{
+    struct gaussian_shell G_copy;
+    allocate_gaussian_shell(G.nprim, &G_copy);
+
+    G_copy.nprim = G.nprim;
+    G_copy.am = G.am;
+    G_copy.x = G.x;
+    G_copy.y = G.y;
+    G_copy.z = G.z;
+
+    memcpy(G_copy.alpha, G.alpha, G.nprim * sizeof(double));
+    memcpy(G_copy.coef, G.coef, G.nprim * sizeof(double));
+    return G_copy;
 }
 
 
@@ -383,3 +400,4 @@ create_multishell_pair_flat(int na, struct gaussian_shell const * const restrict
     fill_multishell_pair_flat(na, A, nb, B, &P);
     return P; 
 }
+

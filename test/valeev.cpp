@@ -11,9 +11,9 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-double * fac;
-double * df;
-double ** bc;
+static double * fac;
+static double * df;
+static double ** bc;
 
 
 void Valeev_Init(void)

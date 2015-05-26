@@ -1,9 +1,11 @@
 void Boys_Init(double max_x, int max_n)
 {
+    Boys_F_VRef_Init();
 }
 
 void Boys_Finalize(void)
 {
+    Boys_F_VRef_Finalize();
 }
 
 

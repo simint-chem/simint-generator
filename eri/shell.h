@@ -79,6 +79,7 @@ struct multishell_pair_flat
 
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G);
 void free_gaussian_shell(struct gaussian_shell G);
+struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G);
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G);
 
 
@@ -102,6 +103,7 @@ create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
 struct multishell_pair_flat
 create_multishell_pair_flat(int na, struct gaussian_shell const * const restrict A,
                             int nb, struct gaussian_shell const * const restrict B);
+
 
 #ifdef __cplusplus
 }
