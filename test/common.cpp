@@ -5,7 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
-    
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -28,101 +28,119 @@ static void AppendSlash(std::string & str)
         str = str + '/';
 }
 
-/*
-struct gaussian_shell
-random_shell(int nprim, int am)
+
+std::map<int, AlignedGaussianVec> ReadBasis(const std::string & file)
 {
-    struct gaussian_shell G;
-    allocate_gaussian_shell(nprim, &G);
+    std::map<char, int> ammap = {
+                                         { 'S',     0 },
+                                         { 'P',     1 },
+                                         { 'D',     2 },
+                                         { 'F',     3 },
+                                         { 'G',     4 },
+                                         { 'H',     5 },
+                                         { 'I',     6 },
+                                         { 'J',     7 },
+                                         { 'K',     8 },
+                                         { 'L',     9 },
+                                         { 'M',    10 },
+                                         { 'N',    11 },
+                                         { 'O',    12 },
+                                         { 'Q',    13 },
+                                         { 'R',    14 },
+                                         { 'T',    15 },
+                                         { 'U',    16 },
+                                         { 'V',    17 },
+                                         { 'W',    18 },
+                                         { 'X',    19 },
+                                         { 'Y',    20 },
+                                         { 'Z',    21 },
+                                         { 'A',    22 },
+                                         { 'B',    23 },
+                                         { 'C',    24 },
+                                         { 'E',    25 }
+                                 };
 
-    G.am = am;
-    G.x = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
-    G.y = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
-    G.z = 2.0 * MAX_COORD * rand() / ((double)RAND_MAX) - MAX_COORD;
+    std::ifstream f(file.c_str());
+    if(!f.is_open())
+        throw std::runtime_error(std::string("Error opening file ") + file);
 
-    G.nprim = nprim;
+    f.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
 
-    for(int i = 0; i < nprim; i++)
+    std::map<int, AlignedGaussianVec> shellmap;
+
+    int natom;
+    f >> natom;
+
+
+    for(int i = 0; i < natom; i++)
     {
-        G.alpha[i] = MAX_EXP * rand() / ((double)RAND_MAX);
-        G.coef[i] = MAX_COEF * rand() / ((double)RAND_MAX);
-    }
+        std::string sym; // not really used
+        int nshell, nallprim, nallprimg;  // nprim, nprimg not really used
+        double x, y, z;
 
-    return G;
-}
+        f >> sym >> nshell >> nallprim >> nallprimg >> x >> y >> z;
 
-VecQuartet
-CreateRandomQuartets(std::array<int, 4> nshell,
-                     std::array<int, 4> nprim,
-                     std::array<int, 4> am,
-                     bool normalize = true)
-{
-    VecQuartet arr;
-
-    for(int q = 0; q < 4; q++)
-    {
-        arr[q].reserve(nshell[q]);
-
-        for(int i = 0; i < nshell[q]; i++)
-            arr[q].push_back(random_shell(nprim[q], am[q]));
-
-        if(normalize)
-            normalize_gaussian_shells(nshell[q], arr[q].data());
-    }
-
-    return arr;
-}
-*/
-
-VecQuartet ReadQuartets(std::array<int, 4> am,
-                        std::string basedir,
-                        bool normalize)
-{
-    AppendSlash(basedir);
-
-    VecQuartet arr;
-
-    std::array<std::string, 4> files{basedir + "1.dat",
-                                     basedir + "2.dat",
-                                     basedir + "3.dat",
-                                     basedir + "4.dat"};
-
-    for(int q = 0; q < 4; q++)
-    {
-        std::ifstream file(files[q].c_str());
-        if(!file.is_open())
-            throw std::runtime_error(std::string("Error opening file ") + files[q]);
-
-        file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-
-        int fnshell, fnprim;
-        file >> fnshell >> fnprim;
-
-        arr[q].reserve(fnshell);
-
-        for(int i = 0; i < fnshell; i++)
+        for(int j = 0; j < nshell; j++)
         {
-            gaussian_shell G;
-            allocate_gaussian_shell(fnprim, &G);
-            G.am = am[q];
+            std::string type;
+            int nprim, ngen;
+            f >> type >> nprim >> ngen;
 
-            G.nprim = fnprim;
-            file >> G.x >> G.y >> G.z;
 
-            for(int j = 0; j < fnprim; j++)
-                file >> G.alpha[j] >> G.coef[j];
+            // allocate the shell
+            // set the angular momentum
+            // (circularly loop throught the type to handle sp, spd, etc)
+            auto itg = type.begin();
+            AlignedGaussianVec gvec(ngen);
+            for(auto & it : gvec)
+            {
+                allocate_gaussian_shell(nprim, &it);
+                it.am = ammap[*itg];
+                it.nprim = nprim;
+                it.x = x;
+                it.y = y;
+                it.z = z;
 
-            arr[q].push_back(G);
+                itg++;
+                if(itg == type.end())
+                    itg = type.begin();
+            }
+
+            // loop through general contractions
+            for(int i = 0; i < nprim; i++)
+            {
+                double alpha;
+                f >> alpha;
+
+                for(int j = 0; j < ngen; j++)
+                {
+                    gvec[j].alpha[i] = alpha;
+                    f >> gvec[j].coef[i];
+                }
+
+            }
+
+            // add shell to the vector for its am
+            for(auto & it : gvec)
+                shellmap[it.am].push_back(it);
         }
     }
 
-    if(normalize)
-    {
-        for(auto & it : arr)
-            normalize_gaussian_shells(it.size(), it.data());
-    }
+    return shellmap;
+}
 
-    return arr;
+void FreeAlignedGaussianVec(AlignedGaussianVec & agv)
+{
+    for(auto & it : agv)
+        free_gaussian_shell(it);
+    agv.clear();
+}
+
+void FreeShellMap(std::map<int, AlignedGaussianVec> & m)
+{
+    for(auto & it : m)
+        FreeAlignedGaussianVec(it.second);
+    m.clear();
 }
 
 
@@ -143,11 +161,7 @@ VecQuartet CopyQuartets(const VecQuartet & orig)
 void FreeQuartets(VecQuartet & arr)
 {
     for(auto & it : arr)
-    {
-        for(auto & it2 : it)
-            free_gaussian_shell(it2);
-        it.clear();
-    }
+        FreeAlignedGaussianVec(it);
 }
 
 
@@ -223,9 +237,9 @@ void ValeevIntegrals(const VecQuartet & gshells,
     const int nshell4 = gshells[3].size();
     const int n234 = nshell2 * nshell3 * nshell4 * NCART(gshells[0][0].am) * NCART(gshells[1][0].am) * NCART(gshells[2][0].am) * NCART(gshells[3][0].am);
 
-    #ifdef _OPENMP
-        #pragma omp parallel for
-    #endif
+    //#ifdef _OPENMP
+    //    #pragma omp parallel for
+    //#endif
     for(int i = 0; i < nshell1; i++)
     {
         const int idxstart = i * n234;
@@ -259,7 +273,7 @@ void ValeevIntegrals(const VecQuartet & gshells,
                             for(int o = 0; o < C[k].nprim; o++)
                             for(int p = 0; p < D[l].nprim; p++)
                             {
-                                
+
                                 double val = Valeev_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
                                                         g2[0], g2[1], g2[2], B[j].alpha[n], vB,
                                                         g3[0], g3[1], g3[2], C[k].alpha[o], vC,
@@ -320,7 +334,7 @@ void ERDIntegrals(const VecQuartet & gshells,
     const int ncart1234 = NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
 
-    const int ncart = nshell1234 * ncart1234; 
+    const int ncart = nshell1234 * ncart1234;
     std::fill(integrals, integrals + ncart, 0.0);
 
     int idx = 0;
@@ -349,7 +363,16 @@ bool ValidQuartet(std::array<int, 4> am)
 }
 
 
-std::pair<double, double> CalcError(double const * const calc, double const * const ref, int ncalc)
+void Chop(double * const restrict calc, int ncalc)
+{
+    for(int i = 0; i < ncalc; i++)
+    {
+        if(fabs(calc[i]) < RND_ZERO)
+            calc[i] = 0.0;
+    }
+}
+
+std::pair<double, double> CalcError(double const * const restrict calc, double const * const restrict ref, int ncalc)
 {
     double maxerr = 0;
     double maxrelerr = 0;
@@ -358,14 +381,14 @@ std::pair<double, double> CalcError(double const * const calc, double const * co
     {
         const double r = ref[i];
         const double diff = fabs(calc[i] - r);
-        const double rel = fabs(diff / r);
+        const double rel = (fabs(ref[i]) > RND_ZERO ? fabs(diff / r) : 0.0);
         if(diff > maxerr)
             maxerr = diff;
         if(rel > maxrelerr)
             maxrelerr = rel;
     }
- 
-    return std::pair<double, double>(maxerr, maxrelerr);   
+
+    return std::pair<double, double>(maxerr, maxrelerr);
 }
 
 

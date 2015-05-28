@@ -45,35 +45,33 @@ struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
 
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
 {
-    /* 
-     * Normalizes both primitives and contractions. This is Eq. 2.25 in
-     * "Fundamentals of Molecular Integrals Evaluation"
-     * by Justin T. Fermann & Edward F. Valeev
-     */
     for(int i = 0; i < n; ++i)
     {
-        const double am = (double)(G[i].am);
+        const int iam = G[i].am;
+        const double am = (double)iam;
         const double m = am + 1.5;
+        const double m2 = 0.5 * m;
 
         double sum = 0.0;
 
         for(int j = 0; j < G[i].nprim; j++)
         {
             const double a1 = G[i].alpha[j];
+            const double c1 = G[i].coef[j];
 
             for(int k = 0; k < G[i].nprim; k++)
             {
                 const double a2 = G[i].alpha[k];
-                const double s = (G[i].coef[j] * G[i].coef[k]) / pow(a1+a2, m);
-                sum += s;
+                const double c2 = G[i].coef[k];
+                sum += ( c1 * c2 *  pow(a1*a2, m2) ) / ( pow(a1+a2, m) );
             }
         }
 
-        const double norm = 1.0 / sqrt(sum * norm_fac[G[i].am]);
+        const double norm = 1.0 / sqrt(sum * norm_fac[iam]);
 
-        // apply the normalization
+        // apply the rest of the normalization
         for (int j = 0; j < G[i].nprim; ++j)
-            G[i].coef[j] *= norm; 
+            G[i].coef[j] *= norm * pow(G[i].alpha[j], m2);
     }
 
 }

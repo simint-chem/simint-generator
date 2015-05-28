@@ -8,6 +8,8 @@ void ERD_Init(int am1, int nprim1, int ncgto1,
               int am3, int nprim3, int ncgto3,
               int am4, int nprim4, int ncgto4);
 
+void ERD_Init(int am, int nprim, int ncgto);
+
 void ERD_Init(int na, struct gaussian_shell const * const restrict A,
               int nb, struct gaussian_shell const * const restrict B,
               int nc, struct gaussian_shell const * const restrict C,

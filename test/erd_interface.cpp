@@ -44,7 +44,6 @@ double * cc;
 double * alpha;
 
 
-
 void ERD_Init(int am1, int nprim1, int ncgto1,
               int am2, int nprim2, int ncgto2,
               int am3, int nprim3, int ncgto3,
@@ -88,6 +87,14 @@ void ERD_Init(int am1, int nprim1, int ncgto1,
     d_buffer_size = zopt;
 }
 
+
+void ERD_Init(int am, int nprim, int ncgto)
+{
+    ERD_Init(am, nprim, ncgto,
+             am, nprim, ncgto,
+             am, nprim, ncgto,
+             am, nprim, ncgto);
+}
 
 
 void ERD_Init(int na, struct gaussian_shell const * const restrict A,

@@ -9,30 +9,67 @@ int main(int argc, char ** argv)
     // set up the function pointers
     Init_Test();
 
-    if(argc != 7)
+    if(argc != 3)
     {
-        printf("Give me 6 arguments! I got %d\n", argc-1);
+        printf("Give me 2 argument! I got %d\n", argc-1);
         return 1;
     }
 
     // files to read
-    std::string basedir(argv[1]);
+    std::string basfile(argv[1]);
 
     // number of times to run
     const int ntest = atoi(argv[2]);
 
-    std::array<int, 4> am = { atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]) };
-    VecQuartet gshells(ReadQuartets(am, basedir, true));
+    // read in the shell info
+    std::map<int, AlignedGaussianVec> shellmap = ReadBasis(basfile);
 
-    std::array<int, 4> nshell{gshells[0].size(), gshells[1].size(), 
-                              gshells[2].size(), gshells[3].size()};
+    // normalize
+    for(const auto & it : shellmap)
+        normalize_gaussian_shells(it.second.size(), it.second.data());
 
+    // find the max dimensions
+    int maxnprim = 0;
+    int maxam = 0;
+    int maxel = 0;
+    for(auto & it : shellmap)
+    {
+        const int nca = NCART(it.first);
+        const int nsh = it.second.size();
+        const int n = nca * nsh;
+        if(n > maxel)
+            maxel = n;
 
-    const int nshell1234 = nshell[0] * nshell[1] * nshell[2] * nshell[3];
-    const int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]); 
+        if(it.first > maxam)
+            maxam = it.first;
+
+        for(auto & it2 : it.second)
+        {
+            if(it2.nprim > maxnprim)
+                maxnprim = it2.nprim;
+        }
+    }
+
+    maxel = pow(maxel, 4);
 
     /* Storage of integrals */
-    double * res_ints = (double *)ALLOC(ncart * nshell1234 * sizeof(double));
+    double * res_ints = (double *)ALLOC(maxel * sizeof(double));
+
+
+    for(const auto & it_i : shellmap)
+    for(const auto & it_j : shellmap)
+    for(const auto & it_k : shellmap)
+    for(const auto & it_l : shellmap)
+    {
+        std::array<int, 4> am{it_i.first, it_j.first, it_k.first, it_l.first};
+
+        if(!ValidQuartet(am))
+            continue;
+
+        
+        const int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);   
+
+
 
     // set up the shell pairs here
     struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),

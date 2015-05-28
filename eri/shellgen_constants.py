@@ -36,9 +36,10 @@ print("------------------------------------")
 normfac = [None] * (maxl+1)
 
 normfac[0] = mp.power(mp.pi, 1.5)
+normfac[1] = normfac[0] / mp.mpf(2.0)
 
-for l in range(1, maxl+1):
-  normfac[l] = normfac[l-1] * mp.sqrt(2*l-1) / mp.mpf(2.0)
+for l in range(2, maxl+1):
+  normfac[l] = normfac[l-1] * mp.mpf(2*l-1) / mp.mpf(2.0)
   
 
 # Output to file
