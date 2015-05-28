@@ -1,7 +1,8 @@
 macro(ADDTESTS TNAME TFILES)
   add_executable(${TNAME} ${TFILES}
-                 $<TARGET_OBJECTS:compare_valeev>
-                 $<TARGET_OBJECTS:compare_erd>)
+                 $<TARGET_OBJECTS:test_valeev>
+                 $<TARGET_OBJECTS:test_erd>
+                 $<TARGET_OBJECTS:test_common>)
 
   target_link_libraries(${TNAME} simint_eri simint_boys
                                  ${LIBERD_LIBRARY} ${LIBINT2_LIBRARY})
@@ -95,20 +96,26 @@ set(LIBERD_LIBRARY "${LIBERD_PATH}/lib/liberd.a")
 string(REPLACE ";" " " TESTS_CXX_FLAGS "${TESTS_CXX_FLAGS}")
 string(REPLACE ";" " " TESTS_LINK_FLAGS "${TESTS_LINK_FLAGS}")
 
+# Add common object files
+add_library(test_common OBJECT common.cpp)
+set_target_properties(test_common PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
+set_target_properties(test_common PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+
 # Add valeev object files
-add_library(compare_valeev OBJECT valeev.cpp)
-set_target_properties(compare_valeev PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
-set_target_properties(compare_valeev PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+add_library(test_valeev OBJECT valeev.cpp)
+set_target_properties(test_valeev PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
+set_target_properties(test_valeev PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 # Erd interface as well
-add_library(compare_erd OBJECT erd_interface.cpp)
-set_target_properties(compare_erd PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
-set_target_properties(compare_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+add_library(test_erd OBJECT erd_interface.cpp)
+set_target_properties(test_erd PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
+set_target_properties(test_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 
-ADDTESTS(compare_f compare_f.cpp)
-ADDTESTS(benchmark_f benchmark_f.cpp)
-ADDTESTS(compare_eri compare_eri.cpp)
-ADDTESTS(benchmark_eri benchmark_eri.cpp)
-ADDTESTS(test_eri test_eri.cpp)
 ADDTESTS(gen_ref gen_ref.cpp)
+
+ADDTESTS(test_f test_f.cpp)
+ADDTESTS(test_eri test_eri.cpp)
+
+ADDTESTS(benchmark_f benchmark_f.cpp)
+ADDTESTS(benchmark_FO benchmark_FO.cpp)

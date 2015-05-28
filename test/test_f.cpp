@@ -6,7 +6,7 @@
 #include "boys/boys_split.h"
 #include "boys/boys_FO.h"
 
-#include "valeev.hpp"
+#include "test/valeev.hpp"
 
 #ifdef TESTS_USE_LIBINT2
 #include <boys.h> // this is from libint
@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     }
 
     Valeev_Init();
-    Boys_Init(maxx, MAXN+7);
+    Boys_Init();
 
     double maxerr_split = 0.0;
     double maxerr_FO = 0.0;

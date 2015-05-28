@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    Boys_Init(MAXX, MAXN+7);
+    Boys_Init();
 
     double * xval = (double *)ALLOC(ncount*sizeof(double));
 

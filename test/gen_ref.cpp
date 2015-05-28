@@ -1,10 +1,12 @@
 #include <cstdio>
 #include <cmath>
+#include <fstream>
 #include <sstream>
 
 #include "eri/eri.h"
 #include "boys/boys.h"
-#include "common.hpp"
+#include "test/common.hpp"
+#include "test/valeev.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -17,13 +19,6 @@ int main(int argc, char ** argv)
 
     // files to read
     std::string basedir(argv[1]);
-    if(basedir[basedir.size()-1] != '/')
-        basedir = basedir + '/';
-
-    std::array<std::string, 4> files{basedir + "1.dat",
-                                     basedir + "2.dat",
-                                     basedir + "3.dat",
-                                     basedir + "4.dat"};
 
     // initialize valeev stuff
     Valeev_Init();
@@ -31,7 +26,7 @@ int main(int argc, char ** argv)
     // read in the shell info
     // angular momentum and normalization will be handled later
     std::array<int, 4> initam{0, 0, 0, 0};
-    VecQuartet gshells_orig(  ReadQuartets(initam, files, false) );
+    VecQuartet gshells_orig(  ReadQuartets(initam, basedir, false) );
 
 
     /* Storage of integrals results */
@@ -70,7 +65,7 @@ int main(int argc, char ** argv)
 
 
         // calculate
-        ValeevIntegrals(gshells, res_valeev);
+        ValeevIntegrals(gshells, res_valeev, true);
 
 
         // open the output file

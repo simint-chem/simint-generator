@@ -1,124 +1,16 @@
 #include <cstdio>
 #include <cmath>
 
-#include "eri/eri.h"
 #include "boys/boys.h"
-#include "common.hpp"
-
-
-typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
-typedef int (*eriflatfunc)(struct multishell_pair_flat const, struct multishell_pair_flat const, double * const restrict);
-
-
-int eri_notyetimplemented(struct multishell_pair const P,
-                          struct multishell_pair const Q,
-                          double * const restrict dummy)
-{
-    printf("****************************\n");
-    printf("*** NOT YET IMPLEMENTED! ***\n");
-    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
-    printf("****************************\n");
-    exit(1);
-    return 0;
-}
-
-int eriflat_notyetimplemented(struct multishell_pair_flat const P,
-                              struct multishell_pair_flat const Q,
-                              double * const restrict dummy)
-{
-    printf("****************************\n");
-    printf("*** NOT YET IMPLEMENTED! ***\n");
-    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
-    printf("****************************\n");
-    exit(1);
-    return 0;
-}
-
+#include "test/common.hpp"
+#include "test/valeev.hpp"
+#include "test/erd_interface.hpp"
 
 
 int main(int argc, char ** argv)
 {
     // set up the function pointers
-    erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
-    erifunc funcs_vref[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
-    eriflatfunc funcs_vref_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
-
-    for(int i = 0; i <= MAXAM; i++)
-    for(int j = 0; j <= MAXAM; j++)
-    for(int k = 0; k <= MAXAM; k++)
-    for(int l = 0; l <= MAXAM; l++)
-    {
-        funcs_FO[i][j][k][l] = eri_notyetimplemented; 
-        funcs_vref[i][j][k][l] = eri_notyetimplemented; 
-        funcs_vref_flat[i][j][k][l] = eriflat_notyetimplemented; 
-    }
-
-
-    funcs_FO[0][0][0][0] = eri_FO_s_s_s_s;
-    funcs_FO[1][0][0][0] = eri_FO_p_s_s_s;
-    funcs_FO[1][0][1][0] = eri_FO_p_s_p_s;
-    funcs_FO[1][1][0][0] = eri_FO_p_p_s_s;
-    funcs_FO[1][1][1][0] = eri_FO_p_p_p_s;
-    funcs_FO[1][1][1][1] = eri_FO_p_p_p_p;
-    funcs_FO[2][0][0][0] = eri_FO_d_s_s_s;
-    funcs_FO[2][0][1][0] = eri_FO_d_s_p_s;
-    funcs_FO[2][0][1][1] = eri_FO_d_s_p_p;
-    funcs_FO[2][0][2][0] = eri_FO_d_s_d_s;
-    funcs_FO[2][1][0][0] = eri_FO_d_p_s_s;
-    funcs_FO[2][1][1][0] = eri_FO_d_p_p_s;
-    funcs_FO[2][1][1][1] = eri_FO_d_p_p_p;
-    funcs_FO[2][1][2][0] = eri_FO_d_p_d_s;
-    funcs_FO[2][1][2][1] = eri_FO_d_p_d_p;
-    funcs_FO[2][2][0][0] = eri_FO_d_d_s_s;
-    funcs_FO[2][2][1][0] = eri_FO_d_d_p_s;
-    funcs_FO[2][2][1][1] = eri_FO_d_d_p_p;
-    funcs_FO[2][2][2][0] = eri_FO_d_d_d_s;
-    funcs_FO[2][2][2][1] = eri_FO_d_d_d_p;
-    funcs_FO[2][2][2][2] = eri_FO_d_d_d_d;
-
-    funcs_vref[0][0][0][0] = eri_vref_s_s_s_s;
-    funcs_vref[1][0][0][0] = eri_vref_p_s_s_s;
-    funcs_vref[1][0][1][0] = eri_vref_p_s_p_s;
-    funcs_vref[1][1][0][0] = eri_vref_p_p_s_s;
-    funcs_vref[1][1][1][0] = eri_vref_p_p_p_s;
-    funcs_vref[1][1][1][1] = eri_vref_p_p_p_p;
-    funcs_vref[2][0][0][0] = eri_vref_d_s_s_s;
-    funcs_vref[2][0][1][0] = eri_vref_d_s_p_s;
-    funcs_vref[2][0][1][1] = eri_vref_d_s_p_p;
-    funcs_vref[2][0][2][0] = eri_vref_d_s_d_s;
-    funcs_vref[2][1][0][0] = eri_vref_d_p_s_s;
-    funcs_vref[2][1][1][0] = eri_vref_d_p_p_s;
-    funcs_vref[2][1][1][1] = eri_vref_d_p_p_p;
-    funcs_vref[2][1][2][0] = eri_vref_d_p_d_s;
-    funcs_vref[2][1][2][1] = eri_vref_d_p_d_p;
-    funcs_vref[2][2][0][0] = eri_vref_d_d_s_s;
-    funcs_vref[2][2][1][0] = eri_vref_d_d_p_s;
-    funcs_vref[2][2][1][1] = eri_vref_d_d_p_p;
-    funcs_vref[2][2][2][0] = eri_vref_d_d_d_s;
-    funcs_vref[2][2][2][1] = eri_vref_d_d_d_p;
-    funcs_vref[2][2][2][2] = eri_vref_d_d_d_d;
-
-    funcs_vref_flat[0][0][0][0] = eri_vref_flat_s_s_s_s;
-    funcs_vref_flat[1][0][0][0] = eri_vref_flat_p_s_s_s;
-    funcs_vref_flat[1][0][1][0] = eri_vref_flat_p_s_p_s;
-    funcs_vref_flat[1][1][0][0] = eri_vref_flat_p_p_s_s;
-    funcs_vref_flat[1][1][1][0] = eri_vref_flat_p_p_p_s;
-    funcs_vref_flat[1][1][1][1] = eri_vref_flat_p_p_p_p;
-    funcs_vref_flat[2][0][0][0] = eri_vref_flat_d_s_s_s;
-    funcs_vref_flat[2][0][1][0] = eri_vref_flat_d_s_p_s;
-    funcs_vref_flat[2][0][1][1] = eri_vref_flat_d_s_p_p;
-    funcs_vref_flat[2][0][2][0] = eri_vref_flat_d_s_d_s;
-    funcs_vref_flat[2][1][0][0] = eri_vref_flat_d_p_s_s;
-    funcs_vref_flat[2][1][1][0] = eri_vref_flat_d_p_p_s;
-    funcs_vref_flat[2][1][1][1] = eri_vref_flat_d_p_p_p;
-    funcs_vref_flat[2][1][2][0] = eri_vref_flat_d_p_d_s;
-    funcs_vref_flat[2][1][2][1] = eri_vref_flat_d_p_d_p;
-    funcs_vref_flat[2][2][0][0] = eri_vref_flat_d_d_s_s;
-    funcs_vref_flat[2][2][1][0] = eri_vref_flat_d_d_p_s;
-    funcs_vref_flat[2][2][1][1] = eri_vref_flat_d_d_p_p;
-    funcs_vref_flat[2][2][2][0] = eri_vref_flat_d_d_d_s;
-    funcs_vref_flat[2][2][2][1] = eri_vref_flat_d_d_d_p;
-    funcs_vref_flat[2][2][2][2] = eri_vref_flat_d_d_d_d;
+    Init_Test();
 
     // parse command line
     if(argc != 2)
@@ -129,27 +21,25 @@ int main(int argc, char ** argv)
 
     // files to read
     std::string basedir(argv[1]);
-    if(basedir[basedir.size()-1] != '/')
-        basedir = basedir + '/';
 
-    std::array<std::string, 4> files{basedir + "1.dat",
-                                     basedir + "2.dat",
-                                     basedir + "3.dat",
-                                     basedir + "4.dat"};
-
-    // initialize valeev stuff
-    Valeev_Init();
-    // doesn't do anything at the moment
-    Boys_Init(0, 7); // need F0 + 7 for interpolation
 
     // read in the shell info
     // angular momentum and normalization will be handled later
     std::array<int, 4> initam{0, 0, 0, 0};
-    VecQuartet gshells_orig(  ReadQuartets(initam, files, false) );
+    VecQuartet gshells_orig(  ReadQuartets(initam, basedir, false) );
 
     std::array<int, 4> nshell{gshells_orig[0].size(), gshells_orig[1].size(), 
                               gshells_orig[2].size(), gshells_orig[3].size()};
 
+    // initialize stuff
+    // in this case, all shells have the same number of primitives
+    // so we can initialize ERD here
+    Valeev_Init();
+    Boys_Init();
+    ERD_Init(MAXAM, gshells_orig[0][0].nprim, 1, 
+             MAXAM, gshells_orig[1][0].nprim, 1, 
+             MAXAM, gshells_orig[2][0].nprim, 1, 
+             MAXAM, gshells_orig[3][0].nprim, 1);
 
 
     /* Storage of integrals results */
@@ -158,13 +48,13 @@ int main(int argc, char ** argv)
     double * res_FO              = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     double * res_vref            = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     double * res_vref_flat       = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
-    //double * res_liberd          = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
+    double * res_liberd          = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
     double * res_valeev          = (double *)ALLOC(maxncart * nshell1234 * sizeof(double));
 
 
     printf("\n");
-    printf("%17s    %20s  %20s  %20s    %20s  %20s  %20s\n", "Quartet", "FO MaxErr",    "vref MaxErr",    "vrefF MaxErr", 
-                                                                        "FO MaxRelErr", "vref MaxRelErr", "vrefF MaxRelErr");
+    printf("%17s    %8s  %8s  %8s  %8s    %8s %8s  %8s  %8s\n", "Quartet", "FO MaxErr", "vref MaxErr", "vrefF MaxErr", "erd MaxErr", 
+                                                                "FO MaxRelErr", "vref MaxRelErr", "vrefF MaxRelErr", "erd MaxRelErr");
 
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= MAXAM; i++)
@@ -177,16 +67,21 @@ int main(int argc, char ** argv)
         if(!ValidQuartet(am))
             continue;
  
-        int ncart = NCART(i) * NCART(j) * NCART(k) * NCART(l);   
+        const int ncart = NCART(i) * NCART(j) * NCART(k) * NCART(l);   
 
-        // copy the shells, set all the am, and renormalize
+        // copy the shells, set all the am, and normalize
         VecQuartet gshells(CopyQuartets(gshells_orig));
+        VecQuartet gshells_erd(CopyQuartets(gshells_orig));
 
         for(int m = 0; m < 4; m++)
         {
             for(auto & it : gshells[m])
                 it.am = am[m];
-            normalize_gaussian_shells(gshells[m].size(), gshells[m].data());
+            for(auto & it : gshells_erd[m])
+                it.am = am[m];
+
+            //normalize_gaussian_shells(gshells[m].size(), gshells[m].data());
+            normalize_gaussian_shells_erd(gshells_erd[m].size(), gshells_erd[m].data());
         }
 
         
@@ -203,74 +98,35 @@ int main(int argc, char ** argv)
 
 
         // calculate with my code
-        funcs_FO[am[0]][am[1]][am[2]][am[3]](P, Q, res_FO);
-        funcs_vref[am[0]][am[1]][am[2]][am[3]](P, Q, res_vref);
-        funcs_vref_flat[am[0]][am[1]][am[2]][am[3]](Pf, Qf, res_vref_flat);
+        //Integral_FO(P, Q, res_FO);
+        Integral_vref(P, Q, res_vref);
+        Integral_vref_flat(Pf, Qf, res_vref_flat);
 
-        // test with valeev & liberd
-        //ValeevIntegrals(gshells, res_valeev);
-        ReadValeevIntegrals(basedir, am, res_valeev);
-        //ERDIntegrals(gshells, res_liberd);
+        // test with liberd
+        ERDIntegrals(gshells_erd, res_liberd);
+
+        // Calculate or read valeev reference integrals
+        ValeevIntegrals(gshells, res_valeev, true);
+        //ReadValeevIntegrals(basedir, am, res_valeev);
+
+        std::pair<double, double> err_FO = CalcError(res_FO, res_valeev, nshell1234 * ncart);
+        std::pair<double, double> err_vref = CalcError(res_vref, res_valeev, nshell1234 * ncart);
+        std::pair<double, double> err_vref_flat = CalcError(res_vref_flat, res_valeev, nshell1234 * ncart);
+        std::pair<double, double> err_erd = CalcError(res_liberd, res_valeev, nshell1234 * ncart);
+
+        printf("( %2d %2d | %2d %2d )    %8.3e  %8.3e  %8.3e  %8.3e    %8.3e  %8.3e  %8.3e  %8.3e\n", am[0], am[1], am[2], am[3],
+                                                      err_FO.first, err_vref.first, err_vref_flat.first, err_erd.first,
+                                                      err_FO.second, err_vref.second, err_vref_flat.second, err_erd.second);
 
 
-        //printf("( %d %d | %d %d )\n", am[0], am[1], am[2], am[3]);
-        //printf("%22s %22s %22s\n", "liberd", "FO", "valeev");
-
-        double maxerr_FO = 0;
-        double maxerr_vref = 0;
-        double maxerr_vref_flat = 0;
-
-        double maxrelerr_FO = 0;
-        double maxrelerr_vref = 0;
-        double maxrelerr_vref_flat = 0;
-
-        int idx = 0;
-        for(int i = 0; i < nshell1234; i++)
-        {
-            for(int j = 0; j < ncart; j++)
-            {
-                //printf("%22.4e  %22.4e  %22.4e  %22.4e\n", res_FO[idx], res_vref[idx], res_vref_flat[idx], res_valeev[idx]);
-
-                const double v = res_valeev[idx];
-                //double diff_liberd  = fabs(res_liberd[idx]         - v);
-                double diff_FO          = fabs(res_FO[idx]     - v);
-                double diff_vref        = fabs(res_vref[idx]     - v);
-                double diff_vref_flat   = fabs(res_vref_flat[idx]     - v);
-                double rel_FO           = fabs(diff_FO / v);
-                double rel_vref         = fabs(diff_vref / v);
-                double rel_vref_flat    = fabs(diff_vref_flat / v);
-                //printf("%22.4e  %22.4e\n", diff_liberd, diff_FO);
-                //printf("\n");
-
-                if(diff_FO > maxerr_FO)
-                    maxerr_FO = diff_FO;
-                if(rel_FO > maxrelerr_FO)
-                    maxrelerr_FO = rel_FO;
-
-                if(diff_vref > maxerr_vref)
-                    maxerr_vref = diff_vref;
-                if(rel_vref > maxrelerr_vref)
-                    maxrelerr_vref = rel_vref;
-
-                if(diff_vref_flat > maxerr_vref_flat)
-                    maxerr_vref_flat = diff_vref_flat;
-                if(rel_vref_flat > maxrelerr_vref_flat)
-                    maxrelerr_vref_flat = rel_vref_flat;
-
-                idx++;
-            }
-            //printf("\n");
-        }
-
-        printf("( %2d %2d | %2d %2d )    %20.8e  %20.8e  %20.8e    %20.8e  %20.8e  %20.8e\n", am[0], am[1], am[2], am[3],
-                                                      maxerr_FO, maxerr_vref, maxerr_vref_flat,
-                                                      maxrelerr_FO, maxrelerr_vref, maxrelerr_vref_flat);
-
+        for(int i = 0; i < ncart * nshell1234; i++)
+            printf("%22.8e  %22.8e       %22.8e %22.8e\n", res_liberd[i], res_valeev[i], res_liberd[i]/res_valeev[i], res_valeev[i]/res_liberd[i]);
         free_multishell_pair(P);
         free_multishell_pair(Q);
         free_multishell_pair_flat(Pf);
         free_multishell_pair_flat(Qf);
         FreeQuartets(gshells);
+        FreeQuartets(gshells_erd);
 
     }
 
@@ -281,9 +137,10 @@ int main(int argc, char ** argv)
 
     Valeev_Finalize();
     Boys_Finalize();
+    ERD_Finalize();
 
     FREE(res_valeev);
-    //FREE(res_liberd);
+    FREE(res_liberd);
     FREE(res_vref);
     FREE(res_vref_flat);
     FREE(res_FO);

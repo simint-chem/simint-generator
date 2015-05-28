@@ -1,11 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // for memcpy
 #include <math.h>
 
 #include "eri/shell.h"
+#include "vectorization.h"
 
 // 2 * pi**(2.5) * sqrt(pi) / 16
-#define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683
+//#define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 extern "C" {
 
@@ -40,14 +43,63 @@ int d_buffer_size;
 double * cc;
 double * alpha;
 
+
+
+void ERD_Init(int am1, int nprim1, int ncgto1,
+              int am2, int nprim2, int ncgto2,
+              int am3, int nprim3, int ncgto3,
+              int am4, int nprim4, int ncgto4)
+{
+    int nprim = nprim1 + nprim2 + nprim3 + nprim4;
+
+    cc    = (double *)ALLOC(nprim * sizeof(double));
+    alpha = (double *)ALLOC(nprim * sizeof(double));
+
+    for(int i = 0; i < nprim; i++)
+    {
+        cc[i] = 2.0;
+        alpha[i] = 10.0;
+    }
+ 
+    double X[4] = {1.0, 2.0, 3.0, 4.0};
+    double Y[4] = {1.0, 2.0, 3.0, 4.0};
+    double Z[4] = {1.0, 2.0, 3.0, 4.0};
+    int zmin = 0;
+    int zopt = 0;
+    int imin = 0;
+    int iopt = 0;
+    int spheric = 0;
+    int maxam = MAX(MAX(am1, am2), MAX(am3, am4));
+
+    erd__memory_eri_batch_(&nprim, &nprim,
+                           &ncgto1, &ncgto2, &ncgto3, &ncgto4,
+                           &nprim1, &nprim2, &nprim3, &nprim4,
+                           &maxam,  &maxam,  &maxam,  &maxam,
+                           &X[0], &Y[0], &Z[0],
+                           &X[1], &Y[1], &Z[1],
+                           &X[2], &Y[2], &Z[2],
+                           &X[3], &Y[3], &Z[3],
+                           alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
+                             
+    iscratch = (int *)ALLOC(iopt * sizeof(int)); 
+    dscratch = (double *)ALLOC(zopt * sizeof(double)); 
+
+    i_buffer_size = iopt;
+    d_buffer_size = zopt;
+}
+
+
+
 void ERD_Init(int na, struct gaussian_shell const * const restrict A,
               int nb, struct gaussian_shell const * const restrict B,
               int nc, struct gaussian_shell const * const restrict C,
               int nd, struct gaussian_shell const * const restrict D)
 {
-    int maxam = 0;
+    int am1 = A[0].am;
+    int am2 = B[0].am;
+    int am3 = C[0].am;
+    int am4 = D[0].am;
 
-    // get scratch requirements
     int npgto1 = 0;
     int sh1 = 0;
     for(int i = 0; i < na; ++i)
@@ -57,8 +109,6 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto1 = A[i].nprim;
             sh1 = i;
         }
-        if(maxam < A[i].am)
-            maxam = A[i].am;
     }
 
     int npgto2 = 0;
@@ -70,8 +120,6 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto2 = B[i].nprim;
             sh2 = i;
         }
-        if(maxam < B[i].am)
-            maxam = B[i].am;
     }
 
     int npgto3 = 0;
@@ -83,8 +131,6 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto3 = C[i].nprim;
             sh3 = i;
         }
-        if(maxam < C[i].am)
-            maxam = C[i].am;
     }
 
     int npgto4 = 0;
@@ -96,55 +142,18 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
             npgto4 = D[i].nprim;
             sh4 = i;
         }
-        if(maxam < D[i].am)
-            maxam = D[i].am;
     }
-  
-    cc    = (double *)malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
-    alpha = (double *)malloc((npgto1 + npgto2 + npgto3 + npgto4) * sizeof(double));
-    
-    memcpy(cc                           , A[sh1].coef, A[sh1].nprim * sizeof(double)); 
-    memcpy(cc + npgto1                  , B[sh2].coef, B[sh2].nprim * sizeof(double)); 
-    memcpy(cc + npgto1 + npgto2         , C[sh3].coef, C[sh3].nprim * sizeof(double)); 
-    memcpy(cc + npgto1 + npgto2 + npgto3, D[sh4].coef, D[sh4].nprim * sizeof(double)); 
-    memcpy(alpha                           , A[sh1].alpha, A[sh1].nprim * sizeof(double)); 
-    memcpy(alpha + npgto1                  , B[sh2].alpha, B[sh2].nprim * sizeof(double)); 
-    memcpy(alpha + npgto1 + npgto2         , C[sh3].alpha, C[sh3].nprim * sizeof(double)); 
-    memcpy(alpha + npgto1 + npgto2 + npgto3, D[sh4].alpha, D[sh4].nprim * sizeof(double)); 
-    
+
     // todo - general contraction?
     int ncgto1 = 1;
     int ncgto2 = 1;
     int ncgto3 = 1;
     int ncgto4 = 1;
-
-    double X[4] = {1.0, 1.0, 1.0, 1.0};
-    double Y[4] = {1.0, 1.0, 1.0, 1.0};
-    double Z[4] = {1.0, 1.0, 1.0, 1.0};
-    int zmin = 0;
-    int zopt = 0;
-    int imin = 0;
-    int iopt = 0;
-    int spheric = 0;
-    int npgto = npgto1 + npgto2 + npgto3 + npgto4;
-
-    erd__memory_eri_batch_(&npgto, &npgto,
-                           &ncgto4, &ncgto3, &ncgto2, &ncgto1,
-                           &npgto4, &npgto3, &npgto2, &npgto1,
-                           &maxam, &maxam, &maxam, &maxam,
-                           &X[3], &Y[3], &Z[3],
-                           &X[2], &Y[2], &Z[2],
-                           &X[1], &Y[1], &Z[1],
-                           &X[0], &Y[0], &Z[0],
-                           alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
-                             
-
-    iscratch = (int *)malloc(iopt * sizeof(int)); 
-    dscratch = (double *)malloc(zopt * sizeof(double)); 
-
-    i_buffer_size = iopt;
-    d_buffer_size = zopt;
-   
+ 
+    ERD_Init(am1, npgto1, ncgto1,
+             am2, npgto2, ncgto2,
+             am3, npgto3, ncgto3,
+             am4, npgto4, ncgto4);
 }
 
 
@@ -205,19 +214,15 @@ void ERD_Compute_shell(struct gaussian_shell const A,
 
         
     memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
-
-    // fix normalization
-    for(int i = 0; i < nbatch; i++)
-        integrals[i] *= ERD_NORM_FIX;
 }
 
 
 void ERD_Finalize(void)
 {
-    free(dscratch);
-    free(iscratch);
-    free(cc);
-    free(alpha);
+    FREE(dscratch);
+    FREE(iscratch);
+    FREE(cc);
+    FREE(alpha);
 }
 
 

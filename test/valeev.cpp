@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "valeev.hpp"
+#include "test/valeev.hpp"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
