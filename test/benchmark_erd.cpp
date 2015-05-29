@@ -3,6 +3,7 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
+#include "test/erd_interface.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -24,21 +25,22 @@ int main(int argc, char ** argv)
     // read in the shell info
     ShellMap shellmap = ReadBasis(basfile);
 
+
     // normalize
     for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
+        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
     const int maxam = maxparams[0];
-    //const int maxnprim = maxparams[1];
+    const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
     double * res_ints = (double *)ALLOC(maxsize * sizeof(double));
 
     // initialize stuff
-    // nothing needs initializing!
+    ERD_Init(maxam, maxnprim, 1);
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -64,19 +66,9 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
-            const AlignedGaussianVec & it_i = shellmap[i];
-            const AlignedGaussianVec & it_j = shellmap[j];
-            const AlignedGaussianVec & it_k = shellmap[k];
-            const AlignedGaussianVec & it_l = shellmap[l];
 
-
-            // set up shell pairs
-            struct multishell_pair P = create_multishell_pair(it_i.size(), it_i.data(),
-                                                              it_j.size(), it_j.data());
-            struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
-                                                              it_l.size(), it_l.data());
             // actually calculate
-            Integral_FO(P, Q, res_ints);
+            ERDIntegrals(shellmap[i], shellmap[j], shellmap[k], shellmap[l], res_ints);
 
 
             #ifdef BENCHMARK_VALIDATE
@@ -93,10 +85,6 @@ int main(int argc, char ** argv)
             std::pair<double, double> err = CalcError(res_ints, res_ref, arrlen);
             printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
             #endif
-
-
-            free_multishell_pair(P);
-            free_multishell_pair(Q);
         }
     }
 
@@ -107,9 +95,9 @@ int main(int argc, char ** argv)
     #ifdef BENCHMARK_VALIDATE
     FREE(res_ref);
     #endif
-    
+   
     // Finalize stuff 
-    // Nothing to finalize!
+    ERD_Finalize();
 
     return 0;
 }
