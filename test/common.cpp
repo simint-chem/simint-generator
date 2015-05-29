@@ -29,7 +29,7 @@ static void AppendSlash(std::string & str)
 }
 
 
-std::map<int, AlignedGaussianVec> ReadBasis(const std::string & file)
+ShellMap ReadBasis(const std::string & file)
 {
     std::map<char, int> ammap = {
                                          { 'S',     0 },
@@ -66,7 +66,7 @@ std::map<int, AlignedGaussianVec> ReadBasis(const std::string & file)
 
     f.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
 
-    std::map<int, AlignedGaussianVec> shellmap;
+    ShellMap shellmap;
 
     int natom;
     f >> natom;
@@ -136,27 +136,37 @@ void FreeAlignedGaussianVec(AlignedGaussianVec & agv)
     agv.clear();
 }
 
-void FreeShellMap(std::map<int, AlignedGaussianVec> & m)
+void FreeShellMap(ShellMap & m)
 {
     for(auto & it : m)
         FreeAlignedGaussianVec(it.second);
     m.clear();
 }
 
+AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
+{
+    AlignedGaussianVec copy;
+    copy.reserve(v.size());
+    for(const auto & it : v)
+        copy.push_back(copy_gaussian_shell(it));
+    return copy;
+}
 
 VecQuartet CopyQuartets(const VecQuartet & orig)
 {
     VecQuartet v;
     for(int q = 0; q < 4; q++)
-    {
-        v[q].reserve(orig[q].size());
-        for(const auto & it : orig[q])
-            v[q].push_back(copy_gaussian_shell(it));
-    }
-
+        v[q] = CopyAlignedGaussianVec(orig[q]);
     return v;
 }
 
+ShellMap CopyShellMap(const ShellMap & m)
+{
+    ShellMap copy;
+    for(auto & it : m)
+        copy.insert({it.first, CopyAlignedGaussianVec(it.second)});   
+    return copy;
+}
 
 void FreeQuartets(VecQuartet & arr)
 {
@@ -389,6 +399,33 @@ std::pair<double, double> CalcError(double const * const restrict calc, double c
     }
 
     return std::pair<double, double>(maxerr, maxrelerr);
+}
+
+
+std::array<int, 3> FindMapMaxParams(const ShellMap & m)
+{
+    int maxnprim = 0;
+    int maxam = 0;
+    int maxel = 0;
+    for(auto & it : m)
+    {
+        const int nca = NCART(it.first);
+        const int nsh = it.second.size();
+        const int n = nca * nsh;
+        if(n > maxel)
+            maxel = n;
+
+        if(it.first > maxam)
+            maxam = it.first;
+
+        for(auto & it2 : it.second)
+        {
+            if(it2.nprim > maxnprim)
+                maxnprim = it2.nprim;
+        }
+    }
+
+    return {maxam, maxnprim, maxel*maxel*maxel*maxel};
 }
 
 

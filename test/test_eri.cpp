@@ -23,44 +23,28 @@ int main(int argc, char ** argv)
     std::string basfile(argv[1]);
 
     // read in the shell info
-    std::map<int, AlignedGaussianVec> shellmap = ReadBasis(basfile);
+    ShellMap shellmap = ReadBasis(basfile);
+    ShellMap shellmap_erd = CopyShellMap(shellmap);
 
-// todo
-// Make a deep copy of the map, and normalize here rather than in the loop
-//    // normalize
-//    for(const auto & it : shellmap)
-//        normalize_gaussian_shells(it.second.size(), it.second.data());
+    // normalize
+    for(auto & it : shellmap)
+        normalize_gaussian_shells(it.second.size(), it.second.data());
+    for(auto & it : shellmap_erd)
+        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
+        
 
     // find the max dimensions
-    int maxnprim = 0;
-    int maxam = 0;
-    int maxel = 0;
-    for(auto & it : shellmap)
-    {
-        const int nca = NCART(it.first);
-        const int nsh = it.second.size();
-        const int n = nca * nsh;
-        if(n > maxel)
-            maxel = n;
-
-        if(it.first > maxam)
-            maxam = it.first;
-
-        for(auto & it2 : it.second)
-        {
-            if(it2.nprim > maxnprim)
-                maxnprim = it2.nprim;
-        }
-    }
-
-    maxel = pow(maxel, 4);
+    std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
+    const int maxam = maxparams[0];
+    const int maxnprim = maxparams[1];
+    const int maxsize = maxparams[2];
 
     /* Storage of integrals */
-    double * res_FO              = (double *)ALLOC(maxel * sizeof(double));
-    double * res_vref            = (double *)ALLOC(maxel * sizeof(double));
-    double * res_vref_flat       = (double *)ALLOC(maxel * sizeof(double));
-    double * res_liberd          = (double *)ALLOC(maxel * sizeof(double));
-    double * res_valeev          = (double *)ALLOC(maxel * sizeof(double));
+    double * res_FO              = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_vref            = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_vref_flat       = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_liberd          = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_valeev          = (double *)ALLOC(maxsize * sizeof(double));
 
     // initialize stuff
     Valeev_Init();
@@ -75,43 +59,38 @@ int main(int argc, char ** argv)
                                                                 "FO", "vref", "vrefF", "erd");
 
     // loop over all quartets, choosing only valid ones
-    for(const auto & it_i : shellmap)
-    for(const auto & it_j : shellmap)
-    for(const auto & it_k : shellmap)
-    for(const auto & it_l : shellmap)
+    for(int i = 0; i <= maxam; i++)
+    for(int j = 0; j <= maxam; j++)
+    for(int k = 0; k <= maxam; k++)
+    for(int l = 0; l <= maxam; l++)
     {
-        std::array<int, 4> am{it_i.first, it_j.first, it_k.first, it_l.first};
+        std::array<int, 4> am{i, j, k, l};
 
         if(!ValidQuartet(am))
             continue;
- 
+
         const int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);   
 
+        const AlignedGaussianVec & it_i = shellmap[i];
+        const AlignedGaussianVec & it_j = shellmap[j];
+        const AlignedGaussianVec & it_k = shellmap[k];
+        const AlignedGaussianVec & it_l = shellmap[l];
+
+        const AlignedGaussianVec & erd_it_i = shellmap_erd[i];
+        const AlignedGaussianVec & erd_it_j = shellmap_erd[j];
+        const AlignedGaussianVec & erd_it_k = shellmap_erd[k];
+        const AlignedGaussianVec & erd_it_l = shellmap_erd[l];
+
         // create a vec quartet
-        const VecQuartet gshells_orig{it_i.second, it_j.second,
-                                      it_k.second, it_l.second};
+        // Copies the pointers - not a deep copy!
+        const VecQuartet gshells{it_i, it_j, it_k, it_l};
+        const VecQuartet gshells_erd{erd_it_i, erd_it_j, erd_it_k, erd_it_l};
 
         // number of shells
-        const std::array<int, 4> nshell{gshells_orig[0].size(), gshells_orig[1].size(),
-                                        gshells_orig[2].size(), gshells_orig[3].size()};
-
+        const std::array<int, 4> nshell{it_i.size(), it_j.size(), it_k.size(), it_l.size()};
         const int nshell1234 = nshell[0] * nshell[1] * nshell[2] * nshell[3];
 
 
-        // make a copy the shells
-        VecQuartet gshells(CopyQuartets(gshells_orig));
-        VecQuartet gshells_erd(CopyQuartets(gshells_orig));
-
-        
-        /////////////////////////////////
-        // Normalize the shells
-        /////////////////////////////////
-        for(auto & it : gshells)
-            normalize_gaussian_shells(it.size(), it.data());
-        for(auto & it : gshells_erd)
-            normalize_gaussian_shells_erd(it.size(), it.data());
-       
- 
         /////////////////////////////////
         // Calculate or read valeev
         // reference integrals
@@ -131,15 +110,15 @@ int main(int argc, char ** argv)
         /////////////////////////////////
 
         // set up shell pairs
-        struct multishell_pair P = create_multishell_pair(nshell[0], gshells[0].data(),
-                                                          nshell[1], gshells[1].data());
-        struct multishell_pair Q = create_multishell_pair(nshell[2], gshells[2].data(),
-                                                          nshell[3], gshells[3].data());
+        struct multishell_pair P = create_multishell_pair(it_i.size(), it_i.data(),
+                                                          it_j.size(), it_j.data());
+        struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
+                                                          it_l.size(), it_l.data());
 
-        struct multishell_pair_flat Pf = create_multishell_pair_flat(nshell[0], gshells[0].data(),
-                                                                     nshell[1], gshells[1].data());
-        struct multishell_pair_flat Qf = create_multishell_pair_flat(nshell[2], gshells[2].data(),
-                                                                     nshell[3], gshells[3].data());
+        struct multishell_pair_flat Pf = create_multishell_pair_flat(it_i.size(), it_i.data(),
+                                                                     it_j.size(), it_j.data());
+        struct multishell_pair_flat Qf = create_multishell_pair_flat(it_k.size(), it_k.data(),
+                                                                     it_l.size(), it_l.data());
 
         // acutally calculate
         Integral_FO(P, Q, res_FO);
@@ -170,18 +149,22 @@ int main(int argc, char ** argv)
         //for(int i = 0; i < ncart * nshell1234; i++)
         //    printf("%25.15e  %25.15e  %25.15e\n", res_valeev[i], res_liberd[i], res_vref[i]);
 
+
         free_multishell_pair(P);
         free_multishell_pair(Q);
         free_multishell_pair_flat(Pf);
         free_multishell_pair_flat(Qf);
-        FreeQuartets(gshells);
-        FreeQuartets(gshells_erd);
+
+        // These were shallow copies - don't free them!
+        //FreeQuartets(gshells);
+        //FreeQuartets(gshells_erd);
 
     }
 
     printf("\n");
 
     FreeShellMap(shellmap);
+    FreeShellMap(shellmap_erd);
 
     Valeev_Finalize();
     Boys_Finalize();
