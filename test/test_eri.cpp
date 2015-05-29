@@ -58,6 +58,10 @@ int main(int argc, char ** argv)
     printf("%17s    %10s  %10s  %10s  %10s    %10s  %10s  %10s  %10s\n", "", "FO", "vref", "vrefF", "erd", 
                                                                 "FO", "vref", "vrefF", "erd");
 
+
+    // Read the reference integrals
+    RefIntegralReader refint(basfile);
+
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= maxam; i++)
     for(int j = 0; j <= maxam; j++)
@@ -86,13 +90,14 @@ int main(int argc, char ** argv)
         const int nshell4 = it_l.size();
         const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
+        const int arrlen = nshell1234 * ncart1234;
 
         /////////////////////////////////
         // Calculate or read valeev
         // reference integrals
         /////////////////////////////////
-        ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
-        //ReadValeevIntegrals(basedir, am, res_valeev);
+        //ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
+        refint.ReadNext(res_valeev, arrlen);
 
 
         /////////////////////////////////
@@ -123,7 +128,6 @@ int main(int argc, char ** argv)
 
 
         // chop
-        const int arrlen = nshell1234 * ncart1234;
         Chop(res_valeev, arrlen);
         Chop(res_FO, arrlen);
         Chop(res_vref, arrlen);

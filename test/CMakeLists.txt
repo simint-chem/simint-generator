@@ -29,14 +29,24 @@ endmacro()
 
 
 ###################
+# OPTIONS
+###################
+set(TESTS_BENCHMARK_VALIDATE FALSE CACHE BOOL "Validate integrals in benchmarks")
+
+
+###################
 # Test stuff flags
 ###################
+list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 list(APPEND TESTS_CXX_FLAGS "-std=c++11")
 list(APPEND TESTS_CXX_FLAGS "-O3")
 list(APPEND TESTS_CXX_FLAGS "-Wall -Wunused-variable -pedantic -Werror -pedantic-errors")
 list(APPEND TESTS_CXX_FLAGS "-ggdb")
 
-list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
+if(TESTS_BENCHMARK_VALIDATE)
+  list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE")
+endif()
+
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397 -restrict")

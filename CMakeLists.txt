@@ -2,15 +2,17 @@ cmake_minimum_required(VERSION 3.0)
 project(simint C)
 enable_language(CXX)
 
+###################
+# OPTIONS
+###################
 set(SIMINT_AVX FALSE CACHE BOOL "Enable AVX")
 set(SIMINT_MIC FALSE CACHE BOOL "Enable Xeon Phi")
-
-list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
 ##################################################
 # Basic options for simint
 ##################################################
+list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 list(APPEND SIMINT_C_FLAGS "-std=c99")
 list(APPEND SIMINT_C_FLAGS "-O3")
 list(APPEND SIMINT_C_FLAGS "-Wall -Wunused-variable -pedantic")
