@@ -513,6 +513,7 @@ static void Writer_Looped_NotFlat(std::ostream & os,
     }
 
     os << "\n";
+    os << "                //#pragma simd\n";
     os << "                for(j = cdstart; j < cdend; ++j)\n";
     os << "                {\n";
     os << "\n";
@@ -627,6 +628,7 @@ static void Writer_Looped_NotFlat(std::ostream & os,
         os << "    // Steps: " << hrrsteps.first.size() << "\n";
         os << "    //////////////////////////////////////////////\n";
         os << "\n";
+        os << "    #pragma simd\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
@@ -660,6 +662,7 @@ static void Writer_Looped_NotFlat(std::ostream & os,
 
         DAMList braam{am[0], am[1]};
 
+        os << "    #pragma simd\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
         os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
@@ -877,6 +880,7 @@ static void Writer_Looped_Flat(std::ostream & os,
     }
 
     os << "\n";
+    os << "                //#pragma simd\n";
     os << "                for(j = 0; j < Q.nprim; ++j)\n";
     os << "                {\n";
 
@@ -1020,6 +1024,7 @@ static void Writer_Looped_Flat(std::ostream & os,
         os << "    // Steps: " << hrrsteps.first.size() << "\n";
         os << "    //////////////////////////////////////////////\n";
         os << "\n";
+        os << "    #pragma simd\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
@@ -1053,6 +1058,7 @@ static void Writer_Looped_Flat(std::ostream & os,
 
         DAMList braam{am[0], am[1]};
 
+        os << "    #pragma simd\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
         os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 

@@ -95,5 +95,6 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
 
 
 int Integral_FO(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
+int Integral_FO_flat(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict integrals);
 int Integral_vref(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
 int Integral_vref_flat(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict integrals);

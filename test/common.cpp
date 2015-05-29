@@ -18,6 +18,7 @@
 
 static erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 static erifunc funcs_vref[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
+static eriflatfunc funcs_FO_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 static eriflatfunc funcs_vref_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 
 
@@ -468,6 +469,36 @@ void Init_Test(void)
     funcs_FO[2][2][2][2] = eri_FO_d_d_d_d;
     #endif
 
+
+
+    funcs_FO_flat[0][0][0][0] = eri_FO_flat_s_s_s_s;
+    #if MAXAM > 0
+    funcs_FO_flat[1][0][0][0] = eri_FO_flat_p_s_s_s;
+    funcs_FO_flat[1][0][1][0] = eri_FO_flat_p_s_p_s;
+    funcs_FO_flat[1][1][0][0] = eri_FO_flat_p_p_s_s;
+    funcs_FO_flat[1][1][1][0] = eri_FO_flat_p_p_p_s;
+    funcs_FO_flat[1][1][1][1] = eri_FO_flat_p_p_p_p;
+    #endif
+    #if MAXAM > 1
+    funcs_FO_flat[2][0][0][0] = eri_FO_flat_d_s_s_s;
+    funcs_FO_flat[2][0][1][0] = eri_FO_flat_d_s_p_s;
+    funcs_FO_flat[2][0][1][1] = eri_FO_flat_d_s_p_p;
+    funcs_FO_flat[2][0][2][0] = eri_FO_flat_d_s_d_s;
+    funcs_FO_flat[2][1][0][0] = eri_FO_flat_d_p_s_s;
+    funcs_FO_flat[2][1][1][0] = eri_FO_flat_d_p_p_s;
+    funcs_FO_flat[2][1][1][1] = eri_FO_flat_d_p_p_p;
+    funcs_FO_flat[2][1][2][0] = eri_FO_flat_d_p_d_s;
+    funcs_FO_flat[2][1][2][1] = eri_FO_flat_d_p_d_p;
+    funcs_FO_flat[2][2][0][0] = eri_FO_flat_d_d_s_s;
+    funcs_FO_flat[2][2][1][0] = eri_FO_flat_d_d_p_s;
+    funcs_FO_flat[2][2][1][1] = eri_FO_flat_d_d_p_p;
+    funcs_FO_flat[2][2][2][0] = eri_FO_flat_d_d_d_s;
+    funcs_FO_flat[2][2][2][1] = eri_FO_flat_d_d_d_p;
+    funcs_FO_flat[2][2][2][2] = eri_FO_flat_d_d_d_d;
+    #endif
+
+
+
     funcs_vref[0][0][0][0] = eri_vref_s_s_s_s;
     #if MAXAM > 0
     funcs_vref[1][0][0][0] = eri_vref_p_s_s_s;
@@ -528,6 +559,8 @@ void Init_Test(void)
         funcs_vref[3][3][3][2] = eri_vref_f_f_f_d;
         funcs_vref[3][3][3][3] = eri_vref_f_f_f_f;
     #endif
+
+
 
     funcs_vref_flat[0][0][0][0] = eri_vref_flat_s_s_s_s;
     #if MAXAM > 0
@@ -624,6 +657,11 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
 int Integral_FO(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
 {
     return funcs_FO[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
+}
+
+int Integral_FO_flat(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict integrals)
+{
+    return funcs_FO_flat[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
 }
 
 int Integral_vref(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)

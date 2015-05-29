@@ -1,4 +1,5 @@
 file(GLOB SIMINT_FO_FILES FO/*.c)
+file(GLOB SIMINT_FOFLAT_FILES FO_flat/*.c)
 file(GLOB SIMINT_VREF_FILES vref/*.c)
 file(GLOB SIMINT_VREFFLAT_FILES vref_flat/*.c)
 #file(GLOB SIMINT_SPLIT_FILES split/*.c)
@@ -7,6 +8,7 @@ add_library(simint_eri STATIC
                               shell.c
                               shell_constants.c
                               ${SIMINT_FO_FILES}
+                              ${SIMINT_FOFLAT_FILES}
                               ${SIMINT_VREF_FILES}
                               ${SIMINT_VREFFLAT_FILES}
            )

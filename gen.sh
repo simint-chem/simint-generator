@@ -6,6 +6,13 @@ python3 ../generate_twoel.py -l 2 \
                              -g generator/generator \
                              -d ../eri/FO
 
+python3 ../generate_twoel.py -l 2 \
+                             -f \
+                             -b FO \
+                             -p FO_flat \
+                             -g generator/generator \
+                             -d ../eri/FO_flat
+
 #python3 ../generate_twoel.py -l 2 \
 #                             -b split \
 #                             -p split \
