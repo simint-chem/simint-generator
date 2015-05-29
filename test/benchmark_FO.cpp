@@ -50,6 +50,12 @@ int main(int argc, char ** argv)
     // loop ntest times
     for(int n = 0; n < ntest; n++)
     {
+        #ifdef BENCHMARK_VALIDATE
+        // move the reader back to the beginning of the file
+        refint.Reset();
+        printf("\n");
+        printf("Run %d\n", n);
+        #endif
         for(int i = 0; i <= maxam; i++)
         for(int j = 0; j <= maxam; j++)
         for(int k = 0; k <= maxam; k++)
