@@ -63,11 +63,6 @@ ShellMap ReadBasis(const std::string & file);
 std::array<int, 3> FindMapMaxParams(const ShellMap & m);
 
 
-// Reads reference integrals from a file
-int ReadValeevIntegrals(std::string basfile,
-                        double * res);
-
-
 // Calculating reference integrals
 void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
                      const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
