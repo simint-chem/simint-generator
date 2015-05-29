@@ -48,9 +48,7 @@ int main(int argc, char ** argv)
         for(int k = 0; k <= maxam; k++)
         for(int l = 0; l <= maxam; l++)
         {
-            std::array<int, 4> am{i, j, k, l};
-
-            if(!ValidQuartet(am))
+            if(!ValidQuartet(i, j, k, l))
                 continue;
 
             const AlignedGaussianVec & it_i = shellmap[i];

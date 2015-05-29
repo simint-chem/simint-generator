@@ -64,17 +64,20 @@ int main(int argc, char ** argv)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
     {
-        std::array<int, 4> am{i, j, k, l};
-
-        if(!ValidQuartet(am))
+        if(!ValidQuartet(i, j, k, l))
             continue;
 
-        const int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);   
+        const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
 
         const AlignedGaussianVec & it_i = shellmap[i];
         const AlignedGaussianVec & it_j = shellmap[j];
         const AlignedGaussianVec & it_k = shellmap[k];
         const AlignedGaussianVec & it_l = shellmap[l];
+
+        const AlignedGaussianVec & erd_it_i = shellmap_erd[i];
+        const AlignedGaussianVec & erd_it_j = shellmap_erd[j];
+        const AlignedGaussianVec & erd_it_k = shellmap_erd[k];
+        const AlignedGaussianVec & erd_it_l = shellmap_erd[l];
 
         // number of shells
         const int nshell1 = it_i.size();
@@ -88,18 +91,14 @@ int main(int argc, char ** argv)
         // Calculate or read valeev
         // reference integrals
         /////////////////////////////////
-        ValeevIntegrals(shellmap[i], shellmap[j],
-                        shellmap[k], shellmap[l],
-                        res_valeev, false);
+        ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
         //ReadValeevIntegrals(basedir, am, res_valeev);
 
 
         /////////////////////////////////
         // Calculate with liberd
         /////////////////////////////////
-        ERDIntegrals(shellmap_erd[i], shellmap_erd[j],
-                     shellmap_erd[k], shellmap_erd[l],
-                     res_liberd);
+        ERDIntegrals(erd_it_i, erd_it_j, erd_it_k, erd_it_l, res_liberd);
 
 
         /////////////////////////////////
@@ -124,7 +123,7 @@ int main(int argc, char ** argv)
 
 
         // chop
-        const int arrlen = nshell1234 * ncart;
+        const int arrlen = nshell1234 * ncart1234;
         Chop(res_valeev, arrlen);
         Chop(res_FO, arrlen);
         Chop(res_vref, arrlen);
@@ -137,13 +136,13 @@ int main(int argc, char ** argv)
         std::pair<double, double> err_vref_flat = CalcError(res_vref_flat, res_valeev,  arrlen);
         std::pair<double, double> err_erd       = CalcError(res_liberd,    res_valeev,  arrlen);
 
-        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e  %10.3e\n", am[0], am[1], am[2], am[3],
+        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e  %10.3e\n", i, j, k, l,
                                                       err_FO.first, err_vref.first, err_vref_flat.first, err_erd.first,
                                                       err_FO.second, err_vref.second, err_vref_flat.second, err_erd.second);
 
 
         // For debugging
-        //for(int i = 0; i < ncart * nshell1234; i++)
+        //for(int i = 0; i < ncart1234 * nshell1234; i++)
         //    printf("%25.15e  %25.15e  %25.15e\n", res_valeev[i], res_liberd[i], res_vref[i]);
 
 

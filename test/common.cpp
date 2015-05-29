@@ -1,8 +1,6 @@
 #include <iostream>
 #include <cstdlib>
-#include <ctime>
 #include <stdexcept>
-#include <sstream>
 #include <fstream>
 #include <cmath>
 
@@ -62,6 +60,12 @@ bool ValidQuartet(std::array<int, 4> am)
     return true;
 }
 
+
+
+bool ValidQuartet(int i, int j, int k, int l)
+{
+    return ValidQuartet({i, j, k, l});
+}
 
 
 AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
@@ -240,9 +244,9 @@ int ReadValeevIntegrals(std::string basfile,
 
     uint32_t nsize = 0;
 
-    std::ifstream infile(ss.str().c_str(), std::ifstream::binary);
+    std::ifstream infile(basfile.c_str(), std::ifstream::binary);
     if(!infile.is_open())
-        throw std::runtime_error(std::string("Unable to open ") + ss.str());
+        throw std::runtime_error(std::string("Unable to open ") + basfile);
 
     infile.read(reinterpret_cast<char *>(&nsize), sizeof(uint32_t));
     infile.read(reinterpret_cast<char *>(res), nsize * sizeof(double));
@@ -257,8 +261,8 @@ int ReadValeevIntegrals(std::string basfile,
 
 
 
-void ValeevIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
-                     AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                     const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
                      double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
@@ -356,8 +360,8 @@ void ValeevIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
 
 
 
-void ERDIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
-                  AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+void ERDIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                  const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
                   double * const integrals)
 {
     const gaussian_shell * A = g1.data();

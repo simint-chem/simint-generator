@@ -24,6 +24,7 @@ typedef int (*eriflatfunc)(struct multishell_pair_flat const, struct multishell_
 bool IsValidGaussian(const std::array<int, 3> & g);
 bool IterateGaussian(std::array<int, 3> & g);
 bool ValidQuartet(std::array<int, 4> am);
+bool ValidQuartet(int i, int j, int k, int l);
 
 
 // Deep copying and memory management
@@ -47,13 +48,13 @@ int ReadValeevIntegrals(std::string basfile,
 
 
 // Calculating reference integrals
-void ValeevIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
-                     AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                     const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
                      double * const integrals, bool normalize);
 
 
-void ERDIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
-                  AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+void ERDIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                  const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
                   double * const integrals);
 
 
