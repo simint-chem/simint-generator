@@ -76,33 +76,30 @@ int main(int argc, char ** argv)
         const AlignedGaussianVec & it_k = shellmap[k];
         const AlignedGaussianVec & it_l = shellmap[l];
 
-        const AlignedGaussianVec & erd_it_i = shellmap_erd[i];
-        const AlignedGaussianVec & erd_it_j = shellmap_erd[j];
-        const AlignedGaussianVec & erd_it_k = shellmap_erd[k];
-        const AlignedGaussianVec & erd_it_l = shellmap_erd[l];
-
-        // create a vec quartet
-        // Copies the pointers - not a deep copy!
-        const VecQuartet gshells{it_i, it_j, it_k, it_l};
-        const VecQuartet gshells_erd{erd_it_i, erd_it_j, erd_it_k, erd_it_l};
-
         // number of shells
-        const std::array<int, 4> nshell{it_i.size(), it_j.size(), it_k.size(), it_l.size()};
-        const int nshell1234 = nshell[0] * nshell[1] * nshell[2] * nshell[3];
+        const int nshell1 = it_i.size();
+        const int nshell2 = it_j.size();
+        const int nshell3 = it_k.size();
+        const int nshell4 = it_l.size();
+        const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
 
         /////////////////////////////////
         // Calculate or read valeev
         // reference integrals
         /////////////////////////////////
-        ValeevIntegrals(gshells, res_valeev, false);
+        ValeevIntegrals(shellmap[i], shellmap[j],
+                        shellmap[k], shellmap[l],
+                        res_valeev, false);
         //ReadValeevIntegrals(basedir, am, res_valeev);
 
 
         /////////////////////////////////
         // Calculate with liberd
         /////////////////////////////////
-        ERDIntegrals(gshells_erd, res_liberd);
+        ERDIntegrals(shellmap_erd[i], shellmap_erd[j],
+                     shellmap_erd[k], shellmap_erd[l],
+                     res_liberd);
 
 
         /////////////////////////////////
@@ -154,11 +151,6 @@ int main(int argc, char ** argv)
         free_multishell_pair(Q);
         free_multishell_pair_flat(Pf);
         free_multishell_pair_flat(Qf);
-
-        // These were shallow copies - don't free them!
-        //FreeQuartets(gshells);
-        //FreeQuartets(gshells_erd);
-
     }
 
     printf("\n");

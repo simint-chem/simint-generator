@@ -22,11 +22,85 @@ static erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 static erifunc funcs_vref[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 static eriflatfunc funcs_vref_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 
-static void AppendSlash(std::string & str)
+
+
+
+bool IsValidGaussian(const std::array<int, 3> & g)
 {
-    if(str[str.size()-1] != '/')
-        str = str + '/';
+    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0);
 }
+
+
+
+bool IterateGaussian(std::array<int, 3> & g)
+{
+    int am = g[0] + g[1] + g[2];
+
+    if(g[2] == am)  // at the end
+        return false;
+
+    if(g[2] < (am - g[0]))
+        g = {g[0],   g[1]-1,      g[2]+1 };
+    else
+        g = {g[0]-1, am-g[0]+1, 0        };
+
+    return IsValidGaussian(g);
+}
+
+
+
+bool ValidQuartet(std::array<int, 4> am)
+{
+    if(am[0] < am[1])
+        return false;
+    if(am[2] < am[3])
+        return false;
+    if( (am[0] + am[1]) < (am[2] + am[3]) )
+        return false;
+    if(am[0] < am[2])
+        return false;
+    return true;
+}
+
+
+
+AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
+{
+    AlignedGaussianVec copy;
+    copy.reserve(v.size());
+    for(const auto & it : v)
+        copy.push_back(copy_gaussian_shell(it));
+    return copy;
+}
+
+
+
+void FreeAlignedGaussianVec(AlignedGaussianVec & agv)
+{
+    for(auto & it : agv)
+        free_gaussian_shell(it);
+    agv.clear();
+}
+
+
+
+ShellMap CopyShellMap(const ShellMap & m)
+{
+    ShellMap copy;
+    for(auto & it : m)
+        copy.insert({it.first, CopyAlignedGaussianVec(it.second)});   
+    return copy;
+}
+
+
+
+void FreeShellMap(ShellMap & m)
+{
+    for(auto & it : m)
+        FreeAlignedGaussianVec(it.second);
+    m.clear();
+}
+
 
 
 ShellMap ReadBasis(const std::string & file)
@@ -129,91 +203,42 @@ ShellMap ReadBasis(const std::string & file)
     return shellmap;
 }
 
-void FreeAlignedGaussianVec(AlignedGaussianVec & agv)
-{
-    for(auto & it : agv)
-        free_gaussian_shell(it);
-    agv.clear();
-}
 
-void FreeShellMap(ShellMap & m)
+
+std::array<int, 3> FindMapMaxParams(const ShellMap & m)
 {
+    int maxnprim = 0;
+    int maxam = 0;
+    int maxel = 0;
     for(auto & it : m)
-        FreeAlignedGaussianVec(it.second);
-    m.clear();
-}
+    {
+        const int nca = NCART(it.first);
+        const int nsh = it.second.size();
+        const int n = nca * nsh;
+        if(n > maxel)
+            maxel = n;
 
-AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
-{
-    AlignedGaussianVec copy;
-    copy.reserve(v.size());
-    for(const auto & it : v)
-        copy.push_back(copy_gaussian_shell(it));
-    return copy;
-}
+        if(it.first > maxam)
+            maxam = it.first;
 
-VecQuartet CopyQuartets(const VecQuartet & orig)
-{
-    VecQuartet v;
-    for(int q = 0; q < 4; q++)
-        v[q] = CopyAlignedGaussianVec(orig[q]);
-    return v;
-}
+        for(auto & it2 : it.second)
+        {
+            if(it2.nprim > maxnprim)
+                maxnprim = it2.nprim;
+        }
+    }
 
-ShellMap CopyShellMap(const ShellMap & m)
-{
-    ShellMap copy;
-    for(auto & it : m)
-        copy.insert({it.first, CopyAlignedGaussianVec(it.second)});   
-    return copy;
-}
-
-void FreeQuartets(VecQuartet & arr)
-{
-    for(auto & it : arr)
-        FreeAlignedGaussianVec(it);
+    return {maxam, maxnprim, maxel*maxel*maxel*maxel};
 }
 
 
 
-bool IsValidGaussian(const std::array<int, 3> & g)
-{
-    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0);
-}
-
-
-
-bool IterateGaussian(std::array<int, 3> & g)
-{
-    int am = g[0] + g[1] + g[2];
-
-    if(g[2] == am)  // at the end
-        return false;
-
-    if(g[2] < (am - g[0]))
-        g = {g[0],   g[1]-1,      g[2]+1 };
-    else
-        g = {g[0]-1, am-g[0]+1, 0        };
-
-    return IsValidGaussian(g);
-}
-
-
-int ReadValeevIntegrals(std::string basedir,
-                        const std::array<int, 4> & am,
+int ReadValeevIntegrals(std::string basfile,
                         double * res)
 {
-    AppendSlash(basedir);
-
-    const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
+    basfile += ".ref";
 
     uint32_t nsize = 0;
-
-    std::stringstream ss;
-    ss << basedir << "ref_" << amchar[am[0]] << "_"
-                            << amchar[am[1]] << "_"
-                            << amchar[am[2]] << "_"
-                            << amchar[am[3]] << ".dat";
 
     std::ifstream infile(ss.str().c_str(), std::ifstream::binary);
     if(!infile.is_open())
@@ -232,20 +257,27 @@ int ReadValeevIntegrals(std::string basedir,
 
 
 
-void ValeevIntegrals(const VecQuartet & gshells,
-                     double * integrals, bool normalize)
+void ValeevIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
+                     AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+                     double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
-    const gaussian_shell * A = gshells[0].data();
-    const gaussian_shell * B = gshells[1].data();
-    const gaussian_shell * C = gshells[2].data();
-    const gaussian_shell * D = gshells[3].data();
+    const gaussian_shell * A = g1.data();
+    const gaussian_shell * B = g2.data();
+    const gaussian_shell * C = g3.data();
+    const gaussian_shell * D = g4.data();
 
-    const int nshell1 = gshells[0].size();
-    const int nshell2 = gshells[1].size();
-    const int nshell3 = gshells[2].size();
-    const int nshell4 = gshells[3].size();
-    const int n234 = nshell2 * nshell3 * nshell4 * NCART(gshells[0][0].am) * NCART(gshells[1][0].am) * NCART(gshells[2][0].am) * NCART(gshells[3][0].am);
+    const int nshell1 = g1.size();
+    const int nshell2 = g2.size();
+    const int nshell3 = g3.size();
+    const int nshell4 = g4.size();
+
+    const int am1 = A[0].am;
+    const int am2 = B[0].am;
+    const int am3 = C[0].am;
+    const int am4 = D[0].am;
+
+    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
     //#ifdef _OPENMP
     //    #pragma omp parallel for
@@ -264,16 +296,16 @@ void ValeevIntegrals(const VecQuartet & gshells,
             double vC[3] = { C[k].x, C[k].y, C[k].z };
             double vD[3] = { D[l].x, D[l].y, D[l].z };
 
-            std::array<int, 3> g1{gshells[0][i].am, 0, 0};
+            std::array<int, 3> g1{am1, 0, 0};
             do
             {
-                std::array<int, 3> g2{gshells[1][j].am, 0, 0};
+                std::array<int, 3> g2{am2, 0, 0};
                 do
                 {
-                    std::array<int, 3> g3{gshells[2][k].am, 0, 0};
+                    std::array<int, 3> g3{am3, 0, 0};
                     do
                     {
-                        std::array<int, 3> g4{gshells[3][l].am, 0, 0};
+                        std::array<int, 3> g4{am4, 0, 0};
                         do
                         {
                             double myint = 0.0;
@@ -323,18 +355,20 @@ void ValeevIntegrals(const VecQuartet & gshells,
 }
 
 
-void ERDIntegrals(const VecQuartet & gshells,
-                  double * integrals)
-{
-    const gaussian_shell * A = gshells[0].data();
-    const gaussian_shell * B = gshells[1].data();
-    const gaussian_shell * C = gshells[2].data();
-    const gaussian_shell * D = gshells[3].data();
 
-    const int nshell1 = gshells[0].size();
-    const int nshell2 = gshells[1].size();
-    const int nshell3 = gshells[2].size();
-    const int nshell4 = gshells[3].size();
+void ERDIntegrals(AlignedGaussianVec & g1, AlignedGaussianVec & g2,
+                  AlignedGaussianVec & g3, AlignedGaussianVec & g4,
+                  double * const integrals)
+{
+    const gaussian_shell * A = g1.data();
+    const gaussian_shell * B = g2.data();
+    const gaussian_shell * C = g3.data();
+    const gaussian_shell * D = g4.data();
+
+    const int nshell1 = g1.size();
+    const int nshell2 = g2.size();
+    const int nshell3 = g3.size();
+    const int nshell4 = g4.size();
     const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     const int am1 = A[0].am;
@@ -359,19 +393,6 @@ void ERDIntegrals(const VecQuartet & gshells,
 }
 
 
-bool ValidQuartet(std::array<int, 4> am)
-{
-    if(am[0] < am[1])
-        return false;
-    if(am[2] < am[3])
-        return false;
-    if( (am[0] + am[1]) < (am[2] + am[3]) )
-        return false;
-    if(am[0] < am[2])
-        return false;
-    return true;
-}
-
 
 void Chop(double * const restrict calc, int ncalc)
 {
@@ -381,6 +402,8 @@ void Chop(double * const restrict calc, int ncalc)
             calc[i] = 0.0;
     }
 }
+
+
 
 std::pair<double, double> CalcError(double const * const restrict calc, double const * const restrict ref, int ncalc)
 {
@@ -402,56 +425,6 @@ std::pair<double, double> CalcError(double const * const restrict calc, double c
 }
 
 
-std::array<int, 3> FindMapMaxParams(const ShellMap & m)
-{
-    int maxnprim = 0;
-    int maxam = 0;
-    int maxel = 0;
-    for(auto & it : m)
-    {
-        const int nca = NCART(it.first);
-        const int nsh = it.second.size();
-        const int n = nca * nsh;
-        if(n > maxel)
-            maxel = n;
-
-        if(it.first > maxam)
-            maxam = it.first;
-
-        for(auto & it2 : it.second)
-        {
-            if(it2.nprim > maxnprim)
-                maxnprim = it2.nprim;
-        }
-    }
-
-    return {maxam, maxnprim, maxel*maxel*maxel*maxel};
-}
-
-
-int eri_notyetimplemented(struct multishell_pair const P,
-                          struct multishell_pair const Q,
-                          double * const restrict dummy)
-{
-    printf("****************************\n");
-    printf("*** NOT YET IMPLEMENTED! ***\n");
-    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
-    printf("****************************\n");
-    exit(1);
-    return 0;
-}
-
-int eriflat_notyetimplemented(struct multishell_pair_flat const P,
-                              struct multishell_pair_flat const Q,
-                              double * const restrict dummy)
-{
-    printf("****************************\n");
-    printf("*** NOT YET IMPLEMENTED! ***\n");
-    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
-    printf("****************************\n");
-    exit(1);
-    return 0;
-}
 
 void Init_Test(void)
 {
@@ -614,6 +587,36 @@ void Init_Test(void)
         funcs_vref_flat[3][3][3][3] = eri_vref_flat_f_f_f_f;
     #endif
 }
+
+
+
+int eri_notyetimplemented(struct multishell_pair const P,
+                          struct multishell_pair const Q,
+                          double * const restrict dummy)
+{
+    printf("****************************\n");
+    printf("*** NOT YET IMPLEMENTED! ***\n");
+    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
+    printf("****************************\n");
+    exit(1);
+    return 0;
+}
+
+
+
+int eriflat_notyetimplemented(struct multishell_pair_flat const P,
+                              struct multishell_pair_flat const Q,
+                              double * const restrict dummy)
+{
+    printf("****************************\n");
+    printf("*** NOT YET IMPLEMENTED! ***\n");
+    printf("***  ( %2d %2d | %2d %2d )   ***\n", P.am1, P.am2, Q.am1, Q.am2);
+    printf("****************************\n");
+    exit(1);
+    return 0;
+}
+
+
 
 int Integral_FO(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
 {
