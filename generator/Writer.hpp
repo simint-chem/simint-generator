@@ -18,14 +18,6 @@ typedef std::map<int, int> OptionsMap;
 #define OPTION_FLATPRIM 1
 
 
-/*
-void Writer_Unrolled(std::ostream & os,
-                     const QAMList & am,
-                     const std::string & nameappend,
-                     const BoysGen & bg,
-                     const HRRQuartetStepList & hrrsteps);
-*/
-
 void Writer_Looped(std::ostream & os,
                    const QAMList & am,
                    const std::string & nameappend,
