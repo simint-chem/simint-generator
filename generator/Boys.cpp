@@ -1,8 +1,8 @@
 #include <fstream>
 #include <stdexcept>
-#include <sstream>
 
 #include "generator/Boys.hpp"
+#include "generator/WriterBase.hpp"
         
 ////////////////////////////////////
 // Base class
@@ -12,6 +12,13 @@ std::vector<std::string> BoysGen::includes(void) const
     return std::vector<std::string>();
 }
 
+
+void BoysGen::WriteIncludes(std::ostream & os) const
+{
+    auto boysinc = includes();
+    for(const auto & it : boysinc)
+        os << "#include \"" << it << "\"\n";
+}
 
 
 ////////////////////////////////////
@@ -46,36 +53,33 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
     f.close();
 }
 
-std::string BoysFO::all_code_lines(int maxam) const
-{
-    std::stringstream ss;
-    for(int i = 0; i <= maxam; i++)
-        ss << bfmap_.at(i).code_line() << "\n";
-    return ss.str();
-}
-
-std::string BoysFO::BoysFit::code_line(void) const
+void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
-    std::stringstream ss;
-    ss << indent << "AUX_INT__s_s_s_s[" << v << "] = allprefac\n"; 
-    ss << indent << "         * pow(\n";
-    ss << indent << "                 (\n";
-    ss << indent << "                   (\n";
-    ss << indent << "                               " << a[0] << "\n";
-    for(int i = 1; i < a.size(); i++)
-        ss << indent << "                     + F_x * ( " << a[i] << "\n";
-    ss << indent << "                             " << std::string(a.size()-1, ')') << "\n";
-    ss << indent << "                   )\n";
-    ss << indent << "                   /\n";
-    ss << indent << "                   (\n";
-    ss << indent << "                               " << b[0] << "\n";
-    for(int i = 1; i < b.size(); i++)
-        ss << indent << "                     + F_x * ( " << b[i] << "\n";
-    ss << indent << "                             " << std::string(b.size()-1, ')') << "\n";
-    ss << indent << "                   )\n";
-    ss << indent << "                 ), " << v << ".0+0.5);\n";
-    return ss.str();  
+
+    for(int i = 0; i <= base.L(); i++)
+    {
+        const BoysFit & bf = bfmap_.at(i); 
+
+        os << indent << base.AuxName(0) << "[" << bf.v << "] = allprefac\n"; 
+        os << indent << "         * pow(\n";
+        os << indent << "                 (\n";
+        os << indent << "                   (\n";
+        os << indent << "                               " << bf.a[0] << "\n";
+        for(int i = 1; i < bf.a.size(); i++)
+            os << indent << "                     + F_x * ( " << bf.a[i] << "\n";
+        os << indent << "                             " << std::string(bf.a.size()-1, ')') << "\n";
+        os << indent << "                   )\n";
+        os << indent << "                   /\n";
+        os << indent << "                   (\n";
+        os << indent << "                               " << bf.b[0] << "\n";
+        for(int i = 1; i < bf.b.size(); i++)
+            os << indent << "                     + F_x * ( " << bf.b[i] << "\n";
+        os << indent << "                             " << std::string(bf.b.size()-1, ')') << "\n";
+        os << indent << "                   )\n";
+        os << indent << "                 ), " << bf.v << ".0+0.5);\n";
+        os << "\n";
+    }
 }
 
 
@@ -106,15 +110,12 @@ BoysFO::BoysFO(std::string dir)
 // Boys Split
 ////////////////////////////////////
 
-std::string BoysSplit::all_code_lines(int maxam) const
+void BoysSplit::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
-    std::stringstream ss;
-    ss << indent << "Boys_F_split(AUX_INT__s_s_s_s, " << maxam << ", F_x);\n";
-    for(int i = 0; i <= maxam; i++)
-        ss << indent << "AUX_INT__s_s_s_s[" << i << "] *= allprefac;\n";
-
-    return ss.str();
+    os << indent << "Boys_F_split(" << base.AuxName(0) << ", " << base.L() << ", F_x);\n";
+    for(int i = 0; i <= base.L(); i++)
+        os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysSplit::includes(void) const
@@ -128,15 +129,12 @@ std::vector<std::string> BoysSplit::includes(void) const
 // Boys Valeev Reference
 ////////////////////////////////////
 
-std::string BoysVRef::all_code_lines(int maxam) const
+void BoysVRef::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
-    std::stringstream ss;
-    ss << indent << "Boys_F_VRef(AUX_INT__s_s_s_s, " << maxam << ", F_x);\n";
-    for(int i = 0; i <= maxam; i++)
-        ss << indent << "AUX_INT__s_s_s_s[" << i << "] *= allprefac;\n";
-
-    return ss.str();
+    os << indent << "Boys_F_VRef(" << base.AuxName(0) << ", " << base.L() << ", F_x);\n";
+    for(int i = 0; i <= base.L(); i++)
+        os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::includes(void) const

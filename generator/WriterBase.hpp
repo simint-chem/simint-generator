@@ -4,14 +4,12 @@
 #include "generator/Options.hpp"
 #include "generator/Classes.hpp"
 
-class HRRWriter;
-
 class WriterBase
 {
     public:
         WriterBase(const OptionsMap & options, const QAMList & finalam);
 
-        void SetContQ(const HRRWriter & hrrwriter);
+        void SetContQ(const QuartetSet & topquartets, const DoubletSetMap & topkets);
 
         void DeclareContwork(std::ostream & os) const;
         void FreeContwork(std::ostream & os) const;

@@ -1,5 +1,4 @@
 #include "generator/WriterBase.hpp"
-#include "generator/HRRWriter.hpp"
 
 
 WriterBase::WriterBase(const OptionsMap & options, const QAMList & finalam)
@@ -8,17 +7,17 @@ WriterBase::WriterBase(const OptionsMap & options, const QAMList & finalam)
 
 
 
-void WriterBase::SetContQ(const HRRWriter & hrrwriter)
+void WriterBase::SetContQ(const QuartetSet & topquartets, const DoubletSetMap & topkets) 
 {
     // add the final am
     contq_.insert(finalam_);
 
     // add hrr top level stuff
-    for(const auto & it : hrrwriter.TopQuartets())
+    for(const auto & it : topquartets)
         contq_.insert(it.amlist());
 
     // also add final bra combined with all the kets
-    for(const auto & it : hrrwriter.TopKets())
+    for(const auto & it : topkets)
     {
         QAMList qam{finalam_[0], finalam_[1], it.first, 0};
         contq_.insert(qam);

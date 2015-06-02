@@ -6,7 +6,7 @@
 #include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Boys.hpp"
-#include "generator/Writer.hpp"
+#include "generator/FileWriter.hpp"
 
 using namespace std;
 
@@ -124,21 +124,10 @@ int main(int argc, char ** argv)
     }
 
 
-
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
     std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
-
-    /*
-    // Create the quartet list
-    HRRQuartetStepList hqsl = hrralgo->Create_QuartetStepList(amlist);
-
-    // Write it out
-    Writer_Unrolled(cout, amlist, "FOcombined", bm, hqsl);
-    */
-
-    // Create/Write
 
     std::ofstream of(fpath);
     if(!of.is_open())
@@ -147,8 +136,7 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
-    Writer_Looped(of, amlist, prefix, options, *bg, *vrralgo, *etalgo, *hrralgo);
-
+    WriteFile(of, amlist, prefix, options, *bg, *vrralgo, *etalgo, *hrralgo);
 
     }
     catch(std::exception & ex)

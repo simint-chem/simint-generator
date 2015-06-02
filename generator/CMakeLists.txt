@@ -18,7 +18,7 @@ add_executable(generator generator.cpp
                          HRRWriter.cpp
                          ETWriter.cpp
                          VRRWriter.cpp
-                         Writer_Looped.cpp
+                         FileWriter.cpp
               )
 
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")

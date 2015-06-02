@@ -1,7 +1,6 @@
 #include <sstream>
 #include <iostream>
 
-#include "generator/Writer.hpp"
 #include "generator/Classes.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/AlgorithmBase.hpp"
@@ -19,15 +18,15 @@ size_t memory_cont;          // memory required for contracted integral storage 
 
 
 
-static void Writer_Looped_NotFlat(std::ostream & os,
-                                 const QAMList & am,
-                                 const std::string & nameappend,
-                                 const OptionsMap & options,
-                                 const BoysGen & bg,
-                                 const WriterBase & base,
-                                 const VRRWriter & vrr_writer,
-                                 const ETWriter & et_writer,
-                                 const HRRWriter & hrr_writer)
+static void WriteFile_NotFlat(std::ostream & os,
+                              const QAMList & am,
+                              const std::string & nameappend,
+                              const OptionsMap & options,
+                              const BoysGen & bg,
+                              const WriterBase & base,
+                              const VRRWriter & vrr_writer,
+                              const ETWriter & et_writer,
+                              const HRRWriter & hrr_writer)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
@@ -58,9 +57,7 @@ static void Writer_Looped_NotFlat(std::ostream & os,
     os << "#include \"constants.h\"\n";
     os << "#include \"eri/shell.h\"\n";
 
-    std::vector<std::string> boysinc = bg.includes();
-    for(const auto & it : boysinc)
-        os << "#include \"" << it << "\"\n";
+    bg.WriteIncludes(os);
 
     os << "\n\n";
     os << funcline;
@@ -252,7 +249,7 @@ static void Writer_Looped_NotFlat(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    os << bg.all_code_lines(base.L());
+    bg.WriteBoys(os, base);
 
     vrr_writer.WriteVRR(os, base);
 
@@ -276,26 +273,28 @@ static void Writer_Looped_NotFlat(std::ostream & os,
     os << "\n";
 }
 
-#if 0
-static void Writer_Looped_Flat(std::ostream & os,
-                               const QAMList & am,
-                               const std::string & nameappend,
-                               const OptionsMap & options,
-                               const BoysGen & bg,
-                               const std::pair<VRRMap, VRRReqMap> & vrrinfo,
-                               const ETStepList & etsl,
-                               const std::set<QAMList> & etint,
-                               const HRRBraKetStepList & hrrsteps,
-                               const DoubletSetMap & hrrtopbras,
-                               const DoubletSetMap & hrrtopkets)
+
+
+static void WriteFile_Flat(std::ostream & os,
+                           const QAMList & am,
+                           const std::string & nameappend,
+                           const OptionsMap & options,
+                           const BoysGen & bg,
+                           const WriterBase & base,
+                           const VRRWriter & vrr_writer,
+                           const ETWriter & et_writer,
+                           const HRRWriter & hrr_writer)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
-    int ncart_bra = NCART(am[0]) * NCART(am[1]);
-    const int L = am[0] + am[1] + am[2] + am[3];
+
 
     // some helper bools
-    bool hasvrr = ( (vrrinfo.second.size() > 1) || (vrrinfo.second.size() == 1 && vrrinfo.second.begin()->first != 0) );
-    bool haset = (etsl.size() > 0);
+    bool hashrr = hrr_writer.HasHRR();
+    bool hasbrahrr = hrr_writer.HasBraHRR();
+    bool haskethrr = hrr_writer.HasKetHRR();
+
+    bool hasvrr = vrr_writer.HasVRR();
+    bool haset = et_writer.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
@@ -316,15 +315,13 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "#include \"constants.h\"\n";
     os << "#include \"eri/shell.h\"\n";
 
-    std::vector<std::string> boysinc = bg.includes();
-    for(const auto & it : boysinc)
-        os << "#include \"" << it << "\"\n";
+    bg.WriteIncludes(os);
 
     os << "\n\n";
     os << funcline;
     os << "struct multishell_pair_flat const P,\n";
     os << indent << "struct multishell_pair_flat const Q,\n";
-    os << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict " << base.ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -353,7 +350,7 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "    ASSUME_ALIGN(Q.shellidx);\n";
     os << "\n";
-    os << "    ASSUME_ALIGN(" << ArrVarName(am) << ");\n";
+    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
@@ -361,7 +358,7 @@ static void Writer_Looped_Flat(std::ostream & os,
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
     if(!hashrr)
-        os << "    memset(" << ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
+        os << "    memset(" << base.ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
     
     os << "\n";
 
@@ -384,33 +381,12 @@ static void Writer_Looped_Flat(std::ostream & os,
     if(hasvrr || haset)
         os << "    int n;\n";
 
-    if(hrrsteps.first.size() > 0)
+    if(hasbrahrr)
         os << "    int iket;\n";
-    if(hrrsteps.second.size() > 0)
+    if(haskethrr)
         os << "    int ibra;\n";
 
     os << "\n";
-
-    if(hashrr && contq.size() > 0)
-    {
-        os << "    // Workspace for contracted integrals\n";
-        os << "    double * const contwork = malloc(nshell1234 * " << memory_cont << ");\n";
-        os << "    memset(contwork, 0, nshell1234 * " << memory_cont << ");\n";
-        os << "\n";
-        os << "    // partition workspace into shells\n";
-
-        size_t ptidx = 0;
-        for(const auto & it : contq)
-        {
-            if(it != am)
-            {
-                os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
-                ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
-            }
-        }
-    }
-
-
 
     // save these for later
     if(hashrr)
@@ -428,6 +404,8 @@ static void Writer_Looped_Flat(std::ostream & os,
         os << "    }\n";
         os << "\n";
     }
+
+    base.DeclareContwork(os);
 
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";
@@ -471,53 +449,13 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "                    const int abcd = Pshellidx + Q.shellidx[j];\n";
     os << "\n";
 
-    if(vrrinfo.second.size() > 0)
-    {
-        os << "                    // set up pointers to the contracted integrals - VRR\n";
-
-        // pointers for accumulation in VRR
-        for(const auto & it : vrrinfo.second)
-        {
-            int vam = it.first;
-            if(IsContArray({vam, 0, 0, 0}))
-                os << "                    double * const restrict PRIM_" << ArrVarName({vam, 0, 0, 0}) << " = " 
-                   << ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
-        }
-    }
-
-    if(etint.size() > 0)
-    {
-        // pointers for accumulation in ET
-        os << "                    // set up pointers to the contracted integrals - Electron Transfer\n";
-        for(const auto & it : etint)
-        {
-            if(IsContArray(it))
-                os << "                    double * const restrict PRIM_" << ArrVarName(it) << " = " 
-                   << ArrVarName(it) << " + (abcd * " << (NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3])) << ");\n";
-        }
-    }
-
-    os << "\n";
-    os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-    os << "                    // with m as the slowest index\n";
-
-    for(const auto & greq : vrrinfo.second)
-    {
-        os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-        os << "                    double " << AuxName(greq.first) << "[" << (L-greq.first+1) << " * " << NCART(greq.first) << "];\n";
-        os << "\n";
-    }
-
+    vrr_writer.DeclarePointers(os, base);
+    et_writer.DeclarePointers(os, base);
 
     os << "\n\n";
-    os << "                    // Holds temporary integrals for electron transfer\n";
-    for(const auto & it : etint)
-    {
-        // only if these aren't from vrr
-        if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-            os << "                    double AUX_" << ArrVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
-    }
 
+    vrr_writer.DeclareAuxArrays(os, base);
+    et_writer.DeclareAuxArrays(os, base);
 
     os << "\n\n";
     os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
@@ -565,31 +503,19 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // Boys function section\n";
-    os << "                    // Maximum v value: " << L << "\n";
+    os << "                    // Maximum v value: " << base.L() << "\n";
     os << "                    //////////////////////////////////////////////\n";
     os << "                    // The paremeter to the boys function\n";
     os << "                    const double F_x = R2 * alpha;\n";
     os << "\n";
     os << "\n";
 
-    os << bg.all_code_lines(L);
+    bg.WriteBoys(os, base);
 
-    os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Vertical recurrance\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "\n";
+    vrr_writer.WriteVRR(os, base);
 
-    WriteVRRInfo(os, vrrinfo, L);
-    os << "\n";
+    et_writer.WriteET(os, base);
 
-    os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Electron transfer\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "\n";
-
-    WriteETInfo(os, etsl, etint);
         
     os << "\n";
     os << "                 }\n";
@@ -599,78 +525,14 @@ static void Writer_Looped_Flat(std::ostream & os,
     os << "\n";
 
 
-    if(hrrsteps.first.size() > 0)
-    {
-        os << "    //////////////////////////////////////////////\n";
-        os << "    // Contracted integrals: Horizontal recurrance\n";
-        os << "    // Bra part\n";
-        os << "    // Steps: " << hrrsteps.first.size() << "\n";
-        os << "    //////////////////////////////////////////////\n";
-        os << "\n";
-        os << "    #pragma simd\n";
-        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
-        os << "    {\n";
+    hrr_writer.WriteHRR(os, base);
 
-        for(const auto & it : hrrtopkets)
-        {
-            os << "        // form " << ArrVarName({am[0], am[1], it.first, 0}) << "\n";
-            os << "        for(iket = 0; iket < " << it.second.size() << "; ++iket)\n";
-            os << "        {\n";
-            for(const auto & hit : hrrsteps.first)
-            {
-                os << std::string(12, ' ') << "// " << hit << "\n";
-                os << HRRBraStepString(hit, it.first) << "\n\n";
-            }
-            os << "        }\n";
-            os << "\n";
-        }
-        os << "\n";
-        os << "    }\n";
-        os << "\n";
-        os << "\n";
-    }
-
-    if(hrrsteps.second.size() > 0)
-    {
-        os << "    //////////////////////////////////////////////\n";
-        os << "    // Contracted integrals: Horizontal recurrance\n";
-        os << "    // Ket part\n";
-        os << "    // Steps: " << hrrsteps.second.size() << "\n";
-        os << "    //////////////////////////////////////////////\n";
-        os << "\n";
-
-        DAMList braam{am[0], am[1]};
-
-        os << "    #pragma simd\n";
-        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
-        os << "    {\n";
-        os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
-        os << "        {\n"; 
-
-        for(const auto & hit : hrrsteps.second)
-        {
-            os << std::string(12, ' ') << "// " << hit << "\n";
-            os << HRRKetStepString(hit, braam) << "\n\n";
-        }
-
-        os << "        }\n"; 
-        os << "    }\n";
-    }
-    os << "\n";
-    os << "\n";
-
-    if(hashrr && contq.size() > 0)
-    {
-        os << "    // Free contracted work space\n";
-        os << "    free(contwork);\n";
-        os << "\n";
-    }
+    base.FreeContwork(os);
 
     os << "    return nshell1234;\n";
     os << "}\n";
     os << "\n";
 }
-#endif
 
 
 
@@ -680,14 +542,14 @@ static void Writer_Looped_Flat(std::ostream & os,
 // MAIN ENTRY POINT
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
-void Writer_Looped(std::ostream & os,
-                   const QAMList & am,
-                   const std::string & nameappend,
-                   const OptionsMap & options,
-                   const BoysGen & bg,
-                   VRR_Algorithm_Base & vrralgo,
-                   ET_Algorithm_Base & etalgo,
-                   HRR_Algorithm_Base & hrralgo)
+void WriteFile(std::ostream & os,
+               const QAMList & am,
+               const std::string & nameappend,
+               const OptionsMap & options,
+               const BoysGen & bg,
+               VRR_Algorithm_Base & vrralgo,
+               ET_Algorithm_Base & etalgo,
+               HRR_Algorithm_Base & hrralgo)
 {
     // set of contracted quartets
     QAMListSet contq;
@@ -705,7 +567,7 @@ void Writer_Looped(std::ostream & os,
     HRRWriter hrr_writer(hrrsteps, am);
 
     // set the contracted quartets
-    base.SetContQ(hrr_writer);
+    base.SetContQ(hrr_writer.TopQuartets(), hrr_writer.TopKets());
 
 
     // 2.) ET steps
@@ -742,31 +604,7 @@ void Writer_Looped(std::ostream & os,
 
 
     // print out some info
-    /*
-    std::cout << "HRR Top Bras: " << hrrtopbras.size() << "\n";
-    for(const auto & it : hrrtopbras)
-        std::cout << " AM: " << it.first << " : Require: " << it.second.size() << " / " << NCART(it.first) << "\n";
-    std::cout << "HRR Top Kets: " << hrrtopkets.size() << "\n";
-    for(const auto & it : hrrtopkets)
-        std::cout << " AM: " << it.first << " : Require:  " << it.second.size() << " / " << NCART(it.first) << "\n";
-    std::cout << "\n";
-
-    std::cout << "ET Requirements: " << etrm.size() << "\n";
-    for(const auto & greq : etrm)
-    {
-        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
-        for(const auto & it : greq.second)
-            std::cout << "    " << it << "\n";
-    }
-    std::cout << "\n";
-
-    std::cout << "VRR Requirements: " << vrrinfo.second.size() << "\n";
-    for(const auto & greq : vrrinfo.second)
-        std::cout << "AM = " << greq.first << " : Require: " << greq.second.size() << " / " << NCART(greq.first) << "\n";
-    std::cout << "\n";
-    */
-
-    std::cout << "MEMORY (unaligned, per shell quartet): " << base.MemoryReq() << "\n";
+    std::cout << "MEMORY (per shell quartet): " << base.MemoryReq() << "\n";
 
 
     //////////////////////////////////////////////////
@@ -774,16 +612,13 @@ void Writer_Looped(std::ostream & os,
     // Create the function
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
-    /*
     if(options.count(OPTION_FLATPRIM) && options.at(OPTION_FLATPRIM) != 0)
     {
-        Writer_Looped_Flat(os, am, nameappend, options, bg,
-                           vrrinfo, etsl, etint,
-                           hrrsteps, hrrtopbras, hrrtopkets);
+        WriteFile_Flat(os, am, nameappend, options, bg,
+                       base, vrr_writer, et_writer, hrr_writer);
     }
     else
-    */
-        Writer_Looped_NotFlat(os, am, nameappend, options, bg,
-                              base, vrr_writer, et_writer, hrr_writer);
+        WriteFile_NotFlat(os, am, nameappend, options, bg,
+                          base, vrr_writer, et_writer, hrr_writer);
 }
 
