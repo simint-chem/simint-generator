@@ -170,11 +170,8 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
     P->nprim_length = prim_size;
 
-    const int size = prim_size * sizeof(double);
-    const int size2 = shell12_size*sizeof(double); // for holding Xab, etc
-
     // allocate one large space
-    double * mem = ALLOC(size * 11 + size2 * 3 ); 
+    double * mem = ALLOC( (prim_size*11 + shell12_size*3)*sizeof(double) ); 
     P->x      = mem;
     P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
@@ -188,14 +185,14 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->prefac = mem + 10*prim_size;
 
     P->AB_x   = mem + 11*prim_size;
-    P->AB_y   = mem + 11*prim_size + shell12_size;
+    P->AB_y   = mem + 11*prim_size +   shell12_size;
     P->AB_z   = mem + 11*prim_size + 2*shell12_size;
 
     /* Should this be aligned? I don't think so */
-    int * intmem = malloc((3*na*nb)*sizeof(int));
-    P->nprim12 = intmem;
-    P->primstart = intmem + na*nb;
-    P->primend = intmem + 2*na*nb;
+    int * intmem = malloc((3*shell12_size)*sizeof(int));
+    P->nprim12   = intmem;
+    P->primstart = intmem +   shell12_size;
+    P->primend   = intmem + 2*shell12_size;
 }
 
 
@@ -217,11 +214,8 @@ void allocate_multishell_pair_flat(int na, struct gaussian_shell const * const r
 
     const int shell12_size = na*nb;
 
-    const int size = prim_size * sizeof(double);
-    const int size2 = shell12_size*sizeof(double); // for holding Xab, etc
-
     // allocate one large space
-    double * mem = ALLOC(size * 11 + size2 * 3 ); 
+    double * mem = ALLOC( (prim_size*11 + 3*shell12_size)*sizeof(double) ); 
     P->x      = mem;
     P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
