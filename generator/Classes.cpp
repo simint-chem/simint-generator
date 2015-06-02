@@ -10,7 +10,7 @@
 #include <map>
 #include <utility>
 
-#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
+
 
 // some flags
 #define QUARTET_INITIAL     1  // what we are looking for at the end
@@ -454,7 +454,6 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
     return os;
 }
 
-typedef std::set<QAMList> QAMListSet;
 
 typedef std::set<Gaussian> GaussianSet;
 typedef std::map<Gaussian, XYZStep> VRRMap;
@@ -468,6 +467,7 @@ typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 typedef std::vector<ETStep> ETStepList;
 
+//typedef std::set<ShellQuartet> ShellQuartetSet;
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 

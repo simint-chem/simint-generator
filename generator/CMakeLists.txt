@@ -14,6 +14,10 @@ add_executable(generator generator.cpp
                          AlgorithmBase.cpp
                          Helpers.cpp
                          Boys.cpp
+                         WriterBase.cpp
+                         HRRWriter.cpp
+                         ETWriter.cpp
+                         VRRWriter.cpp
                          Writer_Looped.cpp
               )
 
