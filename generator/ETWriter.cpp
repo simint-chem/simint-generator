@@ -91,7 +91,7 @@ void ETWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) cons
 
 
 
-void ETWriter::WriteET(std::ostream & os, const WriterBase & base) const
+void ETWriter::WriteETInline(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";

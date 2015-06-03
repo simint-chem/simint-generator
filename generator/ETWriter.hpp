@@ -21,7 +21,7 @@ class ETWriter
         void DeclarePointers(std::ostream & os, const WriterBase & base) const;
         void DeclareAuxArrays(std::ostream & os, const WriterBase & base) const;
 
-        void WriteET(std::ostream & os, const WriterBase & base) const;
+        void WriteETInline(std::ostream & os, const WriterBase & base) const;
 
     private:
         ETStepList etsl_;

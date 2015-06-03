@@ -14,7 +14,8 @@ class VRRWriter
     public:
         VRRWriter(const VRRMap & vrrmap, const VRRReqMap & vrrreqmap);
 
-        void WriteVRR(std::ostream & os, const WriterBase & base) const;
+        void WriteVRRInline(std::ostream & os, const WriterBase & base) const;
+        void WriteVRRFile(std::ostream & os, const WriterBase & base) const;
 
         void DeclarePointers(std::ostream & os, const WriterBase & base) const;
         void DeclareAuxArrays(std::ostream & os, const WriterBase & base) const;

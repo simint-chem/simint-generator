@@ -13,7 +13,7 @@ class HRRWriter
     public:
         HRRWriter(const HRRBraKetStepList & hrrsteps, const QAMList & finalam);
 
-        void WriteHRR(std::ostream & os, const WriterBase & base) const;
+        void WriteHRRInline(std::ostream & os, const WriterBase & base) const;
 
         bool HasHRR(void) const;
         bool HasBraHRR(void) const;

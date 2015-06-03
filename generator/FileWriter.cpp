@@ -251,9 +251,9 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     bg.WriteBoys(os, base);
 
-    vrr_writer.WriteVRR(os, base);
+    vrr_writer.WriteVRRInline(os, base);
 
-    et_writer.WriteET(os, base);
+    et_writer.WriteETInline(os, base);
         
     os << "\n";
     os << "                 }\n";
@@ -264,7 +264,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    hrr_writer.WriteHRR(os, base);
+    hrr_writer.WriteHRRInline(os, base);
 
     base.FreeContwork(os);
 
@@ -512,9 +512,9 @@ static void WriteFile_Flat(std::ostream & os,
 
     bg.WriteBoys(os, base);
 
-    vrr_writer.WriteVRR(os, base);
+    vrr_writer.WriteVRRInline(os, base);
 
-    et_writer.WriteET(os, base);
+    et_writer.WriteETInline(os, base);
 
         
     os << "\n";
@@ -525,7 +525,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "\n";
 
 
-    hrr_writer.WriteHRR(os, base);
+    hrr_writer.WriteHRRInline(os, base);
 
     base.FreeContwork(os);
 

@@ -72,7 +72,7 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 }
 
 
-void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
+void HRRWriter::WriteHRRInline(std::ostream & os, const WriterBase & base) const
 {
     QAMList finalam = base.FinalAM();
     const int ncart_bra = NCART(finalam[0]) * NCART(finalam[1]);
