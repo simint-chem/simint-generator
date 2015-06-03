@@ -86,16 +86,10 @@ endif()
 
 
 ##################################################
-# Optional OpenMP dependency
+# OpenMP dependency
 ##################################################
-find_package(OpenMP)
-if(OPENMP_FOUND)
-  message(STATUS "Found OpenMP. Remember to link to OpenMP libraries when building your final project (if needed)")
-  list(APPEND TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
-  list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
-else()
-    message(WARNING "OpenMP was not found! Disabling...")
-endif()
+list(APPEND TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
+list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
 
 
 list(APPEND TESTS_CXX_FLAGS "-DTESTS_USE_LIBERD")

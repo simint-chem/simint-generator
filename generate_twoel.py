@@ -13,7 +13,9 @@ parser.add_argument("-g", type=str, required=True, help="Path to generator binar
 parser.add_argument("-d", type=str, required=True, help="Directory in which to create files")
 parser.add_argument("-p", type=str, required=True, help="Type prefix")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
-parser.add_argument("-f", required=False, action='store_true', help="Flattened primitive loop")
+
+parser.add_argument("-f",  required=False, action='store_true', help="Flattened primitive loop")
+parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 args = parser.parse_args()
 
 
@@ -125,6 +127,14 @@ for q in valid:
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
 
+  if sum(q) >= args.ve:
+    vrrtype = "External"
+  else:
+    vrrtype = "Inline";
+  print("         VRR: {}".format(vrrtype))
+
+
+
   with open(logfile, 'w') as lf:
     cmdline = [args.g];
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
@@ -134,6 +144,8 @@ for q in valid:
 
     if args.f:
         cmdline.append("-f")
+    if vrrtype == "External":
+        cmdline.append("-ve")
 
     ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
 

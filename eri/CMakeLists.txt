@@ -7,6 +7,7 @@ file(GLOB SIMINT_VREFFLAT_FILES vref_flat/*.c)
 add_library(simint_eri STATIC 
                               shell.c
                               shell_constants.c
+                              vrr/vrr.c
                               ${SIMINT_FO_FILES}
                               ${SIMINT_FOFLAT_FILES}
                               ${SIMINT_VREF_FILES}

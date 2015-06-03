@@ -82,13 +82,19 @@ int main(int argc, char ** argv)
         return 2;
     }
 
+    if(fpath.back() != '/')
+        fpath += '/';
+
 
     // Read in the boys map
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
     // different source and header files
-    std::string srcpath = fpath + "vrr.cpp";
+    std::string srcpath = fpath + "vrr.c";
     std::string headpath = fpath + "vrr.h";
+    
+    cout << "Generating source file " << srcpath << "\n";
+    cout << "Generating header file " << headpath << "\n";
 
     std::ofstream of(srcpath);
     if(!of.is_open())
@@ -120,6 +126,7 @@ int main(int argc, char ** argv)
     // write to the output file
     vrr_writer.WriteVRRFile(of, base);
     vrr_writer.WriteVRRHeaderFile(ofh, base);
+    cout << "Done!\n";
 
     }
     catch(std::exception & ex)

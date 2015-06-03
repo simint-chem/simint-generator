@@ -90,7 +90,7 @@ struct Gaussian
         std::stringstream ss;
         
         if(*this)
-            ss << amchar[am()] << "_" << ijk[0] << ijk[1] << ijk[2];
+            ss << amchar[am()] << "_" << ijk[0] << "_" << ijk[1] << "_" << ijk[2];
         else
             ss << "?_" << ijk[0] << ijk[1] << ijk[2];
         return ss.str(); 
@@ -203,9 +203,9 @@ struct Doublet
     {
         std::stringstream ss;
         if(type == DoubletType::BRA)
-          ss << "(" << left << " " << right << "|";
+          ss << "(" << left << "  " << right << "|";
         else
-          ss << "|" << left << " " << right << ")";
+          ss << "|" << left << "  " << right << ")";
         ss << flagstr();
 
         return ss.str(); 
@@ -295,8 +295,8 @@ struct Quartet
     std::string str(void) const
     {
         std::stringstream ss;
-        ss << "( " << bra.left << " " << bra.right << " | "
-                   << ket.left << " " << ket.right << " )^"
+        ss << "( " << bra.left << "  " << bra.right << " | "
+                   << ket.left << "  " << ket.right << " )^"
                    << m << flagstr();
         return ss.str();
     }

@@ -17,7 +17,7 @@ bool VRRWriter::HasVRR(void) const
 
 void VRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
-    if(base.L() > base.GetOption(OPTION_INLINEVRR))
+    if(base.GetOption(OPTION_INLINEVRR) == 0)
         os << "#include \"eri/vrr/vrr.h\"\n";
 }
 
@@ -186,12 +186,13 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
 
 void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(24, ' ');
-    std::string indent2(4, ' ');
+    std::string indent1(26, ' ');
 
     os << "//////////////////////////////////////////////\n";
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
+    os << "\n";
+    os << "#include \"vectorization.h\"\n";
     os << "\n";
 
     // iterate over increasing am
@@ -209,10 +210,14 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
         os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent1 << "const double a_over_p, const double one_over_2p,\n"; 
+        os << indent1 << "const double a_over_p,";
+        if(am > 1)
+            os << " const double one_over_2p,";
+        os << "\n"; 
         os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
         os << indent1 << "double const * const restrict " << base.AuxName(am-1);
         if(am > 1)
@@ -223,6 +228,8 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
         
         os << ")\n";
         os << "{\n";
+
+        os << "    int m = 0;\n";
 
         // Write out the steps
         WriteVRRSteps_(os, base, greq, "num_m");
@@ -246,6 +253,8 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
     os << "\n";
+    os << "#include \"vectorization.h\"\n";
+    os << "\n";
 
     // iterate over increasing am
     for(const auto & it3 : vrrreqmap_)
@@ -258,10 +267,14 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
         os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent1 << "const double a_over_p, const double one_over_2p,\n"; 
+        os << indent1 << "const double a_over_p,";
+        if(am > 1)
+            os << " const double one_over_2p,";
+        os << "\n"; 
         os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
         os << indent1 << "double const * const restrict " << base.AuxName(am-1);
         if(am > 1)
@@ -305,7 +318,12 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
         // call the function
         os << indent1 << "VRR_" << base.AuxName(am) << "(" << (base.L()-am+1) << ",\n";
         os << indent2 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
-        os << indent2 << "a_over_p, one_over_2p, " << base.AuxName(am) << ",\n";
+        os << indent2 << "a_over_p,";
+        if(am > 1)
+            os << "one_over_2p, ";
+        os << "\n"; 
+
+        os << base.AuxName(am) << ",\n";
         os << indent2 << base.AuxName(am-1);
         if(am > 1)
         {
@@ -353,7 +371,7 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
 
 void VRRWriter::WriteVRR(std::ostream & os, const WriterBase & base) const
 {
-    if(base.L() <= base.GetOption(OPTION_INLINEVRR))
+    if(base.GetOption(OPTION_INLINEVRR) > 0)
         WriteVRRInline_(os, base);
     else
         WriteVRRExternal_(os, base);

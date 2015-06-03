@@ -43,7 +43,7 @@ int main(int argc, char ** argv)
     // default options
     OptionsMap options;
     options[OPTION_FLATPRIM] = 0;
-    options[OPTION_INLINEVRR] = 1000;
+    options[OPTION_INLINEVRR] = 1;
 
     // other stuff
     std::string prefix;
@@ -59,6 +59,8 @@ int main(int argc, char ** argv)
         std::string argstr(GetNextArg(i, argc, argv));
         if(argstr == "-f")
             options[OPTION_FLATPRIM] = 1;
+        else if(argstr == "-ve")
+            options[OPTION_INLINEVRR] = 0;
         else if(argstr == "-p")
             prefix = GetNextArg(i, argc, argv);
         else if(argstr == "-q")

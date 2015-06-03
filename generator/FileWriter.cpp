@@ -34,6 +34,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool haskethrr = hrr_writer.HasKetHRR();
 
     bool hasvrr = vrr_writer.HasVRR();
+    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) > 0);
     bool haset = et_writer.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -56,6 +57,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include \"eri/shell.h\"\n";
 
     bg.WriteIncludes(os);
+    vrr_writer.WriteIncludes(os, base);
 
     os << "\n\n";
     os << funcline;
@@ -113,7 +115,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
 
-    if(hasvrr)
+    if(hasvrr_m)
         os << "    int m;\n";
     if(hasvrr || haset)
         os << "    int n;\n";
@@ -299,6 +301,7 @@ static void WriteFile_Flat(std::ostream & os,
     bool haskethrr = hrr_writer.HasKetHRR();
 
     bool hasvrr = vrr_writer.HasVRR();
+    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) > 0);
     bool haset = et_writer.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -321,6 +324,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "#include \"eri/shell.h\"\n";
 
     bg.WriteIncludes(os);
+    vrr_writer.WriteIncludes(os, base);
 
     os << "\n\n";
     os << funcline;
@@ -381,7 +385,7 @@ static void WriteFile_Flat(std::ostream & os,
 
     os << "    int i, j;\n";
 
-    if(hasvrr)
+    if(hasvrr_m)
         os << "    int m;\n";
     if(hasvrr || haset)
         os << "    int n;\n";

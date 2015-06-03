@@ -37,6 +37,13 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 endif()
 
 
+##################################################
+# OpenMP dependency
+##################################################
+find_package(OpenMP REQUIRED)
+list(APPEND SIMINT_C_FLAGS "${OpenMP_C_FLAGS}") 
+
+
 # Turn lists into a string
 # Except for includes. They are handled differently in cmake...
 string(REPLACE ";" " " SIMINT_C_FLAGS "${SIMINT_C_FLAGS}")
