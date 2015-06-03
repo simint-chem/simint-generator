@@ -221,6 +221,13 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)
             os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+
+        os << "\n";
+        os << "                    // a_over_p * PQ_{xyz}\n";
+        os << "                    const double aop_PQ_x = a_over_p * PQ_x;\n"; 
+        os << "                    const double aop_PQ_y = a_over_p * PQ_y;\n"; 
+        os << "                    const double aop_PQ_z = a_over_p * PQ_z;\n"; 
+        os << "\n";
     }
 
     if(haset)
@@ -482,6 +489,13 @@ static void WriteFile_Flat(std::ostream & os,
         os << "                    const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)
             os << "                    const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+
+        os << "\n";
+        os << "                    // a_over_p * PQ_{xyz}\n";
+        os << "                    const double aop_PQ_x = a_over_p * PQ_x;\n"; 
+        os << "                    const double aop_PQ_y = a_over_p * PQ_y;\n"; 
+        os << "                    const double aop_PQ_z = a_over_p * PQ_z;\n"; 
+        os << "\n";
     }
 
     if(haset)
