@@ -28,9 +28,6 @@ class WriterBase
 
         static std::string AuxName(int i);
 
-        static char amchar(int am);
-
-
 
 
     private:
@@ -38,6 +35,11 @@ class WriterBase
         OptionsMap options_;
         size_t memory_;
         QAMList finalam_;
+
+        std::string eri_prefix_;
+        std::string vrr_prefix_;
+        std::string et_prefix_;
+        std::string hrr_prefix_;
 };
 
 

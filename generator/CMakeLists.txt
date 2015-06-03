@@ -9,8 +9,9 @@ list(APPEND GENERATOR_CXX_FLAGS "-ggdb")
 
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
+string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
-add_executable(generator generator.cpp
+add_library(generator_common STATIC
                          AlgorithmBase.cpp
                          Helpers.cpp
                          Boys.cpp
@@ -19,10 +20,18 @@ add_executable(generator generator.cpp
                          ETWriter.cpp
                          VRRWriter.cpp
                          FileWriter.cpp
-              )
+           )
+set_target_properties(generator_common PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+set_target_properties(generator_common PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
-string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
-set_target_properties(generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
-# No special linking needed
+add_executable(eri_generator eri_generator.cpp)
+set_target_properties(eri_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+set_target_properties(eri_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+target_link_libraries(eri_generator generator_common)
+
+
+add_executable(vrr_generator vrr_generator.cpp)
+set_target_properties(vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+set_target_properties(vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+target_link_libraries(vrr_generator generator_common)

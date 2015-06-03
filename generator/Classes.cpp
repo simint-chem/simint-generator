@@ -86,7 +86,6 @@ struct Gaussian
 
     std::string str(void) const
     {
-        const char * amchar = "SPDFGHIJKLMNOQRTUVWXYZABCE";
         std::stringstream ss;
         
         if(*this)

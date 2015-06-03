@@ -136,7 +136,7 @@ int GaussianOrder(const ExpList & ijk)
     if(!ordermap_.size())
     {
         // generate the order map
-        for(int i = 0; i < 20; i++)
+        for(int i = 0; i <= 32; i++)
         {
             int n = 0;
             Gaussian g{i, 0, 0};

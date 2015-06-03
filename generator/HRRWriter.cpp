@@ -181,9 +181,9 @@ std::string HRRWriter::HRRBraStepArrVar(const Doublet & d, int ketam, bool istar
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << base.amchar(d.left.ijk[0])  << "_" << base.amchar(d.left.ijk[1])  << "_" << base.amchar(d.left.ijk[2]) << "_"
-                   << base.amchar(d.right.ijk[0]) << "_" << base.amchar(d.right.ijk[1]) << "_" << base.amchar(d.right.ijk[2]) << "_"
-                   << base.amchar(ketam);
+        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
+                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
+                   << amchar[ketam];
         return ss.str();
     }
 }
@@ -206,9 +206,9 @@ std::string HRRWriter::HRRKetStepArrVar(const Doublet & d, const DAMList & braam
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << base.amchar(d.left.ijk[0])  << "_" << base.amchar(d.left.ijk[1])  << "_" << base.amchar(d.left.ijk[2]) << "_"
-                   << base.amchar(d.right.ijk[0]) << "_" << base.amchar(d.right.ijk[1]) << "_" << base.amchar(d.right.ijk[2]) << "_"
-                   << base.amchar(braam[0]) << "_" << base.amchar(braam[1]);
+        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
+                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
+                   << amchar[braam[0]] << "_" << amchar[braam[1]];
         return ss.str();
     }
 }

@@ -184,10 +184,15 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
 
 
 
-void VRRWriter::WriteVRRFile_(std::ostream & os, const WriterBase & base) const
+void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 {
     std::string indent1(24, ' ');
     std::string indent2(4, ' ');
+
+    os << "//////////////////////////////////////////////\n";
+    os << "// VRR functions\n";
+    os << "//////////////////////////////////////////////\n";
+    os << "\n";
 
     // iterate over increasing am
     for(const auto & it3 : vrrreqmap_)
@@ -226,6 +231,51 @@ void VRRWriter::WriteVRRFile_(std::ostream & os, const WriterBase & base) const
     }
 }
 
+
+
+
+void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const
+{
+    std::string indent1(24, ' ');
+    std::string indent2(4, ' ');
+
+    os << "#ifndef VRR__H\n";
+    os << "#define VRR__H\n";
+    os << "\n";
+    os << "//////////////////////////////////////////////\n";
+    os << "// VRR functions\n";
+    os << "//////////////////////////////////////////////\n";
+    os << "\n";
+
+    // iterate over increasing am
+    for(const auto & it3 : vrrreqmap_)
+    {
+        int am = it3.first;
+
+        // don't do zero - no VRR!
+        if(am == 0)
+            continue;
+
+        os << "\n\n\n";
+        os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
+        os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
+        os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
+        os << indent1 << "const double a_over_p, const double one_over_2p,\n"; 
+        os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
+        os << indent1 << "double const * const restrict " << base.AuxName(am-1);
+        if(am > 1)
+        {
+            os << ",\n";
+            os << indent1 << "double const * const restrict " << base.AuxName(am-2);
+        }
+        
+        os << ");\n";
+    }
+
+    os << "#endif\n";
+    
+}
 
 
 void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const

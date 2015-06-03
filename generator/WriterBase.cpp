@@ -65,14 +65,6 @@ bool WriterBase::IsContArray(const QAMList & am) const
 
 
 
-char WriterBase::amchar(int am)
-{
-    const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
-    return amchar[am];
-}
-
-
-
 QAMList WriterBase::FinalAM(void) const
 {
     return finalam_;
@@ -83,7 +75,7 @@ QAMList WriterBase::FinalAM(void) const
 std::string WriterBase::ArrVarName(const QAMList & am)
 {
     std::stringstream ss;
-    ss << "INT__"  << amchar(am[0]) << "_" << amchar(am[1]) << "_" << amchar(am[2]) << "_" << amchar(am[3]);
+    ss << "INT__"  << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]];
     return ss.str();
 }
 

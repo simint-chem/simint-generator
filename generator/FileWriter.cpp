@@ -12,16 +12,14 @@
 #include "generator/HRRWriter.hpp"
 
 
-static const char * amchar = "spdfghijklmnoqrtuvwxyzabe";
-
 size_t memory_cont;          // memory required for contracted integral storage (bytes)
 
 
 
 static void WriteFile_NotFlat(std::ostream & os,
                               const QAMList & am,
-                              const std::string & nameappend,
                               const OptionsMap & options,
+                              const std::string & prefix,
                               const BoysGen & bg,
                               const WriterBase & base,
                               const VRRWriter & vrr_writer,
@@ -41,7 +39,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
     std::stringstream ss;
-    ss << "int eri_" << nameappend << "_"
+    ss << "int eri_" << prefix << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
@@ -284,8 +282,8 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 static void WriteFile_Flat(std::ostream & os,
                            const QAMList & am,
-                           const std::string & nameappend,
                            const OptionsMap & options,
+                           const std::string & prefix,
                            const BoysGen & bg,
                            const WriterBase & base,
                            const VRRWriter & vrr_writer,
@@ -306,7 +304,7 @@ static void WriteFile_Flat(std::ostream & os,
 
 
     std::stringstream ss;
-    ss << "int eri_" << nameappend << "_"
+    ss << "int eri_" << prefix << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
@@ -558,7 +556,7 @@ static void WriteFile_Flat(std::ostream & os,
 ///////////////////////////////////////////////////////////
 void WriteFile(std::ostream & os,
                const QAMList & am,
-               const std::string & nameappend,
+               const std::string & prefix,
                const OptionsMap & options,
                const BoysGen & bg,
                VRR_Algorithm_Base & vrralgo,
@@ -628,11 +626,11 @@ void WriteFile(std::ostream & os,
     //////////////////////////////////////////////////
     if(options.count(OPTION_FLATPRIM) && options.at(OPTION_FLATPRIM) != 0)
     {
-        WriteFile_Flat(os, am, nameappend, options, bg,
+        WriteFile_Flat(os, am, options, prefix, bg,
                        base, vrr_writer, et_writer, hrr_writer);
     }
     else
-        WriteFile_NotFlat(os, am, nameappend, options, bg,
+        WriteFile_NotFlat(os, am, options, prefix, bg,
                           base, vrr_writer, et_writer, hrr_writer);
 }
 

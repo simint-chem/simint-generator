@@ -16,7 +16,7 @@ typedef std::array<int, 4> QAMList;
 
 void WriteFile(std::ostream & os,
                const QAMList & am,
-               const std::string & nameappend,
+               const std::string & prefix,
                const OptionsMap & options,
                const BoysGen & bg,
                VRR_Algorithm_Base & vrralgo,

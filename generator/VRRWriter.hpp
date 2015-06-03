@@ -20,6 +20,9 @@ class VRRWriter
         void DeclarePointers(std::ostream & os, const WriterBase & base) const;
         void DeclareAuxArrays(std::ostream & os, const WriterBase & base) const;
 
+        void WriteVRRFile(std::ostream & os, const WriterBase & base) const;
+        void WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const;
+
         bool HasVRR(void) const;
 
     private:
@@ -29,7 +32,6 @@ class VRRWriter
         void WriteVRRInline_(std::ostream & os, const WriterBase & base) const;
         void WriteVRRExternal_(std::ostream & os, const WriterBase & base) const;
 
-        void WriteVRRFile_(std::ostream & os, const WriterBase & base) const;
 
         void WriteVRRSteps_(std::ostream & os, const WriterBase & base) const;
         void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const;

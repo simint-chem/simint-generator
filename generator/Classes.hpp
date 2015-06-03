@@ -21,6 +21,7 @@
 #define DOUBLET_HRRTOPLEVEL 2
 #define DOUBLET_ETTOPLEVEL  8
 
+static const char * amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789";
 
 typedef std::array<int, 2> DAMList;
 typedef std::array<int, 4> QAMList;
@@ -86,7 +87,6 @@ struct Gaussian
 
     std::string str(void) const
     {
-        const char * amchar = "SPDFGHIJKLMNOQRTUVWXYZABCE";
         std::stringstream ss;
         
         if(*this)

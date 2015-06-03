@@ -17,7 +17,7 @@ parser.add_argument("-f", required=False, action='store_true', help="Flattened p
 args = parser.parse_args()
 
 
-amchar = "spdfghijklmnoqrtuvwxyzabce"
+amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
 validboys = [ "FO", "split", "vref" ]
 
 def ValidQuartet(q):
