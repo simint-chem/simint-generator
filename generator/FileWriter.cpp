@@ -271,7 +271,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "\n";
 
-    hrr_writer.WriteHRRInline(os, base);
+    hrr_writer.WriteHRR(os, base);
 
     base.FreeContwork(os);
 
@@ -541,7 +541,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "\n";
 
 
-    hrr_writer.WriteHRRInline(os, base);
+    hrr_writer.WriteHRR(os, base);
 
     base.FreeContwork(os);
 

@@ -44,6 +44,7 @@ int main(int argc, char ** argv)
     OptionsMap options;
     options[OPTION_FLATPRIM] = 0;
     options[OPTION_INLINEVRR] = 1;
+    options[OPTION_INLINEHRR] = 1;
 
     // other stuff
     std::string prefix;

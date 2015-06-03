@@ -35,8 +35,6 @@ class VRRWriter
 
         void WriteVRRSteps_(std::ostream & os, const WriterBase & base) const;
         void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const;
-        void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, int num_m) const;
-
 };
 
 #endif

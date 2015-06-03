@@ -72,7 +72,33 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 }
 
 
-void HRRWriter::WriteHRRInline(std::ostream & os, const WriterBase & base) const
+
+void HRRWriter::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, int ketam) const
+{
+    os << "        // form " << base.ArrVarName({base.FinalAM()[0], base.FinalAM()[1], ketam, 0}) << "\n";
+    os << "        for(iket = 0; iket < " << NCART(ketam) << "; ++iket)\n";
+    os << "        {\n";
+
+    for(const auto & hit : hrrsteps_.first)
+    {
+        os << std::string(12, ' ') << "// " << hit << "\n";
+        os << HRRBraStepString_(hit, ketam, base) << "\n\n";
+    }
+
+    os << "        }\n";
+    os << "\n";
+}
+
+
+
+//void HRRWriter::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, int ketam) const
+//{
+//std::string HRRWriter::HRRKetStepString_(const HRRDoubletStep & hrr, const DAMList & braam, const WriterBase & base) const
+//}
+
+
+
+void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
 {
     QAMList finalam = base.FinalAM();
     const int ncart_bra = NCART(finalam[0]) * NCART(finalam[1]);
@@ -89,19 +115,13 @@ void HRRWriter::WriteHRRInline(std::ostream & os, const WriterBase & base) const
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
+        // set up pointers for all contracted targets/srcs
+        // only need: Final bra, then all hrrtopbras (which should be formed by ET)
+        //HEREHEREHERE
+
+
         for(const auto & it : hrrtopkets_)
-        {
-            os << "        // form " << base.ArrVarName({finalam[0], finalam[1], it.first, 0}) << "\n";
-            os << "        for(iket = 0; iket < " << it.second.size() << "; ++iket)\n";
-            os << "        {\n";
-            for(const auto & hit : hrrsteps_.first)
-            {
-                os << std::string(12, ' ') << "// " << hit << "\n";
-                os << HRRBraStepString(hit, it.first, base) << "\n\n";
-            }
-            os << "        }\n";
-            os << "\n";
-        }
+            WriteHRRBraSteps_(os, base, it.first);
 
         os << "\n";
         os << "    }\n";
@@ -129,7 +149,7 @@ void HRRWriter::WriteHRRInline(std::ostream & os, const WriterBase & base) const
         for(const auto & hit : hrrsteps_.second)
         {
             os << std::string(12, ' ') << "// " << hit << "\n";
-            os << HRRKetStepString(hit, braam, base) << "\n\n";
+            os << HRRKetStepString_(hit, braam, base) << "\n\n";
         }
 
         os << "        }\n"; 
@@ -140,6 +160,11 @@ void HRRWriter::WriteHRRInline(std::ostream & os, const WriterBase & base) const
     os << "\n";
 }
 
+
+void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
+{
+    // todo
+}
 
 
 bool HRRWriter::HasBraHRR(void) const
@@ -163,7 +188,7 @@ bool HRRWriter::HasHRR(void) const
 
 
 
-std::string HRRWriter::HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget, const WriterBase & base) const
+std::string HRRWriter::HRRBraStepArrVar_(const Doublet & d, int ketam, bool istarget, const WriterBase & base) const
 {
     if(base.IsContArray({d.left.am(), d.right.am(), ketam, 0}))
     {
@@ -181,16 +206,15 @@ std::string HRRWriter::HRRBraStepArrVar(const Doublet & d, int ketam, bool istar
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
-                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
-                   << amchar[ketam];
+        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
         return ss.str();
     }
 }
 
 
 
-std::string HRRWriter::HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget, const WriterBase & base) const
+std::string HRRWriter::HRRKetStepArrVar_(const Doublet & d, const DAMList & braam, bool istarget, const WriterBase & base) const
 {
     if(base.IsContArray({braam[0], braam[1], d.left.am(), d.right.am()}))
     {
@@ -206,16 +230,15 @@ std::string HRRWriter::HRRKetStepArrVar(const Doublet & d, const DAMList & braam
         std::stringstream ss;
         if(istarget)
             ss << "const double ";
-        ss << "Q_" << amchar[d.left.ijk[0]]  << "_" << amchar[d.left.ijk[1]]  << "_" << amchar[d.left.ijk[2]] << "_"
-                   << amchar[d.right.ijk[0]] << "_" << amchar[d.right.ijk[1]] << "_" << amchar[d.right.ijk[2]] << "_"
-                   << amchar[braam[0]] << "_" << amchar[braam[1]];
+        ss << "Q_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
         return ss.str();
     }
 }
 
 
 
-std::string HRRWriter::HRRBraStepString(const HRRDoubletStep & hrr, int ketam, const WriterBase & base) const
+std::string HRRWriter::HRRBraStepString_(const HRRDoubletStep & hrr, int ketam, const WriterBase & base) const
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
     const char * xyztype = "AB_";
@@ -223,12 +246,12 @@ std::string HRRWriter::HRRBraStepString(const HRRDoubletStep & hrr, int ketam, c
     std::stringstream ss;
     ss << std::string(12, ' ');
 
-    ss << HRRBraStepArrVar(hrr.target, ketam, true, base);
+    ss << HRRBraStepArrVar_(hrr.target, ketam, true, base);
 
     ss << " = ";
-    ss << HRRBraStepArrVar(hrr.src1, ketam, false, base);
+    ss << HRRBraStepArrVar_(hrr.src1, ketam, false, base);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRBraStepArrVar(hrr.src2, ketam, false, base);
+    ss << HRRBraStepArrVar_(hrr.src2, ketam, false, base);
     ss << " );";
 
     return ss.str();
@@ -236,7 +259,7 @@ std::string HRRWriter::HRRBraStepString(const HRRDoubletStep & hrr, int ketam, c
 
 
 
-std::string HRRWriter::HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & braam, const WriterBase & base) const
+std::string HRRWriter::HRRKetStepString_(const HRRDoubletStep & hrr, const DAMList & braam, const WriterBase & base) const
 {
     // determine P,Q, etc, for AB_x, AB_y, AB_z
     const char * xyztype = "CD_";
@@ -244,13 +267,34 @@ std::string HRRWriter::HRRKetStepString(const HRRDoubletStep & hrr, const DAMLis
     std::stringstream ss;
     ss << std::string(12, ' ');
 
-    ss << HRRKetStepArrVar(hrr.target, braam, true, base);
+    ss << HRRKetStepArrVar_(hrr.target, braam, true, base);
 
     ss << " = ";
-    ss << HRRKetStepArrVar(hrr.src1, braam, false, base);
+    ss << HRRKetStepArrVar_(hrr.src1, braam, false, base);
     ss << " + ( " << xyztype << hrr.xyz << "[abcd] * ";
-    ss << HRRKetStepArrVar(hrr.src2, braam, false, base);
+    ss << HRRKetStepArrVar_(hrr.src2, braam, false, base);
     ss << " );";
 
     return ss.str();
 }
+
+
+void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
+{
+    if(base.GetOption(OPTION_INLINEHRR) > 0)
+        WriteHRRInline_(os, base);
+    else
+        WriteHRRExternal_(os, base);
+}
+        
+
+void HRRWriter::WriteHRRFile(std::ostream & os, const WriterBase & base) const
+{
+}
+
+
+
+void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
+{
+}
+

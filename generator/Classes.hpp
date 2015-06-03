@@ -455,6 +455,7 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 }
 
 typedef std::set<QAMList> QAMListSet;
+typedef std::set<DAMList> DAMListSet;
 
 typedef std::set<Gaussian> GaussianSet;
 typedef std::map<Gaussian, XYZStep> VRRMap;

@@ -113,15 +113,6 @@ void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const
 
 
 
-void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, int num_m) const
-{
-    std::stringstream ss;
-    ss << num_m;
-    WriteVRRSteps_(os, base, greq, ss.str());
-}
-
-
-
 void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
@@ -147,7 +138,9 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
         const GaussianSet & greq = it3.second;
 
         // Write out the steps
-        WriteVRRSteps_(os, base, greq, base.L()-am+1);
+        std::stringstream ss;
+        ss << (greq, base.L()-am+1);
+        WriteVRRSteps_(os, base, greq, ss.str());
 
         // if this target is also a contracted array, accumulate there
         if(base.IsContArray({am, 0, 0, 0}))

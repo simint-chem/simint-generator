@@ -13,7 +13,10 @@ class HRRWriter
     public:
         HRRWriter(const HRRBraKetStepList & hrrsteps, const QAMList & finalam);
 
-        void WriteHRRInline(std::ostream & os, const WriterBase & base) const;
+        void WriteHRR(std::ostream & os, const WriterBase & base) const;
+
+        void WriteHRRFile(std::ostream & os, const WriterBase & base) const;
+        void WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const;
 
         bool HasHRR(void) const;
         bool HasBraHRR(void) const;
@@ -28,10 +31,17 @@ class HRRWriter
         DoubletSetMap hrrtopbras_, hrrtopkets_;
         QuartetSet hrrtopquartets_;
 
-        std::string HRRBraStepArrVar(const Doublet & d, int ketam, bool istarget, const WriterBase & base) const;
-        std::string HRRKetStepArrVar(const Doublet & d, const DAMList & braam, bool istarget, const WriterBase & base) const;
-        std::string HRRBraStepString(const HRRDoubletStep & hrr, int ketam, const WriterBase & base) const;
-        std::string HRRKetStepString(const HRRDoubletStep & hrr, const DAMList & braam, const WriterBase & base) const;
+        DAMListSet hrrbra_ptrs;
+        
+        void WriteHRRInline_(std::ostream & os, const WriterBase & base) const;
+        void WriteHRRExternal_(std::ostream & os, const WriterBase & base) const;
+
+        void WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, int ketam) const;
+
+        std::string HRRBraStepArrVar_(const Doublet & d, int ketam, bool istarget, const WriterBase & base) const;
+        std::string HRRKetStepArrVar_(const Doublet & d, const DAMList & braam, bool istarget, const WriterBase & base) const;
+        std::string HRRBraStepString_(const HRRDoubletStep & hrr, int ketam, const WriterBase & base) const;
+        std::string HRRKetStepString_(const HRRDoubletStep & hrr, const DAMList & braam, const WriterBase & base) const;
 };
 
 #endif
