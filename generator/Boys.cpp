@@ -7,7 +7,7 @@
 ////////////////////////////////////
 // Base class
 ////////////////////////////////////
-std::vector<std::string> BoysGen::includes(void) const
+std::vector<std::string> BoysGen::Includes(void) const
 {
     return std::vector<std::string>();
 }
@@ -15,7 +15,7 @@ std::vector<std::string> BoysGen::includes(void) const
 
 void BoysGen::WriteIncludes(std::ostream & os) const
 {
-    auto boysinc = includes();
+    auto boysinc = Includes();
     for(const auto & it : boysinc)
         os << "#include \"" << it << "\"\n";
 }
@@ -118,7 +118,7 @@ void BoysSplit::WriteBoys(std::ostream & os, const WriterBase & base) const
         os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
 }
 
-std::vector<std::string> BoysSplit::includes(void) const
+std::vector<std::string> BoysSplit::Includes(void) const
 {
     std::vector<std::string> v{"boys/boys_split.h"};
     return v;
@@ -137,7 +137,7 @@ void BoysVRef::WriteBoys(std::ostream & os, const WriterBase & base) const
         os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
 }
 
-std::vector<std::string> BoysVRef::includes(void) const
+std::vector<std::string> BoysVRef::Includes(void) const
 {
     std::vector<std::string> v{"boys/boys_vref.h"};
     return v;

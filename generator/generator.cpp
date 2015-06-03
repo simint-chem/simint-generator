@@ -43,6 +43,7 @@ int main(int argc, char ** argv)
     // default options
     OptionsMap options;
     options[OPTION_FLATPRIM] = 0;
+    options[OPTION_INLINEVRR] = 1000;
 
     // other stuff
     std::string prefix;

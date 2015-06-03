@@ -10,12 +10,14 @@ class WriterBase;
 class BoysGen
 {
     public:
-        void WriteIncludes(std::ostream & os) const;
-
         virtual void WriteBoys(std::ostream & os, const WriterBase & base) const = 0;
 
-        virtual std::vector<std::string> includes(void) const;
+        void WriteIncludes(std::ostream & os) const;
+
         virtual ~BoysGen() { };
+
+    protected:
+        virtual std::vector<std::string> Includes(void) const;
 };
 
 class BoysFO : public BoysGen
@@ -50,9 +52,10 @@ struct BoysSplit : public BoysGen
 {
     public:
         // default constructors ok
-
         virtual void WriteBoys(std::ostream & os, const WriterBase & base) const;
-        virtual std::vector<std::string> includes(void) const;
+
+    protected:
+        virtual std::vector<std::string> Includes(void) const;
 };
 
 
@@ -60,9 +63,10 @@ struct BoysVRef : public BoysGen
 {
     public:
         // default constructors ok
-
         virtual void WriteBoys(std::ostream & os, const WriterBase & base) const;
-        virtual std::vector<std::string> includes(void) const;
+
+    protected:
+        virtual std::vector<std::string> Includes(void) const;
 };
 
 

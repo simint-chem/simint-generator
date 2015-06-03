@@ -15,6 +15,14 @@ bool VRRWriter::HasVRR(void) const
 
 
 
+void VRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
+{
+    if(base.L() > base.GetOption(OPTION_INLINEVRR))
+        os << "#include \"eri/vrr/vrr.h\"\n";
+}
+
+
+
 void VRRWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
 {
     if(vrrreqmap_.size() > 0)
@@ -54,7 +62,67 @@ void VRRWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) con
 
 
 
-void VRRWriter::WriteVRRInline(std::ostream & os, const WriterBase & base) const
+void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
+{
+    std::string indent1(20, ' ');
+    std::string indent2(24, ' ');
+
+    int am = greq.begin()->am();
+    os << indent1 << "// Forming " << base.AuxName(am) << "[" << num_m << " * " << NCART(am) << "];\n";
+
+    //os << indent1 << "// Needed from this AM:\n";
+    //for(const auto & it : greq)
+    //    os << indent1 << "//    " << it << "\n";
+
+    os << indent1 << "for(m = 0; m < " << num_m << "; m++)  // loop over orders of auxiliary function\n";
+    os << indent1 << "{\n";
+
+    // iterate over the requirements
+    // should be in order since it's a set
+    for(const auto & it : greq)
+    {
+        // Get the stepping
+        XYZStep step = vrrmap_.at(it);
+
+        // and then step to the the required gaussians
+        Gaussian g1 = it.StepDown(step, 1);
+        Gaussian g2 = it.StepDown(step, 2);
+
+        // the value of i in the VRR eqn
+        // = value of exponent of g1 in the position of the step
+        int vrr_i = g1.ijk[XYZStepToIdx(step)];
+
+        os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
+        os << indent2 << base.AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
+
+        if(g1)
+            os << base.AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
+               << "] - aop_PQ_" << step << " * " << base.AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
+        if(g2)
+        {
+            os << "\n"
+               << indent2 << "              + " << vrr_i 
+               << " * one_over_2p * ( " << base.AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
+               << " - a_over_p * " << base.AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
+        }
+        os << ";\n\n"; 
+    }
+
+    os << indent1 << "}\n";
+}
+
+
+
+void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, int num_m) const
+{
+    std::stringstream ss;
+    ss << num_m;
+    WriteVRRSteps_(os, base, greq, ss.str());
+}
+
+
+
+void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
@@ -78,46 +146,124 @@ void VRRWriter::WriteVRRInline(std::ostream & os, const WriterBase & base) const
         // greq is what is actually required from this am
         const GaussianSet & greq = it3.second;
 
-        // requirements for this am
-        os << indent1 << "// Forming " << base.AuxName(am) << "[" << (base.L()-am+1) << " * " << NCART(am) << "];\n";
-        os << indent1 << "// Needed from this AM:\n";
-        for(const auto & it : greq)
-            os << indent1 << "//    " << it << "\n";
-        os << indent1 << "for(m = 0; m < " << (base.L()-am+1) << "; m++)  // loop over orders of boys function\n";
-        os << indent1 << "{\n";
+        // Write out the steps
+        WriteVRRSteps_(os, base, greq, base.L()-am+1);
 
-        // iterate over the requirements
-        // should be in order since it's a set
-        for(const auto & it : greq)
+        // if this target is also a contracted array, accumulate there
+        if(base.IsContArray({am, 0, 0, 0}))
         {
-            // Get the stepping
-            XYZStep step = vrrmap_.at(it);
+            os << "\n";
+            os << indent1 << "// Accumulating in contracted workspace\n";
 
-            // and then step to the the required gaussians
-            Gaussian g1 = it.StepDown(step, 1);
-            Gaussian g2 = it.StepDown(step, 2);
-
-            // the value of i in the VRR eqn
-            // = value of exponent of g1 in the position of the step
-            int vrr_i = g1.ijk[XYZStepToIdx(step)];
-
-            os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-            os << indent2 << base.AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
-
-            if(g1)
-                os << base.AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
-                   << "] - aop_PQ_" << step << " * " << base.AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
-            if(g2)
+            if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
-                os << "\n"
-                   << indent2 << "              + " << vrr_i 
-                   << " * one_over_2p * ( " << base.AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
-                   << " - a_over_p * " << base.AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
+                os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
+                os << indent2 << "PRIM_" << base.ArrVarName({am, 0, 0, 0}) << "[n] += " << base.AuxName(am) << "[n];\n";
             }
-            os << ";\n\n"; 
+            else
+            { 
+                for(const auto & it : greq)
+                    os << indent1 << "PRIM_" << base.AuxName(am) << "[" << it.idx() << "] += " << base.AuxName(am) << "[" << it.idx() << "];\n";
+            }
         }
 
-        os << indent1 << "}\n";
+        os << "\n\n";
+    }
+
+    // accumulate INT__0_0_0_0 if needed
+    if(base.IsContArray({0, 0, 0, 0}))
+    {
+        os << "\n";
+        os << indent1 << "// Accumulating INT__0_0_0_0 in contracted workspace\n";
+        os << indent1 << "*PRIM_" << base.ArrVarName({0, 0, 0, 0}) << " += *" << base.AuxName(0) << ";\n";
+        os << "\n";
+    }
+
+    os << "\n";
+}
+
+
+
+void VRRWriter::WriteVRRFile_(std::ostream & os, const WriterBase & base) const
+{
+    std::string indent1(24, ' ');
+    std::string indent2(4, ' ');
+
+    // iterate over increasing am
+    for(const auto & it3 : vrrreqmap_)
+    {
+        int am = it3.first;
+
+        // don't do zero - no VRR!
+        if(am == 0)
+            continue;
+
+        // greq is what is actually required from this am
+        const GaussianSet & greq = it3.second;
+
+
+        os << "\n\n\n";
+        os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
+        os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
+        os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
+        os << indent1 << "const double a_over_p, const double one_over_2p,\n"; 
+        os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
+        os << indent1 << "double const * const restrict " << base.AuxName(am-1);
+        if(am > 1)
+        {
+            os << ",\n";
+            os << indent1 << "double const * const restrict " << base.AuxName(am-2);
+        }
+        
+        os << ")\n";
+        os << "{\n";
+
+        // Write out the steps
+        WriteVRRSteps_(os, base, greq, "num_m");
+
+        os << "}\n";
+    }
+}
+
+
+
+void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const
+{
+    os << "\n";
+    os << "                    //////////////////////////////////////////////\n";
+    os << "                    // Primitive integrals: Vertical recurrance\n";
+    os << "                    //////////////////////////////////////////////\n";
+    os << "\n";
+
+
+    std::string indent1(20, ' ');
+    std::string indent2(40, ' ');
+
+    // iterate over increasing am
+    for(const auto & it3 : vrrreqmap_)
+    {
+        int am = it3.first;
+
+        // don't do zero - that is handled by the boys function stuff
+        if(am == 0)
+            continue;
+
+        // greq is what is actually required from this am
+        const GaussianSet & greq = it3.second;
+
+        // call the function
+        os << indent1 << "VRR_" << base.AuxName(am) << "(" << (base.L()-am+1) << ",\n";
+        os << indent2 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
+        os << indent2 << "a_over_p, one_over_2p, " << base.AuxName(am) << ",\n";
+        os << indent2 << base.AuxName(am-1);
+        if(am > 1)
+        {
+            os << ",\n";
+            os << indent2 << base.AuxName(am-2);
+        }
+
+        os << ");\n";
 
 
         // if this target is also a contracted array, accumulate there
@@ -155,75 +301,11 @@ void VRRWriter::WriteVRRInline(std::ostream & os, const WriterBase & base) const
 
 
 
-void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
+void VRRWriter::WriteVRR(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(24, ' ');
-    std::string indent2(4, ' ');
-
-    // iterate over increasing am
-    for(const auto & it3 : vrrreqmap_)
-    {
-        int am = it3.first;
-
-        // don't do zero - no VRR!
-        if(am == 0)
-            continue;
-
-        // greq is what is actually required from this am
-        const GaussianSet & greq = it3.second;
-
-        os << "\n\n\n";
-        os << "// VRR to obtain " << base.AuxName(am) << "\n";
-        os << "void VRR_" << base.AuxName(am) << "(const int m,\n";
-        os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
-        os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent1 << "const double a_over_p, const double one_over_2p,\n"; 
-        os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
-        os << indent1 << "double const * const restrict " << base.AuxName(am-1);
-        if(am > 1)
-        {
-            os << ",\n";
-            os << indent1 << "double const * const restrict " << base.AuxName(am-2);
-        }
-        
-        os << ")\n";
-        os << "{\n";
-        os << indent2 << "for(m = 0; m < " << (base.L()-am+1) << "; m++)  // loop over orders of boys function\n";
-        os << indent2 << "{\n";
-
-        // iterate over the requirements
-        // should be in order since it's a set
-        for(const auto & it : greq)
-        {
-            // Get the stepping
-            XYZStep step = vrrmap_.at(it);
-
-            // and then step to the the required gaussians
-            Gaussian g1 = it.StepDown(step, 1);
-            Gaussian g2 = it.StepDown(step, 2);
-
-            // the value of i in the VRR eqn
-            // = value of exponent of g1 in the position of the step
-            int vrr_i = g1.ijk[XYZStepToIdx(step)];
-
-            os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-            os << indent2 << base.AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
-
-            if(g1)
-                os << base.AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
-                   << "] - aop_PQ_" << step << " * " << base.AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
-            if(g2)
-            {
-                os << "\n"
-                   << indent2 << "              + " << vrr_i 
-                   << " * one_over_2p * ( " << base.AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
-                   << " - a_over_p * " << base.AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
-            }
-            os << ";\n\n"; 
-        }
-
-        os << "    }\n";
-        os << "}\n";
-    }
+    if(base.L() <= base.GetOption(OPTION_INLINEVRR))
+        WriteVRRInline_(os, base);
+    else
+        WriteVRRExternal_(os, base);
 }
 
