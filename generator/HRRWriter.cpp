@@ -97,7 +97,7 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 
 void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
-    if(base.GetOption(OPTION_INLINEVRR) == 0)
+    if(base.GetOption(OPTION_INLINEVRR) != 0)
         os << "#include \"eri/hrr/hrr.h\"\n";
 }
 
@@ -255,9 +255,9 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
 
         // variables
         os << "\n";
-        os << "        const double kCD_x = AB_x[abcd];\n";
-        os << "        const double kCD_y = AB_y[abcd];\n";
-        os << "        const double kCD_z = AB_z[abcd];\n";
+        os << "        const double kCD_x = CD_x[abcd];\n";
+        os << "        const double kCD_y = CD_y[abcd];\n";
+        os << "        const double kCD_z = CD_z[abcd];\n";
         os << "\n";
 
         WriteHRRKetSteps_(os, base, ss.str());
@@ -295,7 +295,7 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
             // it.first is the AM for the ket part
             QAMList thisam{finalam[0], finalam[1], it.first, 0};
             os << "        // form " << base.ArrVarName(thisam) << "\n";
-            os << "        HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+            os << "        HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
             // Pass the pointers
             for(const auto & itb : brahrr_ptrs_)
@@ -305,7 +305,7 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
                     << " + ( abcd * " << NCART(itb[0]) * NCART(itb[1]) * NCART(it.first) << " ),\n";
             }
 
-            os << "            AB_x[abcd], AB_y[abcd], AB_z[abcd], " << NCART(it.first) << ");\n";
+            os << "               AB_x[abcd], AB_y[abcd], AB_z[abcd], " << NCART(it.first) << ");\n";
         }
 
         os << "\n";
@@ -332,7 +332,7 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
         os << "    {\n";
 
         os << "        // form " << base.ArrVarName(finalam) << "\n";
-        os << "        HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+        os << "        HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes
         for(auto & it : kethrr_ptrs_)
@@ -341,17 +341,13 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
                << base.ArrVarName({finalam[0], finalam[1], it[0], it[1]})
                << " + ( abcd * " << NCART(braam[0]) * NCART(braam[1]) * NCART(it[0]) * NCART(it[1]) << " ),\n"; 
         }
-        os << "            CD_x[abcd], CD_y[abcd], CD_z[abcd], " << NCART(NCART(braam[0]) * NCART(braam[1])) << ");\n";
+        os << "               CD_x[abcd], CD_y[abcd], CD_z[abcd], " << (NCART(braam[0]) * NCART(braam[1])) << ");\n";
 
-        os << "\n\n";
-
-        WriteHRRKetSteps_(os, base, ss.str());
-
+        os << "\n";
         os << "    }\n";
+        os << "\n";
+        os << "\n";
     }
-
-    os << "\n";
-    os << "\n";
 }
 
 
@@ -455,7 +451,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
 
         // it.first is the AM for the ket part
         ofb << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        ofb << "void HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+        ofb << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         for(const auto & itb : brahrr_ptrs_)
             ofb << "                   double * const restrict BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << ",\n";
@@ -484,7 +480,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
         ofk << "\n";
 
         ofk << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        ofk << "void HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+        ofk << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes
         for(auto & it : kethrr_ptrs_)
@@ -521,7 +517,7 @@ void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) c
 
         // it.first is the AM for the ket part
         os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        os << "void HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+        os << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         for(const auto & itb : brahrr_ptrs_)
             os << "                   double * const restrict BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << ",\n";
@@ -541,7 +537,7 @@ void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) c
         os << "\n";
 
         os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        os << "void HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+        os << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes
         for(auto & it : kethrr_ptrs_)

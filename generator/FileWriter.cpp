@@ -58,6 +58,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);
+    hrr_writer.WriteIncludes(os, base);
 
     os << "\n\n";
     os << funcline;
@@ -120,10 +121,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasvrr || haset)
         os << "    int n;\n";
 
-    if(hasbrahrr)
-        os << "    int iket;\n";
-    if(haskethrr)
-        os << "    int ibra;\n";
+    if(base.GetOption(OPTION_INLINEHRR) != 0)
+    {
+        if(hasbrahrr)
+            os << "    int iket;\n";
+        if(haskethrr)
+            os << "    int ibra;\n";
+    }
 
     os << "\n";
 
@@ -325,6 +329,7 @@ static void WriteFile_Flat(std::ostream & os,
 
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);
+    hrr_writer.WriteIncludes(os, base);
 
     os << "\n\n";
     os << funcline;
@@ -390,10 +395,13 @@ static void WriteFile_Flat(std::ostream & os,
     if(hasvrr || haset)
         os << "    int n;\n";
 
-    if(hasbrahrr)
-        os << "    int iket;\n";
-    if(haskethrr)
-        os << "    int ibra;\n";
+    if(base.GetOption(OPTION_INLINEHRR) != 0)
+    {
+        if(hasbrahrr)
+            os << "    int iket;\n";
+        if(haskethrr)
+            os << "    int ibra;\n";
+    }
 
     os << "\n";
 

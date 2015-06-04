@@ -8,7 +8,7 @@
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__p_p(
+void HRR_BRA_p_p(
                    double * const restrict BRA_p_s,
                    double * const restrict BRA_p_p,
                    double * const restrict BRA_d_s,
@@ -59,7 +59,7 @@ void HRR_BRA__p_p(
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__d_p(
+void HRR_BRA_d_p(
                    double * const restrict BRA_d_s,
                    double * const restrict BRA_d_p,
                    double * const restrict BRA_f_s,
@@ -137,7 +137,7 @@ void HRR_BRA__d_p(
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__d_d(
+void HRR_BRA_d_d(
                    double * const restrict BRA_d_s,
                    double * const restrict BRA_d_d,
                    double * const restrict BRA_f_s,
@@ -399,7 +399,7 @@ void HRR_BRA__d_d(
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__f_p(
+void HRR_BRA_f_p(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_p,
                    double * const restrict BRA_g_s,
@@ -513,7 +513,7 @@ void HRR_BRA__f_p(
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__f_d(
+void HRR_BRA_f_d(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_d,
                    double * const restrict BRA_g_s,
@@ -925,7 +925,7 @@ void HRR_BRA__f_d(
     //////////////////////////////////////////////
 
 #pragma omp declare simd simdlen(SIMD_LEN)
-void HRR_BRA__f_f(
+void HRR_BRA_f_f(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_f,
                    double * const restrict BRA_g_s,
