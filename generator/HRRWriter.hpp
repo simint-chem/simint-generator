@@ -32,14 +32,16 @@ class HRRWriter
         QuartetSet hrrtopquartets_;
 
         DAMListSet brahrr_ptrs_;
+        DAMListSet kethrr_ptrs_;
         
         void WriteHRRInline_(std::ostream & os, const WriterBase & base) const;
         void WriteHRRExternal_(std::ostream & os, const WriterBase & base) const;
 
         void WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket) const;
+        void WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket) const;
 
-        std::string HRRBraStepArrVar_(const Doublet & d, const std::string & ncart_ket, bool istarget, const WriterBase & base) const;
-        std::string HRRKetStepArrVar_(const Doublet & d, const DAMList & braam, bool istarget, const WriterBase & base) const;
+        std::string HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, bool istarget, const WriterBase & base) const;
+        std::string HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra, bool istarget, const WriterBase & base) const;
 };
 
 #endif
