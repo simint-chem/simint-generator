@@ -16,7 +16,7 @@ parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 
 parser.add_argument("-f",  required=False, action='store_true', help="Flattened primitive loop")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
-parser.add_argument("-vh", required=False, type=int, default=1000, help="External HRR for this L value and above")
+parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 args = parser.parse_args()
 
 
@@ -134,7 +134,7 @@ for q in valid:
     vrrtype = "Inline";
   print("         VRR: {}".format(vrrtype))
 
-  if sum(q) >= args.vh:
+  if sum(q) >= args.he:
     hrrtype = "External"
   else:
     hrrtype = "Inline";
@@ -154,7 +154,7 @@ for q in valid:
     if vrrtype == "External":
         cmdline.append("-ve")
     if hrrtype == "External":
-        cmdline.append("-vh")
+        cmdline.append("-he")
 
     ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
 

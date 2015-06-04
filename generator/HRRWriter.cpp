@@ -97,7 +97,7 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 
 void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
-    if(base.GetOption(OPTION_INLINEVRR) != 0)
+    if(base.GetOption(OPTION_INLINEHRR) == 0)
         os << "#include \"eri/hrr/hrr.h\"\n";
 }
 
@@ -450,7 +450,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
         ofb << "\n";
 
         // it.first is the AM for the ket part
-        ofb << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        ofb << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)\n";
         ofb << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         for(const auto & itb : brahrr_ptrs_)
@@ -479,7 +479,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
         ofk << "    //////////////////////////////////////////////\n";
         ofk << "\n";
 
-        ofk << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        ofk << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)\n";
         ofk << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes
@@ -516,7 +516,7 @@ void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) c
         os << "\n";
 
         // it.first is the AM for the ket part
-        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)\n";
         os << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         for(const auto & itb : brahrr_ptrs_)
@@ -536,7 +536,7 @@ void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) c
         os << "    //////////////////////////////////////////////\n";
         os << "\n";
 
-        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)\n";
         os << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes

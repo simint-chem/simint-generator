@@ -12,10 +12,6 @@
 #include "generator/HRRWriter.hpp"
 
 
-size_t memory_cont;          // memory required for contracted integral storage (bytes)
-
-
-
 static void WriteFile_NotFlat(std::ostream & os,
                               const QAMList & am,
                               const OptionsMap & options,
@@ -32,6 +28,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool hashrr = hrr_writer.HasHRR();
     bool hasbrahrr = hrr_writer.HasBraHRR();
     bool haskethrr = hrr_writer.HasKetHRR();
+    bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
     bool hasvrr = vrr_writer.HasVRR();
     bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) > 0);
@@ -121,7 +118,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasvrr || haset)
         os << "    int n;\n";
 
-    if(base.GetOption(OPTION_INLINEHRR) != 0)
+    if(inline_hrr)
     {
         if(hasbrahrr)
             os << "    int iket;\n";
@@ -298,14 +295,14 @@ static void WriteFile_Flat(std::ostream & os,
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
-
     // some helper bools
     bool hashrr = hrr_writer.HasHRR();
     bool hasbrahrr = hrr_writer.HasBraHRR();
     bool haskethrr = hrr_writer.HasKetHRR();
+    bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
     bool hasvrr = vrr_writer.HasVRR();
-    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) > 0);
+    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) != 0);
     bool haset = et_writer.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -395,7 +392,7 @@ static void WriteFile_Flat(std::ostream & os,
     if(hasvrr || haset)
         os << "    int n;\n";
 
-    if(base.GetOption(OPTION_INLINEHRR) != 0)
+    if(inline_hrr)
     {
         if(hasbrahrr)
             os << "    int iket;\n";

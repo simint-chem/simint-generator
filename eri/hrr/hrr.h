@@ -9,7 +9,7 @@
     // Steps: 9
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_p_p(
                    double * const restrict BRA_p_s,
                    double * const restrict BRA_p_p,
@@ -23,7 +23,7 @@ void HRR_BRA_p_p(
     // Steps: 9
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_p_p(
                   double * const restrict KET_p_s,
                   double * const restrict KET_p_p,
@@ -37,7 +37,7 @@ void HRR_KET_p_p(
     // Steps: 18
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_d_p(
                    double * const restrict BRA_d_s,
                    double * const restrict BRA_d_p,
@@ -51,7 +51,7 @@ void HRR_BRA_d_p(
     // Steps: 18
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_d_p(
                   double * const restrict KET_d_s,
                   double * const restrict KET_d_p,
@@ -65,7 +65,7 @@ void HRR_KET_d_p(
     // Steps: 79
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_d_d(
                    double * const restrict BRA_d_s,
                    double * const restrict BRA_d_d,
@@ -80,7 +80,7 @@ void HRR_BRA_d_d(
     // Steps: 79
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_d_d(
                   double * const restrict KET_d_s,
                   double * const restrict KET_d_d,
@@ -95,7 +95,7 @@ void HRR_KET_d_d(
     // Steps: 30
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_f_p(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_p,
@@ -109,7 +109,7 @@ void HRR_BRA_f_p(
     // Steps: 30
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_f_p(
                   double * const restrict KET_f_s,
                   double * const restrict KET_f_p,
@@ -123,7 +123,7 @@ void HRR_KET_f_p(
     // Steps: 129
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_f_d(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_d,
@@ -138,7 +138,7 @@ void HRR_BRA_f_d(
     // Steps: 129
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_f_d(
                   double * const restrict KET_f_s,
                   double * const restrict KET_f_d,
@@ -153,7 +153,7 @@ void HRR_KET_f_d(
     // Steps: 319
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)
 void HRR_BRA_f_f(
                    double * const restrict BRA_f_s,
                    double * const restrict BRA_f_f,
@@ -169,7 +169,7 @@ void HRR_BRA_f_f(
     // Steps: 319
     //////////////////////////////////////////////
 
-#pragma omp declare simd simdlen(SIMD_LEN)
+#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)
 void HRR_KET_f_f(
                   double * const restrict KET_f_s,
                   double * const restrict KET_f_f,

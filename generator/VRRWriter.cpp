@@ -203,7 +203,7 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
@@ -259,7 +259,7 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
