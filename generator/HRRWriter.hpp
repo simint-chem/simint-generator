@@ -15,7 +15,8 @@ class HRRWriter
 
         void WriteHRR(std::ostream & os, const WriterBase & base) const;
 
-        void WriteHRRFile(std::ostream & os, const WriterBase & base) const;
+        void WriteIncludes(std::ostream & os, const WriterBase & base) const;
+        void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const;
         void WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const;
 
         bool HasHRR(void) const;

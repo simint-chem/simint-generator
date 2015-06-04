@@ -62,6 +62,8 @@ int main(int argc, char ** argv)
             options[OPTION_FLATPRIM] = 1;
         else if(argstr == "-ve")
             options[OPTION_INLINEVRR] = 0;
+        else if(argstr == "-vh")
+            options[OPTION_INLINEHRR] = 0;
         else if(argstr == "-p")
             prefix = GetNextArg(i, argc, argv);
         else if(argstr == "-q")

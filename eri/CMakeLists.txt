@@ -8,6 +8,8 @@ add_library(simint_eri STATIC
                               shell.c
                               shell_constants.c
                               vrr/vrr.c
+                              hrr/hrr_bra.c
+                              hrr/hrr_ket.c
                               ${SIMINT_FO_FILES}
                               ${SIMINT_FOFLAT_FILES}
                               ${SIMINT_VREF_FILES}

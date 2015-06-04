@@ -95,6 +95,14 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 
 
 
+void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
+{
+    if(base.GetOption(OPTION_INLINEVRR) == 0)
+        os << "#include \"eri/hrr/hrr.h\"\n";
+}
+
+
+
 void HRRWriter::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket) const
 {
     os << "\n";
@@ -115,7 +123,7 @@ void HRRWriter::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, co
 
         os << " = ";
         os << HRRBraStepVar_(hit.src1, ncart_ket, false, base);
-        os << " + ( " << xyztype << hit.xyz << "[abcd] * ";
+        os << " + ( b" << xyztype << hit.xyz << " * ";
         os << HRRBraStepVar_(hit.src2, ncart_ket, false, base);
         os << " );";
         os << "\n\n";
@@ -144,7 +152,7 @@ void HRRWriter::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, co
 
             os << " = ";
             os << HRRKetStepVar_(hit.src1, ncart_bra, false, base);
-            os << " + ( " << xyztype << hit.xyz << "[abcd] * ";
+            os << " + ( k" << xyztype << hit.xyz << " * ";
             os << HRRKetStepVar_(hit.src2, ncart_bra, false, base);
             os << " );";
             os << "\n\n";
@@ -181,6 +189,11 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
             os << " BRA_" << amchar[it[0]] << "_" << amchar[it[1]] << ";\n";
         }
 
+        // variables
+        os << "\n";
+        os << "        const double bAB_x = AB_x[abcd];\n";
+        os << "        const double bAB_y = AB_y[abcd];\n";
+        os << "        const double bAB_z = AB_z[abcd];\n";
         os << "\n";
 
         for(const auto & it : hrrtopkets_)
@@ -240,6 +253,11 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
                << " + ( abcd * " << NCART(braam[0]) * NCART(braam[1]) * NCART(it[0]) * NCART(it[1]) << " );\n"; 
         }
 
+        // variables
+        os << "\n";
+        os << "        const double kCD_x = AB_x[abcd];\n";
+        os << "        const double kCD_y = AB_y[abcd];\n";
+        os << "        const double kCD_z = AB_z[abcd];\n";
         os << "\n";
 
         WriteHRRKetSteps_(os, base, ss.str());
@@ -254,7 +272,86 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
 
 void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
 {
-    // todo
+    QAMList finalam = base.FinalAM();
+
+    if(hrrsteps_.first.size() > 0)
+    {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // Contracted integrals: Horizontal recurrance\n";
+        os << "    // Bra part\n";
+        os << "    // Steps: " << hrrsteps_.first.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
+        os << "    #pragma simd\n";
+        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
+        os << "    {\n";
+
+
+
+        os << "\n";
+
+        for(const auto & it : hrrtopkets_)
+        {
+            // it.first is the AM for the ket part
+            QAMList thisam{finalam[0], finalam[1], it.first, 0};
+            os << "        // form " << base.ArrVarName(thisam) << "\n";
+            os << "        HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+
+            // Pass the pointers
+            for(const auto & itb : brahrr_ptrs_)
+            {
+                 os << "               "
+                    << base.ArrVarName({itb[0], itb[1], it.first, 0}) 
+                    << " + ( abcd * " << NCART(itb[0]) * NCART(itb[1]) * NCART(it.first) << " ),\n";
+            }
+
+            os << "            AB_x[abcd], AB_y[abcd], AB_z[abcd], " << NCART(it.first) << ");\n";
+        }
+
+        os << "\n";
+        os << "    }\n";
+        os << "\n";
+        os << "\n";
+    }
+
+    if(hrrsteps_.second.size() > 0)
+    {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // Contracted integrals: Horizontal recurrance\n";
+        os << "    // Ket part\n";
+        os << "    // Steps: " << hrrsteps_.second.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
+
+        DAMList braam{finalam[0], finalam[1]};
+        std::stringstream ss;
+        ss << (NCART(braam[0]) * NCART(braam[1])); 
+
+        os << "    #pragma simd\n";
+        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
+        os << "    {\n";
+
+        os << "        // form " << base.ArrVarName(finalam) << "\n";
+        os << "        HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+
+        // Pass the pointes
+        for(auto & it : kethrr_ptrs_)
+        {
+            os << "               "
+               << base.ArrVarName({finalam[0], finalam[1], it[0], it[1]})
+               << " + ( abcd * " << NCART(braam[0]) * NCART(braam[1]) * NCART(it[0]) * NCART(it[1]) << " ),\n"; 
+        }
+        os << "            CD_x[abcd], CD_y[abcd], CD_z[abcd], " << NCART(NCART(braam[0]) * NCART(braam[1])) << ");\n";
+
+        os << "\n\n";
+
+        WriteHRRKetSteps_(os, base, ss.str());
+
+        os << "    }\n";
+    }
+
+    os << "\n";
+    os << "\n";
 }
 
 
@@ -344,13 +441,116 @@ void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
 
         
 
-void HRRWriter::WriteHRRFile(std::ostream & os, const WriterBase & base) const
+void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
 {
+    QAMList finalam = base.FinalAM();
+
+    if(hrrsteps_.first.size() > 0)
+    {
+        ofb << "    //////////////////////////////////////////////\n";
+        ofb << "    // BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        ofb << "    // Steps: " << hrrsteps_.first.size() << "\n";
+        ofb << "    //////////////////////////////////////////////\n";
+        ofb << "\n";
+
+        // it.first is the AM for the ket part
+        ofb << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        ofb << "void HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+
+        for(const auto & itb : brahrr_ptrs_)
+            ofb << "                   double * const restrict BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << ",\n";
+
+        ofb << "                   const double bAB_x, const double bAB_y, const double bAB_z, const int ncart_ket\n";
+        ofb << "                 )\n";
+
+        ofb << "{\n";
+        ofb << "    int iket;\n";
+        ofb << "\n";
+
+        WriteHRRBraSteps_(ofb, base, "ncart_ket"); 
+
+        ofb << "\n";
+        ofb << "}\n";
+        ofb << "\n";
+        ofb << "\n";
+    }
+
+    if(hrrsteps_.second.size() > 0)
+    {
+        ofk << "    //////////////////////////////////////////////\n";
+        ofk << "    // KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        ofk << "    // Steps: " << hrrsteps_.second.size() << "\n";
+        ofk << "    //////////////////////////////////////////////\n";
+        ofk << "\n";
+
+        ofk << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        ofk << "void HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+
+        // Pass the pointes
+        for(auto & it : kethrr_ptrs_)
+            ofk << "                  double * const restrict KET_" << amchar[it[0]] << "_" << amchar[it[1]] << ",\n";
+
+        ofk << "                  const double kCD_x, const double kCD_y, const double kCD_z, const int ncart_bra\n";
+        ofk << "                 )\n";
+        ofk << "{\n";
+        ofk << "    int ibra;\n";
+        ofk << "\n";
+
+        WriteHRRKetSteps_(ofk, base, "ncart_bra"); 
+
+        ofk << "\n";
+        ofk << "}\n";
+        ofk << "\n";
+        ofk << "\n";
+    }
 }
 
 
 
 void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
+    QAMList finalam = base.FinalAM();
+
+    if(hrrsteps_.first.size() > 0)
+    {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        os << "    // Steps: " << hrrsteps_.first.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
+
+        // it.first is the AM for the ket part
+        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "void HRR_BRA_" << "_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+
+        for(const auto & itb : brahrr_ptrs_)
+            os << "                   double * const restrict BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << ",\n";
+
+        os << "                   const double bAB_x, const double bAB_y, const double bAB_z, const int ncart_ket\n";
+        os << "                 );\n";
+        os << "\n";
+        os << "\n";
+    }
+
+    if(hrrsteps_.second.size() > 0)
+    {
+        os << "    //////////////////////////////////////////////\n";
+        os << "    // KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        os << "    // Steps: " << hrrsteps_.second.size() << "\n";
+        os << "    //////////////////////////////////////////////\n";
+        os << "\n";
+
+        os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
+        os << "void HRR_KET_" << "_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+
+        // Pass the pointes
+        for(auto & it : kethrr_ptrs_)
+            os << "                  double * const restrict KET_" << amchar[it[0]] << "_" << amchar[it[1]] << ",\n";
+
+        os << "                  const double kCD_x, const double kCD_y, const double kCD_z, const int ncart_bra\n";
+        os << "                 );\n";
+        os << "\n";
+        os << "\n";
+    }
 }
 

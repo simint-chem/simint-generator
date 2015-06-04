@@ -179,7 +179,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
 
 void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(26, ' ');
+    std::string indent1(11, ' ');
 
     os << "//////////////////////////////////////////////\n";
     os << "// VRR functions\n";
@@ -204,7 +204,7 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
+        os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
         os << indent1 << "const double a_over_p,";
@@ -236,8 +236,7 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
 void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(24, ' ');
-    std::string indent2(4, ' ');
+    std::string indent1(11, ' ');
 
     os << "#ifndef VRR__H\n";
     os << "#define VRR__H\n";
@@ -261,7 +260,7 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
         os << "\n\n\n";
         os << "// VRR to obtain " << base.AuxName(am) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN)\n";
-        os << "void VRR_" << base.AuxName(am) << "(const int num_m,\n";
+        os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
         os << indent1 << "const double a_over_p,";
@@ -294,7 +293,7 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
 
 
     std::string indent1(20, ' ');
-    std::string indent2(40, ' ');
+    std::string indent2(26, ' ');
 
     // iterate over increasing am
     for(const auto & it3 : vrrreqmap_)
@@ -309,14 +308,14 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
         const GaussianSet & greq = it3.second;
 
         // call the function
-        os << indent1 << "VRR_" << base.AuxName(am) << "(" << (base.L()-am+1) << ",\n";
+        os << indent1 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
         os << indent2 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
         os << indent2 << "a_over_p,";
         if(am > 1)
             os << "one_over_2p, ";
         os << "\n"; 
 
-        os << base.AuxName(am) << ",\n";
+        os << indent2 << base.AuxName(am) << ",\n";
         os << indent2 << base.AuxName(am-1);
         if(am > 1)
         {

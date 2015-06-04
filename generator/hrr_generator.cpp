@@ -8,7 +8,7 @@
 #include "generator/Helpers.hpp"
 #include "generator/Options.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/VRRWriter.hpp"
+#include "generator/HRRWriter.hpp"
 
 using namespace std;
 
@@ -86,20 +86,27 @@ int main(int argc, char ** argv)
         fpath += '/';
 
 
-    // The algorithm to use 
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
     // different source and header files
-    std::string srcpath = fpath + "vrr.c";
-    std::string headpath = fpath + "vrr.h";
+    std::string srcpath_bra = fpath + "hrr_bra.c";
+    std::string srcpath_ket = fpath + "hrr_ket.c";
+    std::string headpath = fpath + "hrr.h";
     
-    cout << "Generating source file " << srcpath << "\n";
+    cout << "Generating bra source file " << srcpath_bra << "\n";
+    cout << "Generating ket source file " << srcpath_ket << "\n";
     cout << "Generating header file " << headpath << "\n";
 
-    std::ofstream of(srcpath);
-    if(!of.is_open())
+    std::ofstream ofb(srcpath_bra);
+    if(!ofb.is_open())
     {
-        std::cout << "Cannot open file: " << srcpath << "\n";
+        std::cout << "Cannot open file: " << srcpath_bra << "\n";
+        return 2; 
+    }
+
+    std::ofstream ofk(srcpath_ket);
+    if(!ofk.is_open())
+    {
+        std::cout << "Cannot open file: " << srcpath_ket << "\n";
         return 2; 
     }
 
@@ -110,22 +117,43 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
+    // header guard and include file
+    ofh << "#ifndef HRR_H\n";
+    ofh << "#define HRR_H\n";
 
-    // we want all gaussians up to the maximum L value
-    ETReqMap vreq;
-    for(int i = 0; i <= maxL; i++)
-        vreq[i] = AllGaussiansForAM(i);
+    ofh << "\n";
+    ofh << "#include \"vectorization.h\"\n";
+    ofh << "\n\n";
 
-    // Create the mapping
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo->CreateAllMaps(vreq);
+    // include files for sources
+    ofb << "\n";
+    ofb << "#include \"vectorization.h\"\n";
+    ofb << "\n\n";
+    ofk << "\n";
+    ofk << "#include \"vectorization.h\"\n";
+    ofk << "\n\n";
 
-    // Create the writer and base writer
-    WriterBase base(options, {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
-    VRRWriter vrr_writer(vrrinfo.first, vrrinfo.second);
+    // we want all doublets up to L
+    for(int i = 1; i <= maxL; i++)
+    for(int j = 1; j <= i; j++)
+    {
+        std::cout << "HEREHERE\n";
+        // The algorithm to use
+        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
-    // write to the output file
-    vrr_writer.WriteVRRFile(of, base);
-    vrr_writer.WriteVRRHeaderFile(ofh, base);
+        // we can do both bras/kets in the same loop iteration
+        QAMList am{i, j, i, j};
+        WriterBase base(options, am);
+        HRRBraKetStepList hrrsteps = hrralgo->Create_DoubletStepLists(am);
+        HRRWriter hrr_writer(hrrsteps, am);
+
+        // write to the output file (appending)
+        hrr_writer.WriteHRRFile(ofb, ofk, base);
+        hrr_writer.WriteHRRHeaderFile(ofh, base);
+    }
+
+    ofh << "#endif\n";
+
     cout << "Done!\n";
 
     }
