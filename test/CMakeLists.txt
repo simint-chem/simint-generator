@@ -4,7 +4,7 @@ macro(ADDTESTS TNAME TFILES)
                  $<TARGET_OBJECTS:test_erd>
                  $<TARGET_OBJECTS:test_common>)
 
-  target_link_libraries(${TNAME} simint_eri simint_boys
+  target_link_libraries(${TNAME} simint_eri simint_boys simint_shell
                                  ${LIBERD_LIBRARY} ${LIBINT2_LIBRARY})
                                  
   if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")

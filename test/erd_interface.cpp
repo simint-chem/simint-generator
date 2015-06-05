@@ -3,7 +3,7 @@
 #include <string.h> // for memcpy
 #include <math.h>
 
-#include "eri/shell.h"
+#include "shell/shell.h"
 #include "vectorization.h"
 
 // 2 * pi**(2.5) * sqrt(pi) / 16

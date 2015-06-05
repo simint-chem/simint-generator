@@ -98,7 +98,7 @@ const QuartetSet & HRRWriter::TopQuartets(void) const
 void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEHRR) == 0)
-        os << "#include \"eri/hrr/hrr.h\"\n";
+        os << "#include \"eri/hrr.gen/hrr.h\"\n";
 }
 
 

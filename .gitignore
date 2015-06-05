@@ -4,3 +4,4 @@ build-avx
 build-sse
 __pycache__
 *.swp
+eri/*.gen

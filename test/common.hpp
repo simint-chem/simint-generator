@@ -5,7 +5,7 @@
 #include <fstream>
     
 #include "test/cppvectorization.hpp"
-#include "eri/shell.h"
+#include "shell/shell.h"
 
 #define MAXAM 2
 #define NTEST 10

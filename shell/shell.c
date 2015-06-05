@@ -3,8 +3,8 @@
 
 #include "vectorization.h"
 #include "constants.h"
-#include "eri/shell.h"
-#include "eri/shell_constants.h"
+#include "shell/shell.h"
+#include "shell/shell_constants.h"
 
 extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 

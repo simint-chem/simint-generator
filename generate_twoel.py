@@ -179,7 +179,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#endif\n")
   hfile.write("\n\n")
 
-  hfile.write("#include \"eri/shell.h\"\n")
+  hfile.write("#include \"shell/shell.h\"\n")
   hfile.write("\n\n")
 
   hfile.write("#define ERI_{}_MAXAM {}\n".format(args.p.upper(), args.l))

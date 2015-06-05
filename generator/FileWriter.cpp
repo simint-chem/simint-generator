@@ -51,7 +51,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     os << "#include \"vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
-    os << "#include \"eri/shell.h\"\n";
+    os << "#include \"shell/shell.h\"\n";
 
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);
@@ -322,7 +322,7 @@ static void WriteFile_Flat(std::ostream & os,
 
     os << "#include \"vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
-    os << "#include \"eri/shell.h\"\n";
+    os << "#include \"shell/shell.h\"\n";
 
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);

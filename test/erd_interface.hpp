@@ -1,7 +1,7 @@
 #ifndef SIMINT_ERD_INTERFACE_H
 #define SIMINT_ERD_INTERFACE_H
 
-#include "eri/shell.h"
+#include "shell/shell.h"
 
 void ERD_Init(int am1, int nprim1, int ncgto1,
               int am2, int nprim2, int ncgto2,

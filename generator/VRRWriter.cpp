@@ -18,7 +18,7 @@ bool VRRWriter::HasVRR(void) const
 void VRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEVRR) == 0)
-        os << "#include \"eri/vrr/vrr.h\"\n";
+        os << "#include \"eri/vrr.gen/vrr.h\"\n";
 }
 
 

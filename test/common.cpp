@@ -8,7 +8,6 @@
 #include <omp.h>
 #endif
 
-#include "eri/shell.h"
 #include "eri/eri.h"
 
 #include "test/common.hpp"
