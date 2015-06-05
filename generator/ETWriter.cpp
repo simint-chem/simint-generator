@@ -63,7 +63,7 @@ void ETWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
         for(const auto & it : etint_)
         {
             if(base.IsContArray(it))
-                os << "            double * const restrict PRIM_" << base.ArrVarName(it) << " = "
+                os << "            double * const restrict " << base.PrimPtrName(it) << " = "
                    << base.ArrVarName(it) << " + (abcd * " << (NCART(it[0])*NCART(it[1])*NCART(it[2])*NCART(it[3])) << ");\n";
         }
     }
@@ -71,7 +71,7 @@ void ETWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
 
 
 
-void ETWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) const
+void ETWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
     if(etint_.size())
     {
@@ -81,7 +81,7 @@ void ETWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) cons
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << "                    double AUX_" << base.ArrVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
+                os << "                    double " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
         } 
 
         os << "\n\n";
@@ -124,9 +124,14 @@ void ETWriter::WriteETInline(std::ostream & os, const WriterBase & base) const
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
             os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
-            os << indent2 << "PRIM_" << base.ArrVarName(it) << "[n] += AUX_" << base.ArrVarName(it) << "[n];\n";
+
+            if(base.IsFinalAM(it))
+                os << indent2 << base.ArrVarName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
+            else
+                os << indent2 << base.ArrVarName(it) << "[n * nshell1234 + abcd] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
+
 }
 
 
@@ -134,7 +139,7 @@ void ETWriter::WriteETInline(std::ostream & os, const WriterBase & base) const
 std::string ETWriter::ETStepVar(const Quartet & q, const WriterBase & base)
 {
     std::stringstream ss; 
-    ss << "AUX_" << base.ArrVarName(q.amlist()) << "[" << q.idx() << "]";
+    ss << base.PrimVarName(q.amlist()) << "[" << q.idx() << "]";
     return ss.str();
 }
 

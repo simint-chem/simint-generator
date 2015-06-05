@@ -22,7 +22,7 @@ static void WriteFile_NotFlat(std::ostream & os,
                               const ETWriter & et_writer,
                               const HRRWriter & hrr_writer)
 {
-    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
     bool hashrr = hrr_writer.HasHRR();
@@ -61,7 +61,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const restrict " << base.ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict result)\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -89,15 +89,15 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
 
     os << "\n";
-    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
+    os << "    ASSUME_ALIGN(result);\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
 
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
-    if(!hashrr)
-        os << "    memset(" << base.ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
+    //if(!hashrr)
+    //    os << "    memset(" << base.ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
     
     os << "\n";
 
@@ -111,7 +111,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << "    int ab, cd, abcd;\n";
-    os << "    int i, j;\n";
+    os << "    int i, j, ir;\n";
 
     if(hasvrr_m)
         os << "    int m;\n";
@@ -145,8 +145,11 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
 
-    vrr_writer.DeclarePointers(os, base);
-    et_writer.DeclarePointers(os, base);
+    if(!hashrr)
+        base.DeclarePrimArrays(os);
+
+    //vrr_writer.DeclarePointers(os, base);
+    //et_writer.DeclarePointers(os, base);
 
     os << "\n";
     os << "            const int cdstart = Q.primstart[cd];\n";
@@ -195,8 +198,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "                {\n";
     os << "\n";
 
-    vrr_writer.DeclareAuxArrays(os, base);
-    et_writer.DeclareAuxArrays(os, base);
+    vrr_writer.DeclarePrimArrays(os, base);
+    et_writer.DeclarePrimArrays(os, base);
 
     os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
     os << "                    const double PQalpha_sum = P_alpha + Q.alpha[j];\n";
@@ -266,13 +269,25 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
+
+    // if no HRR, this is the end
+    if(!hashrr)
+        base.PermuteResult(os, base.ArrVarName(am));
+
     os << "        }\n";
     os << "    }\n";
     os << "\n";
     os << "\n";
+
+
+
+    os << "\n";
     os << "\n";
 
     hrr_writer.WriteHRR(os, base);
+
+    os << "\n";
+    os << "\n";
 
     base.FreeContwork(os);
 
@@ -332,7 +347,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair_flat const P,\n";
     os << indent << "struct multishell_pair_flat const Q,\n";
-    os << indent << "double * const restrict " << base.ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict result)\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -361,7 +376,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "    ASSUME_ALIGN(Q.shellidx);\n";
     os << "\n";
-    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
+    os << "    ASSUME_ALIGN(result);\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
@@ -385,7 +400,7 @@ static void WriteFile_Flat(std::ostream & os,
     if(hashrr)
         os << "    int abcd;\n";
 
-    os << "    int i, j;\n";
+    os << "    int i, j, ir;\n";
 
     if(hasvrr_m)
         os << "    int m;\n";
@@ -463,13 +478,13 @@ static void WriteFile_Flat(std::ostream & os,
     os << "                    const int abcd = Pshellidx + Q.shellidx[j];\n";
     os << "\n";
 
-    vrr_writer.DeclarePointers(os, base);
-    et_writer.DeclarePointers(os, base);
+    //vrr_writer.DeclarePointers(os, base);
+    //et_writer.DeclarePointers(os, base);
 
     os << "\n\n";
 
-    vrr_writer.DeclareAuxArrays(os, base);
-    et_writer.DeclareAuxArrays(os, base);
+    vrr_writer.DeclarePrimArrays(os, base);
+    et_writer.DeclarePrimArrays(os, base);
 
     os << "\n\n";
     os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
@@ -536,11 +551,15 @@ static void WriteFile_Flat(std::ostream & os,
     vrr_writer.WriteVRR(os, base);
 
     et_writer.WriteETInline(os, base);
-
-        
+    
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
+
+    // if no HRR, this is the end
+    if(!hashrr)
+        base.PermuteResult(os, base.ArrVarName(am));
+
     os << "\n";
     os << "\n";
     os << "\n";
@@ -588,7 +607,7 @@ void WriteFile(std::ostream & os,
     HRRWriter hrr_writer(hrrsteps, am);
 
     // set the contracted quartets
-    base.SetContQ(hrr_writer.TopQuartets(), hrr_writer.TopKets());
+    base.SetContQ(hrr_writer.TopQuartets());
 
 
     // 2.) ET steps

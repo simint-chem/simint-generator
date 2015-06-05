@@ -33,7 +33,7 @@ void VRRWriter::DeclarePointers(std::ostream & os, const WriterBase & base) cons
         {
             int vam = it.first;
             if(base.IsContArray({vam, 0, 0, 0}))
-                os << "            double * const restrict PRIM_" << base.ArrVarName({vam, 0, 0, 0}) << " = "
+                os << "            double * const restrict " << base.PrimPtrName({vam, 0, 0, 0}) << " = "
                    << base.ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
         }
     }
@@ -41,7 +41,7 @@ void VRRWriter::DeclarePointers(std::ostream & os, const WriterBase & base) cons
 
 
 
-void VRRWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) const
+void VRRWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
     if(vrrreqmap_.size())
     {
@@ -51,7 +51,7 @@ void VRRWriter::DeclareAuxArrays(std::ostream & os, const WriterBase & base) con
         for(const auto & greq : vrrreqmap_)
         {
             os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << "                    double " << base.AuxName(greq.first) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
+            os << "                    double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
             os << "\n";
         }
 
@@ -68,7 +68,11 @@ void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const
     std::string indent2(24, ' ');
 
     int am = greq.begin()->am();
-    os << indent1 << "// Forming " << base.AuxName(am) << "[" << num_m << " * " << NCART(am) << "];\n";
+    QAMList qam{am, 0, 0, 0};
+    QAMList qam1{am-1, 0, 0, 0};
+    QAMList qam2{am-2, 0, 0, 0};
+
+    os << indent1 << "// Forming " << base.PrimVarName(qam) << "[" << num_m << " * " << NCART(am) << "];\n";
 
     //os << indent1 << "// Needed from this AM:\n";
     //for(const auto & it : greq)
@@ -93,17 +97,17 @@ void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const
         int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
         os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-        os << indent2 << base.AuxName(am) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
+        os << indent2 << base.PrimVarName(qam) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
 
         if(g1)
-            os << base.AuxName(am-1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
-               << "] - aop_PQ_" << step << " * " << base.AuxName(am-1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
+            os << base.PrimVarName(qam1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
+               << "] - aop_PQ_" << step << " * " << base.PrimVarName(qam1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
         if(g2)
         {
             os << "\n"
                << indent2 << "              + " << vrr_i 
-               << " * one_over_2p * ( " << base.AuxName(am-2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
-               << " - a_over_p * " << base.AuxName(am-2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
+               << " * one_over_2p * ( " << base.PrimVarName(qam2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
+               << " - a_over_p * " << base.PrimVarName(qam2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
         }
         os << ";\n\n"; 
     }
@@ -129,6 +133,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
+        QAMList qam{am, 0, 0, 0};
 
         // don't do zero - that is handled by the boys function stuff
         if(am == 0)
@@ -143,7 +148,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
         WriteVRRSteps_(os, base, greq, ss.str());
 
         // if this target is also a contracted array, accumulate there
-        if(base.IsContArray({am, 0, 0, 0}))
+        if(base.IsContArray(qam))
         {
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
@@ -151,24 +156,35 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
             if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
                 os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-                os << indent2 << "PRIM_" << base.ArrVarName({am, 0, 0, 0}) << "[n] += " << base.AuxName(am) << "[n];\n";
+
+                if(base.IsFinalAM(qam))
+                    os << indent2 << base.ArrVarName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
+                else
+                    os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
             }
             else
             { 
+                // TODO
                 for(const auto & it : greq)
-                    os << indent1 << "PRIM_" << base.AuxName(am) << "[" << it.idx() << "] += " << base.AuxName(am) << "[" << it.idx() << "];\n";
+                    os << indent1 << base.ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << base.PrimVarName(qam) << "[" << it.idx() << "];\n";
             }
         }
 
         os << "\n\n";
     }
 
-    // accumulate INT__0_0_0_0 if needed
-    if(base.IsContArray({0, 0, 0, 0}))
+    // accumulate ssss if needed
+    QAMList zeroam = {0,0,0,0};
+    if(base.IsContArray(zeroam))
     {
         os << "\n";
-        os << indent1 << "// Accumulating INT__0_0_0_0 in contracted workspace\n";
-        os << indent1 << "*PRIM_" << base.ArrVarName({0, 0, 0, 0}) << " += *" << base.AuxName(0) << ";\n";
+        os << indent1 << "// Accumulating ssss in contracted workspace\n";
+
+        if(base.IsFinalAM(zeroam))
+            os << indent1 << "*" << base.ArrVarName(zeroam) << " += *" << base.PrimVarName(zeroam) << ";\n";
+        else
+            os << indent1 << base.ArrVarName(zeroam) << "[abcd] += *" << base.PrimVarName(zeroam) << ";\n";
+
         os << "\n";
     }
 
@@ -192,6 +208,9 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
+        QAMList qam{am, 0, 0, 0};
+        QAMList qam1{am-1, 0, 0, 0};
+        QAMList qam2{am-2, 0, 0, 0};
 
         // don't do zero - no VRR!
         if(am == 0)
@@ -202,7 +221,7 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
 
         os << "\n\n\n";
-        os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
@@ -211,12 +230,12 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
         if(am > 1)
             os << " const double one_over_2p,";
         os << "\n"; 
-        os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
-        os << indent1 << "double const * const restrict " << base.AuxName(am-1);
+        os << indent1 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
+        os << indent1 << "double const * const restrict " << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent1 << "double const * const restrict " << base.AuxName(am-2);
+            os << indent1 << "double const * const restrict " << base.PrimVarName(qam2);
         }
         
         os << ")\n";
@@ -252,13 +271,16 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
+        QAMList qam{am, 0, 0, 0};
+        QAMList qam1{am-1, 0, 0, 0};
+        QAMList qam2{am-2, 0, 0, 0};
 
         // don't do zero - no VRR!
         if(am == 0)
             continue;
 
         os << "\n\n\n";
-        os << "// VRR to obtain " << base.AuxName(am) << "\n";
+        os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
         os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
@@ -267,12 +289,12 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
         if(am > 1)
             os << " const double one_over_2p,";
         os << "\n"; 
-        os << indent1 << "double * const restrict " << base.AuxName(am) << ",\n";
-        os << indent1 << "double const * const restrict " << base.AuxName(am-1);
+        os << indent1 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
+        os << indent1 << "double const * const restrict " << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent1 << "double const * const restrict " << base.AuxName(am-2);
+            os << indent1 << "double const * const restrict " << base.PrimVarName(qam2);
         }
         
         os << ");\n";
@@ -299,6 +321,9 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
+        QAMList qam{am, 0, 0, 0};
+        QAMList qam1{am-1, 0, 0, 0};
+        QAMList qam2{am-2, 0, 0, 0};
 
         // don't do zero - that is handled by the boys function stuff
         if(am == 0)
@@ -315,19 +340,19 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
             os << "one_over_2p, ";
         os << "\n"; 
 
-        os << indent2 << base.AuxName(am) << ",\n";
-        os << indent2 << base.AuxName(am-1);
+        os << indent2 << base.PrimVarName(qam) << ",\n";
+        os << indent2 << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent2 << base.AuxName(am-2);
+            os << indent2 << base.PrimVarName(qam2);
         }
 
         os << ");\n";
 
 
         // if this target is also a contracted array, accumulate there
-        if(base.IsContArray({am, 0, 0, 0}))
+        if(base.IsContArray(qam))
         {
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
@@ -335,24 +360,25 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
             if(greq.size() == NCART(am))  // only do if wr calculated all of them?
             {
                 os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-                os << indent2 << "PRIM_" << base.ArrVarName({am, 0, 0, 0}) << "[n] += " << base.AuxName(am) << "[n];\n";
+                os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
             }
             else
             { 
                 for(const auto & it : greq)
-                    os << indent1 << "PRIM_" << base.AuxName(am) << "[" << it.idx() << "] += " << base.AuxName(am) << "[" << it.idx() << "];\n";
+                    os << indent1 << base.ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << base.PrimVarName(qam) << "[" << it.idx() << "];\n";
             }
         }
 
         os << "\n\n";
     }
 
-    // accumulate INT__0_0_0_0 if needed
-    if(base.IsContArray({0, 0, 0, 0}))
+    // accumulate ssss if needed
+    QAMList zeroam = {0,0,0,0};
+    if(base.IsContArray(zeroam))
     {
         os << "\n";
-        os << indent1 << "// Accumulating INT__0_0_0_0 in contracted workspace\n";
-        os << indent1 << "*PRIM_" << base.ArrVarName({0, 0, 0, 0}) << " += *" << base.AuxName(0) << ";\n";
+        os << indent1 << "// Accumulating ssss in contracted workspace\n";
+        os << indent1 << "*" << base.ArrVarName(zeroam) << " += *" << base.PrimVarName(zeroam) << ";\n";
         os << "\n";
     }
 

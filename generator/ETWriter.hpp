@@ -19,7 +19,7 @@ class ETWriter
         bool HasET(void) const;
 
         void DeclarePointers(std::ostream & os, const WriterBase & base) const;
-        void DeclareAuxArrays(std::ostream & os, const WriterBase & base) const;
+        void DeclarePrimArrays(std::ostream & os, const WriterBase & base) const;
 
         void WriteETInline(std::ostream & os, const WriterBase & base) const;
 

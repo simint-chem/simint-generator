@@ -7,7 +7,7 @@ WriterBase::WriterBase(const OptionsMap & options, const QAMList & finalam)
 
 
 
-void WriterBase::SetContQ(const QuartetSet & topquartets, const DoubletSetMap & topkets) 
+void WriterBase::SetContQ(const QuartetSet & topquartets)
 {
     // add the final am
     contq_.insert(finalam_);
@@ -16,20 +16,10 @@ void WriterBase::SetContQ(const QuartetSet & topquartets, const DoubletSetMap & 
     for(const auto & it : topquartets)
         contq_.insert(it.amlist());
 
-    // also add final bra combined with all the kets
-    for(const auto & it : topkets)
-    {
-        QAMList qam{finalam_[0], finalam_[1], it.first, 0};
-        contq_.insert(qam);
-    }
-
     // calculate the memory
     memory_ = 0;
     for(const auto & it : contq_)
-    {
-        if(it != finalam_)
-            memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
-    }
+        memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
 }
 
 
@@ -65,6 +55,12 @@ bool WriterBase::IsContArray(const QAMList & am) const
 
 
 
+bool WriterBase::IsFinalAM(const QAMList & am) const
+{
+    return am == finalam_;
+}
+
+
 QAMList WriterBase::FinalAM(void) const
 {
     return finalam_;
@@ -72,18 +68,87 @@ QAMList WriterBase::FinalAM(void) const
 
 
 
-std::string WriterBase::ArrVarName(const QAMList & am)
+std::string WriterBase::ArrVarName(const QAMList & am, const std::string & prefix)
 {
     std::stringstream ss;
+
+    if(prefix.size())
+        ss << prefix << "_";
+
     ss << "INT__"  << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]];
     return ss.str();
 }
 
-
-
-std::string WriterBase::AuxName(int i)
+std::string WriterBase::ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix)
 {
-    return std::string("AUX_") + ArrVarName({i, 0, 0, 0});
+    std::stringstream ss;
+
+    if(prefix.size())
+        ss << prefix << "_";
+
+    ss << "INT__"  << amchar[am1] << "_" << amchar[am2] << "_" << ketstr;
+    return ss.str();
+}
+
+std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4, const std::string & prefix)
+{
+    std::stringstream ss;
+
+    if(prefix.size())
+        ss << prefix << "_";
+
+    ss << "INT__"  << brastr << "_" << amchar[am3] << "_" << amchar[am4];
+    return ss.str();
+}
+
+
+std::string WriterBase::HRRVarName(const QAMList & am)
+{
+    return ArrVarName(am, "HRR");
+}
+
+
+std::string WriterBase::ArrVarName(int am1, int am2, const std::string & ketstr)
+{
+    return ArrVarName(am1, am2, ketstr, "HRR");
+}
+
+std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4)
+{
+    return ArrVarName(brastr, am3, am4, "HRR");
+}
+
+
+std::string WriterBase::PrimVarName(const QAMList & am)
+{
+    return ArrVarName(am, "PRIM");
+}
+
+
+std::string WriterBase::PrimPtrName(const QAMList & am)
+{
+    return ArrVarName(am, "PRIM_PTR");
+}
+        
+
+void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
+{
+    int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
+    os << "\n";
+    os << "    //Permute the result\n";
+    os << "    for(ir = 0; ir < " << ncart << "; ir++)\n";
+    os << "        result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
+    os << "\n";
+}
+
+void WriterBase::DeclarePrimArrays(std::ostream & os) const
+{
+    int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
+    os << "\n";
+    os << "                // Storage for some of the final integrals\n";
+    os << "                double " << ArrVarName(finalam_) << "[" << ncart << "];\n";
+    os << "                memset(" << ArrVarName(finalam_) << ", 0, " << ncart * sizeof(double) << ");\n";
+    os << "\n";
 }
 
 
@@ -105,6 +170,7 @@ void WriterBase::DeclareContwork(std::ostream & os) const
                 os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
                 ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
             }
+        
         }
     }
 }

@@ -61,7 +61,7 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
     {
         const BoysFit & bf = bfmap_.at(i); 
 
-        os << indent << base.AuxName(0) << "[" << bf.v << "] = allprefac\n"; 
+        os << indent << base.PrimVarName({0,0,0,0}) << "[" << bf.v << "] = allprefac\n"; 
         os << indent << "         * pow(\n";
         os << indent << "                 (\n";
         os << indent << "                   (\n";
@@ -113,9 +113,9 @@ BoysFO::BoysFO(std::string dir)
 void BoysSplit::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
-    os << indent << "Boys_F_split(" << base.AuxName(0) << ", " << base.L() << ", F_x);\n";
+    os << indent << "Boys_F_split(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
     for(int i = 0; i <= base.L(); i++)
-        os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
+        os << indent << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const
@@ -132,9 +132,9 @@ std::vector<std::string> BoysSplit::Includes(void) const
 void BoysVRef::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
-    os << indent << "Boys_F_VRef(" << base.AuxName(0) << ", " << base.L() << ", F_x);\n";
+    os << indent << "Boys_F_VRef(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
     for(int i = 0; i <= base.L(); i++)
-        os << indent << base.AuxName(0) << "[" << i << "] *= allprefac;\n";
+        os << indent << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::Includes(void) const
