@@ -12,19 +12,10 @@
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
-// some flags
-#define QUARTET_INITIAL     1  // what we are looking for at the end
-#define QUARTET_HRRTOPLEVEL 2
-#define QUARTET_ETTOPLEVEL  8
-
-#define DOUBLET_INITIAL     1  // what we are looking for at the end
-#define DOUBLET_HRRTOPLEVEL 2
-#define DOUBLET_ETTOPLEVEL  8
-
 static const char * amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789";
 
-typedef std::array<int, 2> DAMList;
-typedef std::array<int, 4> QAMList;
+typedef std::array<int, 2> DAM;
+typedef std::array<int, 4> QAM;
 typedef std::array<int, 3> ExpList;
 
 // In Helpers.cpp
@@ -174,30 +165,11 @@ struct Doublet
     DoubletType type;
     Gaussian left;
     Gaussian right;
-    int flags;
 
     int am(void) const { return left.am() + right.am(); }    
     int idx(void) const { return left.idx() * right.ncart() + right.idx(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
-    Doublet noflags(void) const { return {type, left, right, 0}; }
-
-    std::string flagstr(void) const
-    {
-        if(flags == 0)
-            return std::string();
-
-        std::stringstream ss;
-        ss << "_{";
-        if(flags & DOUBLET_INITIAL)
-            ss << "i";
-        if(flags & DOUBLET_HRRTOPLEVEL)
-            ss << "t";
-        if(flags & DOUBLET_ETTOPLEVEL)
-            ss << "e";
-        ss << "}";
-        
-        return ss.str();
-    }
+    DAM amlist(void) const { return {left.am(), right.am()}; }
 
     std::string str(void) const
     {
@@ -206,7 +178,6 @@ struct Doublet
           ss << "(" << left << "  " << right << "|";
         else
           ss << "|" << left << "  " << right << ")";
-        ss << flagstr();
 
         return ss.str(); 
     }
@@ -223,11 +194,6 @@ struct Doublet
             {
                 if(right < rhs.right)
                     return true;
-                else if(right == rhs.right)
-                {
-                    if(flags > rhs.flags)
-                        return true;
-                }
             }
         }
         return false;
@@ -237,8 +203,7 @@ struct Doublet
     {
         return (left == rhs.left &&
                 right == rhs.right &&
-                type == rhs.type &&
-                flags == rhs.flags);
+                type == rhs.type);
     }
 
     operator bool(void) const
@@ -259,37 +224,16 @@ struct Quartet
     Doublet bra;
     Doublet ket;
     int m;
-    int flags;
 
     int am(void) const { return bra.am() + ket.am(); }
     int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
-    QAMList amlist(void) const { return { bra.left.am(), bra.right.am(),
+    QAM amlist(void) const { return { bra.left.am(), bra.right.am(),
                                           ket.left.am(), ket.right.am() }; }
-
-    Quartet noflags(void) const { return {bra.noflags(), ket.noflags(), m, 0}; }
 
     Doublet get(DoubletType type) const
     {
         return (type == DoubletType::BRA ? bra : ket);
-    }
-
-    std::string flagstr(void) const
-    {
-        if(flags == 0)
-            return std::string();
-
-        std::stringstream ss;
-        ss << "_{";
-        if(flags & QUARTET_INITIAL)
-            ss << "i";
-        if(flags & QUARTET_HRRTOPLEVEL)
-            ss << "t";
-        if(flags & QUARTET_ETTOPLEVEL)
-            ss << "e";
-        ss << "}";
-        
-        return ss.str();
     }
 
     std::string str(void) const
@@ -297,7 +241,7 @@ struct Quartet
         std::stringstream ss;
         ss << "( " << bra.left << "  " << bra.right << " | "
                    << ket.left << "  " << ket.right << " )^"
-                   << m << flagstr();
+                   << m;
         return ss.str();
     }
 
@@ -318,11 +262,6 @@ struct Quartet
                 {
                     if(m < rhs.m)
                         return true;
-                    else if(m == rhs.m)
-                    {
-                        if(flags > rhs.flags)
-                            return true;
-                    }
                 }
             }
         }
@@ -332,7 +271,7 @@ struct Quartet
 
     bool operator==(const Quartet & rhs) const
     {
-        return (bra == rhs.bra && ket == rhs.ket && m == rhs.m && flags == rhs.flags);
+        return (bra == rhs.bra && ket == rhs.ket && m == rhs.m);
     }
 
     operator bool(void) const
@@ -454,25 +393,30 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
     return os;
 }
 
-typedef std::set<QAMList> QAMListSet;
-typedef std::set<DAMList> DAMListSet;
+typedef std::set<QAM> QAMSet;
+typedef std::set<DAM> DAMSet;
+
+typedef std::set<Quartet> QuartetSet;
+typedef std::set<Doublet> DoubletSet;
+
 
 typedef std::set<Gaussian> GaussianSet;
-typedef std::map<Gaussian, XYZStep> VRRMap;
-typedef std::map<int, GaussianSet> VRRReqMap;
-typedef std::map<int, GaussianSet> ETReqMap;
+typedef std::map<Gaussian, XYZStep> VRRMap;      // Which way to setp for a particular gaussian
+typedef std::map<int, GaussianSet> GaussianMap;  // Which cartesian gausians are required for a given AM
+
+typedef std::vector<ETStep> ETStepList;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
 typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 
+
+typedef std::pair<DAMSet, DAMSet> HRRBraKetAMSet;
+typedef std::pair<QAMSet, QAMSet> HRRBraKetAMSet;
+
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
-typedef std::vector<ETStep> ETStepList;
 
-typedef std::set<Quartet> QuartetSet;
-typedef std::set<Doublet> DoubletSet;
 
-typedef std::map<int, DoubletSet> DoubletSetMap;
 
 
 

@@ -7,7 +7,7 @@ using std::cout;
 
 static std::map<ExpList, int> ordermap_;
 
-QuartetSet GenerateInitialQuartetTargets(QAMList amlst, bool initial)
+QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
 {
     int flag = (initial ? QUARTET_INITIAL : 0);
 
@@ -47,7 +47,7 @@ QuartetSet GenerateInitialQuartetTargets(QAMList amlst, bool initial)
     return qs;
 }
 
-DoubletSet GenerateInitialDoubletTargets(DAMList amlst, DoubletType type, bool initial)
+DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initial)
 {
     int flag = (initial ? DOUBLET_INITIAL : 0);
 

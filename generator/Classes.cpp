@@ -22,8 +22,8 @@
 #define DOUBLET_ETTOPLEVEL  8
 
 
-typedef std::array<int, 2> DAMList;
-typedef std::array<int, 4> QAMList;
+typedef std::array<int, 2> DAM;
+typedef std::array<int, 4> QAM;
 typedef std::array<int, 3> ExpList;
 
 // In Helpers.cpp
@@ -263,7 +263,7 @@ struct Quartet
     int am(void) const { return bra.am() + ket.am(); }
     int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
-    QAMList amlist(void) const { return { bra.left.am(), bra.right.am(),
+    QAM amlist(void) const { return { bra.left.am(), bra.right.am(),
                                           ket.left.am(), ket.right.am() }; }
 
     Quartet noflags(void) const { return {bra.noflags(), ket.noflags(), m, 0}; }
@@ -456,8 +456,8 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 
 typedef std::set<Gaussian> GaussianSet;
 typedef std::map<Gaussian, XYZStep> VRRMap;
-typedef std::map<int, GaussianSet> VRRReqMap;
-typedef std::map<int, GaussianSet> ETReqMap;
+typedef std::map<int, GaussianSet> GaussianMap;
+typedef std::map<int, GaussianSet> GaussianMap;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;

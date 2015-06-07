@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
     std::string prefix;
     std::string boystype;
     std::string fpath;
-    QAMList amlist;
+    QAM amlist;
     bool amlistset = false;
 
     // parse command line

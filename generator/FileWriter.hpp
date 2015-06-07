@@ -12,10 +12,10 @@ class VRR_Algorithm_Base;
 class ET_Algorithm_Base;
 class HRR_Algorithm_Base;
 
-typedef std::array<int, 4> QAMList;
+typedef std::array<int, 4> QAM;
 
 void WriteFile(std::ostream & os,
-               const QAMList & am,
+               const QAM & am,
                const std::string & prefix,
                const OptionsMap & options,
                const BoysGen & bg,

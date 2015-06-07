@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
         std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
         // we can do both bras/kets in the same loop iteration
-        QAMList am{i, j, i, j};
+        QAM am{i, j, i, j};
         WriterBase base(options, am);
         HRRBraKetStepList hrrsteps = hrralgo->Create_DoubletStepLists(am);
         HRRWriter hrr_writer(hrrsteps, am);

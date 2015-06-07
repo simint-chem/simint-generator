@@ -112,12 +112,12 @@ int main(int argc, char ** argv)
 
 
     // we want all gaussians up to the maximum L value
-    ETReqMap vreq;
+    GaussianMap vreq;
     for(int i = 0; i <= maxL; i++)
         vreq[i] = AllGaussiansForAM(i);
 
     // Create the mapping
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo->CreateAllMaps(vreq);
+    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo->CreateAllMaps(vreq);
 
     // Create the writer and base writer
     WriterBase base(options, {0, 0, 0, 0});  // the amlist parameter doesn't matter much here

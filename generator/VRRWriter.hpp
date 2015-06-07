@@ -12,7 +12,7 @@ class WriterBase;
 class VRRWriter
 {   
     public:
-        VRRWriter(const VRRMap & vrrmap, const VRRReqMap & vrrreqmap);
+        VRRWriter(const VRRMap & vrrmap, const GaussianMap & vrrreqmap);
 
         void WriteVRR(std::ostream & os, const WriterBase & base) const;
 
@@ -27,7 +27,7 @@ class VRRWriter
 
     private:
         VRRMap vrrmap_;
-        VRRReqMap vrrreqmap_;
+        GaussianMap vrrreqmap_;
 
         void WriteVRRInline_(std::ostream & os, const WriterBase & base) const;
         void WriteVRRExternal_(std::ostream & os, const WriterBase & base) const;

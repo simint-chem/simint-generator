@@ -1,7 +1,7 @@
 #include "generator/WriterBase.hpp"
 
 
-WriterBase::WriterBase(const OptionsMap & options, const QAMList & finalam)
+WriterBase::WriterBase(const OptionsMap & options, const QAM & finalam)
      : options_(options), finalam_(finalam)
 { }
 
@@ -48,27 +48,27 @@ int WriterBase::GetOption(int option) const
 
 
 
-bool WriterBase::IsContArray(const QAMList & am) const
+bool WriterBase::IsContArray(const QAM & am) const
 {
     return contq_.count(am);
 }
 
 
 
-bool WriterBase::IsFinalAM(const QAMList & am) const
+bool WriterBase::IsFinalAM(const QAM & am) const
 {
     return am == finalam_;
 }
 
 
-QAMList WriterBase::FinalAM(void) const
+QAM WriterBase::FinalAM(void) const
 {
     return finalam_;
 }
 
 
 
-std::string WriterBase::ArrVarName(const QAMList & am, const std::string & prefix)
+std::string WriterBase::ArrVarName(const QAM & am, const std::string & prefix)
 {
     std::stringstream ss;
 
@@ -102,7 +102,7 @@ std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4,
 }
 
 
-std::string WriterBase::HRRVarName(const QAMList & am)
+std::string WriterBase::HRRVarName(const QAM & am)
 {
     return ArrVarName(am, "HRR");
 }
@@ -119,13 +119,13 @@ std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4)
 }
 
 
-std::string WriterBase::PrimVarName(const QAMList & am)
+std::string WriterBase::PrimVarName(const QAM & am)
 {
     return ArrVarName(am, "PRIM");
 }
 
 
-std::string WriterBase::PrimPtrName(const QAMList & am)
+std::string WriterBase::PrimPtrName(const QAM & am)
 {
     return ArrVarName(am, "PRIM_PTR");
 }

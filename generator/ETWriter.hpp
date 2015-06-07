@@ -13,8 +13,8 @@ class ETWriter
     public:
         ETWriter(const ETStepList & etsl); 
 
-        QAMListSet ETInt(void) const;
-        ETReqMap ETRMap(void) const;
+        QAMSet ETInt(void) const;
+        GaussianMap ETRMap(void) const;
 
         bool HasET(void) const;
 
@@ -25,8 +25,8 @@ class ETWriter
 
     private:
         ETStepList etsl_;
-        QAMListSet etint_;
-        ETReqMap etrm_;
+        QAMSet etint_;
+        GaussianMap etrm_;
 
         static std::string ETStepString(const ETStep & et, const WriterBase & base);
         static std::string ETStepVar(const Quartet & q, const WriterBase & base);

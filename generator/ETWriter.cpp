@@ -33,14 +33,14 @@ ETWriter::ETWriter(const ETStepList & etsl)
 
 
 
-QAMListSet ETWriter::ETInt(void) const
+QAMSet ETWriter::ETInt(void) const
 {
     return etint_;
 }
 
 
 
-ETReqMap ETWriter::ETRMap(void) const
+GaussianMap ETWriter::ETRMap(void) const
 {
     return etrm_;
 }

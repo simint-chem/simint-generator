@@ -13,7 +13,7 @@
 
 
 static void WriteFile_NotFlat(std::ostream & os,
-                              const QAMList & am,
+                              const QAM & am,
                               const OptionsMap & options,
                               const std::string & prefix,
                               const BoysGen & bg,
@@ -299,7 +299,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
 static void WriteFile_Flat(std::ostream & os,
-                           const QAMList & am,
+                           const QAM & am,
                            const OptionsMap & options,
                            const std::string & prefix,
                            const BoysGen & bg,
@@ -583,7 +583,7 @@ static void WriteFile_Flat(std::ostream & os,
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 void WriteFile(std::ostream & os,
-               const QAMList & am,
+               const QAM & am,
                const std::string & prefix,
                const OptionsMap & options,
                const BoysGen & bg,
@@ -591,15 +591,12 @@ void WriteFile(std::ostream & os,
                ET_Algorithm_Base & etalgo,
                HRR_Algorithm_Base & hrralgo)
 {
-    // set of contracted quartets
-    QAMListSet contq;
-
-    // add the am list to the contracted info
-    contq.insert(am);
-
+!!!!!!!!!!!!!!!!!!
+MERGE PRUNING INTO ALGORITHMS AND HAVE THEM
+RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
+!!!!!!!!!!!!!!!!! 
     // Base writer information
     WriterBase base(options, am);
-
 
     // Working backwards, I need:
     // 1.) HRR Steps
@@ -607,7 +604,7 @@ void WriteFile(std::ostream & os,
     HRRWriter hrr_writer(hrrsteps, am);
 
     // set the contracted quartets
-    base.SetContQ(hrr_writer.TopQuartets());
+    base.SetContQ(hrr_writer.TopQAM());
 
 
     // 2.) ET steps
@@ -619,7 +616,7 @@ void WriteFile(std::ostream & os,
 
     // 3.) VRR Steps
     // requirements for vrr are the elements of etrm
-    ETReqMap vreq = et_writer.ETRMap();
+    GaussianMap vreq = et_writer.ETRMap();
 
 
     // and also any elements from top bra/kets in the form ( X 0 | 0 0 )
@@ -634,7 +631,7 @@ void WriteFile(std::ostream & os,
         }
     }
 
-    std::pair<VRRMap, VRRReqMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
+    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
     VRRWriter vrr_writer(vrrinfo.first, vrrinfo.second);
 
 

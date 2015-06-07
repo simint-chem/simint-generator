@@ -7,7 +7,7 @@
 class WriterBase
 {
     public:
-        WriterBase(const OptionsMap & options, const QAMList & finalam);
+        WriterBase(const OptionsMap & options, const QAM & finalam);
 
         void SetContQ(const QuartetSet & topquartets);
 
@@ -17,11 +17,11 @@ class WriterBase
 
         int GetOption(int option) const;
 
-        bool IsContArray(const QAMList & am) const;
+        bool IsContArray(const QAM & am) const;
         
-        QAMList FinalAM(void) const;
+        QAM FinalAM(void) const;
 
-        bool IsFinalAM(const QAMList & am) const;
+        bool IsFinalAM(const QAM & am) const;
 
         size_t MemoryReq(void) const;
 
@@ -29,22 +29,22 @@ class WriterBase
 
         void PermuteResult(std::ostream & os, const std::string & src) const;
 
-        static std::string ArrVarName(const QAMList & am, const std::string & prefix = "");
+        static std::string ArrVarName(const QAM & am, const std::string & prefix = "");
         static std::string ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix = "");
         static std::string ArrVarName(const std::string & brastr, int am3, int am4, const std::string & prefix = "");
 
-        std::string HRRVarName(const QAMList & am);
+        std::string HRRVarName(const QAM & am);
         std::string ArrVarName(int am1, int am2, const std::string & ketstr);
         std::string ArrVarName(const std::string & brastr, int am3, int am4);
 
-        static std::string PrimVarName(const QAMList & am);
-        static std::string PrimPtrName(const QAMList & am);
+        static std::string PrimVarName(const QAM & am);
+        static std::string PrimPtrName(const QAM & am);
 
     private:
-        QAMListSet contq_;  // set of contracted integral AM
+        QAMSet contq_;  // set of contracted integral AM
         OptionsMap options_;
         size_t memory_;
-        QAMList finalam_;
+        QAM finalam_;
 };
 
 

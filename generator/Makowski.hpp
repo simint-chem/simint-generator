@@ -4,7 +4,9 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include "generator/AlgorithmBase.hpp" 
+#include "generator/VRR_Algorithm_Base.hpp" 
+#include "generator/ET_Algorithm_Base.hpp" 
+#include "generator/HRR_Algorithm_Base.hpp" 
 
 class Makowski_HRR : public HRR_Algorithm_Base
 {

@@ -2,7 +2,7 @@
 #include "generator/WriterBase.hpp"
 
 
-VRRWriter::VRRWriter(const VRRMap & vrrmap, const VRRReqMap & vrrreqmap)
+VRRWriter::VRRWriter(const VRRMap & vrrmap, const GaussianMap & vrrreqmap)
           : vrrmap_(vrrmap), vrrreqmap_(vrrreqmap)
 { }
 
@@ -50,9 +50,9 @@ void VRRWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 
         for(const auto & greq : vrrreqmap_)
         {
-            os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
+            //os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
             os << "                    double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
-            os << "\n";
+            //os << "\n";
         }
 
         os << "\n\n";
@@ -68,9 +68,9 @@ void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const
     std::string indent2(24, ' ');
 
     int am = greq.begin()->am();
-    QAMList qam{am, 0, 0, 0};
-    QAMList qam1{am-1, 0, 0, 0};
-    QAMList qam2{am-2, 0, 0, 0};
+    QAM qam{am, 0, 0, 0};
+    QAM qam1{am-1, 0, 0, 0};
+    QAM qam2{am-2, 0, 0, 0};
 
     os << indent1 << "// Forming " << base.PrimVarName(qam) << "[" << num_m << " * " << NCART(am) << "];\n";
 
@@ -133,7 +133,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
-        QAMList qam{am, 0, 0, 0};
+        QAM qam{am, 0, 0, 0};
 
         // don't do zero - that is handled by the boys function stuff
         if(am == 0)
@@ -153,7 +153,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
 
-            if(greq.size() == NCART(am))  // only do if wr calculated all of them?
+            if(greq.size() == NCART(am))  // only do if we calculated all of them?
             {
                 os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
 
@@ -174,7 +174,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
     }
 
     // accumulate ssss if needed
-    QAMList zeroam = {0,0,0,0};
+    QAM zeroam = {0,0,0,0};
     if(base.IsContArray(zeroam))
     {
         os << "\n";
@@ -208,9 +208,9 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
-        QAMList qam{am, 0, 0, 0};
-        QAMList qam1{am-1, 0, 0, 0};
-        QAMList qam2{am-2, 0, 0, 0};
+        QAM qam{am, 0, 0, 0};
+        QAM qam1{am-1, 0, 0, 0};
+        QAM qam2{am-2, 0, 0, 0};
 
         // don't do zero - no VRR!
         if(am == 0)
@@ -271,9 +271,9 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
-        QAMList qam{am, 0, 0, 0};
-        QAMList qam1{am-1, 0, 0, 0};
-        QAMList qam2{am-2, 0, 0, 0};
+        QAM qam{am, 0, 0, 0};
+        QAM qam1{am-1, 0, 0, 0};
+        QAM qam2{am-2, 0, 0, 0};
 
         // don't do zero - no VRR!
         if(am == 0)
@@ -321,9 +321,9 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
     for(const auto & it3 : vrrreqmap_)
     {
         int am = it3.first;
-        QAMList qam{am, 0, 0, 0};
-        QAMList qam1{am-1, 0, 0, 0};
-        QAMList qam2{am-2, 0, 0, 0};
+        QAM qam{am, 0, 0, 0};
+        QAM qam1{am-1, 0, 0, 0};
+        QAM qam2{am-2, 0, 0, 0};
 
         // don't do zero - that is handled by the boys function stuff
         if(am == 0)
@@ -373,7 +373,7 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
     }
 
     // accumulate ssss if needed
-    QAMList zeroam = {0,0,0,0};
+    QAM zeroam = {0,0,0,0};
     if(base.IsContArray(zeroam))
     {
         os << "\n";

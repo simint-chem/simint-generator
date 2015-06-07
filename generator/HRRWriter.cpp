@@ -2,7 +2,7 @@
 #include "generator/WriterBase.hpp"
 #include "generator/Helpers.hpp"
 
-HRRWriter::HRRWriter(const HRRBraKetStepList & hrrsteps, const QAMList & finalam) 
+HRRWriter::HRRWriter(const HRRBraKetStepList & hrrsteps, const QAM & finalam) 
           : hrrsteps_(hrrsteps)
 {
     // determine top bras/kets
@@ -141,8 +141,8 @@ void HRRWriter::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, co
 
 void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
 {
-    QAMList finalam = base.FinalAM();
-    DAMList finalbra{finalam[0], finalam[1]};
+    QAM finalam = base.FinalAM();
+    DAM finalbra{finalam[0], finalam[1]};
 
     if(HasHRR())
     {
@@ -214,7 +214,7 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
             os << "\n";
 
             // ncart_bra in string form
-            DAMList braam{finalam[0], finalam[1]};
+            DAM braam{finalam[0], finalam[1]};
             std::stringstream ss;
             ss << (NCART(braam[0]) * NCART(braam[1])); 
 
@@ -241,7 +241,7 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
 void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
 {
 /*
-    QAMList finalam = base.FinalAM();
+    QAM finalam = base.FinalAM();
 
     if(hrrsteps_.first.size() > 0)
     {
@@ -261,7 +261,7 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
         for(const auto & it : hrrtopkets_)
         {
             // it.first is the AM for the ket part
-            QAMList thisam{finalam[0], finalam[1], it.first, 0};
+            QAM thisam{finalam[0], finalam[1], it.first, 0};
             os << "        // form " << base.ArrVarName(thisam) << "\n";
             os << "        HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
@@ -291,7 +291,7 @@ void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) co
         os << "    //////////////////////////////////////////////\n";
         os << "\n";
 
-        DAMList braam{finalam[0], finalam[1]};
+        DAM braam{finalam[0], finalam[1]};
         std::stringstream ss;
         ss << (NCART(braam[0]) * NCART(braam[1])); 
 
@@ -411,7 +411,7 @@ void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
 void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
 {
 /*
-    QAMList finalam = base.FinalAM();
+    QAM finalam = base.FinalAM();
 
     if(hrrsteps_.first.size() > 0)
     {
@@ -478,7 +478,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
 
 void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
-    QAMList finalam = base.FinalAM();
+    QAM finalam = base.FinalAM();
 
     if(hrrsteps_.first.size() > 0)
     {

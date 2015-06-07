@@ -11,7 +11,7 @@ class WriterBase;
 class HRRWriter
 {   
     public:
-        HRRWriter(const HRRBraKetStepList & hrrsteps, const QAMList & finalam);
+        HRRWriter(const HRRBraKetStepList & hrrsteps, const QAM & finalam);
 
         void WriteHRR(std::ostream & os, const WriterBase & base) const;
 
