@@ -6,9 +6,12 @@
 class HRR_Algorithm_Base
 {
     public:
-        HRRBraKetStepList Create_DoubletStepLists(QAM amlist);
 
+        void Create_DoubletStepLists(QAM amlist);
+        
         std::pair<DAMSet, DAMSet> TopBraKetAM(void) const; 
+        HRRBraKetStepList DoubletStepLists(void) const;
+        std::pair<DoubletSet, DoubletSet> TopBraKet(void) const;
 
         QAMSet TopQAM(void) const;
         QuartetSet TopQuartets(void) const;
@@ -16,6 +19,7 @@ class HRR_Algorithm_Base
         virtual ~HRR_Algorithm_Base() = default;
 
     private:
+        HRRDoubletStepList brasteps_, ketsteps_;
         DoubletSet bratop_, kettop_;
         DAMSet bratopam_, kettopam_;
 

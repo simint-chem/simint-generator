@@ -3,7 +3,10 @@
 
 #include "generator/Classes.hpp"
 #include "generator/Helpers.hpp"
-#include "generator/AlgorithmBase.hpp"
+
+#include "generator/VRR_Algorithm_Base.hpp"
+#include "generator/ET_Algorithm_Base.hpp"
+#include "generator/HRR_Algorithm_Base.hpp"
 
 #include "generator/Boys.hpp"
 #include "generator/WriterBase.hpp"
@@ -25,14 +28,14 @@ static void WriteFile_NotFlat(std::ostream & os,
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
-    bool hashrr = hrr_writer.HasHRR();
-    bool hasbrahrr = hrr_writer.HasBraHRR();
-    bool haskethrr = hrr_writer.HasKetHRR();
+    bool hashrr = base.HasHRR();
+    bool hasbrahrr = base.HasBraHRR();
+    bool haskethrr = base.HasKetHRR();
     bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
-    bool hasvrr = vrr_writer.HasVRR();
-    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) > 0);
-    bool haset = et_writer.HasET();
+    bool hasvrr = base.HasVRR();
+    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) != 0);
+    bool haset = base.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
@@ -311,14 +314,14 @@ static void WriteFile_Flat(std::ostream & os,
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
-    bool hashrr = hrr_writer.HasHRR();
-    bool hasbrahrr = hrr_writer.HasBraHRR();
-    bool haskethrr = hrr_writer.HasKetHRR();
+    bool hashrr = base.HasHRR();
+    bool hasbrahrr = base.HasBraHRR();
+    bool haskethrr = base.HasKetHRR();
     bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
-    bool hasvrr = vrr_writer.HasVRR();
+    bool hasvrr = base.HasVRR();
     bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) != 0);
-    bool haset = et_writer.HasET();
+    bool haset = base.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
@@ -596,25 +599,22 @@ void WriteFile(std::ostream & os,
 
     // Working backwards, I need:
     // 1.) HRR Steps
-    HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
-    HRR_Writer hrr_writer(hrrsteps, am);
-
-    // set the contracted quartets
-    base.SetContQ(hrr_writer.TopQAM());
-
+    hrralgo.Create_DoubletStepLists(am);
+    HRR_Writer hrr_writer(hrralgo);
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit = hrralgo->TopQuartets();
-    ETStepList etsl = etalgo.Create_ETStepList(etinit);
-    ET_Writer et_writer(etsl);
-
+    QuartetSet etinit = hrralgo.TopQuartets();
+    etalgo.Create_ETStepList(etinit);
+    ET_Writer et_writer(etalgo);
 
     // 3.) VRR Steps
     // requirements for vrr are the top level stuff from ET
-    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo.CreateAllMaps(etalgo->TopGaussians());
-    VRR_Writer vrr_writer(vrrinfo.first, vrrinfo.second);
+    vrralgo.CreateAllMaps(etalgo.TopGaussians());
+    VRR_Writer vrr_writer(vrralgo);
 
+    // set the contracted quartets
+    base.SetContQ(hrralgo.TopQAM());
 
     ///////////////////////////////////////////////
     // Done with prerequisites

@@ -1,36 +1,50 @@
 #include <iostream>
 
+#include "generator/Helpers.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
 
 using namespace std;
 
-std::pair<VRRMap, GaussianMap> VRR_Algorithm_Base::CreateAllMaps(const GaussianMap & greq)
+VRRMap VRR_Algorithm_Base::GetVRRMap(void) const
+{
+    return vrrmap_;
+}
+
+
+GaussianMap VRR_Algorithm_Base::GetAMReq(void) const
+{
+    return amreq_;
+}
+
+void VRR_Algorithm_Base::CreateAllMaps(const GaussianMap & greq)
 {
     // holds the requirements for each am
-    GaussianMap vrm = greq;
+    // so store what we initially want
+    amreq_ = greq;
+    PrintGaussianMap(greq, "Initial VRR");
 
     // max am
-    int maxam = vrm.rbegin()->first;
+    int maxam = amreq_.rbegin()->first;
 
-    // holds the VRR steps
-    VRRMap vm;
+    cout << "VRR Max am: " << maxam << "\n";
 
+    // generate the steps for all am
     for(int i = 0; i <= maxam; i++)
     {
         VRRMap vm2 = CreateVRRMap_(i);
-        vm.insert(vm2.begin(), vm2.end());
+        vrrmap_.insert(vm2.begin(), vm2.end());
     }
 
     // recurse down from the end
     for(int i = maxam-1; i >= 0; i--)
     {
         // get the set from the previous am
-        GaussianSet prev = vrm[i+1];
+        GaussianSet prev = amreq_[i+1];
         
         // for each one, look up its requirements
         for(const auto & it : prev)
         {
-            XYZStep s = vm[it];
+            XYZStep s = vrrmap_[it];
 
             // add what it needs to this step
             Gaussian g1 = it.StepDown(s, 1);
@@ -38,12 +52,12 @@ std::pair<VRRMap, GaussianMap> VRR_Algorithm_Base::CreateAllMaps(const GaussianM
 
             // if these are valid
             if(g1)
-                vrm[g1.am()].insert(g1);
+                amreq_[g1.am()].insert(g1);
             if(g2)
-                vrm[g2.am()].insert(g2);
+                amreq_[g2.am()].insert(g2);
         }
     }
 
-    return {vm, vrm}; 
+    cout << "\n\n";
 }
 

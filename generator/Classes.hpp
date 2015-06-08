@@ -412,7 +412,6 @@ typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 
 
 typedef std::pair<DAMSet, DAMSet> HRRBraKetAMSet;
-typedef std::pair<QAMSet, QAMSet> HRRBraKetAMSet;
 
 typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
 

@@ -1,10 +1,15 @@
 #include "generator/HRR_Writer.hpp"
 #include "generator/WriterBase.hpp"
 #include "generator/Helpers.hpp"
+#include "generator/HRR_Algorithm_Base.hpp"
 
-HRR_Writer::HRR_Writer(const HRRBraKetStepList & hrrsteps, const QAM & finalam) 
-          : hrrsteps_(hrrsteps)
-{ }
+
+HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo) 
+{
+    brakettop_ = hrr_algo.TopBraKet();
+    brakettopam_ = hrr_algo.TopBraKetAM();
+    hrrsteps_ = hrr_algo.DoubletStepLists();
+}
 
 
 
@@ -16,7 +21,7 @@ void HRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 
 
 
-void HRR_Writer::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
+void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << "\n";
     os << "        for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
@@ -47,7 +52,7 @@ void HRR_Writer::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, c
 
 
 
-void HRR_Writer::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
+void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
 {
         os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << "        {\n"; 
@@ -79,25 +84,25 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
     QAM finalam = base.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
 
-    if(HasHRR())
+    if(base.HasHRR())
     {
         os << "    //////////////////////////////////////////////\n";
         os << "    // Contracted integrals: Horizontal recurrance\n";
         os << "    //////////////////////////////////////////////\n";
         os << "\n";
-        os << "    //#pragma simd\n";
+        os << "    #pragma simd\n";
         os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << "    {\n";
 
         // variables
         os << "\n";
-        if(HasBraHRR())
+        if(base.HasBraHRR())
         {
             os << "        const double bAB_x = AB_x[abcd];\n";
             os << "        const double bAB_y = AB_y[abcd];\n";
             os << "        const double bAB_z = AB_z[abcd];\n";
         }
-        if(HasKetHRR())
+        if(base.HasKetHRR())
         {
             os << "        const double kCD_x = CD_x[abcd];\n";
             os << "        const double kCD_y = CD_y[abcd];\n";
@@ -106,41 +111,41 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
         os << "\n";
 
 
-        if(HasBraHRR())
+        if(base.HasBraHRR())
         {
-            // allocate
-            for(const auto & it : hrrtopkets_)
-                os << "        double " << base.ArrVarName({finalbra[0], finalbra[1], it.first, 0})
-                   << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it.first) << "];\n";
+            // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
+            for(const auto & it : brakettopam_.second)
+                os << "        double " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0})
+                   << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
             os << "\n";
 
-            for(const auto & it : hrrtopkets_)
+            for(const auto & it : brakettopam_.second)
             {
                 // it.first is the AM for the ket part
-                os << "        // form " << base.ArrVarName({finalbra[0], finalbra[1], it.first, 0}) << "\n";
+                os << "        // form " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
 
                 // ncart_ket in string form
                 std::stringstream ss;
-                ss << NCART(it.first);
+                ss << NCART(it[0]);
     
                 // the ket part in string form
                 std::stringstream ssket;
-                ssket << amchar[it.first] << "_s";
+                ssket << amchar[it[0]] << "_s";
         
                 // actually write out the steps now
-                WriteHRRBraSteps_(os, base, ss.str(), ssket.str());
+                WriteBraSteps_(os, base, ss.str(), ssket.str());
             }
 
 
             //  This is the end if there is no ket part
-            if(!HasKetHRR())
+            if(!base.HasKetHRR())
                 base.PermuteResult(os, base.ArrVarName(finalam));
         }
 
         os << "\n";
         os << "\n";
 
-        if(HasKetHRR())
+        if(base.HasKetHRR())
         {
 
             // storage for the final integral
@@ -157,7 +162,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
             std::stringstream ssbra;
             ssbra << amchar[finalbra[0]] << "_" << amchar[finalbra[1]];
 
-            WriteHRRKetSteps_(os, base, ss.str(), ssbra.str());
+            WriteKetSteps_(os, base, ss.str(), ssbra.str());
 
             // If we are here, this is the end
             base.PermuteResult(os, base.ArrVarName(finalam));
@@ -255,45 +260,22 @@ os << "TODO\n";
 }
 
 
-bool HRR_Writer::HasBraHRR(void) const
-{
-    return (hrrsteps_.first.size() > 0);
-}
-
-
-
-bool HRR_Writer::HasKetHRR(void) const
-{
-    return (hrrsteps_.second.size() > 0);
-}
-
-
-
-bool HRR_Writer::HasHRR(void) const
-{
-    return ( HasBraHRR() || HasKetHRR() );
-}
-
-
-
 std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr, bool istarget, const WriterBase & base) const
 {
     std::stringstream ss;
 
-    // is final doublet?
-    bool isfinal = (d.flags & DOUBLET_INITIAL);
+    QAM finalam = base.FinalAM();
 
-    // is top level bra? (ie result from VRR)
-    bool istop = ( d.flags & DOUBLET_HRRTOPLEVEL ); 
+    // is final doublet?
+    bool isfinal = (d.left.am() == finalam[0] && d.right.am() == finalam[1]);
+
+    // is top level bra? (ie result from VRR/ET)
+    bool istop = ( d.right.am() == 0);
 
     if(istop)
-    {
-        ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[" << d.idx() << " * " << ncart_ket << " + iket]";
-    }
+        ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ (" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
     else if(isfinal)
-    {
         ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[" << d.idx() << " * " << ncart_ket << " + iket]";
-    }
     else
     {
         if(istarget)
@@ -311,16 +293,24 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
 {
     std::stringstream ss;
 
+    QAM finalam = base.FinalAM();
+
     // is final doublet?
-    bool isfinal = (d.flags & DOUBLET_INITIAL);
+    bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
 
-    // is top level bra? (ie result from VRR or bra)
-    bool istop = ( d.flags & DOUBLET_HRRTOPLEVEL ); 
+    // is from VRR or ET
+    // Since this is run last, the bra part is ( finalam[0] finalam[1] |
+    // so if that is ( X s | and this is | X s ) it is from VRR/ET
+    bool istop = ( d.right.am() == 0 && finalam[1] == 0 );
 
-    if(isfinal || istop)
-    {
+    // is top level ket? (ie result from bra, but not VRR, etc)
+    bool istop2 = ( !istop && d.right.am() == 0 );
+
+
+    if(isfinal || istop2)
         ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    }
+    else if(istop)
+        ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ (ibra * " << d.ncart() << " + " << d.idx() << ") * nshell1234 + abcd]"; 
     else
     {
         if(istarget)
@@ -370,7 +360,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
         ofb << "    int iket;\n";
         ofb << "\n";
 
-        WriteHRRBraSteps_(ofb, base, "ncart_ket", ""); 
+        WriteBraSteps_(ofb, base, "ncart_ket", ""); 
 
         ofb << "\n";
         ofb << "}\n";
@@ -399,7 +389,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
         ofk << "    int ibra;\n";
         ofk << "\n";
 
-        WriteHRRKetSteps_(ofk, base, "ncart_bra"); 
+        WriteKetSteps_(ofk, base, "ncart_bra"); 
 
         ofk << "\n";
         ofk << "}\n";

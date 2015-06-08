@@ -156,6 +156,10 @@ for q in valid:
     if hrrtype == "External":
         cmdline.append("-he")
 
+    print()
+    print("Command line:")
+    print(' '.join(cmdline))
+    print()
     ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
 
     if ret != 0:

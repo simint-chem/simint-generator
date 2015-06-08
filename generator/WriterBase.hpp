@@ -9,7 +9,7 @@ class WriterBase
     public:
         WriterBase(const OptionsMap & options, const QAM & finalam);
 
-        void SetContQ(const QuartetSet & topquartets);
+        void SetContQ(const QAMSet & topquartets);
 
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclareContwork(std::ostream & os) const;
@@ -22,6 +22,12 @@ class WriterBase
         QAM FinalAM(void) const;
 
         bool IsFinalAM(const QAM & am) const;
+
+        bool HasVRR(void) const;
+        bool HasET(void) const;
+        bool HasHRR(void) const;
+        bool HasBraHRR(void) const;
+        bool HasKetHRR(void) const;
 
         size_t MemoryReq(void) const;
 

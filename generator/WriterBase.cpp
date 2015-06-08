@@ -7,19 +7,21 @@ WriterBase::WriterBase(const OptionsMap & options, const QAM & finalam)
 
 
 
-void WriterBase::SetContQ(const QuartetSet & topquartets)
+void WriterBase::SetContQ(const QAMSet & topquartets)
 {
-    // add the final am
-    contq_.insert(finalam_);
+    contq_.clear();
 
     // add hrr top level stuff
     for(const auto & it : topquartets)
-        contq_.insert(it.amlist());
+        contq_.insert(it);
 
     // calculate the memory
     memory_ = 0;
     for(const auto & it : contq_)
-        memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
+    {
+        if(it != finalam_)
+            memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
+    }
 }
 
 
@@ -135,9 +137,9 @@ void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
 {
     int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
     os << "\n";
-    os << "    //Permute the result\n";
-    os << "    for(ir = 0; ir < " << ncart << "; ir++)\n";
-    os << "        result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
+    os << "            //Permute the result\n";
+    os << "            for(ir = 0; ir < " << ncart << "; ir++)\n";
+    os << "                result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
     os << "\n";
 }
 
@@ -145,9 +147,9 @@ void WriterBase::DeclarePrimArrays(std::ostream & os) const
 {
     int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
     os << "\n";
-    os << "                // Storage for some of the final integrals\n";
-    os << "                double " << ArrVarName(finalam_) << "[" << ncart << "];\n";
-    os << "                memset(" << ArrVarName(finalam_) << ", 0, " << ncart * sizeof(double) << ");\n";
+    os << "            // Storage for some of the final integrals\n";
+    os << "            double " << ArrVarName(finalam_) << "[" << ncart << "];\n";
+    os << "            memset(" << ArrVarName(finalam_) << ", 0, " << ncart * sizeof(double) << ");\n";
     os << "\n";
 }
 
@@ -183,5 +185,30 @@ void WriterBase::FreeContwork(std::ostream & os) const
         os << "    free(contwork);\n";
         os << "\n";
     }
+}
+
+bool WriterBase::HasVRR(void) const
+{
+    return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
+}
+
+bool WriterBase::HasET(void) const
+{
+    return (finalam_[2]+finalam_[3] > 0);
+}
+
+bool WriterBase::HasHRR(void) const
+{
+    return (HasBraHRR() || HasKetHRR());
+}
+
+bool WriterBase::HasBraHRR(void) const
+{
+    return (finalam_[1] > 0);
+}
+
+bool WriterBase::HasKetHRR(void) const
+{
+    return (finalam_[3] > 0);
 }
 

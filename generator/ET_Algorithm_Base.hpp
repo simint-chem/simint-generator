@@ -6,8 +6,9 @@
 class ET_Algorithm_Base
 {
     public:
-        virtual ETStepList Create_ETStepList(const QuartetSet & inittargets);
+        virtual void Create_ETStepList(const QuartetSet & inittargets);
 
+        ETStepList ETSteps(void) const;
         QAMSet TopQAM(void) const;
         QuartetSet TopQuartets(void) const;
         GaussianMap TopGaussians(void) const;
@@ -15,6 +16,7 @@ class ET_Algorithm_Base
         virtual ~ET_Algorithm_Base() = default;
 
     private:
+        ETStepList etsteps_;
         QuartetSet ettop_;
         QAMSet ettopam_;
         GaussianMap ettopgauss_;

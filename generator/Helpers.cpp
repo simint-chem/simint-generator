@@ -9,8 +9,6 @@ static std::map<ExpList, int> ordermap_;
 
 QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
 {
-    int flag = (initial ? QUARTET_INITIAL : 0);
-
     QuartetSet qs;
     int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;
     int nam2 = ((amlst[1] + 1) * (amlst[1] + 2)) / 2;
@@ -31,7 +29,7 @@ QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
                 for(int l = 0; l < nam4; l++)
                 {
                     Doublet ket{DoubletType::KET, cur3, cur4};
-                    qs.insert(Quartet{bra, ket, 0, flag});
+                    qs.insert(Quartet{bra, ket, 0});
                     cur4.Iterate();
                 } 
 
@@ -49,8 +47,6 @@ QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
 
 DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initial)
 {
-    int flag = (initial ? DOUBLET_INITIAL : 0);
-
     DoubletSet ds;
     int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;
     int nam2 = ((amlst[1] + 1) * (amlst[1] + 2)) / 2;
@@ -61,7 +57,7 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initi
         Gaussian cur2 = Gaussian{amlst[1], 0, 0};
         for(int j = 0; j < nam2; j++)
         {
-            ds.insert(Doublet{type, cur1, cur2, flag});
+            ds.insert(Doublet{type, cur1, cur2});
             cur2.Iterate();
         }
         cur1.Iterate();
@@ -75,7 +71,7 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initi
 void PrintQuartetSet(const QuartetSet & q, const std::string & title)
 {
     cout << title << ": " << q.size() << "\n";
-    for(auto & it : q)
+    for(const auto & it : q)
         cout << "    " << it << "\n";
     cout << "\n";
 }
@@ -84,8 +80,30 @@ void PrintQuartetSet(const QuartetSet & q, const std::string & title)
 void PrintDoubletSet(const DoubletSet & d, const std::string & title)
 {
     cout << title << ": " << d.size() << "\n";
-    for(auto & it : d)
+    for(const auto & it : d)
         cout << "    " << it << "\n";
+    cout << "\n";
+}
+
+void PrintGaussianSet(const GaussianSet & g, const std::string & title)
+{
+    cout << title << ": " << g.size() << "\n";
+    for(const auto & it : g)
+        cout << "    " << it << "\n";
+    cout << "\n";
+}
+
+void PrintGaussianMap(const GaussianMap & g, const std::string & title)
+{
+    cout << title << ": " << g.size() << "\n";
+    for(const auto & it : g)
+    {
+        cout << "  AM: " << it.first << "\n";
+        for(const auto & it2 : it.second)
+            cout << "      " << it2 << "\n"; 
+        cout << "\n";
+    }
+    
     cout << "\n";
 }
 

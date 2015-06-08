@@ -11,7 +11,7 @@
 class Makowski_HRR : public HRR_Algorithm_Base
 {
     private:
-        virtual HRRDoubletStep doubletstep(const Doublet & target)
+        virtual HRRDoubletStep DoubletStep_(const Doublet & target)
         {
             if(target.am() == 0)
                 throw std::runtime_error("Cannot HRR step to an s doublet!");
@@ -30,8 +30,8 @@ class Makowski_HRR : public HRR_Algorithm_Base
             Gaussian src1g(target.left.StepUp(idx, 1));
 
             // create new doublets
-            Doublet src1d{target.type, src1g, common, 0};
-            Doublet src2d{target.type, target.left, common, 0};
+            Doublet src1d{target.type, src1g, common};
+            Doublet src2d{target.type, target.left, common};
            
             XYZStep xyzstep = IdxToXYZStep(idx);
 
@@ -46,7 +46,7 @@ class Makowski_HRR : public HRR_Algorithm_Base
 class Makowski_VRR : public VRR_Algorithm_Base
 {
     protected:
-        virtual VRRMap CreateVRRMap(int am)
+        virtual VRRMap CreateVRRMap_(int am)
         {
             VRRMap vm;
 
@@ -77,7 +77,7 @@ class Makowski_ET : public ET_Algorithm_Base
 {
     private:
 
-        virtual ETStep etstep(const Quartet & target)
+        virtual ETStep ETStep_(const Quartet & target)
         {
             if(target.am() == 0)
                 throw std::runtime_error("Cannot ET step to an s doublet!");
@@ -123,10 +123,10 @@ class Makowski_ET : public ET_Algorithm_Base
 
             // Create the electron transfer step
             ETStep et{target, 
-                      {src1d_bra, src1d_ket, 0, 0},
-                      {src2d_bra, src2d_ket, 0, 0},
-                      {src3d_bra, src3d_ket, 0, 0},
-                      {src4d_bra, src4d_ket, 0, 0},
+                      {src1d_bra, src1d_ket, 0},
+                      {src2d_bra, src2d_ket, 0},
+                      {src3d_bra, src3d_ket, 0},
+                      {src4d_bra, src4d_ket, 0},
                       xyzstep};
             return et;
         }

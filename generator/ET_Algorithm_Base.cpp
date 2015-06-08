@@ -1,5 +1,7 @@
 #include <iostream>
+#include <algorithm>
 
+#include "generator/Helpers.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
 
 using namespace std;
@@ -14,7 +16,7 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
     {
         if(it && it.ket.left.am() != 0)
             qsnew.insert(it);
-        else
+        else if(it)
             pruned.insert(it);
     }
 
@@ -80,7 +82,7 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
         {
             // skip if done already
             // this can happen with some of the more complex trees
-            if(solvedquartets.count(it) > 0)
+            if(solvedquartets.count(*it) > 0)
                 continue;
 
             ETStep ets = this->ETStep_(*it);
@@ -101,7 +103,7 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
                 newtargets.insert(ets.src4);
        
             // insert copy with no flags 
-            solvedquartets.insert(it);
+            solvedquartets.insert(*it);
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
@@ -133,13 +135,14 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
         ETAddWithDependencies_(amorder, it);
 
     // now create the final step list
-    cout << "AMORDER: " << amorder.size() << "\n";
-    for(const auto & ait : amorder)
-        cout << "   " << ait[0] << " , " << ait[1] << " , " << ait[2] << " , " << ait[3] << "\n";
+    //cout << "AMORDER: " << amorder.size() << "\n";
+    //for(const auto & ait : amorder)
+    //    cout << "   " << ait[0] << " , " << ait[1] << " , " << ait[2] << " , " << ait[3] << "\n";
 
-    cout << "\nMAP: " << etslmap.size() << "\n";
-    for(const auto & mit : etslmap)
-        cout << "   " << mit.first[0] << " , " << mit.first[1] << " , " << mit.first[2] << " , " << mit.first[3] << " Steps: " << mit.second.size() << "\n";
+    //cout << "\nMAP: " << etslmap.size() << "\n";
+    //for(const auto & mit : etslmap)
+    //   cout << "   " << mit.first[0] << " , " << mit.first[1] << " , " << mit.first[2] << " , " << mit.first[3] << " Steps: " << mit.second.size() << "\n";
+
     cout << "\n";
 
     if(amorder.size() != etslmap.size())
@@ -151,10 +154,8 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
 
 
 
-ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
+void ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
 {
-    ETStepList etsl;
-
     // holds all the 'solved' quartets
     QuartetSet solvedquartets;
 
@@ -164,17 +165,17 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     PrintQuartetSet(targets, "Initial ET Targets");
 
     // Solve
-    ETStepLoop_(etsl, targets, solvedquartets, ettop_);
+    ETStepLoop_(etsteps_, targets, solvedquartets, ettop_);
 
     // reverse the steps
     // (now done in ETStepLoop_)
-    //std::reverse(etsl.begin(), etsl.end());
+    //std::reverse(etsteps.begin(), etsteps.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
-    cout << "ET step done. Solution is " << etsl.size() << " steps\n";
+    cout << "ET step done. Solution is " << etsteps_.size() << " steps\n";
     cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : etsl)
+    for(auto & it : etsteps_)
         cout << it << "\n";
 
     cout << "\n\n";
@@ -186,8 +187,8 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
         ettopgauss_[it.bra.left.am()].insert(it.bra.left);
     }
 
-
-    return etsl;
+    PrintQuartetSet(ettop_, "Top level ET");
+    PrintGaussianMap(ettopgauss_, "ET Top level gaussian map");
 }
 
 QAMSet ET_Algorithm_Base::TopQAM(void) const
@@ -204,4 +205,9 @@ QuartetSet ET_Algorithm_Base::TopQuartets(void) const
 GaussianMap ET_Algorithm_Base::TopGaussians(void) const
 {
     return ettopgauss_;
+}
+
+ETStepList ET_Algorithm_Base::ETSteps(void) const
+{
+    return etsteps_;
 }

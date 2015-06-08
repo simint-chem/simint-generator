@@ -1,18 +1,13 @@
 #include "generator/VRR_Writer.hpp"
 #include "generator/WriterBase.hpp"
+#include "generator/VRR_Algorithm_Base.hpp"
 
 
-VRR_Writer::VRR_Writer(const VRRMap & vrrmap, const GaussianMap & vrrreqmap)
-          : vrrmap_(vrrmap), vrrreqmap_(vrrreqmap)
-{ }
-
-
-
-bool VRR_Writer::HasVRR(void) const
-{
-    return ( (vrrreqmap_.size() > 1) || (vrrreqmap_.size() == 1 && vrrreqmap_.begin()->first != 0) );
+VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
+{ 
+    vrrmap_ = vrr_algo.GetVRRMap();
+    vrramreq_ = vrr_algo.GetAMReq();
 }
-
 
 
 void VRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
@@ -22,14 +17,14 @@ void VRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 }
 
 
-
+/*
 void VRR_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
 {
-    if(vrrreqmap_.size() > 0)
+    if(vrramreq_.size() > 0)
     {
         os << "            // set up pointers to the contracted integrals - VRR\n";
 
-        for(const auto & it : vrrreqmap_)
+        for(const auto & it : vrramreq_)
         {
             int vam = it.first;
             if(base.IsContArray({vam, 0, 0, 0}))
@@ -38,17 +33,16 @@ void VRR_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) con
         }
     }
 }
-
-
+*/
 
 void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
-    if(vrrreqmap_.size())
+    if(vrramreq_.size())
     {
         os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
         os << "                    // with m as the slowest index\n";
 
-        for(const auto & greq : vrrreqmap_)
+        for(const auto & greq : vrramreq_)
         {
             //os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
             os << "                    double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
@@ -130,7 +124,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
     std::string indent2(24, ' ');
 
     // iterate over increasing am
-    for(const auto & it3 : vrrreqmap_)
+    for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
         QAM qam{am, 0, 0, 0};
@@ -205,7 +199,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
     os << "\n";
 
     // iterate over increasing am
-    for(const auto & it3 : vrrreqmap_)
+    for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
         QAM qam{am, 0, 0, 0};
@@ -268,7 +262,7 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) 
     os << "\n";
 
     // iterate over increasing am
-    for(const auto & it3 : vrrreqmap_)
+    for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
         QAM qam{am, 0, 0, 0};
@@ -318,7 +312,7 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
     std::string indent2(26, ' ');
 
     // iterate over increasing am
-    for(const auto & it3 : vrrreqmap_)
+    for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
         QAM qam{am, 0, 0, 0};

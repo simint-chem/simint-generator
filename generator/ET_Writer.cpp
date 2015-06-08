@@ -1,19 +1,35 @@
 #include "generator/ET_Writer.hpp"
 #include "generator/WriterBase.hpp"
+#include "generator/ET_Algorithm_Base.hpp"
 
 
-ET_Writer::ET_Writer(const ETStepList & etsl) 
-          : etsl_(etsl)
-{ }
+ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo) 
+{ 
+    etsl_ = et_algo.ETSteps();
 
-
-bool ET_Writer::HasET(void) const
-{
-    return (etsl_.size() > 0);
+    // see what we need for arrays
+    for(const auto & it : etsl_)
+    {
+        if(it.src1)
+            etint_.insert(it.src1.amlist());
+        if(it.src2)
+            etint_.insert(it.src2.amlist());
+        if(it.src3)
+            etint_.insert(it.src3.amlist());
+        if(it.src3)
+            etint_.insert(it.src4.amlist());
+        if(it.target)
+            etint_.insert(it.target.amlist());
+    }
 }
 
 
+void ET_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
+{
+}
 
+
+/*
 void ET_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
 {
     if(etint_.size() > 0)
@@ -28,7 +44,7 @@ void ET_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) cons
         }
     }
 }
-
+*/
 
 
 void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
@@ -48,7 +64,6 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 
     }
 }
-
 
 
 void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
@@ -91,7 +106,6 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
                 os << indent2 << base.ArrVarName(it) << "[n * nshell1234 + abcd] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
-
 }
 
 
