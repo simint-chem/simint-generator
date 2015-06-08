@@ -23,14 +23,8 @@ class HRR_Writer
         bool HasBraHRR(void) const;
         bool HasKetHRR(void) const;
 
-        const DoubletSetMap & TopBras(void) const;
-        const DoubletSetMap & TopKets(void) const;
-        const QuartetSet & TopQuartets(void) const;
-
     private:
         HRRBraKetStepList hrrsteps_;
-        DoubletSetMap hrrtopbras_, hrrtopkets_;
-        QuartetSet hrrtopquartets_;
 
         void WriteHRRInline_(std::ostream & os, const WriterBase & base) const;
         void WriteHRRExternal_(std::ostream & os, const WriterBase & base) const;

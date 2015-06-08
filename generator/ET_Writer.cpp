@@ -4,47 +4,7 @@
 
 ET_Writer::ET_Writer(const ETStepList & etsl) 
           : etsl_(etsl)
-{
-    for(const auto & it : etsl)
-    {
-        // should only add the first element of the bra
-        if(it.src1 && (it.src1.flags & QUARTET_ETTOPLEVEL))
-            etrm_[it.src1.bra.left.am()].insert(it.src1.bra.left);
-        if(it.src2 && (it.src2.flags & QUARTET_ETTOPLEVEL))
-            etrm_[it.src2.bra.left.am()].insert(it.src2.bra.left);
-        if(it.src3 && (it.src3.flags & QUARTET_ETTOPLEVEL))
-            etrm_[it.src3.bra.left.am()].insert(it.src3.bra.left);
-        if(it.src4 && (it.src4.flags & QUARTET_ETTOPLEVEL))
-            etrm_[it.src4.bra.left.am()].insert(it.src4.bra.left);
-            
-        // add all integrals for this step to the set
-        if(it.src1)
-            etint_.insert(it.src1.amlist());
-        if(it.src2)
-            etint_.insert(it.src2.amlist());
-        if(it.src3)
-            etint_.insert(it.src3.amlist());
-        if(it.src3)
-            etint_.insert(it.src4.amlist());
-        if(it.target)
-            etint_.insert(it.target.amlist());
-    }       
-}
-
-
-
-QAMSet ET_Writer::ETInt(void) const
-{
-    return etint_;
-}
-
-
-
-GaussianMap ET_Writer::ETRMap(void) const
-{
-    return etrm_;
-}
-
+{ }
 
 
 bool ET_Writer::HasET(void) const

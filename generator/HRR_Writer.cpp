@@ -4,72 +4,7 @@
 
 HRR_Writer::HRR_Writer(const HRRBraKetStepList & hrrsteps, const QAM & finalam) 
           : hrrsteps_(hrrsteps)
-{
-    // determine top bras/kets
-    for(const auto & it : hrrsteps.first)
-    {
-        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopbras_[it.src1.am()].insert(it.src1);
-        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopbras_[it.src2.am()].insert(it.src2);
-    }   
-
-    for(const auto & it : hrrsteps.second)
-    {
-        if(it.src1.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopkets_[it.src1.am()].insert(it.src1);
-        if(it.src2.flags & DOUBLET_HRRTOPLEVEL)
-            hrrtopkets_[it.src2.am()].insert(it.src2);
-    }
-
-    // we may need to add ( a s | as a top bra for AM quartets
-    // that do not have HRR in the bra part
-    // these might be ( X s |  or  | X s )
-    if(hrrtopbras_.size() == 0)
-    {   
-        GaussianSet gs = AllGaussiansForAM(finalam[0]);
-        for(const auto & it : gs)
-            hrrtopbras_[it.am()].insert({DoubletType::BRA, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
-
-    if(hrrtopkets_.size() == 0)
-    {   
-        GaussianSet gs = AllGaussiansForAM(finalam[2]);
-        for(const auto & it : gs)
-            hrrtopkets_[it.am()].insert({DoubletType::KET, it, {0,0,0}, DOUBLET_INITIAL | DOUBLET_HRRTOPLEVEL});
-    }
-
-
-    // create the top quartets
-    for(const auto & it : hrrtopbras_)
-    for(const auto & it2 : hrrtopkets_)
-    {
-        for(const auto & dit : it.second)
-        for(const auto & dit2 : it2.second)
-            hrrtopquartets_.insert({dit, dit2, 0, QUARTET_HRRTOPLEVEL});
-    }
-}
-
-
-
-const DoubletSetMap & HRR_Writer::TopBras(void) const
-{
-    return hrrtopbras_;
-}
-
-
-
-const DoubletSetMap & HRR_Writer::TopKets(void) const
-{
-    return hrrtopkets_;
-}
-
-
-
-const QuartetSet & HRR_Writer::TopQuartets(void) const
-{
-    return hrrtopquartets_;
-}
+{ }
 
 
 

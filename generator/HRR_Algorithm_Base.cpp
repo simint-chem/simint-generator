@@ -4,9 +4,27 @@
 
 using namespace std;
 
-void HRR_Algorithm_Base::HRRDoubletLoop(HRRDoubletStepList & hrrlist,
-                                        const DoubletSet & inittargets,
-                                        DoubletSet & solveddoublets)
+
+void HRR_Algorithm_Base::PruneDoublets(DoubletSet & d, DoubletSet & pruned)
+{
+    DoubletSet dnew;
+
+    for(auto & it : d)
+    {
+        if(it.right && it.right.am() != 0)
+            qsnew.insert(it);
+        else
+            pruned.insert(it);
+    }
+
+    d = dnew; 
+}
+
+
+void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
+                                         const DoubletSet & inittargets,
+                                         DoubletSet & solveddoublets,
+                                         DoubletSet & pruned)
 {
     DoubletSet targets = inittargets;
 
@@ -21,7 +39,7 @@ void HRR_Algorithm_Base::HRRDoubletLoop(HRRDoubletStepList & hrrlist,
             if(solveddoublets.count(it) > 0)
                 continue;
 
-            HRRDoubletStep hrr = this->doubletstep(*it);
+            HRRDoubletStep hrr = this->DoubletStep_(*it);
             hrrlist.push_back(hrr);
 
             if(solveddoublets.count(hrr.src1) == 0)
@@ -32,12 +50,13 @@ void HRR_Algorithm_Base::HRRDoubletLoop(HRRDoubletStepList & hrrlist,
             solveddoublets.insert(it);
         }
 
-        cout << "Generated " << newtargets.size() << " new targets\n";
+        //cout << "Generated " << newtargets.size() << " new targets\n";
 
-        PruneRight(newtargets);
-        cout << "After pruning: " << newtargets.size() << " new targets\n";
-        for(const auto & it : newtargets)
-            cout << "    " << it << "\n";
+        PruneDoublets_(newtargets, pruned);
+
+        //cout << "After pruning: " << newtargets.size() << " new targets\n";
+        //for(const auto & it : newtargets)
+        //    cout << "    " << it << "\n";
 
         targets = newtargets;
     } 
@@ -60,11 +79,11 @@ HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
 
     // Inital bra targets
     DoubletSet targets = initbras;
-    PruneRight(targets);
+    PruneDoublets(targets, bratop_);
     PrintDoubletSet(targets, "Inital bra targets");
 
     // Solve the bra part
-    HRRDoubletLoop(bralist, targets, solvedbras);
+    HRRDoubletLoop_(bralist, targets, solvedbras, bratop_);
     std::reverse(bralist.begin(), bralist.end());
 
     cout << "\n\n";
@@ -81,13 +100,13 @@ HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     DoubletSet solvedkets;
     DoubletSet initkets = GenerateInitialDoubletTargets({amlist[2],amlist[3]}, DoubletType::KET, true);
     targets = initkets;
-    PruneRight(targets);
+    PruneDoublets_(targets, kettop_);
 
     cout << "\n\n";
     PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
-    HRRDoubletLoop(ketlist, targets, solvedkets);
+    HRRDoubletLoop_(ketlist, targets, solvedkets, kettop_);
     std::reverse(ketlist.begin(), ketlist.end());
 
     cout << "\n\n";
@@ -99,22 +118,8 @@ HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
 
     cout << "\n\n";
 
-    // mark top level reqs
-    for(const auto & it : bralist)
-    {
-        if(solvedbras.count(it.src1) == 0)
-            bratop_.insert(it.src1);
-        if(solvedbras.count(it.src2) == 0)
-            bratop_.insert(it.src2);
-    } 
-    for(const auto & it : ketlist)
-    {
-        if(solvedkets.count(it.src1) == 0)
-            kettop_.insert(it.src1);
-        if(solvedkets.count(it.src2) == 0)
-            kettop_.insert(it.src2);
-    }
 
+    // fill in top info
     for(const auto & it : bratop_)
         bratopam_.insert(it.amlist());
     for(const auto & it : kettop_)
@@ -132,9 +137,14 @@ HRRBraKetStepList HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     return HRRBraKetStepList(bralist, ketlist);
 }
 
-std::pair<DAMset, DAMSet> HRR_Algorithm_Base::TopBraKetAM(void) const
+std::pair<DAMSet, DAMSet> HRR_Algorithm_Base::TopBraKetAM(void) const
 {
     return {bratopam_, kettopam_};
+}
+
+std::pair<DoubletSet, DoubletSet> HRR_Algorithm_Base::TopBraKet(void) const
+{
+    return {bratop_, kettop_};
 }
 
 QAMSet HRR_Algorithm_Base::TopQAM(void) const

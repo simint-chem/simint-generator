@@ -12,13 +12,15 @@ list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common STATIC
-                         AlgorithmBase.cpp
                          Helpers.cpp
                          Boys.cpp
                          WriterBase.cpp
-                         HRRWriter.cpp
-                         ETWriter.cpp
-                         VRRWriter.cpp
+                         HRR_Algorithm_Base.cpp
+                         ET_Algorithm_Base.cpp
+                         VRR_Algorithm_Base.cpp
+                         HRR_Writer.cpp
+                         ET_Writer.cpp
+                         VRR_Writer.cpp
                          FileWriter.cpp
            )
 set_target_properties(generator_common PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")

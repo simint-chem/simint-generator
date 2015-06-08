@@ -4,7 +4,24 @@
 
 using namespace std;
 
-void ET_Algorithm_Base::ETAddWithDependencies(std::vector<QAM> & amorder, QAM am)
+void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
+{
+    QuartetSet qsnew;
+
+    // by this point, only kets of the form | X 0 ) should be here
+    // so prune | s s )
+    for(auto & it : qs)
+    {
+        if(it && it.ket.left.am() != 0)
+            qsnew.insert(it);
+        else
+            pruned.insert(it);
+    }
+
+    qs = qsnew; 
+}
+
+void ET_Algorithm_Base::ETAddWithDependencies_(std::vector<QAM> & amorder, QAM am)
 {
     // skip if it was already done somewhere
     if(std::find(amorder.begin(), amorder.end(), am) != amorder.end()) 
@@ -34,7 +51,7 @@ void ET_Algorithm_Base::ETAddWithDependencies(std::vector<QAM> & amorder, QAM am
 
     // Yo dawg, I heard your dependencies might have dependencies
     for(const auto & it : deps)
-        ETAddWithDependencies(amorder, it);
+        ETAddWithDependencies_(amorder, it);
 
     // add am to amorder
     // If it exists, then it was a dependency of itself. Uh oh
@@ -45,9 +62,10 @@ void ET_Algorithm_Base::ETAddWithDependencies(std::vector<QAM> & amorder, QAM am
 }
 
 
-void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
+void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
                                    const QuartetSet & inittargets,
-                                   QuartetSet & solvedquartets)
+                                   QuartetSet & solvedquartets,
+                                   QuartetSet & pruned)
 {
     QuartetSet targets = inittargets;
 
@@ -65,7 +83,7 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
             if(solvedquartets.count(it) > 0)
                 continue;
 
-            ETStep ets = this->etstep(*it);
+            ETStep ets = this->ETStep_(*it);
 
             // add to the map
             etslmap[ets.target.amlist()].push_back(ets);
@@ -88,7 +106,7 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
 
         cout << "Generated " << newtargets.size() << " new targets\n";
 
-        PruneET(newtargets);
+        PruneQuartets_(newtargets, pruned);
 
         cout << "After pruning: " << newtargets.size() << " new targets\n";
         for(const auto & it : newtargets)
@@ -112,7 +130,7 @@ void ET_Algorithm_Base::ETStepLoop(ETStepList & etsl,
 
     // add the dependencies for this am
     for(const auto & it : initamlist)
-        ETAddWithDependencies(amorder, it);
+        ETAddWithDependencies_(amorder, it);
 
     // now create the final step list
     cout << "AMORDER: " << amorder.size() << "\n";
@@ -142,14 +160,14 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
 
     // generate initial targets
     QuartetSet targets = inittargets;
-    PruneET(targets);
+    PruneQuartets_(targets, ettop_);
     PrintQuartetSet(targets, "Initial ET Targets");
 
     // Solve
-    ETStepLoop(etsl, targets, solvedquartets);
+    ETStepLoop_(etsl, targets, solvedquartets, ettop_);
 
     // reverse the steps
-    // (now done in ETStepLoop)
+    // (now done in ETStepLoop_)
     //std::reverse(etsl.begin(), etsl.end());
 
     cout << "\n\n";
@@ -161,26 +179,29 @@ ETStepList ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
 
     cout << "\n\n";
 
-    // mark top level reqs
-    for(const auto & it : etsl)
-    {
-        if(it.src1 && solvedquartets.count(it.src1) == 0)
-            ettop_.insert(it.src1);
-        if(it.src2 && solvedquartets.count(it.src2) == 0)
-            ettop_.insert(it.src2);
-        if(it.src3 && solvedquartets.count(it.src3) == 0)
-            ettop_.insert(it.src3);
-        if(it.src4 && solvedquartets.count(it.src4) == 0)
-            ettop_.insert(it.src4);
-    } 
-
+    // store top level stuff
     for(const auto & it : ettop_)
+    {
         ettopam_.insert(it.amlist());
+        ettopgauss_[it.bra.left.am()].insert(it.bra.left);
+    }
+
 
     return etsl;
 }
 
-QAMSet ET_Algorithm_Base::TopAM(Void) const
+QAMSet ET_Algorithm_Base::TopQAM(void) const
 {
     return ettopam_;
+}
+
+QuartetSet ET_Algorithm_Base::TopQuartets(void) const
+{
+    return ettop_;
+}
+
+
+GaussianMap ET_Algorithm_Base::TopGaussians(void) const
+{
+    return ettopgauss_;
 }

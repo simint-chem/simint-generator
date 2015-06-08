@@ -22,11 +22,14 @@ class HRR_Algorithm_Base
         QAMSet topqam_;
         QuartetSet topquartets_;
 
-        virtual HRRDoubletStep doubletstep(const Doublet & target) = 0;
+        virtual HRRDoubletStep DoubletStep_(const Doublet & target) = 0;
 
-        void HRRDoubletLoop(HRRDoubletStepList & hrrlist,
-                            const DoubletSet & inittargets,
-                            DoubletSet & solveddoublets);
+        void HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
+                             const DoubletSet & inittargets,
+                             DoubletSet & solveddoublets,
+                             DoubletSet & pruned);
+
+        static void PruneDoublets_(DoubletSet & d, DoubletSet & pruned);
 };
 
 

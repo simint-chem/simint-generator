@@ -45,7 +45,7 @@ class Makowski_HRR : public HRR_Algorithm_Base
 
 class Makowski_VRR : public VRR_Algorithm_Base
 {
-    public:
+    protected:
         virtual VRRMap CreateVRRMap(int am)
         {
             VRRMap vm;

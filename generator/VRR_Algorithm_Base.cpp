@@ -17,7 +17,7 @@ std::pair<VRRMap, GaussianMap> VRR_Algorithm_Base::CreateAllMaps(const GaussianM
 
     for(int i = 0; i <= maxam; i++)
     {
-        VRRMap vm2 = CreateVRRMap(i);
+        VRRMap vm2 = CreateVRRMap_(i);
         vm.insert(vm2.begin(), vm2.end());
     }
 

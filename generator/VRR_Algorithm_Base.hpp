@@ -7,14 +7,14 @@ class VRR_Algorithm_Base
 {
     public:
         // this will create a map for all possible
-        // components, but hopefully only some
-        // will be needed
+        // components, but only some may
+        // be needed (although I haven't seen such a case...)
         std::pair<VRRMap, GaussianMap> CreateAllMaps(const GaussianMap & greq);
 
         virtual ~VRR_Algorithm_Base() = default; 
 
     private:
-        virtual VRRMap CreateVRRMap(int am) = 0;
+        virtual VRRMap CreateVRRMap_(int am) = 0;
 };
 
 

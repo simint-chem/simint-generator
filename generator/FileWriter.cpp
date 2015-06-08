@@ -591,10 +591,6 @@ void WriteFile(std::ostream & os,
                ET_Algorithm_Base & etalgo,
                HRR_Algorithm_Base & hrralgo)
 {
-!!!!!!!!!!!!!!!!!!
-MERGE PRUNING INTO ALGORITHMS AND HAVE THEM
-RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
-!!!!!!!!!!!!!!!!! 
     // Base writer information
     WriterBase base(options, am);
 
@@ -609,29 +605,14 @@ RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit = hrr_writer.TopQuartets();
+    QuartetSet etinit = hrralgo->TopQuartets();
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
     ET_Writer et_writer(etsl);
 
 
     // 3.) VRR Steps
-    // requirements for vrr are the elements of etrm
-    GaussianMap vreq = et_writer.ETRMap();
-
-
-    // and also any elements from top bra/kets in the form ( X 0 | 0 0 )
-    for(const auto & it : hrr_writer.TopBras())
-    for(const auto & it2 : hrr_writer.TopKets())
-    {
-        for(const auto & dit : it.second)
-        for(const auto & dit2 : it2.second)
-        {
-            if(dit.right.am() == 0 && dit2.left.am() == 0 && dit2.right.am() == 0)
-                vreq[dit.left.am()].insert(dit.left);
-        }
-    }
-
-    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
+    // requirements for vrr are the top level stuff from ET
+    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo.CreateAllMaps(etalgo->TopGaussians());
     VRR_Writer vrr_writer(vrrinfo.first, vrrinfo.second);
 
 
