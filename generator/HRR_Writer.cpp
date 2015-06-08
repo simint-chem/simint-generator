@@ -114,9 +114,16 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
         if(base.HasBraHRR())
         {
             // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
+            // but skip the final AM if we aren't permuting. They are stored directly
             for(const auto & it : brakettopam_.second)
-                os << "        double " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0})
-                   << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
+            {
+                QAM qam{finalbra[0], finalbra[1], it[0], 0};
+                if(!base.IsFinalAM(qam) || base.Permute())
+                {
+                    os << "        double " << base.ArrVarName(qam)
+                       << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
+                }
+            }
             os << "\n";
 
             for(const auto & it : brakettopam_.second)
@@ -271,9 +278,17 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
     // is top level bra? (ie result from VRR/ET)
     bool istop = ( d.right.am() == 0);
 
+    // actually the final quartet?
+    bool isfinalq = isfinal && !base.HasKetHRR();
 
-
-    if(istop)
+    if(isfinalq)
+    {
+        if(base.Permute())
+            ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ (" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
+        else
+            ss << "result[ abcd * " << d.ncart() << " * " << ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + iket]";
+    }
+    else if(istop)
     {
         if(base.Permute())
             ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ (" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
@@ -301,7 +316,7 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
 
     QAM finalam = base.FinalAM();
 
-    // is final doublet?
+    // is final doublet? This would be the final quartet also
     bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
 
     // is from VRR or ET
