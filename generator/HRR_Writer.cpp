@@ -1,8 +1,8 @@
-#include "generator/HRRWriter.hpp"
+#include "generator/HRR_Writer.hpp"
 #include "generator/WriterBase.hpp"
 #include "generator/Helpers.hpp"
 
-HRRWriter::HRRWriter(const HRRBraKetStepList & hrrsteps, const QAM & finalam) 
+HRR_Writer::HRR_Writer(const HRRBraKetStepList & hrrsteps, const QAM & finalam) 
           : hrrsteps_(hrrsteps)
 {
     // determine top bras/kets
@@ -52,28 +52,28 @@ HRRWriter::HRRWriter(const HRRBraKetStepList & hrrsteps, const QAM & finalam)
 
 
 
-const DoubletSetMap & HRRWriter::TopBras(void) const
+const DoubletSetMap & HRR_Writer::TopBras(void) const
 {
     return hrrtopbras_;
 }
 
 
 
-const DoubletSetMap & HRRWriter::TopKets(void) const
+const DoubletSetMap & HRR_Writer::TopKets(void) const
 {
     return hrrtopkets_;
 }
 
 
 
-const QuartetSet & HRRWriter::TopQuartets(void) const
+const QuartetSet & HRR_Writer::TopQuartets(void) const
 {
     return hrrtopquartets_;
 }
 
 
 
-void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEHRR) == 0)
         os << "#include \"eri/hrr.gen/hrr.h\"\n";
@@ -81,7 +81,7 @@ void HRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 
 
 
-void HRRWriter::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
+void HRR_Writer::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << "\n";
     os << "        for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
@@ -112,7 +112,7 @@ void HRRWriter::WriteHRRBraSteps_(std::ostream & os, const WriterBase & base, co
 
 
 
-void HRRWriter::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
+void HRR_Writer::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
 {
         os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << "        {\n"; 
@@ -139,7 +139,7 @@ void HRRWriter::WriteHRRKetSteps_(std::ostream & os, const WriterBase & base, co
 
 
 
-void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
 {
     QAM finalam = base.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
@@ -238,7 +238,7 @@ void HRRWriter::WriteHRRInline_(std::ostream & os, const WriterBase & base) cons
 }
 
 
-void HRRWriter::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
 {
 /*
     QAM finalam = base.FinalAM();
@@ -320,28 +320,28 @@ os << "TODO\n";
 }
 
 
-bool HRRWriter::HasBraHRR(void) const
+bool HRR_Writer::HasBraHRR(void) const
 {
     return (hrrsteps_.first.size() > 0);
 }
 
 
 
-bool HRRWriter::HasKetHRR(void) const
+bool HRR_Writer::HasKetHRR(void) const
 {
     return (hrrsteps_.second.size() > 0);
 }
 
 
 
-bool HRRWriter::HasHRR(void) const
+bool HRR_Writer::HasHRR(void) const
 {
     return ( HasBraHRR() || HasKetHRR() );
 }
 
 
 
-std::string HRRWriter::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr, bool istarget, const WriterBase & base) const
+std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr, bool istarget, const WriterBase & base) const
 {
     std::stringstream ss;
 
@@ -372,7 +372,7 @@ std::string HRRWriter::HRRBraStepVar_(const Doublet & d, const std::string & nca
 
 
 
-std::string HRRWriter::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra, const std::string & brastr, bool istarget, const WriterBase & base) const
+std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra, const std::string & brastr, bool istarget, const WriterBase & base) const
 {
     std::stringstream ss;
 
@@ -398,7 +398,7 @@ std::string HRRWriter::HRRKetStepVar_(const Doublet & d, const std::string & nca
 
 
 
-void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRR(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEHRR) > 0)
         WriteHRRInline_(os, base);
@@ -408,7 +408,7 @@ void HRRWriter::WriteHRR(std::ostream & os, const WriterBase & base) const
 
         
 
-void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
+void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
 {
 /*
     QAM finalam = base.FinalAM();
@@ -476,7 +476,7 @@ void HRRWriter::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Write
 
 
 
-void HRRWriter::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
     QAM finalam = base.FinalAM();
 

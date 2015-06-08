@@ -1,21 +1,21 @@
-#include "generator/VRRWriter.hpp"
+#include "generator/VRR_Writer.hpp"
 #include "generator/WriterBase.hpp"
 
 
-VRRWriter::VRRWriter(const VRRMap & vrrmap, const GaussianMap & vrrreqmap)
+VRR_Writer::VRR_Writer(const VRRMap & vrrmap, const GaussianMap & vrrreqmap)
           : vrrmap_(vrrmap), vrrreqmap_(vrrreqmap)
 { }
 
 
 
-bool VRRWriter::HasVRR(void) const
+bool VRR_Writer::HasVRR(void) const
 {
     return ( (vrrreqmap_.size() > 1) || (vrrreqmap_.size() == 1 && vrrreqmap_.begin()->first != 0) );
 }
 
 
 
-void VRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEVRR) == 0)
         os << "#include \"eri/vrr.gen/vrr.h\"\n";
@@ -23,7 +23,7 @@ void VRRWriter::WriteIncludes(std::ostream & os, const WriterBase & base) const
 
 
 
-void VRRWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
 {
     if(vrrreqmap_.size() > 0)
     {
@@ -41,7 +41,7 @@ void VRRWriter::DeclarePointers(std::ostream & os, const WriterBase & base) cons
 
 
 
-void VRRWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
     if(vrrreqmap_.size())
     {
@@ -62,7 +62,7 @@ void VRRWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 
 
 
-void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
 {
     std::string indent1(20, ' ');
     std::string indent2(24, ' ');
@@ -117,7 +117,7 @@ void VRRWriter::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const
 
 
 
-void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
@@ -193,7 +193,7 @@ void VRRWriter::WriteVRRInline_(std::ostream & os, const WriterBase & base) cons
 
 
 
-void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 {
     std::string indent1(11, ' ');
 
@@ -253,7 +253,7 @@ void VRRWriter::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
 
 
-void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
     std::string indent1(11, ' ');
 
@@ -305,7 +305,7 @@ void VRRWriter::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) c
 }
 
 
-void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
@@ -387,7 +387,7 @@ void VRRWriter::WriteVRRExternal_(std::ostream & os, const WriterBase & base) co
 
 
 
-void VRRWriter::WriteVRR(std::ostream & os, const WriterBase & base) const
+void VRR_Writer::WriteVRR(std::ostream & os, const WriterBase & base) const
 {
     if(base.GetOption(OPTION_INLINEVRR) > 0)
         WriteVRRInline_(os, base);

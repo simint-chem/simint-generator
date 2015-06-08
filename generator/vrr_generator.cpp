@@ -8,7 +8,7 @@
 #include "generator/Helpers.hpp"
 #include "generator/Options.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/VRRWriter.hpp"
+#include "generator/VRR_Writer.hpp"
 
 using namespace std;
 
@@ -121,7 +121,7 @@ int main(int argc, char ** argv)
 
     // Create the writer and base writer
     WriterBase base(options, {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
-    VRRWriter vrr_writer(vrrinfo.first, vrrinfo.second);
+    VRR_Writer vrr_writer(vrrinfo.first, vrrinfo.second);
 
     // write to the output file
     vrr_writer.WriteVRRFile(of, base);

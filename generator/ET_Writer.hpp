@@ -8,10 +8,10 @@
 class WriterBase;
 
 
-class ETWriter
+class ET_Writer
 {   
     public:
-        ETWriter(const ETStepList & etsl); 
+        ET_Writer(const ETStepList & etsl); 
 
         QAMSet ETInt(void) const;
         GaussianMap ETRMap(void) const;

@@ -9,10 +9,10 @@
 class WriterBase;
 
 
-class VRRWriter
+class VRR_Writer
 {   
     public:
-        VRRWriter(const VRRMap & vrrmap, const GaussianMap & vrrreqmap);
+        VRR_Writer(const VRRMap & vrrmap, const GaussianMap & vrrreqmap);
 
         void WriteVRR(std::ostream & os, const WriterBase & base) const;
 

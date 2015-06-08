@@ -8,7 +8,7 @@
 #include "generator/Helpers.hpp"
 #include "generator/Options.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/HRRWriter.hpp"
+#include "generator/HRR_Writer.hpp"
 
 using namespace std;
 
@@ -145,7 +145,7 @@ int main(int argc, char ** argv)
         QAM am{i, j, i, j};
         WriterBase base(options, am);
         HRRBraKetStepList hrrsteps = hrralgo->Create_DoubletStepLists(am);
-        HRRWriter hrr_writer(hrrsteps, am);
+        HRR_Writer hrr_writer(hrrsteps, am);
 
         // write to the output file (appending)
         hrr_writer.WriteHRRFile(ofb, ofk, base);

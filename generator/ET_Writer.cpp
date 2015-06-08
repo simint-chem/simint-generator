@@ -1,8 +1,8 @@
-#include "generator/ETWriter.hpp"
+#include "generator/ET_Writer.hpp"
 #include "generator/WriterBase.hpp"
 
 
-ETWriter::ETWriter(const ETStepList & etsl) 
+ET_Writer::ET_Writer(const ETStepList & etsl) 
           : etsl_(etsl)
 {
     for(const auto & it : etsl)
@@ -33,28 +33,28 @@ ETWriter::ETWriter(const ETStepList & etsl)
 
 
 
-QAMSet ETWriter::ETInt(void) const
+QAMSet ET_Writer::ETInt(void) const
 {
     return etint_;
 }
 
 
 
-GaussianMap ETWriter::ETRMap(void) const
+GaussianMap ET_Writer::ETRMap(void) const
 {
     return etrm_;
 }
 
 
 
-bool ETWriter::HasET(void) const
+bool ET_Writer::HasET(void) const
 {
     return (etsl_.size() > 0);
 }
 
 
 
-void ETWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
+void ET_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
 {
     if(etint_.size() > 0)
     {
@@ -71,7 +71,7 @@ void ETWriter::DeclarePointers(std::ostream & os, const WriterBase & base) const
 
 
 
-void ETWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
+void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
     if(etint_.size())
     {
@@ -91,7 +91,7 @@ void ETWriter::DeclarePrimArrays(std::ostream & os, const WriterBase & base) con
 
 
 
-void ETWriter::WriteETInline(std::ostream & os, const WriterBase & base) const
+void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
     os << "                    //////////////////////////////////////////////\n";
@@ -136,7 +136,7 @@ void ETWriter::WriteETInline(std::ostream & os, const WriterBase & base) const
 
 
 
-std::string ETWriter::ETStepVar(const Quartet & q, const WriterBase & base)
+std::string ET_Writer::ETStepVar(const Quartet & q, const WriterBase & base)
 {
     std::stringstream ss; 
     ss << base.PrimVarName(q.amlist()) << "[" << q.idx() << "]";
@@ -145,7 +145,7 @@ std::string ETWriter::ETStepVar(const Quartet & q, const WriterBase & base)
 
 
 
-std::string ETWriter::ETStepString(const ETStep & et, const WriterBase & base)
+std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
 {
     int stepidx = XYZStepToIdx(et.xyz);
     int ival = et.target.bra.left.ijk[stepidx];

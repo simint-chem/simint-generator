@@ -7,9 +7,9 @@
 
 #include "generator/Boys.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/VRRWriter.hpp"
-#include "generator/ETWriter.hpp"
-#include "generator/HRRWriter.hpp"
+#include "generator/VRR_Writer.hpp"
+#include "generator/ET_Writer.hpp"
+#include "generator/HRR_Writer.hpp"
 
 
 static void WriteFile_NotFlat(std::ostream & os,
@@ -18,9 +18,9 @@ static void WriteFile_NotFlat(std::ostream & os,
                               const std::string & prefix,
                               const BoysGen & bg,
                               const WriterBase & base,
-                              const VRRWriter & vrr_writer,
-                              const ETWriter & et_writer,
-                              const HRRWriter & hrr_writer)
+                              const VRR_Writer & vrr_writer,
+                              const ET_Writer & et_writer,
+                              const HRR_Writer & hrr_writer)
 {
     //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
@@ -304,9 +304,9 @@ static void WriteFile_Flat(std::ostream & os,
                            const std::string & prefix,
                            const BoysGen & bg,
                            const WriterBase & base,
-                           const VRRWriter & vrr_writer,
-                           const ETWriter & et_writer,
-                           const HRRWriter & hrr_writer)
+                           const VRR_Writer & vrr_writer,
+                           const ET_Writer & et_writer,
+                           const HRR_Writer & hrr_writer)
 {
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
@@ -601,7 +601,7 @@ RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
     // Working backwards, I need:
     // 1.) HRR Steps
     HRRBraKetStepList hrrsteps = hrralgo.Create_DoubletStepLists(am);
-    HRRWriter hrr_writer(hrrsteps, am);
+    HRR_Writer hrr_writer(hrrsteps, am);
 
     // set the contracted quartets
     base.SetContQ(hrr_writer.TopQAM());
@@ -611,7 +611,7 @@ RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
     //     with the HRR top level stuff as the initial targets
     QuartetSet etinit = hrr_writer.TopQuartets();
     ETStepList etsl = etalgo.Create_ETStepList(etinit);
-    ETWriter et_writer(etsl);
+    ET_Writer et_writer(etsl);
 
 
     // 3.) VRR Steps
@@ -632,7 +632,7 @@ RETURN THE UNRESOLVED. THOSE ARE THE TOP LEVEL REQ
     }
 
     std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo.CreateAllMaps(vreq);
-    VRRWriter vrr_writer(vrrinfo.first, vrrinfo.second);
+    VRR_Writer vrr_writer(vrrinfo.first, vrrinfo.second);
 
 
     ///////////////////////////////////////////////
