@@ -151,8 +151,13 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
             {
                 os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
 
-                if(base.IsFinalAM(qam))
-                    os << indent2 << base.ArrVarName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
+                if(!base.Permute())  // don't permute if no HRR, etc
+                {
+                    if(base.IsFinalAM(qam))
+                        os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+                    else
+                        os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+                }
                 else
                     os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
             }
@@ -175,7 +180,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
         os << indent1 << "// Accumulating ssss in contracted workspace\n";
 
         if(base.IsFinalAM(zeroam))
-            os << indent1 << "*" << base.ArrVarName(zeroam) << " += *" << base.PrimVarName(zeroam) << ";\n";
+            os << indent1 << "result[abcd] += *" << base.PrimVarName(zeroam) << ";\n";
         else
             os << indent1 << base.ArrVarName(zeroam) << "[abcd] += *" << base.PrimVarName(zeroam) << ";\n";
 

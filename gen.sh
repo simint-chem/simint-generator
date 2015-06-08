@@ -5,9 +5,10 @@ MAXHRR=3
 MAXVRR=12
 VE=1000
 HE=1000
+P=1000
 
 mkdir -p ../eri/FO.gen
-python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} \
+python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
                              -b FO \
                              -p FO \
                              -g generator/eri_generator \
@@ -15,7 +16,7 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} \
 
 
 mkdir -p ../eri/FO_flat.gen
-python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} \
+python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
                              -f \
                              -b FO \
                              -p FO_flat \
@@ -32,7 +33,7 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} \
 
 
 mkdir -p ../eri/vref.gen
-python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} \
+python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} -P ${P} \
                              -b vref \
                              -p vref \
                              -g generator/eri_generator \
@@ -40,7 +41,7 @@ python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} \
 
 
 mkdir -p ../eri/vref_flat.gen
-python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} \
+python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} -P ${P} \
                              -f \
                              -b vref \
                              -p vref_flat \

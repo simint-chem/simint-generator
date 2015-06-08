@@ -11,7 +11,6 @@ class WriterBase
 
         void SetContQ(const QAMSet & topquartets);
 
-        void DeclarePrimArrays(std::ostream & os) const;
         void DeclareContwork(std::ostream & os) const;
         void FreeContwork(std::ostream & os) const;
 
@@ -22,6 +21,7 @@ class WriterBase
         QAM FinalAM(void) const;
 
         bool IsFinalAM(const QAM & am) const;
+        bool Permute(void) const;
 
         bool HasVRR(void) const;
         bool HasET(void) const;

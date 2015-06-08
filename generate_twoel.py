@@ -17,6 +17,7 @@ parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-f",  required=False, action='store_true', help="Flattened primitive loop")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
+parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
 args = parser.parse_args()
 
 
@@ -140,6 +141,12 @@ for q in valid:
     hrrtype = "Inline";
   print("         HRR: {}".format(hrrtype))
 
+  if sum(q) >= args.P:
+    dopermute = True
+  else:
+    dopermute = False
+  print("     PERMUTE: {}".format(dopermute))
+
 
 
   with open(logfile, 'w') as lf:
@@ -155,6 +162,8 @@ for q in valid:
         cmdline.append("-ve")
     if hrrtype == "External":
         cmdline.append("-he")
+    if dopermute:
+        cmdline.append("-P")
 
     print()
     print("Command line:")

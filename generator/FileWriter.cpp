@@ -25,7 +25,7 @@ static void WriteFile_NotFlat(std::ostream & os,
                               const ET_Writer & et_writer,
                               const HRR_Writer & hrr_writer)
 {
-    //int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
     bool hashrr = base.HasHRR();
@@ -99,8 +99,8 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
-    //if(!hashrr)
-    //    os << "    memset(" << base.ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
+    if(!hashrr)
+        os << "    memset(result, 0, nshell1234*" << ncart << "*sizeof(double));\n";
     
     os << "\n";
 
@@ -114,7 +114,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << "    int ab, cd, abcd;\n";
-    os << "    int i, j, ir;\n";
+    os << "    int i, j;\n";
+    if(base.Permute())
+        os << "    int ir;\n";
 
     if(hasvrr_m)
         os << "    int m;\n";
@@ -147,9 +149,6 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
-
-    if(!hashrr)
-        base.DeclarePrimArrays(os);
 
     //vrr_writer.DeclarePointers(os, base);
     //et_writer.DeclarePointers(os, base);
@@ -272,11 +271,6 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
-
-    // if no HRR, this is the end
-    if(!hashrr)
-        base.PermuteResult(os, base.ArrVarName(am));
-
     os << "        }\n";
     os << "    }\n";
     os << "\n";
@@ -350,7 +344,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair_flat const P,\n";
     os << indent << "struct multishell_pair_flat const Q,\n";
-    os << indent << "double * const restrict result)\n";
+    os << indent << "double * const restrict " << base.ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -379,7 +373,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "    ASSUME_ALIGN(Q.shellidx);\n";
     os << "\n";
-    os << "    ASSUME_ALIGN(result);\n";
+    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ";\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";

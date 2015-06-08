@@ -137,19 +137,9 @@ void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
 {
     int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
     os << "\n";
-    os << "            //Permute the result\n";
-    os << "            for(ir = 0; ir < " << ncart << "; ir++)\n";
-    os << "                result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
-    os << "\n";
-}
-
-void WriterBase::DeclarePrimArrays(std::ostream & os) const
-{
-    int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
-    os << "\n";
-    os << "            // Storage for some of the final integrals\n";
-    os << "            double " << ArrVarName(finalam_) << "[" << ncart << "];\n";
-    os << "            memset(" << ArrVarName(finalam_) << ", 0, " << ncart * sizeof(double) << ");\n";
+    os << "        //Permute the result\n";
+    os << "        for(ir = 0; ir < " << ncart << "; ir++)\n";
+    os << "            result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
     os << "\n";
 }
 
@@ -212,3 +202,7 @@ bool WriterBase::HasKetHRR(void) const
     return (finalam_[3] > 0);
 }
 
+bool WriterBase::Permute(void) const
+{
+    return (GetOption(OPTION_PERMUTE) > 0 && HasHRR());
+}

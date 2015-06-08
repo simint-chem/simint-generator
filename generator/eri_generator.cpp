@@ -45,6 +45,7 @@ int main(int argc, char ** argv)
     options[OPTION_FLATPRIM] = 0;
     options[OPTION_INLINEVRR] = 1;
     options[OPTION_INLINEHRR] = 1;
+    options[OPTION_PERMUTE] = 0;
 
     // other stuff
     std::string prefix;
@@ -64,8 +65,11 @@ int main(int argc, char ** argv)
             options[OPTION_INLINEVRR] = 0;
         else if(argstr == "-he")
             options[OPTION_INLINEHRR] = 0;
+        else if(argstr == "-P")
+            options[OPTION_PERMUTE] = 1;
         else if(argstr == "-p")
             prefix = GetNextArg(i, argc, argv);
+
         else if(argstr == "-q")
         {
             amlist[0] = GetIArg(i, argc, argv);   
