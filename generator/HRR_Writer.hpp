@@ -24,6 +24,7 @@ class HRR_Writer
         HRRBraKetStepList hrrsteps_;
         std::pair<DoubletSet, DoubletSet>  brakettop_;
         std::pair<DAMSet, DAMSet> brakettopam_;
+        QAMSet topquartetam_;
         
 
         void WriteHRRInline_(std::ostream & os, const WriterBase & base) const;

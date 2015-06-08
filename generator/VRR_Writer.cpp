@@ -75,6 +75,17 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
     os << indent1 << "for(m = 0; m < " << num_m << "; m++)  // loop over orders of auxiliary function\n";
     os << indent1 << "{\n";
 
+    os << indent2 << "const int idx = m * " << NCART(am) << ";    // m * NCART(am)\n";
+    os << indent2 << "const int idx1 = m * " << NCART(am-1) << ";    // m * NCART(am-1)\n"; 
+    os << indent2 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (m+1) * NCART(am-1)\n"; 
+    if(am > 1)
+    {
+        os << indent2 << "const int idx2 = m * " << NCART(am-2) << ";    // m * NCART(am-2)\n";
+        os << indent2 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (m+1) * NCART(am-2)\n";
+    }
+        
+    os << "\n";
+
     // iterate over the requirements
     // should be in order since it's a set
     for(const auto & it : greq)
@@ -91,17 +102,17 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
         int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
         os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-        os << indent2 << base.PrimVarName(qam) << "[m * " << NCART(am) << " + " << it.idx() << "] = P_PA_" << step << " * ";
+        os << indent2 << base.PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
 
         if(g1)
-            os << base.PrimVarName(qam1) << "[m * " << NCART(am-1) << " + " << g1.idx() 
-               << "] - aop_PQ_" << step << " * " << base.PrimVarName(qam1) << "[(m+1) * " << NCART(am-1) << " + " << g1.idx() << "]";
+            os << base.PrimVarName(qam1) << "[idx1 + " << g1.idx() 
+               << "] - aop_PQ_" << step << " * " << base.PrimVarName(qam1) << "[idx11 + " << g1.idx() << "]";
         if(g2)
         {
             os << "\n"
                << indent2 << "              + " << vrr_i 
-               << " * one_over_2p * ( " << base.PrimVarName(qam2) << "[m * " << NCART(am-2) << " +  " << g2.idx() << "]"
-               << " - a_over_p * " << base.PrimVarName(qam2) << "[(m+1) * " << NCART(am-2) << " + " << g2.idx() << "] )";
+               << " * one_over_2p * ( " << base.PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
+               << " - a_over_p * " << base.PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }
         os << ";\n\n"; 
     }

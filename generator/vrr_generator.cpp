@@ -117,11 +117,11 @@ int main(int argc, char ** argv)
         vreq[i] = AllGaussiansForAM(i);
 
     // Create the mapping
-    std::pair<VRRMap, GaussianMap> vrrinfo = vrralgo->CreateAllMaps(vreq);
+    vrralgo->CreateAllMaps(vreq);
 
     // Create the writer and base writer
     WriterBase base(options, {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
-    VRR_Writer vrr_writer(vrrinfo.first, vrrinfo.second);
+    VRR_Writer vrr_writer(*vrralgo);
 
     // write to the output file
     vrr_writer.WriteVRRFile(of, base);

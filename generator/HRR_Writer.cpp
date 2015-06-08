@@ -9,6 +9,7 @@ HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo)
     brakettop_ = hrr_algo.TopBraKet();
     brakettopam_ = hrr_algo.TopBraKetAM();
     hrrsteps_ = hrr_algo.DoubletStepLists();
+    topquartetam_ = hrr_algo.TopQAM();
 }
 
 
@@ -110,6 +111,16 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
         }
         os << "\n";
 
+        // we may be able to do some index math up front
+        if(!base.Permute())
+        {
+            for(const auto & it : topquartetam_)
+                os << "        const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+
+            // and also for the final integral
+            os << "        const int idx_" << base.ArrVarName(finalam) << " = abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+            os << "\n";
+        }
 
         if(base.HasBraHRR())
         {
@@ -124,6 +135,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
                        << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
                 }
             }
+
             os << "\n";
 
             for(const auto & it : brakettopam_.second)
@@ -281,22 +293,24 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
     // actually the final quartet?
     bool isfinalq = isfinal && !base.HasKetHRR();
 
+    std::string arrname = base.ArrVarName(d.left.am(), d.right.am(), ketstr);
+
     if(isfinalq)
     {
         if(base.Permute())
-            ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ (" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
+            ss << arrname << "[(" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
         else
-            ss << "result[ abcd * " << d.ncart() << " * " << ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + iket]";
+            ss << "result[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
     }
     else if(istop)
     {
         if(base.Permute())
-            ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ (" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
+            ss << arrname << "[(" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
         else
-            ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[ abcd * " << d.ncart() << " * " << ncart_ket << " + " << d.idx() << " * " << ncart_ket << " + iket]";
+            ss << arrname << "[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
     }
     else if(isfinal)
-        ss << base.ArrVarName(d.left.am(), d.right.am(), ketstr) << "[" << d.idx() << " * " << ncart_ket << " + iket]";
+        ss << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
     else
     {
         if(istarget)
@@ -327,21 +341,23 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
     // is top level ket? (ie result from bra, but not VRR, etc)
     bool istopbra = ( !istop && d.right.am() == 0 );
 
+    std::string arrname = base.ArrVarName(brastr, d.left.am(), d.right.am());
+
     if(isfinal)
     {
         if(base.Permute())
-            ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+            ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
         else
-            ss << "result[abcd * " << ncart_bra << " * " << d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+            ss << "result[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
     }
     else if(istopbra)
-        ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+        ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
     else if(istop)
     {
         if(base.Permute())
-            ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ (ibra * " << d.ncart() << " + " << d.idx() << ") * nshell1234 + abcd]"; 
+            ss << arrname << "[(ibra * " << d.ncart() << " + " << d.idx() << ") * nshell1234 + abcd]"; 
         else
-            ss << base.ArrVarName(brastr, d.left.am(), d.right.am()) << "[ abcd * " << ncart_bra << " * " << d.ncart() << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+            ss << arrname << "[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
     }
     else
     {
