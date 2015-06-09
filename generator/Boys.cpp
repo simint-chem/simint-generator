@@ -57,12 +57,43 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
     const std::string indent(20, ' ');
 
-    for(int i = 0; i <= base.L(); i++)
-    {
-        const BoysFit & bf = bfmap_.at(i); 
+    std::string primname = base.PrimVarName({0,0,0,0});
 
-        os << indent << base.PrimVarName({0,0,0,0}) << "[" << bf.v << "] = allprefac\n"; 
-        os << indent << "         * pow(\n";
+    // just calculate them all if L is small
+    // value of 3 found by testing
+    if(base.L() < 3)
+    {
+        for(int m = 0; m <= base.L(); m++)
+        {
+            const BoysFit & bf = bfmap_.at(m); 
+
+            os << indent << primname << "[" << bf.v << "] = allprefac\n"; 
+            os << indent << "         * pow(\n";
+            os << indent << "                 (\n";
+            os << indent << "                   (\n";
+            os << indent << "                               " << bf.a[0] << "\n";
+            for(int i = 1; i < bf.a.size(); i++)
+                os << indent << "                     + F_x * ( " << bf.a[i] << "\n";
+            os << indent << "                             " << std::string(bf.a.size()-1, ')') << "\n";
+            os << indent << "                   )\n";
+            os << indent << "                   /\n";
+            os << indent << "                   (\n";
+            os << indent << "                               " << bf.b[0] << "\n";
+            for(int i = 1; i < bf.b.size(); i++)
+                os << indent << "                     + F_x * ( " << bf.b[i] << "\n";
+            os << indent << "                             " << std::string(bf.b.size()-1, ')') << "\n";
+            os << indent << "                   )\n";
+            os << indent << "                 ), " << bf.v << ".0+0.5);\n";
+            os << "\n";
+        }
+    }
+    else
+    {
+        // calculate highest, and recurse down
+        const BoysFit & bf = bfmap_.at(base.L()); 
+
+        os << indent << primname << "[" << bf.v << "] =\n"; 
+        os << indent << "           pow(\n";
         os << indent << "                 (\n";
         os << indent << "                   (\n";
         os << indent << "                               " << bf.a[0] << "\n";
@@ -78,6 +109,24 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
         os << indent << "                             " << std::string(bf.b.size()-1, ')') << "\n";
         os << indent << "                   )\n";
         os << indent << "                 ), " << bf.v << ".0+0.5);\n";
+        os << "\n";
+
+        // calcualte the downward recursion factors
+        os << indent << "const double x2 = 2.0 * F_x;\n";
+        os << indent << "const double ex = exp(-F_x);\n";
+
+        for(int m = base.L()-1; m >= 0; m--)
+        {
+            std::stringstream ss;
+            ss.precision(18);
+            ss << (1.0/(2.0*m+1.0));
+            os << indent << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << ss.str() << ";\n";
+        }
+
+        // add prefac now
+        os << "\n";
+        os << "for(m = 0; m <= " << base.L() << "; ++m)\n";
+        os << "    " << primname << "[m] *= allprefac;\n";
         os << "\n";
     }
 }
