@@ -195,6 +195,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     vrr_writer.DeclarePrimArrays(os, base);
     et_writer.DeclarePrimArrays(os, base);
 
+    vrr_writer.DeclarePrimPointers(os, base);
+    et_writer.DeclarePrimPointers(os, base);
+
     os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
     os << "                    const double PQalpha_sum = P_alpha + Q.alpha[j];\n";
     os << "\n";
@@ -470,6 +473,9 @@ static void WriteFile_Flat(std::ostream & os,
 
     vrr_writer.DeclarePrimArrays(os, base);
     et_writer.DeclarePrimArrays(os, base);
+
+    vrr_writer.DeclarePrimPointers(os, base);
+    et_writer.DeclarePrimPointers(os, base);
 
     os << "\n\n";
     os << "                    const double PQalpha_mul = P_alpha * Q.alpha[j];\n";

@@ -38,6 +38,23 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) c
 }
 
 
+void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) const
+{
+    if(vrramreq_.size())
+    {
+        for(const auto & greq : vrramreq_)
+        {
+            QAM qam({greq.first, 0, 0, 0});
+            if(base.IsContArray(qam))
+                os << "                    double * const restrict " << base.PrimPtrName(qam)
+                   << " = " << base.ArrVarName(qam) << " + abcd * " << NCART(qam[0]) << ";\n";
+        }
+
+        os << "\n\n";
+
+    }
+}
+
 
 void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
 {
@@ -273,7 +290,7 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
         os << "\n";
         os << indent1 << "// Accumulating in contracted workspace\n";
         os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-        os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+        os << indent2 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
 
         // TODO
         // if I don't need all, then don't accumulate all

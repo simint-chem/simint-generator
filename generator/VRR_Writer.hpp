@@ -18,6 +18,7 @@ class VRR_Writer
 
         void WriteIncludes(std::ostream & os, const WriterBase & base) const;
         void DeclarePrimArrays(std::ostream & os, const WriterBase & base) const;
+        void DeclarePrimPointers(std::ostream & os, const WriterBase & base) const;
 
         void WriteVRRFile(std::ostream & os, const WriterBase & base) const;
         void WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const;

@@ -50,6 +50,23 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 }
 
 
+void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) const
+{
+    if(etint_.size())
+    {
+        for(const auto & it : etint_)
+        {
+            if(base.IsContArray(it))
+                os << "                    double * const restrict " << base.PrimPtrName(it)
+                   << " = " << base.ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
+        }
+
+        os << "\n\n";
+
+    }
+}
+
+
 void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
@@ -83,7 +100,7 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
             os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
-            os << indent2 << base.ArrVarName(it) << "[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
+            os << indent2 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
 }
