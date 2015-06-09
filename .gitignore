@@ -5,3 +5,4 @@ build-sse
 __pycache__
 *.swp
 eri/*.gen
+test/dat/C6H6.DZP.mol.ref
