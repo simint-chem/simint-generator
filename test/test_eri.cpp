@@ -52,12 +52,12 @@ int main(int argc, char ** argv)
              
              
     printf("\n");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", 
-                                                                "Quartet", "MaxErr", "", "", 
-                                                                "MaxRelErr", "", "");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", "",
-                                                                "FO", "vref", "erd", 
-                                                                "FO", "vref", "erd");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", 
+                                                         "Quartet", "MaxErr", "", "", 
+                                                         "MaxRelErr", "", "");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", "",
+                                                         "FO", "vref", "erd", 
+                                                         "FO", "vref", "erd");
 
 
     // Read the reference integrals
