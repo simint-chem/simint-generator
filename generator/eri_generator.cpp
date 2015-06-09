@@ -117,6 +117,11 @@ int main(int argc, char ** argv)
         return 2;
     }
 
+    if(options[OPTION_PERMUTE] != 0)
+    {
+        std::cout << "\nPermutation of integrals not implemented\n\n";
+        return 10;
+    }
 
     // Read in the boys map
     std::unique_ptr<BoysGen> bg;

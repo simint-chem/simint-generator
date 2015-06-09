@@ -22,6 +22,12 @@ void WriterBase::SetContQ(const QAMSet & topquartets)
         if(it != finalam_)
             memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
     }
+
+    // add memory for AB_{xyz} and CD_{xyz}
+    if(HasBraHRR())
+        memory_ += 3 * sizeof(double);
+    if(HasKetHRR())
+        memory_ += 3 * sizeof(double);
 }
 
 
@@ -133,6 +139,7 @@ std::string WriterBase::PrimPtrName(const QAM & am)
 }
         
 
+/*
 void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
 {
     int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
@@ -142,7 +149,7 @@ void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
     os << "            result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
     os << "\n";
 }
-
+*/
 
 void WriterBase::DeclareContwork(std::ostream & os) const
 {
@@ -163,6 +170,26 @@ void WriterBase::DeclareContwork(std::ostream & os) const
                 ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
             }
         
+        }
+        os << "\n";
+
+        // AB_ and CD_ arrays
+        if(HasBraHRR())
+        {
+            os << "    // Holds AB_{xyz} in a flattened fashion for later\n";
+            os << "    double * const restrict AB_x = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict AB_y = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict AB_z = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "\n";
+        }
+
+        if(HasKetHRR())
+        {
+            os << "    // Holds CD_{xyz} in a flattened fashion for later\n";
+            os << "    double * const restrict CD_x = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict CD_y = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict CD_z = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "\n";
         }
     }
 }
@@ -202,7 +229,8 @@ bool WriterBase::HasKetHRR(void) const
     return (finalam_[3] > 0);
 }
 
-bool WriterBase::Permute(void) const
-{
-    return (GetOption(OPTION_PERMUTE) > 0 && HasHRR());
-}
+
+//bool WriterBase::Permute(void) const
+//{
+//    return (GetOption(OPTION_PERMUTE) > 0 && HasHRR());
+//}

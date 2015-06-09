@@ -21,7 +21,7 @@ class WriterBase
         QAM FinalAM(void) const;
 
         bool IsFinalAM(const QAM & am) const;
-        bool Permute(void) const;
+        //bool Permute(void) const;
 
         bool HasVRR(void) const;
         bool HasET(void) const;
@@ -33,7 +33,7 @@ class WriterBase
 
         int L(void) const;
 
-        void PermuteResult(std::ostream & os, const std::string & src) const;
+        //void PermuteResult(std::ostream & os, const std::string & src) const;
 
         static std::string ArrVarName(const QAM & am, const std::string & prefix = "");
         static std::string ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix = "");

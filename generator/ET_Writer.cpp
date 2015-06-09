@@ -24,27 +24,11 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 }
 
 
+
 void ET_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 {
 }
 
-
-/*
-void ET_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
-{
-    if(etint_.size() > 0)
-    {
-        os << "            // set up pointers to the contracted integrals - Electron Transfer\n";
-
-        for(const auto & it : etint_)
-        {
-            if(base.IsContArray(it))
-                os << "            double * const restrict " << base.PrimPtrName(it) << " = "
-                   << base.ArrVarName(it) << " + (abcd * " << (NCART(it[0])*NCART(it[1])*NCART(it[2])*NCART(it[3])) << ");\n";
-        }
-    }
-}
-*/
 
 
 void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
@@ -100,15 +84,10 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             os << indent1 << "// Accumulating in contracted workspace\n";
             os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
 
-            if(!base.Permute()) // don't permute?
-            {
-                if(base.IsFinalAM(it))
-                    os << indent2 << "result[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
-                else
-                    os << indent2 << base.ArrVarName(it) << "[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
-            }
+            if(base.IsFinalAM(it))
+                os << indent2 << "result[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
             else
-                os << indent2 << base.ArrVarName(it) << "[n * nshell1234 + abcd] += " << base.PrimVarName(it) << "[n];\n";
+                os << indent2 << base.ArrVarName(it) << "[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
 }

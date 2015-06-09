@@ -104,19 +104,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     
     os << "\n";
 
-    if(hashrr)
-    {
-        os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
-        os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
-        os << "    double AB_y[nshell1234];  double CD_y[nshell1234];\n";
-        os << "    double AB_z[nshell1234];  double CD_z[nshell1234];\n";
-        os << "\n";
-    }
 
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
-    if(base.Permute())
-        os << "    int ir;\n";
 
     os << "    int n;\n";
 
@@ -141,6 +131,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "    ////////////////////////////////////////\n";
     os << "    for(ab = 0, abcd = 0; ab < P.nshell12; ++ab)\n";
     os << "    {\n";
+
     os << "        const int abstart = P.primstart[ab];\n";
     os << "        const int abend = P.primend[ab];\n";
     os << "\n";
@@ -150,25 +141,27 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "        for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
     os << "        {\n";
 
-    //vrr_writer.DeclarePointers(os, base);
-    //et_writer.DeclarePointers(os, base);
+    if(hasbrahrr)
+    {
+        os << "            AB_x[abcd] = P.AB_x[ab];\n";
+        os << "            AB_y[abcd] = P.AB_y[ab];\n";
+        os << "            AB_z[abcd] = P.AB_z[ab];\n";
+        os << "\n";
+    }
+    if(haskethrr)
+    {
+        os << "            CD_x[abcd] = Q.AB_x[cd];\n";
+        os << "            CD_y[abcd] = Q.AB_y[cd];\n";
+        os << "            CD_z[abcd] = Q.AB_z[cd];\n";
+        os << "\n";
+    }
 
-    os << "\n";
     os << "            const int cdstart = Q.primstart[cd];\n";
     os << "            const int cdend = Q.primend[cd];\n";
     os << "\n";
     os << "            // this should have been set/aligned in fill_multishell_pair or something else\n";
     os << "            ASSUME(cdstart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
-
-    if(hashrr) 
-    {
-        os << "            // Store for later\n";
-        os << "            AB_x[abcd] = P.AB_x[ab];  CD_x[abcd] = Q.AB_x[cd];\n";
-        os << "            AB_y[abcd] = P.AB_y[ab];  CD_y[abcd] = Q.AB_y[cd];\n";
-        os << "            AB_z[abcd] = P.AB_z[ab];  CD_z[abcd] = Q.AB_z[cd];\n";
-        os << "\n";
-    }
 
     os << "            for(i = abstart; i < abend; ++i)\n";
     os << "            {\n";
@@ -423,9 +416,18 @@ static void WriteFile_Flat(std::ostream & os,
         os << "    for(i = 0; i < P.nshell12; i++)\n";
         os << "    for(j = 0; j < Q.nshell12; j++)\n";
         os << "    {\n";
-        os << "        AB_x[abcd] = P.AB_x[i];  CD_x[abcd] = Q.AB_x[j];\n";
-        os << "        AB_y[abcd] = P.AB_y[i];  CD_y[abcd] = Q.AB_y[j];\n";
-        os << "        AB_z[abcd] = P.AB_z[i];  CD_z[abcd] = Q.AB_z[j];\n";
+        if(hasbrahrr)
+        {
+            os << "        AB_x[abcd] = P.AB_x[i];\n";
+            os << "        AB_y[abcd] = P.AB_y[i];\n";
+            os << "        AB_z[abcd] = P.AB_z[i];\n";
+        }
+        if(haskethrr)
+        {
+            os << "        CD_x[abcd] = Q.AB_x[j];\n";
+            os << "        CD_y[abcd] = Q.AB_y[j];\n";
+            os << "        CD_z[abcd] = Q.AB_z[j];\n";
+        }
         os << "        abcd++;\n";
         os << "    }\n";
         os << "\n";
@@ -474,9 +476,6 @@ static void WriteFile_Flat(std::ostream & os,
     os << "                    // Contracted shell quartet index\n";
     os << "                    const int abcd = Pshellidx + Q.shellidx[j];\n";
     os << "\n";
-
-    //vrr_writer.DeclarePointers(os, base);
-    //et_writer.DeclarePointers(os, base);
 
     os << "\n\n";
 
@@ -552,10 +551,6 @@ static void WriteFile_Flat(std::ostream & os,
     os << "\n";
     os << "                 }\n";
     os << "            }\n";
-
-    // if no HRR, this is the end
-    if(!hashrr)
-        base.PermuteResult(os, base.ArrVarName(am));
 
     os << "\n";
     os << "\n";

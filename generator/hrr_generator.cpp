@@ -144,8 +144,8 @@ int main(int argc, char ** argv)
         // we can do both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
         WriterBase base(options, am);
-        HRRBraKetStepList hrrsteps = hrralgo->Create_DoubletStepLists(am);
-        HRR_Writer hrr_writer(hrrsteps, am);
+        hrralgo->Create_DoubletStepLists(am);
+        HRR_Writer hrr_writer(*hrralgo);
 
         // write to the output file (appending)
         hrr_writer.WriteHRRFile(ofb, ofk, base);

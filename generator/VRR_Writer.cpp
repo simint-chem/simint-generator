@@ -17,23 +17,6 @@ void VRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 }
 
 
-/*
-void VRR_Writer::DeclarePointers(std::ostream & os, const WriterBase & base) const
-{
-    if(vrramreq_.size() > 0)
-    {
-        os << "            // set up pointers to the contracted integrals - VRR\n";
-
-        for(const auto & it : vrramreq_)
-        {
-            int vam = it.first;
-            if(base.IsContArray({vam, 0, 0, 0}))
-                os << "            double * const restrict " << base.PrimPtrName({vam, 0, 0, 0}) << " = "
-                   << base.ArrVarName({vam, 0, 0, 0}) << " + (abcd * " << NCART(vam) << ");\n";
-        }
-    }
-}
-*/
 
 void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
 {
@@ -291,15 +274,10 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
         os << indent1 << "// Accumulating in contracted workspace\n";
         os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
 
-        if(!base.Permute())  // don't permute if no HRR, etc
-        {
-            if(base.IsFinalAM(qam))
-                os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
-            else
-                os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
-        }
+        if(base.IsFinalAM(qam))
+            os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
         else
-            os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
+            os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
 
         // TODO
         // if I don't need all, then don't accumulate all

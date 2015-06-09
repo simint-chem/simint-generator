@@ -15,9 +15,6 @@ class ET_Writer
 
         void WriteIncludes(std::ostream & os, const WriterBase & base) const;
   
-        /*
-        void DeclarePointers(std::ostream & os, const WriterBase & base) const;
-        */
         void DeclarePrimArrays(std::ostream & os, const WriterBase & base) const;
 
         void WriteETInline(std::ostream & os, const WriterBase & base) const;

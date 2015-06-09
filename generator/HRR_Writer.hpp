@@ -31,7 +31,7 @@ class HRR_Writer
         void WriteHRRExternal_(std::ostream & os, const WriterBase & base) const;
 
         void WriteBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const;
-        void WriteKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const;
+        void WriteKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & brastr) const;
 
         std::string HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr, bool istarget, const WriterBase & base) const;
         std::string HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra, const std::string & brastr, bool istarget, const WriterBase & base) const;

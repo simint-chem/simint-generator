@@ -80,6 +80,82 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, cons
 
 
 
+std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
+                                       const std::string & ketstr, bool istarget, const WriterBase & base) const
+{
+    std::stringstream ss;
+
+    QAM finalam = base.FinalAM();
+
+    // is final doublet?
+    bool isfinald = (d.left.am() == finalam[0] && d.right.am() == finalam[1]);
+
+    // is top level bra? (ie result from VRR/ET)
+    bool istop = ( d.right.am() == 0);
+
+    // actually the final quartet?
+    bool isfinalq = isfinald && !base.HasKetHRR();
+
+    std::string arrname = base.ArrVarName(d.left.am(), d.right.am(), ketstr);
+
+    if(isfinalq)
+        ss << "result[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
+    else if(istop)
+        ss << arrname << "[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
+    else if(isfinald)
+        ss << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
+    else
+    {
+        if(istarget)
+            ss << "const double ";
+        ss << "B_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << ketstr;
+    }
+
+    return ss.str();
+}
+
+
+
+std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra,
+                                       const std::string & brastr, bool istarget, const WriterBase & base) const
+{
+    std::stringstream ss;
+
+    QAM finalam = base.FinalAM();
+
+    // is final doublet? This would be the final quartet also
+    bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
+
+    // is from VRR or ET
+    // Since this is run last, the bra part is ( finalam[0] finalam[1] |
+    // so if that is ( X s | and this is | X s ) it is from VRR/ET
+    bool istop = ( d.right.am() == 0 && finalam[1] == 0 );
+
+    // is top level ket? (ie result from bra, but not VRR, etc)
+    bool istopbra = ( !istop && d.right.am() == 0 );
+
+    std::string arrname = base.ArrVarName(brastr, d.left.am(), d.right.am());
+
+    if(isfinal)
+        ss << "result[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+    else if(istopbra)
+        ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+    else if(istop)
+        ss << arrname << "[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
+    else
+    {
+        if(istarget)
+            ss << "const double ";
+        ss << "K_" << brastr << "_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
+                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
+    }
+    return ss.str();
+}
+
+
+
+
 void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
 {
     QAM finalam = base.FinalAM();
@@ -112,15 +188,12 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
         os << "\n";
 
         // we may be able to do some index math up front
-        if(!base.Permute())
-        {
-            for(const auto & it : topquartetam_)
-                os << "        const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+        for(const auto & it : topquartetam_)
+            os << "        const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
 
-            // and also for the final integral
-            os << "        const int idx_" << base.ArrVarName(finalam) << " = abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
-            os << "\n";
-        }
+        // and also for the final integral
+        os << "        const int idx_" << base.ArrVarName(finalam) << " = abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        os << "\n";
 
         if(base.HasBraHRR())
         {
@@ -129,7 +202,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
             for(const auto & it : brakettopam_.second)
             {
                 QAM qam{finalbra[0], finalbra[1], it[0], 0};
-                if(!base.IsFinalAM(qam) || base.Permute())
+                if(!base.IsFinalAM(qam))
                 {
                     os << "        double " << base.ArrVarName(qam)
                        << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
@@ -161,15 +234,6 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 
         if(base.HasKetHRR())
         {
-
-            // storage for the final integral is needed if permuting
-            if(base.Permute())
-            {
-                os << "        double " << base.ArrVarName(finalam)
-                   << "[" << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << "];\n";
-                os << "\n";
-            }
-
             // ncart_bra in string form
             DAM braam{finalam[0], finalam[1]};
             std::stringstream ss;
@@ -183,9 +247,6 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 
     
         }
-
-        if(base.Permute())
-            base.PermuteResult(os, base.ArrVarName(finalam));
 
         os << "    }\n";
 
@@ -278,97 +339,6 @@ os << "TODO\n";
 }
 
 
-std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr, bool istarget, const WriterBase & base) const
-{
-    std::stringstream ss;
-
-    QAM finalam = base.FinalAM();
-
-    // is final doublet?
-    bool isfinal = (d.left.am() == finalam[0] && d.right.am() == finalam[1]);
-
-    // is top level bra? (ie result from VRR/ET)
-    bool istop = ( d.right.am() == 0);
-
-    // actually the final quartet?
-    bool isfinalq = isfinal && !base.HasKetHRR();
-
-    std::string arrname = base.ArrVarName(d.left.am(), d.right.am(), ketstr);
-
-    if(isfinalq)
-    {
-        if(base.Permute())
-            ss << arrname << "[(" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
-        else
-            ss << "result[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
-    }
-    else if(istop)
-    {
-        if(base.Permute())
-            ss << arrname << "[(" << d.idx() << " * " << ncart_ket << " + iket) * nshell1234 + abcd]";
-        else
-            ss << arrname << "[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
-    }
-    else if(isfinal)
-        ss << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "B_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << ketstr;
-    }
-
-    return ss.str();
-}
-
-
-
-std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra, const std::string & brastr, bool istarget, const WriterBase & base) const
-{
-    std::stringstream ss;
-
-    QAM finalam = base.FinalAM();
-
-    // is final doublet? This would be the final quartet also
-    bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
-
-    // is from VRR or ET
-    // Since this is run last, the bra part is ( finalam[0] finalam[1] |
-    // so if that is ( X s | and this is | X s ) it is from VRR/ET
-    bool istop = ( d.right.am() == 0 && finalam[1] == 0 );
-
-    // is top level ket? (ie result from bra, but not VRR, etc)
-    bool istopbra = ( !istop && d.right.am() == 0 );
-
-    std::string arrname = base.ArrVarName(brastr, d.left.am(), d.right.am());
-
-    if(isfinal)
-    {
-        if(base.Permute())
-            ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-        else
-            ss << "result[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    }
-    else if(istopbra)
-        ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    else if(istop)
-    {
-        if(base.Permute())
-            ss << arrname << "[(ibra * " << d.ncart() << " + " << d.idx() << ") * nshell1234 + abcd]"; 
-        else
-            ss << arrname << "[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    }
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "K_" << brastr << "_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
-    }
-    return ss.str();
-}
-
 
 
 void HRR_Writer::WriteHRR(std::ostream & os, const WriterBase & base) const
@@ -379,27 +349,32 @@ void HRR_Writer::WriteHRR(std::ostream & os, const WriterBase & base) const
         WriteHRRExternal_(os, base);
 }
 
-        
+
 
 void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
 {
-/*
     QAM finalam = base.FinalAM();
+
 
     if(hrrsteps_.first.size() > 0)
     {
-        ofb << "    //////////////////////////////////////////////\n";
-        ofb << "    // BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofb << "    // Steps: " << hrrsteps_.first.size() << "\n";
-        ofb << "    //////////////////////////////////////////////\n";
+        ofb << "//////////////////////////////////////////////\n";
+        ofb << "// BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        ofb << "// Steps: " << hrrsteps_.first.size() << "\n";
+        ofb << "//////////////////////////////////////////////\n";
         ofb << "\n";
 
         // it.first is the AM for the ket part
         ofb << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)\n";
-        ofb << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
+        ofb << "void HRR_BRA_";
+        ofb << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
-        for(const auto & itb : brahrr_ptrs_)
-            ofb << "                   double * const restrict BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << ",\n";
+        // pointers to buffers (top bras)
+        for(const auto & it : brakettopam_.first)
+            ofb << "                   double const * const restrict BRA_" << amchar[it[0]] << "_" << amchar[it[1]] << ",\n";
+
+        // pointer to result buffer
+        ofb << "                   double * const restrict BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << ",\n";
 
         ofb << "                   const double bAB_x, const double bAB_y, const double bAB_z, const int ncart_ket\n";
         ofb << "                 )\n";
@@ -418,33 +393,36 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
 
     if(hrrsteps_.second.size() > 0)
     {
-        ofk << "    //////////////////////////////////////////////\n";
-        ofk << "    // KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofk << "    // Steps: " << hrrsteps_.second.size() << "\n";
-        ofk << "    //////////////////////////////////////////////\n";
+        ofk << "//////////////////////////////////////////////\n";
+        ofk << "// KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
+        ofk << "// Steps: " << hrrsteps_.second.size() << "\n";
+        ofk << "//////////////////////////////////////////////\n";
         ofk << "\n";
 
         ofk << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)\n";
-        ofk << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
+        ofk << "void HRR_KET_";
+        ofk << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
-        // Pass the pointes
-        for(auto & it : kethrr_ptrs_)
-            ofk << "                  double * const restrict KET_" << amchar[it[0]] << "_" << amchar[it[1]] << ",\n";
+        // pointers to buffers (top bras)
+        for(const auto & it : brakettopam_.second)
+            ofk << "                   double const * const restrict KET_" << amchar[it[0]] << "_" << amchar[it[1]] << ",\n";
 
-        ofk << "                  const double kCD_x, const double kCD_y, const double kCD_z, const int ncart_bra\n";
+        // pointer to result buffer
+        ofk << "                   double * const restrict KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << ",\n";
+
+        ofk << "                   const double kCD_x, const double kCD_y, const double kCD_z, const int ncart_bra\n";
         ofk << "                 )\n";
         ofk << "{\n";
         ofk << "    int ibra;\n";
         ofk << "\n";
 
-        WriteKetSteps_(ofk, base, "ncart_bra"); 
+        WriteKetSteps_(ofk, base, "ncart_bra", ""); 
 
         ofk << "\n";
         ofk << "}\n";
         ofk << "\n";
         ofk << "\n";
     }
-*/
 }
 
 
