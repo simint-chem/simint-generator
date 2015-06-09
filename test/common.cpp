@@ -17,8 +17,6 @@
 
 static erifunc funcs_FO[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 static erifunc funcs_vref[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
-static eriflatfunc funcs_FO_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
-static eriflatfunc funcs_vref_flat[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 
 
 /////////////////////////
@@ -438,7 +436,6 @@ void Init_Test(void)
     {
         funcs_FO[i][j][k][l] = eri_notyetimplemented;
         funcs_vref[i][j][k][l] = eri_notyetimplemented;
-        funcs_vref_flat[i][j][k][l] = eriflat_notyetimplemented;
     }
 
 
@@ -466,34 +463,6 @@ void Init_Test(void)
     funcs_FO[2][2][2][0] = eri_FO_d_d_d_s;
     funcs_FO[2][2][2][1] = eri_FO_d_d_d_p;
     funcs_FO[2][2][2][2] = eri_FO_d_d_d_d;
-    #endif
-
-
-
-    funcs_FO_flat[0][0][0][0] = eri_FO_flat_s_s_s_s;
-    #if MAXAM > 0
-    funcs_FO_flat[1][0][0][0] = eri_FO_flat_p_s_s_s;
-    funcs_FO_flat[1][0][1][0] = eri_FO_flat_p_s_p_s;
-    funcs_FO_flat[1][1][0][0] = eri_FO_flat_p_p_s_s;
-    funcs_FO_flat[1][1][1][0] = eri_FO_flat_p_p_p_s;
-    funcs_FO_flat[1][1][1][1] = eri_FO_flat_p_p_p_p;
-    #endif
-    #if MAXAM > 1
-    funcs_FO_flat[2][0][0][0] = eri_FO_flat_d_s_s_s;
-    funcs_FO_flat[2][0][1][0] = eri_FO_flat_d_s_p_s;
-    funcs_FO_flat[2][0][1][1] = eri_FO_flat_d_s_p_p;
-    funcs_FO_flat[2][0][2][0] = eri_FO_flat_d_s_d_s;
-    funcs_FO_flat[2][1][0][0] = eri_FO_flat_d_p_s_s;
-    funcs_FO_flat[2][1][1][0] = eri_FO_flat_d_p_p_s;
-    funcs_FO_flat[2][1][1][1] = eri_FO_flat_d_p_p_p;
-    funcs_FO_flat[2][1][2][0] = eri_FO_flat_d_p_d_s;
-    funcs_FO_flat[2][1][2][1] = eri_FO_flat_d_p_d_p;
-    funcs_FO_flat[2][2][0][0] = eri_FO_flat_d_d_s_s;
-    funcs_FO_flat[2][2][1][0] = eri_FO_flat_d_d_p_s;
-    funcs_FO_flat[2][2][1][1] = eri_FO_flat_d_d_p_p;
-    funcs_FO_flat[2][2][2][0] = eri_FO_flat_d_d_d_s;
-    funcs_FO_flat[2][2][2][1] = eri_FO_flat_d_d_d_p;
-    funcs_FO_flat[2][2][2][2] = eri_FO_flat_d_d_d_d;
     #endif
 
 
@@ -558,69 +527,6 @@ void Init_Test(void)
         funcs_vref[3][3][3][2] = eri_vref_f_f_f_d;
         funcs_vref[3][3][3][3] = eri_vref_f_f_f_f;
     #endif
-
-
-
-    funcs_vref_flat[0][0][0][0] = eri_vref_flat_s_s_s_s;
-    #if MAXAM > 0
-    funcs_vref_flat[1][0][0][0] = eri_vref_flat_p_s_s_s;
-    funcs_vref_flat[1][0][1][0] = eri_vref_flat_p_s_p_s;
-    funcs_vref_flat[1][1][0][0] = eri_vref_flat_p_p_s_s;
-    funcs_vref_flat[1][1][1][0] = eri_vref_flat_p_p_p_s;
-    funcs_vref_flat[1][1][1][1] = eri_vref_flat_p_p_p_p;
-    #endif
-    #if MAXAM > 1
-    funcs_vref_flat[2][0][0][0] = eri_vref_flat_d_s_s_s;
-    funcs_vref_flat[2][0][1][0] = eri_vref_flat_d_s_p_s;
-    funcs_vref_flat[2][0][1][1] = eri_vref_flat_d_s_p_p;
-    funcs_vref_flat[2][0][2][0] = eri_vref_flat_d_s_d_s;
-    funcs_vref_flat[2][1][0][0] = eri_vref_flat_d_p_s_s;
-    funcs_vref_flat[2][1][1][0] = eri_vref_flat_d_p_p_s;
-    funcs_vref_flat[2][1][1][1] = eri_vref_flat_d_p_p_p;
-    funcs_vref_flat[2][1][2][0] = eri_vref_flat_d_p_d_s;
-    funcs_vref_flat[2][1][2][1] = eri_vref_flat_d_p_d_p;
-    funcs_vref_flat[2][2][0][0] = eri_vref_flat_d_d_s_s;
-    funcs_vref_flat[2][2][1][0] = eri_vref_flat_d_d_p_s;
-    funcs_vref_flat[2][2][1][1] = eri_vref_flat_d_d_p_p;
-    funcs_vref_flat[2][2][2][0] = eri_vref_flat_d_d_d_s;
-    funcs_vref_flat[2][2][2][1] = eri_vref_flat_d_d_d_p;
-    funcs_vref_flat[2][2][2][2] = eri_vref_flat_d_d_d_d;
-    #endif
-    #if MAXAM > 2
-        funcs_vref_flat[3][0][0][0] = eri_vref_flat_f_s_s_s;
-        funcs_vref_flat[3][0][1][0] = eri_vref_flat_f_s_p_s;
-        funcs_vref_flat[3][0][1][1] = eri_vref_flat_f_s_p_p;
-        funcs_vref_flat[3][0][2][0] = eri_vref_flat_f_s_d_s;
-        funcs_vref_flat[3][0][2][1] = eri_vref_flat_f_s_d_p;
-        funcs_vref_flat[3][0][3][0] = eri_vref_flat_f_s_f_s;
-        funcs_vref_flat[3][1][0][0] = eri_vref_flat_f_p_s_s;
-        funcs_vref_flat[3][1][1][0] = eri_vref_flat_f_p_p_s;
-        funcs_vref_flat[3][1][1][1] = eri_vref_flat_f_p_p_p;
-        funcs_vref_flat[3][1][2][0] = eri_vref_flat_f_p_d_s;
-        funcs_vref_flat[3][1][2][1] = eri_vref_flat_f_p_d_p;
-        funcs_vref_flat[3][1][2][2] = eri_vref_flat_f_p_d_d;
-        funcs_vref_flat[3][1][3][0] = eri_vref_flat_f_p_f_s;
-        funcs_vref_flat[3][1][3][1] = eri_vref_flat_f_p_f_p;
-        funcs_vref_flat[3][2][0][0] = eri_vref_flat_f_d_s_s;
-        funcs_vref_flat[3][2][1][0] = eri_vref_flat_f_d_p_s;
-        funcs_vref_flat[3][2][1][1] = eri_vref_flat_f_d_p_p;
-        funcs_vref_flat[3][2][2][0] = eri_vref_flat_f_d_d_s;
-        funcs_vref_flat[3][2][2][1] = eri_vref_flat_f_d_d_p;
-        funcs_vref_flat[3][2][2][2] = eri_vref_flat_f_d_d_d;
-        funcs_vref_flat[3][2][3][0] = eri_vref_flat_f_d_f_s;
-        funcs_vref_flat[3][2][3][1] = eri_vref_flat_f_d_f_p;
-        funcs_vref_flat[3][2][3][2] = eri_vref_flat_f_d_f_d;
-        funcs_vref_flat[3][3][0][0] = eri_vref_flat_f_f_s_s;
-        funcs_vref_flat[3][3][1][0] = eri_vref_flat_f_f_p_s;
-        funcs_vref_flat[3][3][1][1] = eri_vref_flat_f_f_p_p;
-        funcs_vref_flat[3][3][2][0] = eri_vref_flat_f_f_d_s;
-        funcs_vref_flat[3][3][2][1] = eri_vref_flat_f_f_d_p;
-        funcs_vref_flat[3][3][2][2] = eri_vref_flat_f_f_d_d;
-        funcs_vref_flat[3][3][3][0] = eri_vref_flat_f_f_f_s;
-        funcs_vref_flat[3][3][3][1] = eri_vref_flat_f_f_f_p;
-        funcs_vref_flat[3][3][3][2] = eri_vref_flat_f_f_f_d;
-        funcs_vref_flat[3][3][3][3] = eri_vref_flat_f_f_f_f;
-    #endif
 }
 
 
@@ -658,18 +564,7 @@ int Integral_FO(struct multishell_pair const P, struct multishell_pair const Q, 
     return funcs_FO[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
 }
 
-int Integral_FO_flat(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict integrals)
-{
-    return funcs_FO_flat[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
-}
-
 int Integral_vref(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
 {
     return funcs_vref[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
 }
-
-int Integral_vref_flat(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict integrals)
-{
-    return funcs_vref_flat[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
-}
-

@@ -41,9 +41,7 @@ int main(int argc, char ** argv)
 
     /* Storage of integrals */
     double * res_FO              = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_FO_flat         = (double *)ALLOC(maxsize * sizeof(double));
     double * res_vref            = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_vref_flat       = (double *)ALLOC(maxsize * sizeof(double));
     double * res_liberd          = (double *)ALLOC(maxsize * sizeof(double));
     double * res_valeev          = (double *)ALLOC(maxsize * sizeof(double));
 
@@ -54,12 +52,12 @@ int main(int argc, char ** argv)
              
              
     printf("\n");
-    printf("%17s    %10s  %10s  %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", 
-                                                                "Quartet", "MaxErr", "", "", "", "", 
-                                                                "MaxRelErr", "", "", "", "");
-    printf("%17s    %10s  %10s  %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", "",
-                                                                "FO", "FOF", "vref", "vrefF", "erd", 
-                                                                "FO", "FOF", "vref", "vrefF", "erd");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", 
+                                                                "Quartet", "MaxErr", "", "", 
+                                                                "MaxRelErr", "", "");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s  %10s  %10s\n", "",
+                                                                "FO", "vref", "erd", 
+                                                                "FO", "vref", "erd");
 
 
     // Read the reference integrals
@@ -119,35 +117,32 @@ int main(int argc, char ** argv)
         struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                           it_l.size(), it_l.data());
 
+        /*
         struct multishell_pair_flat Pf = create_multishell_pair_flat(it_i.size(), it_i.data(),
                                                                      it_j.size(), it_j.data());
         struct multishell_pair_flat Qf = create_multishell_pair_flat(it_k.size(), it_k.data(),
                                                                      it_l.size(), it_l.data());
+        */
 
         // acutally calculate
         Integral_FO(P, Q, res_FO);
-        Integral_FO_flat(Pf, Qf, res_FO_flat);
         Integral_vref(P, Q, res_vref);
-        Integral_vref_flat(Pf, Qf, res_vref_flat);
 
 
         // chop
         Chop(res_valeev, arrlen);
         Chop(res_FO, arrlen);
         Chop(res_vref, arrlen);
-        Chop(res_vref_flat, arrlen);
 
 
         // Analyze
         std::pair<double, double> err_FO        = CalcError(res_FO,        res_valeev,  arrlen);
-        std::pair<double, double> err_FO_flat   = CalcError(res_FO_flat,        res_valeev,  arrlen);
         std::pair<double, double> err_vref      = CalcError(res_vref,      res_valeev,  arrlen);
-        std::pair<double, double> err_vref_flat = CalcError(res_vref_flat, res_valeev,  arrlen);
         std::pair<double, double> err_erd       = CalcError(res_liberd,    res_valeev,  arrlen);
 
-        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e  %10.3e  %10.3e\n", i, j, k, l,
-                                                      err_FO.first,  err_FO_flat.first,  err_vref.first,  err_vref_flat.first,  err_erd.first,
-                                                      err_FO.second, err_FO_flat.second, err_vref.second, err_vref_flat.second, err_erd.second);
+        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
+                                                      err_FO.first,  err_vref.first,  err_erd.first,
+                                                      err_FO.second, err_vref.second, err_erd.second);
 
 
         // For debugging
@@ -157,8 +152,8 @@ int main(int argc, char ** argv)
 
         free_multishell_pair(P);
         free_multishell_pair(Q);
-        free_multishell_pair_flat(Pf);
-        free_multishell_pair_flat(Qf);
+        //free_multishell_pair_flat(Pf);
+        //free_multishell_pair_flat(Qf);
     }
 
     printf("\n");
@@ -173,9 +168,7 @@ int main(int argc, char ** argv)
     FREE(res_valeev);
     FREE(res_liberd);
     FREE(res_vref);
-    FREE(res_vref_flat);
     FREE(res_FO);
-    FREE(res_FO_flat);
 
     return 0;
 }

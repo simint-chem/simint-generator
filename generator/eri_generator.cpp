@@ -42,7 +42,6 @@ int main(int argc, char ** argv)
 
     // default options
     OptionsMap options;
-    options[OPTION_FLATPRIM] = 0;
     options[OPTION_INLINEVRR] = 1;
     options[OPTION_INLINEHRR] = 1;
     options[OPTION_PERMUTE] = 0;
@@ -59,9 +58,7 @@ int main(int argc, char ** argv)
     while(i < argc)
     {
         std::string argstr(GetNextArg(i, argc, argv));
-        if(argstr == "-f")
-            options[OPTION_FLATPRIM] = 1;
-        else if(argstr == "-ve")
+        if(argstr == "-ve")
             options[OPTION_INLINEVRR] = 0;
         else if(argstr == "-he")
             options[OPTION_INLINEHRR] = 0;

@@ -123,5 +123,4 @@ ADDTESTS(test_eri test_eri.cpp)
 
 ADDTESTS(benchmark_f benchmark_f.cpp)
 ADDTESTS(benchmark_FO benchmark_FO.cpp)
-ADDTESTS(benchmark_FO_flat benchmark_FO_flat.cpp)
 ADDTESTS(benchmark_erd benchmark_erd.cpp)

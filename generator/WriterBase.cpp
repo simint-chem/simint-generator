@@ -156,8 +156,8 @@ void WriterBase::DeclareContwork(std::ostream & os) const
     if(memory_ > 0)
     {
         os << "    // Workspace for contracted integrals\n";
-        os << "    double * const contwork = malloc(nshell1234 * " << memory_ << ");\n";
-        os << "    memset(contwork, 0, nshell1234 * " << memory_ << ");\n";
+        os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+        os << "    memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         os << "\n";
         os << "    // partition workspace into shells\n";
 
@@ -166,7 +166,7 @@ void WriterBase::DeclareContwork(std::ostream & os) const
         {
             if(it != finalam_)
             {
-                os << "    double * const " << ArrVarName(it) << " = contwork + (nshell1234 * " << ptidx << ");\n";
+                os << "    double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
                 ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
             }
         
@@ -177,22 +177,30 @@ void WriterBase::DeclareContwork(std::ostream & os) const
         if(HasBraHRR())
         {
             os << "    // Holds AB_{xyz} in a flattened fashion for later\n";
-            os << "    double * const restrict AB_x = contwork + (nshell1234 * " << ptidx++ << ");\n";
-            os << "    double * const restrict AB_y = contwork + (nshell1234 * " << ptidx++ << ");\n";
-            os << "    double * const restrict AB_z = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict AB_x = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
+            os << "    double * const restrict AB_y = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
+            os << "    double * const restrict AB_z = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
             os << "\n";
         }
 
         if(HasKetHRR())
         {
             os << "    // Holds CD_{xyz} in a flattened fashion for later\n";
-            os << "    double * const restrict CD_x = contwork + (nshell1234 * " << ptidx++ << ");\n";
-            os << "    double * const restrict CD_y = contwork + (nshell1234 * " << ptidx++ << ");\n";
-            os << "    double * const restrict CD_z = contwork + (nshell1234 * " << ptidx++ << ");\n";
+            os << "    double * const restrict CD_x = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
+            os << "    double * const restrict CD_y = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
+            os << "    double * const restrict CD_z = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
             os << "\n";
         }
     }
 }
+
+
+void WriterBase::ZeroContWork(std::ostream & os) const
+{
+    if(memory_ > 0)
+        os << "            memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+}
+
 
 void WriterBase::FreeContwork(std::ostream & os) const
 {

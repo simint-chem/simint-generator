@@ -25,17 +25,17 @@ void HRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
 void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << "\n";
-    os << "        for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
-    os << "        {\n";
+    os << "                for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
+    os << "                {\n";
 
     for(const auto & hit : hrrsteps_.first)
     {
-        os << std::string(12, ' ') << "// " << hit << "\n";
+        os << std::string(20, ' ') << "// " << hit << "\n";
     
         const char * xyztype = "AB_";
 
         std::stringstream ss;
-        os << std::string(12, ' ');
+        os << std::string(20, ' ');
 
         os << HRRBraStepVar_(hit.target, ncart_ket, ketstr, true, base);
 
@@ -47,7 +47,7 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, cons
         os << "\n\n";
     }
 
-    os << "        }\n";
+    os << "                }\n";
     os << "\n";
 }
 
@@ -55,15 +55,15 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, cons
 
 void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
 {
-        os << "        for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
-        os << "        {\n"; 
+        os << "                for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
+        os << "                {\n"; 
         for(const auto & hit : hrrsteps_.second)
         {
-            os << std::string(12, ' ') << "// " << hit << "\n";
+            os << std::string(20, ' ') << "// " << hit << "\n";
 
             const char * xyztype = "CD_";
 
-            os << std::string(12, ' ');
+            os << std::string(20, ' ');
     
             os << HRRKetStepVar_(hit.target, ncart_bra, brastr, true, base);
 
@@ -75,7 +75,7 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, cons
             os << "\n\n";
         }
 
-        os << "        }\n"; 
+        os << "                }\n"; 
 }
 
 
@@ -159,36 +159,37 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 
     if(base.HasHRR())
     {
-        os << "    //////////////////////////////////////////////\n";
-        os << "    // Contracted integrals: Horizontal recurrance\n";
-        os << "    //////////////////////////////////////////////\n";
+        os << "            //////////////////////////////////////////////\n";
+        os << "            // Contracted integrals: Horizontal recurrance\n";
+        os << "            //////////////////////////////////////////////\n";
         os << "\n";
-        os << "    #pragma simd\n";
-        os << "    for(abcd = 0; abcd < nshell1234; ++abcd)\n";
-        os << "    {\n";
+        os << "            #pragma omp simd linear(real_abcd)\n";
+        os << "            for(abcd = 0; abcd < nshell1234; ++abcd, ++real_abcd)\n";
+        os << "            {\n";
 
         // variables
         os << "\n";
         if(base.HasBraHRR())
         {
-            os << "        const double bAB_x = AB_x[abcd];\n";
-            os << "        const double bAB_y = AB_y[abcd];\n";
-            os << "        const double bAB_z = AB_z[abcd];\n";
+            os << "                const double bAB_x = AB_x[abcd];\n";
+            os << "                const double bAB_y = AB_y[abcd];\n";
+            os << "                const double bAB_z = AB_z[abcd];\n";
         }
         if(base.HasKetHRR())
         {
-            os << "        const double kCD_x = CD_x[abcd];\n";
-            os << "        const double kCD_y = CD_y[abcd];\n";
-            os << "        const double kCD_z = CD_z[abcd];\n";
+            os << "                const double kCD_x = CD_x[abcd];\n";
+            os << "                const double kCD_y = CD_y[abcd];\n";
+            os << "                const double kCD_z = CD_z[abcd];\n";
         }
         os << "\n";
 
+
         // we may be able to do some index math up front
         for(const auto & it : topquartetam_)
-            os << "        const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+            os << "                const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
 
         // and also for the final integral
-        os << "        const int idx_" << base.ArrVarName(finalam) << " = abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        os << "                const int idx_" << base.ArrVarName(finalam) << " = real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
         os << "\n";
 
         if(base.HasBraHRR())
@@ -200,7 +201,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
                 QAM qam{finalbra[0], finalbra[1], it[0], 0};
                 if(!base.IsFinalAM(qam))
                 {
-                    os << "        double " << base.ArrVarName(qam)
+                    os << "                double " << base.ArrVarName(qam)
                        << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
                 }
             }
@@ -210,7 +211,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
             for(const auto & it : brakettopam_.second)
             {
                 // it.first is the AM for the ket part
-                os << "        // form " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
+                os << "                // form " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
 
                 // ncart_ket in string form
                 std::stringstream ss;
@@ -244,7 +245,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
     
         }
 
-        os << "    }\n";
+        os << "            }  // close HRR loop\n";
 
     }
 

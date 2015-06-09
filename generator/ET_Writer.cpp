@@ -35,13 +35,13 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 {
     if(etint_.size())
     {
-        os << "                    // Holds temporary integrals for electron transfer\n";
+        os << "                        // Holds temporary integrals for electron transfer\n";
 
         for(const auto & it : etint_)
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << "                    double " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
+                os << "                        double " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
         } 
 
         os << "\n\n";
@@ -57,7 +57,7 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) 
         for(const auto & it : etint_)
         {
             if(base.IsContArray(it))
-                os << "                    double * const restrict " << base.PrimPtrName(it)
+                os << "                        double * const restrict " << base.PrimPtrName(it)
                    << " = " << base.ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
         }
 
@@ -69,14 +69,14 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) 
 
 void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
 {
-    os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Electron transfer\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "\n";
+    std::string indent1(24, ' ');
+    std::string indent2(28, ' ');
 
-    std::string indent1(20, ' ');
-    std::string indent2(24, ' ');
+    os << "\n";
+    os << indent1 << "//////////////////////////////////////////////\n";
+    os << indent1 << "// Primitive integrals: Electron transfer\n";
+    os << indent1 << "//////////////////////////////////////////////\n";
+    os << "\n";
 
     if(etsl_.size() == 0)
         os << indent1 << "//...nothing to do...\n";

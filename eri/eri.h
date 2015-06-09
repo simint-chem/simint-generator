@@ -8,9 +8,7 @@ extern "C" {
 #include "shell/shell.h"
 
 #include "eri/FO.gen/eri_FO.h"
-#include "eri/FO_flat.gen/eri_FO_flat.h"
 #include "eri/vref.gen/eri_vref.h"
-#include "eri/vref_flat.gen/eri_vref_flat.h"
 
 
 #ifdef __cplusplus

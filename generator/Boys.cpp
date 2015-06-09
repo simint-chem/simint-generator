@@ -55,7 +55,7 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
 
 void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
-    const std::string indent(20, ' ');
+    const std::string indent(24, ' ');
 
     std::string primname = base.PrimVarName({0,0,0,0});
 
@@ -125,8 +125,8 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 
         // add prefac now
         os << "\n";
-        os << "for(m = 0; m <= " << base.L() << "; ++m)\n";
-        os << "    " << primname << "[m] *= allprefac;\n";
+        os << indent << "for(m = 0; m <= " << base.L() << "; ++m)\n";
+        os << indent << "    " << primname << "[m] *= allprefac;\n";
         os << "\n";
     }
 }

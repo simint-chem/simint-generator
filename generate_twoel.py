@@ -14,7 +14,6 @@ parser.add_argument("-d", type=str, required=True, help="Directory in which to c
 parser.add_argument("-p", type=str, required=True, help="Type prefix")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 
-parser.add_argument("-f",  required=False, action='store_true', help="Flattened primitive loop")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
@@ -156,8 +155,6 @@ for q in valid:
     cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
 
-    if args.f:
-        cmdline.append("-f")
     if vrrtype == "External":
         cmdline.append("-ve")
     if hrrtype == "External":
@@ -201,10 +198,7 @@ with open(headerfile, 'w') as hfile:
   for q in valid:
     funcname = "eri_{}_{}_{}_{}_{}".format(args.p, amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
     intname = "INT__{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    if args.f:
-        hfile.write("int {}(struct multishell_pair_flat const P, struct multishell_pair_flat const Q, double * const restrict {});\n".format(funcname, intname))
-    else:
-        hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict {});\n".format(funcname, intname))
+    hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict {});\n".format(funcname, intname))
 
   hfile.write("\n\n")
 

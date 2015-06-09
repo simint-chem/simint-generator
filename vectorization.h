@@ -41,7 +41,7 @@
 
 #else
 
-  #define SIMD_LEN 0
+  #define SIMD_LEN 1
   #define SIMD_ALIGN 1
   #define SIMD_ALIGN_DBL 1
 
@@ -56,6 +56,12 @@
   #define SIMD_ROUND_DBL(x) (x)
 
 #endif
+
+
+
+#define SIMINT_NSHELL_SIMD (4*SIMD_LEN)
+
+
 
 
 #endif

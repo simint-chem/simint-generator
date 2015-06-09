@@ -22,13 +22,13 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) c
 {
     if(vrramreq_.size())
     {
-        os << "                    // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-        os << "                    // with m as the slowest index\n";
+        os << "                        // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
+        os << "                        // with m as the slowest index\n";
 
         for(const auto & greq : vrramreq_)
         {
-            //os << "                    // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << "                    double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
+            //os << "                        // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
+            os << "                        double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
             //os << "\n";
         }
 
@@ -46,7 +46,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base)
         {
             QAM qam({greq.first, 0, 0, 0});
             if(base.IsContArray(qam))
-                os << "                    double * const restrict " << base.PrimPtrName(qam)
+                os << "                        double * const restrict " << base.PrimPtrName(qam)
                    << " = " << base.ArrVarName(qam) << " + abcd * " << NCART(qam[0]) << ";\n";
         }
 
@@ -58,8 +58,8 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base)
 
 void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
 {
-    std::string indent1(20, ' ');
-    std::string indent2(24, ' ');
+    std::string indent1(24, ' ');
+    std::string indent2(28, ' ');
 
     int am = greq.begin()->am();
     QAM qam{am, 0, 0, 0};
@@ -124,15 +124,16 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
 
 void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
 {
-    os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Vertical recurrance\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "\n";
 
 
-    std::string indent1(20, ' ');
-    std::string indent2(24, ' ');
+    std::string indent1(24, ' ');
+    std::string indent2(28, ' ');
+
+    os << "\n";
+    os << indent1 << "//////////////////////////////////////////////\n";
+    os << indent1 << "// Primitive integrals: Vertical recurrance\n";
+    os << indent1 << "//////////////////////////////////////////////\n";
+    os << "\n";
 
     // iterate over increasing am
     for(const auto & it3 : vrramreq_)
@@ -281,8 +282,8 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
 {
     QAM qam{am, 0, 0, 0};
 
-    std::string indent1(20, ' ');
-    std::string indent2(26, ' ');
+    std::string indent1(24, ' ');
+    std::string indent2(28, ' ');
 
     // if this target is also a contracted array, accumulate there
     if(base.IsContArray(qam))
