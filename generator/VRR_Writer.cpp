@@ -138,7 +138,6 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
     for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
-        QAM qam{am, 0, 0, 0};
 
         // don't do zero - that is handled by the boys function stuff
         if(am == 0)
@@ -153,52 +152,14 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
         WriteVRRSteps_(os, base, greq, ss.str());
 
         // if this target is also a contracted array, accumulate there
-        if(base.IsContArray(qam))
-        {
-            os << "\n";
-            os << indent1 << "// Accumulating in contracted workspace\n";
-
-            if(greq.size() == NCART(am))  // only do if we calculated all of them?
-            {
-                os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-
-                if(!base.Permute())  // don't permute if no HRR, etc
-                {
-                    if(base.IsFinalAM(qam))
-                        os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
-                    else
-                        os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
-                }
-                else
-                    os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
-            }
-            else
-            { 
-                // TODO
-                for(const auto & it : greq)
-                    os << indent1 << base.ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << base.PrimVarName(qam) << "[" << it.idx() << "];\n";
-            }
-        }
-
+        // (the check for contracted array happens in function)
+        WriteAccumulate_(os, am, base);
         os << "\n\n";
     }
 
     // accumulate ssss if needed
-    QAM zeroam = {0,0,0,0};
-    if(base.IsContArray(zeroam))
-    {
-        os << "\n";
-        os << indent1 << "// Accumulating ssss in contracted workspace\n";
-
-        if(base.IsFinalAM(zeroam))
-            os << indent1 << "result[abcd] += *" << base.PrimVarName(zeroam) << ";\n";
-        else
-            os << indent1 << base.ArrVarName(zeroam) << "[abcd] += *" << base.PrimVarName(zeroam) << ";\n";
-
-        os << "\n";
-    }
-
-    os << "\n";
+    WriteAccumulate_(os, 0, base);
+    os << "\n\n";
 }
 
 
@@ -315,6 +276,39 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) 
 }
 
 
+
+void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & base) const
+{
+    QAM qam{am, 0, 0, 0};
+
+    std::string indent1(20, ' ');
+    std::string indent2(26, ' ');
+
+    // if this target is also a contracted array, accumulate there
+    if(base.IsContArray(qam))
+    {
+        os << "\n";
+        os << indent1 << "// Accumulating in contracted workspace\n";
+        os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
+
+        if(!base.Permute())  // don't permute if no HRR, etc
+        {
+            if(base.IsFinalAM(qam))
+                os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+            else
+                os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+        }
+        else
+            os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
+
+        // TODO
+        // if I don't need all, then don't accumulate all
+        //for(const auto & it : greq)
+        //    os << indent1 << base.ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << base.PrimVarName(qam) << "[" << it.idx() << "];\n";
+    }
+}
+
+
 void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
@@ -340,7 +334,7 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
             continue;
 
         // greq is what is actually required from this am
-        const GaussianSet & greq = it3.second;
+        //const GaussianSet & greq = it3.second;
 
         // call the function
         os << indent1 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
@@ -362,37 +356,13 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
 
 
         // if this target is also a contracted array, accumulate there
-        if(base.IsContArray(qam))
-        {
-            os << "\n";
-            os << indent1 << "// Accumulating in contracted workspace\n";
-
-            if(greq.size() == NCART(am))  // only do if wr calculated all of them?
-            {
-                os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-                os << indent2 << base.ArrVarName(qam) << "[n * nshell1234 + abcd] += " << base.PrimVarName(qam) << "[n];\n";
-            }
-            else
-            { 
-                for(const auto & it : greq)
-                    os << indent1 << base.ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << base.PrimVarName(qam) << "[" << it.idx() << "];\n";
-            }
-        }
-
+        WriteAccumulate_(os, am, base);
         os << "\n\n";
     }
 
     // accumulate ssss if needed
-    QAM zeroam = {0,0,0,0};
-    if(base.IsContArray(zeroam))
-    {
-        os << "\n";
-        os << indent1 << "// Accumulating ssss in contracted workspace\n";
-        os << indent1 << "*" << base.ArrVarName(zeroam) << " += *" << base.PrimVarName(zeroam) << ";\n";
-        os << "\n";
-    }
-
-    os << "\n";
+    WriteAccumulate_(os, 0, base);
+    os << "\n\n";
 }
 
 

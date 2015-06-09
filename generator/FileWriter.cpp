@@ -118,10 +118,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(base.Permute())
         os << "    int ir;\n";
 
+    os << "    int n;\n";
+
     if(hasvrr_m)
         os << "    int m;\n";
-    if(hasvrr || haset)
-        os << "    int n;\n";
 
     if(inline_hrr)
     {
