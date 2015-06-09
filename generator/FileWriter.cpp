@@ -64,7 +64,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const restrict result)\n";
+    os << indent << "double * const " << base.ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
     os << "    ASSUME_ALIGN(P.x);\n";
@@ -92,7 +92,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
 
     os << "\n";
-    os << "    ASSUME_ALIGN(result);\n";
+    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
@@ -100,14 +100,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
     if(!hashrr)
-        os << "    memset(result, 0, nshell1234*" << ncart << "*sizeof(double));\n";
+        os << "    memset(" << base.ArrVarName(am) << ", 0, nshell1234*" << ncart << "*sizeof(double));\n";
     
     os << "\n";
 
 
     os << "    int ab, cd, abcd;\n";
     os << "    int i, j;\n";
-
     os << "    int n;\n";
 
     if(hasvrr_m)
@@ -366,7 +365,7 @@ static void WriteFile_Flat(std::ostream & os,
     os << "    ASSUME_ALIGN(Q.prefac);\n";
     os << "    ASSUME_ALIGN(Q.shellidx);\n";
     os << "\n";
-    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ";\n";
+    os << "    ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
     os << "\n";
     os << "    const int nshell1234 = P.nshell12 * Q.nshell12;\n";
     os << "\n";
@@ -379,23 +378,13 @@ static void WriteFile_Flat(std::ostream & os,
     os << "\n";
 
     if(hashrr)
-    {
-        os << "    // Holds AB_{xyz} and CD_{xyz} in a flattened fashion for later\n";
-        os << "    double AB_x[nshell1234];  double CD_x[nshell1234];\n";
-        os << "    double AB_y[nshell1234];  double CD_y[nshell1234];\n";
-        os << "    double AB_z[nshell1234];  double CD_z[nshell1234];\n";
-        os << "\n";
-    }
-
-    if(hashrr)
         os << "    int abcd;\n";
 
-    os << "    int i, j, ir;\n";
+    os << "    int i, j;\n";
+    os << "    int n;\n";
 
     if(hasvrr_m)
         os << "    int m;\n";
-    if(hasvrr || haset)
-        os << "    int n;\n";
 
     if(inline_hrr)
     {
@@ -406,6 +395,8 @@ static void WriteFile_Flat(std::ostream & os,
     }
 
     os << "\n";
+
+    base.DeclareContwork(os);
 
     // save these for later
     if(hashrr)
@@ -432,8 +423,6 @@ static void WriteFile_Flat(std::ostream & os,
         os << "    }\n";
         os << "\n";
     }
-
-    base.DeclareContwork(os);
 
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";

@@ -98,9 +98,7 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
 
     std::string arrname = base.ArrVarName(d.left.am(), d.right.am(), ketstr);
 
-    if(isfinalq)
-        ss << "result[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
-    else if(istop)
+    if(istop || isfinalq)
         ss << arrname << "[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
     else if(isfinald)
         ss << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
@@ -137,11 +135,9 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
 
     std::string arrname = base.ArrVarName(brastr, d.left.am(), d.right.am());
 
-    if(isfinal)
-        ss << "result[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    else if(istopbra)
+    if(istopbra)
         ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    else if(istop)
+    else if(istop || isfinal)
         ss << arrname << "[idx_" << arrname << " + ibra * " << d.ncart() << " + " << d.idx() << "]"; 
     else
     {

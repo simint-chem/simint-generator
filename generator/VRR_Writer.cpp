@@ -273,11 +273,7 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
         os << "\n";
         os << indent1 << "// Accumulating in contracted workspace\n";
         os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-
-        if(base.IsFinalAM(qam))
-            os << indent2 << "result[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
-        else
-            os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
+        os << indent2 << base.ArrVarName(qam) << "[abcd * " << NCART(am) << " + n] += " << base.PrimVarName(qam) << "[n];\n";
 
         // TODO
         // if I don't need all, then don't accumulate all

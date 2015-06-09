@@ -83,11 +83,7 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             os << "\n";
             os << indent1 << "// Accumulating in contracted workspace\n";
             os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
-
-            if(base.IsFinalAM(it))
-                os << indent2 << "result[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
-            else
-                os << indent2 << base.ArrVarName(it) << "[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
+            os << indent2 << base.ArrVarName(it) << "[abcd * " << ncart << " + n] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
 }

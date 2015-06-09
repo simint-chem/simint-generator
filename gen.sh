@@ -15,15 +15,15 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
                              -d ../eri/FO.gen
 
 
-#mkdir -p ../eri/FO_flat.gen
-#python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
-#                             -f \
-#                             -b FO \
-#                             -p FO_flat \
-#                             -g generator/eri_generator \
-#                             -d ../eri/FO_flat.gen
-#
-#
+mkdir -p ../eri/FO_flat.gen
+python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
+                             -f \
+                             -b FO \
+                             -p FO_flat \
+                             -g generator/eri_generator \
+                             -d ../eri/FO_flat.gen
+
+
 #mkdir -p ../eri/split.gen
 #python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} \
 #                             -b split \
