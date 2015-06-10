@@ -373,13 +373,17 @@ static void WriteFile_NotFlat(std::ostream & os,
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
     if(!hashrr)
-        os << "    memset(" << base.ArrVarName(am) << ", 0, SIMINT_NSHELL_SIMD * " << ncart << " * sizeof(double));\n";
+        os << "    memset(" << base.ArrVarName(am) << ", 0, P.nshell12 * Q.nshell12 * " << ncart << " * sizeof(double));\n";
     
     os << "\n";
 
-    os << "    // abcd =  index within simd loop, real_abcd is the absolute\n";
-    os << "    // full abcd in terms of all the shells\n";
-    os << "    int ab, cd, abcd, real_abcd;\n";
+    // abcd =  index within simd loop, real_abcd is the absolute
+    // full abcd in terms of all the shells
+    os << "    int ab, cd, abcd;\n";
+
+    if(hashrr)
+        os << "    int real_abcd;\n";
+
     os << "    int i, j;\n";
     os << "    int n;\n";
 
@@ -396,13 +400,20 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     os << "\n";
 
-    base.DeclareContwork(os);
+    if(hashrr)
+        base.DeclareContwork(os);
 
     os << "\n\n";
     os << "    ////////////////////////////////////////\n";
     os << "    // Loop over shells and primitives\n";
     os << "    ////////////////////////////////////////\n";
-    os << "    for(ab = 0, real_abcd = 0; ab < P.nshell12; ++ab)\n";
+    os << "\n";
+    if(hashrr)
+        os << "    real_abcd = 0;\n";
+    else
+        os << "    abcd = 0;\n";
+
+    os << "    for(ab = 0; ab < P.nshell12; ++ab)\n";
     os << "    {\n";
 
     os << "        const int istart = P.primstart[ab];\n";
@@ -411,23 +422,32 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "        // this should have been set/aligned in fill_multishell_pair or something else\n";
     os << "        ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
-    os << "        // holds the main counter over the ket parts\n";
-    os << "        cd = 0;\n";
-    os << "\n";
-    os << "        while(cd < Q.nshell12)\n";
-    os << "        {\n";
-    os << "\n";
-    os << "            int cdstop = cd + SIMINT_NSHELL_SIMD;\n";
-    os << "            cdstop = (cdstop > Q.nshell12 ? Q.nshell12 : cdstop);\n";
-    os << "\n";
-    os << "            const int nshell1234 = cdstop - cd;   // how many we are actually calcualting\n";
-    os << "\n";
-    
-    base.ZeroContWork(os);
 
-    os << "\n";
-    os << "            for(abcd = 0; abcd < nshell1234; ++abcd, ++cd)\n";
-    os << "            {\n";
+    if(hashrr)
+    {
+        os << "        // holds the main counter over the ket parts\n";
+        os << "        cd = 0;\n";
+        os << "\n";
+        os << "        while(cd < Q.nshell12)\n";
+        os << "        {\n";
+        os << "\n";
+        os << "            int cdstop = cd + SIMINT_NSHELL_SIMD;\n";
+        os << "            cdstop = (cdstop > Q.nshell12 ? Q.nshell12 : cdstop);\n";
+        os << "\n";
+        os << "            const int nshell1234 = cdstop - cd;   // how many we are actually calcualting\n";
+        os << "\n";
+        
+        base.ZeroContWork(os, "SIMINT_NSHELL_SIMD");
+
+        os << "\n";
+        os << "            for(abcd = 0; abcd < nshell1234; ++cd, ++abcd)\n";
+        os << "            {\n";
+    }
+    else
+    {
+        os << "            for(cd = 0; cd < Q.nshell12; ++cd, ++abcd)\n";
+        os << "            {\n";
+    }
 
     if(hasbrahrr)
     {
@@ -555,7 +575,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << "                     }  // close loop over j\n";
     os << "                }  // close loop over i\n";
-    os << "            }  // close loop over abcd\n";
+    os << "            }\n";  // close loop over abcd or cd
 
     os << "\n";
     os << "\n";
@@ -565,7 +585,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
 
-    os << "        }  // close loop over cd\n";
+    if(hashrr)
+        os << "        }\n";   // close loop over ab or cd
+
     os << "    }  // close loop over ab\n";
     os << "\n";
     os << "\n";

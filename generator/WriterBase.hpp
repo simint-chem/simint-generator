@@ -12,7 +12,7 @@ class WriterBase
         void SetContQ(const QAMSet & topquartets);
 
         void DeclareContwork(std::ostream & os) const;
-        void ZeroContWork(std::ostream & os) const;
+        void ZeroContWork(std::ostream & os, const std::string & nshell) const;
         void FreeContwork(std::ostream & os) const;
 
         int GetOption(int option) const;

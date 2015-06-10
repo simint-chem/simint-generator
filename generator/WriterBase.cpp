@@ -157,7 +157,7 @@ void WriterBase::DeclareContwork(std::ostream & os) const
     {
         os << "    // Workspace for contracted integrals\n";
         os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
-        os << "    memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+        //os << "    memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         os << "\n";
         os << "    // partition workspace into shells\n";
 
@@ -195,10 +195,10 @@ void WriterBase::DeclareContwork(std::ostream & os) const
 }
 
 
-void WriterBase::ZeroContWork(std::ostream & os) const
+void WriterBase::ZeroContWork(std::ostream & os, const std::string & nshell) const
 {
     if(memory_ > 0)
-        os << "            memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+        os << "            memset(contwork, 0, " << nshell << " * " << memory_ << ");\n";
 }
 
 
