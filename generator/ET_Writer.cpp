@@ -121,8 +121,7 @@ std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
     int kval = et.target.ket.left.ijk[stepidx]-1;
 
     std::stringstream ss;
-    ss << std::string(20, ' ');
-    ss << ETStepVar(et.target, base);
+    ss << indent6 <<  ETStepVar(et.target, base);
 
     ss << " = ";
 
