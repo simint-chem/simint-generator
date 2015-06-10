@@ -59,7 +59,7 @@
 
 
 
-#define SIMINT_NSHELL_SIMD (4*SIMD_LEN)
+#define SIMINT_NSHELL_SIMD (5*SIMD_LEN)
 
 
 
