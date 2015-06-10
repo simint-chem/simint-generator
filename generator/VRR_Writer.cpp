@@ -290,9 +290,9 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
 void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) const
 {
     os << "\n";
-    os << "                    //////////////////////////////////////////////\n";
-    os << "                    // Primitive integrals: Vertical recurrance\n";
-    os << "                    //////////////////////////////////////////////\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
+    os << indent6 << "// Primitive integrals: Vertical recurrance\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
 
     // iterate over increasing am
