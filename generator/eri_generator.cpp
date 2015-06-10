@@ -42,6 +42,7 @@ int main(int argc, char ** argv)
 
     // default options
     OptionsMap options;
+    options[OPTION_STACKMEM] = 0;
     options[OPTION_INLINEVRR] = 1;
     options[OPTION_INLINEHRR] = 1;
     options[OPTION_PERMUTE] = 0;
@@ -62,6 +63,8 @@ int main(int argc, char ** argv)
             options[OPTION_INLINEVRR] = 0;
         else if(argstr == "-he")
             options[OPTION_INLINEHRR] = 0;
+        else if(argstr == "-s")
+            options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
         else if(argstr == "-P")
             options[OPTION_PERMUTE] = 1;
         else if(argstr == "-p")

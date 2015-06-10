@@ -17,6 +17,7 @@ parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
+parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 args = parser.parse_args()
 
 
@@ -154,6 +155,7 @@ for q in valid:
     cmdline.extend(["-p", args.p])
     cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
+    cmdline.extend(["-s", str(args.s)])
 
     if vrrtype == "External":
         cmdline.append("-ve")

@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "generator/WriterBase.hpp"
 
 
@@ -51,7 +53,11 @@ int WriterBase::GetOption(int option) const
     if(options_.count(option) > 0)
         return options_.at(option);
     else
-        return 0;
+    {
+        std::stringstream ss;
+        ss << "No value for option: " << option;
+        throw std::runtime_error(ss.str());
+    }
 }
 
 
@@ -153,12 +159,17 @@ void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
 
 void WriterBase::DeclareContwork(std::ostream & os) const
 {
+
     if(memory_ > 0)
     {
         os << "    // Workspace for contracted integrals\n";
-        os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
-        //os << "    memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+
+        if(memory_ > GetOption(OPTION_STACKMEM))
+            os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+        else
+            os << "    double contwork[SIMINT_NSHELL_SIMD * " << memory_ << "];\n";
         os << "\n";
+
         os << "    // partition workspace into shells\n";
 
         size_t ptidx = 0;
@@ -204,7 +215,7 @@ void WriterBase::ZeroContWork(std::ostream & os, const std::string & nshell) con
 
 void WriterBase::FreeContwork(std::ostream & os) const
 {
-    if(memory_ > 0)
+    if((memory_ > 0) && (memory_ > GetOption(OPTION_STACKMEM)))
     {
         os << "    // Free contracted work space\n";
         os << "    free(contwork);\n";
