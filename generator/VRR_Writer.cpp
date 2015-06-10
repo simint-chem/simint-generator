@@ -1,6 +1,7 @@
 #include "generator/VRR_Writer.hpp"
 #include "generator/WriterBase.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
+#include "generator/Helpers.hpp"
 
 
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
@@ -58,30 +59,27 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base)
 
 void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
 {
-    std::string indent1(24, ' ');
-    std::string indent2(28, ' ');
-
     int am = greq.begin()->am();
     QAM qam{am, 0, 0, 0};
     QAM qam1{am-1, 0, 0, 0};
     QAM qam2{am-2, 0, 0, 0};
 
-    os << indent1 << "// Forming " << base.PrimVarName(qam) << "[" << num_m << " * " << NCART(am) << "];\n";
+    os << indent6 << "// Forming " << base.PrimVarName(qam) << "[" << num_m << " * " << NCART(am) << "];\n";
 
-    //os << indent1 << "// Needed from this AM:\n";
+    //os << indent6 << "// Needed from this AM:\n";
     //for(const auto & it : greq)
-    //    os << indent1 << "//    " << it << "\n";
+    //    os << indent6 << "//    " << it << "\n";
 
-    os << indent1 << "for(m = 0; m < " << num_m << "; m++)  // loop over orders of auxiliary function\n";
-    os << indent1 << "{\n";
+    os << indent6 << "for(m = 0; m < " << num_m << "; m++)  // loop over orders of auxiliary function\n";
+    os << indent6 << "{\n";
 
-    os << indent2 << "const int idx = m * " << NCART(am) << ";    // m * NCART(am)\n";
-    os << indent2 << "const int idx1 = m * " << NCART(am-1) << ";    // m * NCART(am-1)\n"; 
-    os << indent2 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (m+1) * NCART(am-1)\n"; 
+    os << indent7 << "const int idx = m * " << NCART(am) << ";    // m * NCART(am)\n";
+    os << indent7 << "const int idx1 = m * " << NCART(am-1) << ";    // m * NCART(am-1)\n"; 
+    os << indent7 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (m+1) * NCART(am-1)\n"; 
     if(am > 1)
     {
-        os << indent2 << "const int idx2 = m * " << NCART(am-2) << ";    // m * NCART(am-2)\n";
-        os << indent2 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (m+1) * NCART(am-2)\n";
+        os << indent7 << "const int idx2 = m * " << NCART(am-2) << ";    // m * NCART(am-2)\n";
+        os << indent7 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (m+1) * NCART(am-2)\n";
     }
         
     os << "\n";
@@ -101,8 +99,8 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
         // = value of exponent of g1 in the position of the step
         int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
-        os << indent2 << "//" << it <<  " : STEP: " << step << "\n";
-        os << indent2 << base.PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
+        os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
+        os << indent7 << base.PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
 
         if(g1)
             os << base.PrimVarName(qam1) << "[idx1 + " << g1.idx() 
@@ -110,29 +108,24 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
         if(g2)
         {
             os << "\n"
-               << indent2 << "              + " << vrr_i 
+               << indent8 << "+ " << vrr_i 
                << " * one_over_2p * ( " << base.PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
                << " - a_over_p * " << base.PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }
         os << ";\n\n"; 
     }
 
-    os << indent1 << "}\n";
+    os << indent6 << "}\n";
 }
 
 
 
 void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) const
 {
-
-
-    std::string indent1(24, ' ');
-    std::string indent2(28, ' ');
-
     os << "\n";
-    os << indent1 << "//////////////////////////////////////////////\n";
-    os << indent1 << "// Primitive integrals: Vertical recurrance\n";
-    os << indent1 << "//////////////////////////////////////////////\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
+    os << indent6 << "// Primitive integrals: Vertical recurrance\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
 
     // iterate over increasing am
@@ -167,8 +160,6 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os, const WriterBase & base) con
 
 void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(11, ' ');
-
     os << "//////////////////////////////////////////////\n";
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
@@ -196,18 +187,18 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
         os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
-        os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
-        os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent1 << "const double a_over_p,";
+        os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
+        os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
+        os << indent3 << "const double a_over_p,";
         if(am > 1)
             os << " const double one_over_2p,";
         os << "\n"; 
-        os << indent1 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
-        os << indent1 << "double const * const restrict " << base.PrimVarName(qam1);
+        os << indent3 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
+        os << indent3 << "double const * const restrict " << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent1 << "double const * const restrict " << base.PrimVarName(qam2);
+            os << indent3 << "double const * const restrict " << base.PrimVarName(qam2);
         }
         
         os << ")\n";
@@ -227,8 +218,6 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
 void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(11, ' ');
-
     os << "#ifndef VRR__H\n";
     os << "#define VRR__H\n";
     os << "\n";
@@ -255,18 +244,18 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) 
         os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
         os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
         os << "void VRR_" << amchar[am] << "(const int num_m,\n";
-        os << indent1 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
-        os << indent1 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent1 << "const double a_over_p,";
+        os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
+        os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
+        os << indent3 << "const double a_over_p,";
         if(am > 1)
             os << " const double one_over_2p,";
         os << "\n"; 
-        os << indent1 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
-        os << indent1 << "double const * const restrict " << base.PrimVarName(qam1);
+        os << indent3 << "double * const restrict " << base.PrimVarName(qam) << ",\n";
+        os << indent3 << "double const * const restrict " << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent1 << "double const * const restrict " << base.PrimVarName(qam2);
+            os << indent3 << "double const * const restrict " << base.PrimVarName(qam2);
         }
         
         os << ");\n";
@@ -282,16 +271,13 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
 {
     QAM qam{am, 0, 0, 0};
 
-    std::string indent1(24, ' ');
-    std::string indent2(28, ' ');
-
     // if this target is also a contracted array, accumulate there
     if(base.IsContArray(qam))
     {
         os << "\n";
-        os << indent1 << "// Accumulating in contracted workspace\n";
-        os << indent1 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-        os << indent2 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
+        os << indent6 << "// Accumulating in contracted workspace\n";
+        os << indent6 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
+        os << indent7 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
 
         // TODO
         // if I don't need all, then don't accumulate all
@@ -309,10 +295,6 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
     os << "                    //////////////////////////////////////////////\n";
     os << "\n";
 
-
-    std::string indent1(20, ' ');
-    std::string indent2(26, ' ');
-
     // iterate over increasing am
     for(const auto & it3 : vrramreq_)
     {
@@ -329,19 +311,19 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
         //const GaussianSet & greq = it3.second;
 
         // call the function
-        os << indent1 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
-        os << indent2 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
-        os << indent2 << "a_over_p,";
+        os << indent5 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
+        os << indent6 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
+        os << indent6 << "a_over_p,";
         if(am > 1)
             os << "one_over_2p, ";
         os << "\n"; 
 
-        os << indent2 << base.PrimVarName(qam) << ",\n";
-        os << indent2 << base.PrimVarName(qam1);
+        os << indent6 << base.PrimVarName(qam) << ",\n";
+        os << indent6 << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent2 << base.PrimVarName(qam2);
+            os << indent6 << base.PrimVarName(qam2);
         }
 
         os << ");\n";

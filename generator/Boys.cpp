@@ -3,6 +3,7 @@
 
 #include "generator/Boys.hpp"
 #include "generator/WriterBase.hpp"
+#include "generator/Helpers.hpp"
         
 ////////////////////////////////////
 // Base class
@@ -55,8 +56,6 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
 
 void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
-    const std::string indent(24, ' ');
-
     std::string primname = base.PrimVarName({0,0,0,0});
 
     // just calculate them all if L is small
@@ -67,23 +66,23 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
         {
             const BoysFit & bf = bfmap_.at(m); 
 
-            os << indent << primname << "[" << bf.v << "] = allprefac\n"; 
-            os << indent << "         * pow(\n";
-            os << indent << "                 (\n";
-            os << indent << "                   (\n";
-            os << indent << "                               " << bf.a[0] << "\n";
+            os << indent6 << primname << "[" << bf.v << "] = allprefac\n"; 
+            os << indent6 << "         * pow(\n";
+            os << indent6 << "                 (\n";
+            os << indent6 << "                   (\n";
+            os << indent6 << "                               " << bf.a[0] << "\n";
             for(int i = 1; i < bf.a.size(); i++)
-                os << indent << "                     + F_x * ( " << bf.a[i] << "\n";
-            os << indent << "                             " << std::string(bf.a.size()-1, ')') << "\n";
-            os << indent << "                   )\n";
-            os << indent << "                   /\n";
-            os << indent << "                   (\n";
-            os << indent << "                               " << bf.b[0] << "\n";
+                os << indent6 << "                     + F_x * ( " << bf.a[i] << "\n";
+            os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";
+            os << indent6 << "                   )\n";
+            os << indent6 << "                   /\n";
+            os << indent6 << "                   (\n";
+            os << indent6 << "                               " << bf.b[0] << "\n";
             for(int i = 1; i < bf.b.size(); i++)
-                os << indent << "                     + F_x * ( " << bf.b[i] << "\n";
-            os << indent << "                             " << std::string(bf.b.size()-1, ')') << "\n";
-            os << indent << "                   )\n";
-            os << indent << "                 ), " << bf.v << ".0+0.5);\n";
+                os << indent6 << "                     + F_x * ( " << bf.b[i] << "\n";
+            os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";
+            os << indent6 << "                   )\n";
+            os << indent6 << "                 ), " << bf.v << ".0+0.5);\n";
             os << "\n";
         }
     }
@@ -92,41 +91,41 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
         // calculate highest, and recurse down
         const BoysFit & bf = bfmap_.at(base.L()); 
 
-        os << indent << primname << "[" << bf.v << "] =\n"; 
-        os << indent << "           pow(\n";
-        os << indent << "                 (\n";
-        os << indent << "                   (\n";
-        os << indent << "                               " << bf.a[0] << "\n";
+        os << indent6 << primname << "[" << bf.v << "] =\n"; 
+        os << indent6 << "           pow(\n";
+        os << indent6 << "                 (\n";
+        os << indent6 << "                   (\n";
+        os << indent6 << "                               " << bf.a[0] << "\n";
         for(int i = 1; i < bf.a.size(); i++)
-            os << indent << "                     + F_x * ( " << bf.a[i] << "\n";
-        os << indent << "                             " << std::string(bf.a.size()-1, ')') << "\n";
-        os << indent << "                   )\n";
-        os << indent << "                   /\n";
-        os << indent << "                   (\n";
-        os << indent << "                               " << bf.b[0] << "\n";
+            os << indent6 << "                     + F_x * ( " << bf.a[i] << "\n";
+        os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";
+        os << indent6 << "                   )\n";
+        os << indent6 << "                   /\n";
+        os << indent6 << "                   (\n";
+        os << indent6 << "                               " << bf.b[0] << "\n";
         for(int i = 1; i < bf.b.size(); i++)
-            os << indent << "                     + F_x * ( " << bf.b[i] << "\n";
-        os << indent << "                             " << std::string(bf.b.size()-1, ')') << "\n";
-        os << indent << "                   )\n";
-        os << indent << "                 ), " << bf.v << ".0+0.5);\n";
+            os << indent6 << "                     + F_x * ( " << bf.b[i] << "\n";
+        os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";
+        os << indent6 << "                   )\n";
+        os << indent6 << "                 ), " << bf.v << ".0+0.5);\n";
         os << "\n";
 
         // calcualte the downward recursion factors
-        os << indent << "const double x2 = 2.0 * F_x;\n";
-        os << indent << "const double ex = exp(-F_x);\n";
+        os << indent6 << "const double x2 = 2.0 * F_x;\n";
+        os << indent6 << "const double ex = exp(-F_x);\n";
 
         for(int m = base.L()-1; m >= 0; m--)
         {
             std::stringstream ss;
             ss.precision(18);
             ss << (1.0/(2.0*m+1.0));
-            os << indent << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << ss.str() << ";\n";
+            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << ss.str() << ";\n";
         }
 
         // add prefac now
         os << "\n";
-        os << indent << "for(m = 0; m <= " << base.L() << "; ++m)\n";
-        os << indent << "    " << primname << "[m] *= allprefac;\n";
+        os << indent6 << "for(m = 0; m <= " << base.L() << "; ++m)\n";
+        os << indent6 << "    " << primname << "[m] *= allprefac;\n";
         os << "\n";
     }
 }
@@ -161,10 +160,9 @@ BoysFO::BoysFO(std::string dir)
 
 void BoysSplit::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
-    const std::string indent(20, ' ');
-    os << indent << "Boys_F_split(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
+    os << indent6 << "Boys_F_split(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
     for(int i = 0; i <= base.L(); i++)
-        os << indent << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+        os << indent6 << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const
@@ -180,10 +178,9 @@ std::vector<std::string> BoysSplit::Includes(void) const
 
 void BoysVRef::WriteBoys(std::ostream & os, const WriterBase & base) const
 {
-    const std::string indent(20, ' ');
-    os << indent << "Boys_F_VRef(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
+    os << indent6 << "Boys_F_VRef(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
     for(int i = 0; i <= base.L(); i++)
-        os << indent << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+        os << indent6 << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::Includes(void) const

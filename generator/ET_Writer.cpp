@@ -1,6 +1,7 @@
 #include "generator/ET_Writer.hpp"
 #include "generator/WriterBase.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
+#include "generator/Helpers.hpp"
 
 
 ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo) 
@@ -69,22 +70,19 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) 
 
 void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
 {
-    std::string indent1(24, ' ');
-    std::string indent2(28, ' ');
-
     os << "\n";
-    os << indent1 << "//////////////////////////////////////////////\n";
-    os << indent1 << "// Primitive integrals: Electron transfer\n";
-    os << indent1 << "//////////////////////////////////////////////\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
+    os << indent6 << "// Primitive integrals: Electron transfer\n";
+    os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
 
     if(etsl_.size() == 0)
-        os << indent1 << "//...nothing to do...\n";
+        os << indent6 << "//...nothing to do...\n";
     else
     {
         for(const auto & it : etsl_)
         {
-            os << indent1 << "// " << it << "\n";
+            os << indent6 << "// " << it << "\n";
             os << ETStepString(it, base);
             os << "\n";
         }
@@ -98,9 +96,9 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             int ncart = NCART(it[0])*NCART(it[2]);
 
             os << "\n";
-            os << indent1 << "// Accumulating in contracted workspace\n";
-            os << indent1 << "for(n = 0; n < " << ncart << "; n++)\n";
-            os << indent2 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
+            os << indent5 << "// Accumulating in contracted workspace\n";
+            os << indent5 << "for(n = 0; n < " << ncart << "; n++)\n";
+            os << indent6 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
 }
