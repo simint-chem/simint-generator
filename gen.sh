@@ -33,7 +33,7 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
 
 
 mkdir -p ../eri/vref.gen
-python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} -P ${P} \
+python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
                              -b vref \
                              -p vref \
                              -g generator/eri_generator \
@@ -54,4 +54,4 @@ python3 ../generate_twoel.py -l 3 -ve ${VE} -he ${HE} -P ${P} \
 #generator/hrr_generator -o ../eri/hrr.gen -L ${MAXHRR}
 
 
-touch eri/CMakeLists.txt
+touch ../eri/CMakeLists.txt
