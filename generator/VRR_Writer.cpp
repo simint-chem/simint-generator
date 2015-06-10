@@ -57,29 +57,29 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base)
 }
 
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_n) const
 {
     int am = greq.begin()->am();
     QAM qam{am, 0, 0, 0};
     QAM qam1{am-1, 0, 0, 0};
     QAM qam2{am-2, 0, 0, 0};
 
-    os << indent6 << "// Forming " << base.PrimVarName(qam) << "[" << num_m << " * " << NCART(am) << "];\n";
+    os << indent6 << "// Forming " << base.PrimVarName(qam) << "[" << num_n << " * " << NCART(am) << "];\n";
 
     //os << indent6 << "// Needed from this AM:\n";
     //for(const auto & it : greq)
     //    os << indent6 << "//    " << it << "\n";
 
-    os << indent6 << "for(m = 0; m < " << num_m << "; m++)  // loop over orders of auxiliary function\n";
+    os << indent6 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
     os << indent6 << "{\n";
 
-    os << indent7 << "const int idx = m * " << NCART(am) << ";    // m * NCART(am)\n";
-    os << indent7 << "const int idx1 = m * " << NCART(am-1) << ";    // m * NCART(am-1)\n"; 
-    os << indent7 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (m+1) * NCART(am-1)\n"; 
+    os << indent7 << "const int idx = n * " << NCART(am) << ";    // n * NCART(am)\n";
+    os << indent7 << "const int idx1 = n * " << NCART(am-1) << ";    // n * NCART(am-1)\n"; 
+    os << indent7 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (n+1) * NCART(am-1)\n"; 
     if(am > 1)
     {
-        os << indent7 << "const int idx2 = m * " << NCART(am-2) << ";    // m * NCART(am-2)\n";
-        os << indent7 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (m+1) * NCART(am-2)\n";
+        os << indent7 << "const int idx2 = n * " << NCART(am-2) << ";    // n * NCART(am-2)\n";
+        os << indent7 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (n+1) * NCART(am-2)\n";
     }
         
     os << "\n";
@@ -185,8 +185,8 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
-        os << "void VRR_" << amchar[am] << "(const int num_m,\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_n)\n";
+        os << "void VRR_" << amchar[am] << "(const int num_n,\n";
         os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
         os << indent3 << "const double a_over_p,";
@@ -204,10 +204,10 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
         os << ")\n";
         os << "{\n";
 
-        os << "    int m = 0;\n";
+        os << "    int n = 0;\n";
 
         // Write out the steps
-        WriteVRRSteps_(os, base, greq, "num_m");
+        WriteVRRSteps_(os, base, greq, "num_n");
 
         os << "}\n";
     }
@@ -242,8 +242,8 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) 
 
         os << "\n\n\n";
         os << "// VRR to obtain " << base.PrimVarName(qam) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_m)\n";
-        os << "void VRR_" << amchar[am] << "(const int num_m,\n";
+        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_n)\n";
+        os << "void VRR_" << amchar[am] << "(const int num_n,\n";
         os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
         os << indent3 << "const double a_over_p,";
@@ -311,19 +311,19 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os, const WriterBase & base) c
         //const GaussianSet & greq = it3.second;
 
         // call the function
-        os << indent5 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
-        os << indent6 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
-        os << indent6 << "a_over_p,";
+        os << indent6 << "VRR_" << amchar[am] << "(" << (base.L()-am+1) << ",\n";
+        os << indent7 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
+        os << indent7 << "a_over_p,";
         if(am > 1)
             os << "one_over_2p, ";
         os << "\n"; 
 
-        os << indent6 << base.PrimVarName(qam) << ",\n";
-        os << indent6 << base.PrimVarName(qam1);
+        os << indent7 << base.PrimVarName(qam) << ",\n";
+        os << indent7 << base.PrimVarName(qam1);
         if(am > 1)
         {
             os << ",\n";
-            os << indent6 << base.PrimVarName(qam2);
+            os << indent7 << base.PrimVarName(qam2);
         }
 
         os << ");\n";

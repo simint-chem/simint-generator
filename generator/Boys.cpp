@@ -124,8 +124,8 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
 
         // add prefac now
         os << "\n";
-        os << indent6 << "for(m = 0; m <= " << base.L() << "; ++m)\n";
-        os << indent6 << "    " << primname << "[m] *= allprefac;\n";
+        os << indent6 << "for(n = 0; n <= " << base.L() << "; ++n)\n";
+        os << indent6 << "    " << primname << "[n] *= allprefac;\n";
         os << "\n";
     }
 }

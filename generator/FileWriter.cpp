@@ -34,7 +34,6 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
     bool hasvrr = base.HasVRR();
-    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) != 0);
     bool haset = base.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -112,9 +111,6 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     os << indent1 << "int i, j;\n";
     os << indent1 << "int n;\n";
-
-    if(hasvrr_m)
-        os << indent1 << "int m;\n";
 
     if(inline_hrr)
     {
@@ -348,7 +344,6 @@ static void WriteFile_Flat(std::ostream & os,
     bool inline_hrr = (hashrr && base.GetOption(OPTION_INLINEHRR) != 0);
 
     bool hasvrr = base.HasVRR();
-    bool hasvrr_m = hasvrr && (options.at(OPTION_INLINEVRR) != 0);
     bool haset = base.HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -424,9 +419,6 @@ static void WriteFile_Flat(std::ostream & os,
 
     os << indent1 << "int i, j;\n";
     os << indent1 << "int n;\n";
-
-    if(hasvrr_m)
-        os << indent1 << "int m;\n";
 
     if(inline_hrr)
     {

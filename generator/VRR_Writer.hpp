@@ -33,7 +33,7 @@ class VRR_Writer
         void WriteAccumulate_(std::ostream & os, int am, const WriterBase & base) const;
 
         void WriteVRRSteps_(std::ostream & os, const WriterBase & base) const;
-        void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_m) const;
+        void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_n) const;
 };
 
 #endif
