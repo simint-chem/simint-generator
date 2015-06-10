@@ -23,13 +23,13 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) c
 {
     if(vrramreq_.size())
     {
-        os << "                        // Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-        os << "                        // with m as the slowest index\n";
+        os << indent6 << "// Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
+        os << indent6 << "// with m as the slowest index\n";
 
         for(const auto & greq : vrramreq_)
         {
-            //os << "                        // AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << "                        double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
+            //os << indent4 << "// AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
+            os << indent6 << "double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
             //os << "\n";
         }
 
@@ -47,7 +47,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base)
         {
             QAM qam({greq.first, 0, 0, 0});
             if(base.IsContArray(qam))
-                os << "                        double * const restrict " << base.PrimPtrName(qam)
+                os << indent4 << "double * const restrict " << base.PrimPtrName(qam)
                    << " = " << base.ArrVarName(qam) << " + abcd * " << NCART(qam[0]) << ";\n";
         }
 

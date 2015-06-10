@@ -192,6 +192,12 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
     os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";
     os << "\n";
+ 
+    vrr_writer.DeclarePrimPointers(os, base);
+    os << "\n";
+    et_writer.DeclarePrimPointers(os, base);
+    os << "\n";
+
 
     os << indent4 << "for(i = istart; i < iend; ++i)\n";
     os << indent4 << "{\n";
@@ -218,16 +224,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << "\n";
-    os << indent5 << "//#pragma simd\n";
+    os << indent5 << "//#pragma omp simd private(n)\n";
     os << indent5 << "for(j = jstart; j < jend; ++j)\n";
     os << indent5 << "{\n";
     os << "\n";
 
     vrr_writer.DeclarePrimArrays(os, base);
     et_writer.DeclarePrimArrays(os, base);
-
-    vrr_writer.DeclarePrimPointers(os, base);
-    et_writer.DeclarePrimPointers(os, base);
 
     os << indent6 << "const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
     os << indent6 << "const double PQalpha_sum = P_alpha + Q.alpha[j];\n";
@@ -492,7 +495,7 @@ static void WriteFile_Flat(std::ostream & os,
     }
 
     os << "\n";
-    os << indent4 << "//#pragma simd\n";
+    os << indent4 << "//#pragma omp simd\n";
     os << indent4 << "for(j = 0; j < Q.nprim; ++j)\n";
     os << indent4 << "{\n";
 
