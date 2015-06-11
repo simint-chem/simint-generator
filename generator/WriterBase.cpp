@@ -1,6 +1,6 @@
 #include <stdexcept>
 #include <fstream>
-#include <iostream>
+#include <cctype> // for tolower
 #include "generator/WriterBase.hpp"
 
 
@@ -263,6 +263,8 @@ const std::string & WriterBase::Prefix(void) const
 
 void WriterBase::ReadCPUFlags(const std::string & file)
 {
+    std::set<std::string> cpuflags_tmp;
+
     std::ifstream cpufile(file.c_str());
     if(!cpufile.is_open())
         throw std::runtime_error("Error - cannot open cpu flags file!");
@@ -271,13 +273,43 @@ void WriterBase::ReadCPUFlags(const std::string & file)
     {
         std::string s;
         cpufile >> s;
+
+        // convert to lower case
+        for(auto & it : s)
+            it = tolower(it);
+
         if(s.size())
-            cpuflags_.insert(s);
+            cpuflags_tmp.insert(s);
     }    
 
-    std::cout << "Read " << cpuflags_.size() << "flags\n";
-    //for(const auto & it : cpuflags_)
-    //    std::cout << "  \"" << it << "\"\n";
+    /*
+    std::cout << "Read " << cpuflags_tmp.size() << " flags\n";
+    for(const auto & it : cpuflags_tmp)
+        std::cout << "  \"" << it << "\"\n";
+    std::cout << "\n";
+    */
+
+    // add equivalent ones where underscore is replaced by a period
+    cpuflags_ = cpuflags_tmp;
+
+    for(auto it : cpuflags_tmp)
+    {
+        for(auto & it2 : it)
+        {
+            if(it2 == '_')
+                it2 = '.';
+        }
+
+        // its a set, so inserting duplicates is ok
+        cpuflags_.insert(it);
+    }
+
+    /*
+    std::cout << "Processed into " << cpuflags_.size() << " flags\n";
+    for(const auto & it : cpuflags_)
+        std::cout << "  \"" << it << "\"\n";
+    std::cout << "\n";
+    */
 }
         
 bool WriterBase::HasCPUFlag(const std::string & flag) const
