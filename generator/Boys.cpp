@@ -105,7 +105,7 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
         WriteBoysSingle_(os, base, base.L(), false);
 
         // calculate the downward recursion factors
-        os << indent6 << base.ConstDoubleType() << " x2 = " << base.DoubleConvert("2.0") << " * F_x;\n";
+        os << indent6 << base.ConstDoubleType() << " x2 = " << base.DoubleSet("2.0") << " * F_x;\n";
         os << indent6 << base.ConstDoubleType() << " ex = " << base.Exp("-F_x") << ";\n";
 
         for(int m = base.L()-1; m >= 0; m--)

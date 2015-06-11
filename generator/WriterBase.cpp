@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <fstream>
+#include <iostream>
 #include <cctype> // for tolower
 #include "generator/WriterBase.hpp"
 
@@ -8,6 +9,15 @@ WriterBase::WriterBase(const OptionsMap & options, const std::string & prefix, c
      : options_(options), prefix_(prefix), finalam_(finalam)
 {
     simdlen_ = 1;
+    useintrinsics_ = false;
+    intrinsicmap_["dbl_type"] = "double";
+    intrinsicmap_["cdbl_type"] = "const double";
+    intrinsicmap_["dbl_set"] = "";
+    intrinsicmap_["dbl_load"] = "";
+    intrinsicmap_["dbl_store"] = "";
+    intrinsicmap_["sqrt"] = "sqrt";
+    intrinsicmap_["pow"] = "pow";
+    intrinsicmap_["exp"] = "exp";
 }
 
 
@@ -310,20 +320,44 @@ void WriterBase::ReadCPUFlags(const std::string & file)
         cpuflags_.insert(it);
     }
 
-    /*
+    
     std::cout << "Processed into " << cpuflags_.size() << " flags\n";
     for(const auto & it : cpuflags_)
         std::cout << "  \"" << it << "\"\n";
     std::cout << "\n";
-    */
+    
 
-    // determine simdlen
+    // determine simdlen, types, etc
     if(HasCPUFlag("avx"))
+    {
         simdlen_ = 4;  // 4 packed doubles
+
+        intrinsicmap_["dbl_type"] = "__m256d";
+        intrinsicmap_["cdbl_type"] = "const __m256d";
+        intrinsicmap_["dbl_set"] = "_mm256_set1_pd";
+        intrinsicmap_["dbl_load"] = "_mm256_load_pd";
+        intrinsicmap_["dbl_store"] = "_mm256_store_pd";
+        intrinsicmap_["sqrt"] = "_mm256_sqrt_pd";
+        intrinsicmap_["pow"] = "_mm256_pow_pd";
+        intrinsicmap_["exp"] = "_mm256_exp_pd";
+    }
     else if(HasCPUFlag("sse"))
+    {
         simdlen_ = 2;
-    else
-        simdlen_ = 1;
+        intrinsicmap_["dbl_type"] = "TODO";
+        intrinsicmap_["cdbl_type"] = "TODO";
+        intrinsicmap_["dbl_set"] = "TODO";
+        intrinsicmap_["dbl_load"] = "TODO";
+        intrinsicmap_["dbl_store"] = "TODO";
+        intrinsicmap_["sqrt"] = "TODO";
+        intrinsicmap_["pow"] = "TODO";
+        intrinsicmap_["exp"] = "TODO";
+    }
+    // else leave defaults from constructor
+    {
+    }
+
+    useintrinsics_ = true;
 }
 
 bool WriterBase::HasCPUFlag(const std::string & flag) const
@@ -333,7 +367,7 @@ bool WriterBase::HasCPUFlag(const std::string & flag) const
         
 bool WriterBase::Intrinsics(void) const
 {
-    return (GetOption(OPTION_INTRINSIC) != 0);
+    return useintrinsics_;
 }
 
 int WriterBase::SimdLen(void) const
@@ -343,33 +377,42 @@ int WriterBase::SimdLen(void) const
 
 std::string WriterBase::DoubleType(void) const
 {
-    return "double";
+    return intrinsicmap_.at("dbl_type");
 }
 
 std::string WriterBase::ConstDoubleType(void) const
 {
-    return std::string("const ") + DoubleType();
+    return intrinsicmap_.at("cdbl_type");
 }
 
-std::string WriterBase::DoubleConvert(const std::string & dbl) const
+std::string WriterBase::DoubleSet(const std::string & dbl) const
 {
-    return dbl;
+    if(useintrinsics_)
+        return intrinsicmap_.at("dbl_set") + "(" + dbl + ")";
+    else
+        return dbl;
 }
 
 std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & idx) const
 {
-    return ptr + "[" + idx + "]";
+    if(useintrinsics_)
+        return intrinsicmap_.at("dbl_load") + "(" + ptr + " + " + idx + ")";
+    else
+        return ptr + "[" + idx + "]";
 }
 
 std::string WriterBase::DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
 {
-    return ptr + "[" + idx + "] = " + var;
+    if(useintrinsics_)
+        return intrinsicmap_.at("dbl_store") + "(" + ptr + " + " + idx + ", " + var + ")";
+    else
+        return ptr + "[" + idx + "] = " + var;
 }
 
-std::string WriterBase::NewDoubleConvert(const std::string & var, const std::string & val) const
+std::string WriterBase::NewDoubleSet(const std::string & var, const std::string & val) const
 {
     std::stringstream ss;
-    ss << DoubleType() << " " << var << " = " << DoubleConvert(val);
+    ss << DoubleType() << " " << var << " = " << DoubleSet(val);
     return ss.str();
 }
 
@@ -380,9 +423,9 @@ std::string WriterBase::NewDoubleLoad(const std::string & var, const std::string
     return ss.str();
 }
 
-std::string WriterBase::NewConstDoubleConvert(const std::string & var, const std::string & val) const
+std::string WriterBase::NewConstDoubleSet(const std::string & var, const std::string & val) const
 {
-    return std::string("const ") + NewDoubleConvert(var, val);
+    return std::string("const ") + NewDoubleSet(var, val);
 }
 
 std::string WriterBase::NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
@@ -392,20 +435,20 @@ std::string WriterBase::NewConstDoubleLoad(const std::string & var, const std::s
         
 std::string WriterBase::Sqrt(const std::string & val) const
 {
-    return std::string("sqrt(") + val + ")";
+    return intrinsicmap_.at("sqrt") + "(" + val + ")";
 }
 
 std::string WriterBase::RSqrt(const std::string & val) const
 {
-    return std::string("1.0 / sqrt(") + val + ")";
+    return std::string("1.0 / ") + Sqrt(val);
 }
        
 std::string WriterBase::Power(const std::string & base, const std::string & exp) const
 {
-    return std::string("pow(") + base + ", " + exp + ")";
+    return intrinsicmap_.at("pow") + "(" + base + ", " + exp + ")";
 }
 
 std::string WriterBase::Exp(const std::string & exp) const
 {
-    return std::string("exp(") + exp + ")";
+    return intrinsicmap_.at("exp") + "(" + exp + ")";
 }

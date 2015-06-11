@@ -44,12 +44,12 @@ class WriterBase
         int SimdLen(void) const;
         std::string DoubleType(void) const;
         std::string ConstDoubleType(void) const;
-        std::string DoubleConvert(const std::string & dbl) const;
+        std::string DoubleSet(const std::string & dbl) const;
         std::string DoubleLoad(const std::string & ptr, const std::string & idx) const;
         std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const;
-        std::string NewDoubleConvert(const std::string & var, const std::string & val) const;
+        std::string NewDoubleSet(const std::string & var, const std::string & val) const;
         std::string NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const;
-        std::string NewConstDoubleConvert(const std::string & var, const std::string & val) const;
+        std::string NewConstDoubleSet(const std::string & var, const std::string & val) const;
         std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const;
 
         std::string Sqrt(const std::string & val) const;
@@ -76,7 +76,11 @@ class WriterBase
         OptionsMap options_;
         size_t memory_;
         QAM finalam_;
+
         int simdlen_;
+        bool useintrinsics_;
+        std::map<std::string, std::string> intrinsicmap_;
+
         std::set<std::string> cpuflags_;
 };
 
