@@ -18,7 +18,9 @@ struct multishell_pair
 {
     int am1, am2;          // angular momentum.
     int nprim;             // Total number of primitives
-    int nprim_length;      // Actual length of alpha, etc, arrays (!= nprim due to alignment)
+    int dmemsize;          // Total memory for doubles (in bytes)
+    int imemsize;          // Total memory for ints (in bytes)
+    int nprim_length;      // Acutal length of alpha, etc, arrays, including padding (for alignment)
     int nshell1, nshell2;  // number of shells
 
     int nshell12;
@@ -27,6 +29,7 @@ struct multishell_pair
                      // primstart[n] = start of shell pair n
     int * primend;   // length nshell12
                      // primend[n] = end (not inclusive)
+                     // this includes padding
 
     // length nshell12
     double * AB_x;

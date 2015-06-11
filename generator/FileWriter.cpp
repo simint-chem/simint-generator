@@ -139,7 +139,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent1 << "{\n";
 
     os << indent2 << "const int istart = P.primstart[ab];\n";
-    os << indent2 << "const int iend = P.primend[ab];\n";
+    os << indent2 << "const int iend = istart + P.nprim12[ab];\n";
     os << "\n";
     os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
     os << indent2 << "ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
@@ -187,7 +187,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << indent4 << "const int jstart = Q.primstart[cd];\n";
-    os << indent4 << "const int jend = Q.primend[cd];\n";
+    os << indent4 << "const int jend = jstart + Q.nprim12[cd];\n";
     os << "\n";
     os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
     os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";

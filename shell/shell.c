@@ -151,7 +151,7 @@ void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict
 
 
 // Allocates a shell pair with correct alignment
-// Only fills in nprim_length member
+// Only fills in {i,d}memsize and nprim_length members
 void allocate_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                               int nb, struct gaussian_shell const * const restrict B,
                               struct multishell_pair * const restrict P)
@@ -168,10 +168,15 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
     const int shell12_size = na*nb;
 
+
+    const int dmemsize = (prim_size*11 + shell12_size*3)*sizeof(double);
+    const int imemsize = (3*shell12_size)*sizeof(int);
+    P->dmemsize = dmemsize;
+    P->imemsize = imemsize;
     P->nprim_length = prim_size;
 
     // allocate one large space
-    double * mem = ALLOC( (prim_size*11 + shell12_size*3)*sizeof(double) ); 
+    double * mem = ALLOC(dmemsize); 
     P->x      = mem;
     P->y      = mem +   prim_size;
     P->z      = mem + 2*prim_size;
@@ -189,7 +194,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->AB_z   = mem + 11*prim_size + 2*shell12_size;
 
     /* Should this be aligned? I don't think so */
-    int * intmem = malloc((3*shell12_size)*sizeof(int));
+    int * intmem = malloc(imemsize);
     P->nprim12   = intmem;
     P->primstart = intmem +   shell12_size;
     P->primend   = intmem + 2*shell12_size;
@@ -283,6 +288,14 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
     P->nshell12 = na * nb;
     P->nprim = 0;
 
+    // zero out
+    memset(P->x, 0, P->dmemsize);
+    memset(P->nprim12, 0, P->imemsize);
+
+    // set alpha to one for all
+    for(i = 0; i < P->nprim_length; i++)
+        P->alpha[i] = 1.0;
+
     sasb = 0;
     idx = 0;
     for(sa = 0; sa < na; ++sa)
@@ -291,9 +304,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 
         for(sb = 0; sb < nb; ++sb)
         {
-            // align to the next boundary
-            idx = SIMD_ROUND_DBL(idx);
-
             P->primstart[sasb] = idx;
 
             P->am2 = B[sb].am;
@@ -339,6 +349,9 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                 }
 
             }
+
+            // align to the next boundary
+            idx = SIMD_ROUND_DBL(idx);
 
             // store the end of this shell pair
             P->primend[sasb] = idx;
