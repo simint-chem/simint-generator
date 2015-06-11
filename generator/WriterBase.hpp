@@ -13,13 +13,15 @@ class WriterBase
 
         void SetContQ(const QAMSet & topquartets);
 
+        void WriteIncludes(std::ostream & os) const;
+
         void DeclareContwork(std::ostream & os) const;
         void ZeroContWork(std::ostream & os, const std::string & nshell) const;
         void FreeContwork(std::ostream & os) const;
 
         int GetOption(int option) const;
         bool HasCPUFlag(const std::string & flag) const;
-        bool Instrinsics(void) const;
+        bool Intrinsics(void) const;
 
         bool IsContArray(const QAM & am) const;
         
@@ -38,6 +40,22 @@ class WriterBase
         size_t MemoryReq(void) const;
 
         int L(void) const;
+
+        int SimdLen(void) const;
+        std::string DoubleType(void) const;
+        std::string ConstDoubleType(void) const;
+        std::string DoubleConvert(const std::string & dbl) const;
+        std::string DoubleLoad(const std::string & ptr, const std::string & idx) const;
+        std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const;
+        std::string NewDoubleConvert(const std::string & var, const std::string & val) const;
+        std::string NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const;
+        std::string NewConstDoubleConvert(const std::string & var, const std::string & val) const;
+        std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const;
+
+        std::string Sqrt(const std::string & val) const;
+        std::string RSqrt(const std::string & val) const;
+        std::string Power(const std::string & base, const std::string & exp) const;
+        std::string Exp(const std::string & exp) const;
 
         //void PermuteResult(std::ostream & os, const std::string & src) const;
 
@@ -58,6 +76,7 @@ class WriterBase
         OptionsMap options_;
         size_t memory_;
         QAM finalam_;
+        int simdlen_;
         std::set<std::string> cpuflags_;
 };
 

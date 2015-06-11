@@ -36,6 +36,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
 
+    // load this once here
+    std::string dbltype = base.DoubleType();
+    std::string cdbltype = base.ConstDoubleType();
+
     std::stringstream ss;
     ss << "int eri_" << base.Prefix() << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
@@ -53,6 +57,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include \"constants.h\"\n";
     os << "#include \"shell/shell.h\"\n";
 
+    base.WriteIncludes(os);
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);
     hrr_writer.WriteIncludes(os, base);
@@ -201,24 +206,25 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent4 << "{\n";
     os << "\n";
     os << indent5 << "// Load these one per loop over i\n";
-    os << indent5 << "const double P_alpha = P.alpha[i];\n";
-    os << indent5 << "const double P_prefac = P.prefac[i];\n";
-    os << indent5 << "const double P_x = P.x[i];\n";
-    os << indent5 << "const double P_y = P.y[i];\n";
-    os << indent5 << "const double P_z = P.z[i];\n";
+
+    os << indent5 << base.NewConstDoubleConvert("P_alpha", "P.alpha[i]") << ";\n";
+    os << indent5 << base.NewConstDoubleConvert("P_prefac", "P.prefac[i]") << ";\n";
+    os << indent5 << base.NewConstDoubleConvert("P_x", "P.x[i]") << ";\n";
+    os << indent5 << base.NewConstDoubleConvert("P_y", "P.y[i]") << ";\n";
+    os << indent5 << base.NewConstDoubleConvert("P_z", "P.z[i]") << ";\n";
 
     if(hasvrr)
     {
-        os << indent5 << "const double P_PA_x = P.PA_x[i];\n";
-        os << indent5 << "const double P_PA_y = P.PA_y[i];\n";
-        os << indent5 << "const double P_PA_z = P.PA_z[i];\n";
+        os << indent5 << base.NewConstDoubleConvert("P_PA_x", "P.PA_x[i]") << ";\n";
+        os << indent5 << base.NewConstDoubleConvert("P_PA_y", "P.PA_y[i]") << ";\n";
+        os << indent5 << base.NewConstDoubleConvert("P_PA_z", "P.PA_z[i]") << ";\n";
     }
 
     if(haset)
     {
-        os << indent5 << "const double P_bAB_x = P.bAB_x[i];\n";
-        os << indent5 << "const double P_bAB_y = P.bAB_y[i];\n";
-        os << indent5 << "const double P_bAB_z = P.bAB_z[i];\n";
+        os << indent5 << base.NewConstDoubleConvert("P_bAB_x", "P.bAB_x[i]") << ";\n";
+        os << indent5 << base.NewConstDoubleConvert("P_bAB_y", "P.bAB_y[i]") << ";\n";
+        os << indent5 << base.NewConstDoubleConvert("P_bAB_z", "P.bAB_z[i]") << ";\n";
     }
 
     os << "\n";
@@ -230,51 +236,54 @@ static void WriteFile_NotFlat(std::ostream & os,
     vrr_writer.DeclarePrimArrays(os, base);
     et_writer.DeclarePrimArrays(os, base);
 
-    os << indent6 << "const double PQalpha_mul = P_alpha * Q.alpha[j];\n";
-    os << indent6 << "const double PQalpha_sum = P_alpha + Q.alpha[j];\n";
+    os << indent6 << base.NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
+    os << indent6 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
+    os << indent6 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
     os << "\n";
-    os << indent6 << "const double pfac = TWO_PI_52 / (PQalpha_mul * sqrt(PQalpha_sum));\n";
+    os << indent6 << cdbltype << " pfac = " << base.DoubleConvert("TWO_PI_52") << " / (PQalpha_mul * " << base.Sqrt("PQalpha_sum") << ");\n";
     os << "\n";
     os << indent6 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
-    os << indent6 << "const double PQ_x = P_x - Q.x[j];\n";
-    os << indent6 << "const double PQ_y = P_y - Q.y[j];\n";
-    os << indent6 << "const double PQ_z = P_z - Q.z[j];\n";
-    os << indent6 << "const double R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
+    os << indent6 << cdbltype << " PQ_x = P_x - " << base.DoubleLoad("Q.x", "j") << ";\n";
+    os << indent6 << cdbltype << " PQ_y = P_y - " << base.DoubleLoad("Q.y", "j") << ";\n";
+    os << indent6 << cdbltype << " PQ_z = P_z - " << base.DoubleLoad("Q.z", "j") << ";\n";
+
+
+    os << indent6 << cdbltype << " R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
     os << "\n";
     os << indent6 << "// collected prefactors\n";
-    os << indent6 << "const double allprefac =  pfac * P_prefac * Q.prefac[j];\n";
+    os << indent6 << cdbltype << " allprefac =  pfac * P_prefac * " << base.DoubleLoad("Q.prefac", "j") << ";\n";
     os << "\n";
     os << indent6 << "// various factors\n";
-    os << indent6 << "const double alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
+    os << indent6 << cdbltype << " alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
 
     if(hasvrr)
     {
         os << indent6 << "// for VRR\n";
-        os << indent6 << "const double one_over_p = 1.0 / P_alpha;\n";
-        os << indent6 << "const double a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
+        os << indent6 << cdbltype << " one_over_p = 1.0 / P_alpha;\n";
+        os << indent6 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)    
-            os << indent6 << "const double one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+            os << indent6 << cdbltype << " one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
 
         os << "\n";
         os << indent6 << "// a_over_p * PQ_{xyz}\n";
-        os << indent6 << "const double aop_PQ_x = a_over_p * PQ_x;\n"; 
-        os << indent6 << "const double aop_PQ_y = a_over_p * PQ_y;\n"; 
-        os << indent6 << "const double aop_PQ_z = a_over_p * PQ_z;\n"; 
+        os << indent6 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
+        os << indent6 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
+        os << indent6 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
         os << "\n";
     }
 
     if(haset)
     {
         os << indent6 << "// for electron transfer\n";
-        os << indent6 << "const double one_over_q = 1.0 / Q.alpha[j];\n";
-        os << indent6 << "const double one_over_2q = 0.5 * one_over_q;\n";
-        os << indent6 << "const double p_over_q = P_alpha * one_over_q;\n";
+        os << indent6 << cdbltype << " one_over_q = 1.0 / Q_alpha;\n";
+        os << indent6 << cdbltype << " one_over_2q = 0.5 * one_over_q;\n";
+        os << indent6 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 
-        os << indent6 << "const double etfac[3] = {\n";
-        os << indent7 << "-(P_bAB_x + Q.bAB_x[j]) * one_over_q,\n";
-        os << indent7 << "-(P_bAB_y + Q.bAB_y[j]) * one_over_q,\n";
-        os << indent7 << "-(P_bAB_z + Q.bAB_z[j]) * one_over_q,\n";
+        os << indent6 << cdbltype << " etfac[3] = {\n";
+        os << indent7 << "-(P_bAB_x + " << base.DoubleLoad("Q.bAB_x", "j") << ") * one_over_q,\n";
+        os << indent7 << "-(P_bAB_y + " << base.DoubleLoad("Q.bAB_y", "j") << ") * one_over_q,\n";
+        os << indent7 << "-(P_bAB_z + " << base.DoubleLoad("Q.bAB_z", "j") << ") * one_over_q,\n";
         os << indent7 << "};\n";
     }
 
@@ -285,7 +294,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent6 << "// Maximum v value: " << base.L() << "\n";
     os << indent6 << "//////////////////////////////////////////////\n";
     os << indent6 << "// The paremeter to the boys function\n";
-    os << indent6 << "const double F_x = R2 * alpha;\n";
+    os << indent6 << cdbltype << " F_x = R2 * alpha;\n";
     os << "\n";
     os << "\n";
 

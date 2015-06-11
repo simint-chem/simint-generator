@@ -6,7 +6,9 @@
 
 WriterBase::WriterBase(const OptionsMap & options, const std::string & prefix, const QAM & finalam)
      : options_(options), prefix_(prefix), finalam_(finalam)
-{ }
+{
+    simdlen_ = 1;
+}
 
 
 
@@ -81,6 +83,10 @@ QAM WriterBase::FinalAM(void) const
     return finalam_;
 }
 
+
+void WriterBase::WriteIncludes(std::ostream & os) const
+{
+}
 
 
 std::string WriterBase::ArrVarName(const QAM & am, const std::string & prefix)
@@ -310,14 +316,96 @@ void WriterBase::ReadCPUFlags(const std::string & file)
         std::cout << "  \"" << it << "\"\n";
     std::cout << "\n";
     */
+
+    // determine simdlen
+    if(HasCPUFlag("avx"))
+        simdlen_ = 4;  // 4 packed doubles
+    else if(HasCPUFlag("sse"))
+        simdlen_ = 2;
+    else
+        simdlen_ = 1;
 }
-        
+
 bool WriterBase::HasCPUFlag(const std::string & flag) const
 {
     return (cpuflags_.count(flag) > 0);
 }
         
-bool WriterBase::Instrinsics(void) const
+bool WriterBase::Intrinsics(void) const
 {
     return (GetOption(OPTION_INTRINSIC) != 0);
+}
+
+int WriterBase::SimdLen(void) const
+{
+    return simdlen_;
+}
+
+std::string WriterBase::DoubleType(void) const
+{
+    return "double";
+}
+
+std::string WriterBase::ConstDoubleType(void) const
+{
+    return std::string("const ") + DoubleType();
+}
+
+std::string WriterBase::DoubleConvert(const std::string & dbl) const
+{
+    return dbl;
+}
+
+std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & idx) const
+{
+    return ptr + "[" + idx + "]";
+}
+
+std::string WriterBase::DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
+{
+    return ptr + "[" + idx + "] = " + var;
+}
+
+std::string WriterBase::NewDoubleConvert(const std::string & var, const std::string & val) const
+{
+    std::stringstream ss;
+    ss << DoubleType() << " " << var << " = " << DoubleConvert(val);
+    return ss.str();
+}
+
+std::string WriterBase::NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
+{
+    std::stringstream ss;
+    ss << DoubleType() << " " << var << " = " << DoubleLoad(ptr, idx);
+    return ss.str();
+}
+
+std::string WriterBase::NewConstDoubleConvert(const std::string & var, const std::string & val) const
+{
+    return std::string("const ") + NewDoubleConvert(var, val);
+}
+
+std::string WriterBase::NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
+{
+    return std::string("const ") + NewDoubleLoad(var, ptr, idx);
+}
+        
+std::string WriterBase::Sqrt(const std::string & val) const
+{
+    return std::string("sqrt(") + val + ")";
+}
+
+std::string WriterBase::RSqrt(const std::string & val) const
+{
+    return std::string("1.0 / sqrt(") + val + ")";
+}
+       
+std::string WriterBase::Power(const std::string & base, const std::string & exp) const
+{
+    return std::string("pow(") + base + ", " + exp + ")";
+}
+
+std::string WriterBase::Exp(const std::string & exp) const
+{
+    return std::string("exp(") + exp + ")";
 }

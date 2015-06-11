@@ -29,7 +29,8 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) c
         for(const auto & greq : vrramreq_)
         {
             //os << indent4 << "// AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << indent6 << "double " << base.PrimVarName({greq.first, 0, 0, 0}) << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
+            os << indent6 << base.DoubleType() << " " << base.PrimVarName({greq.first, 0, 0, 0})
+               << "[" << (base.L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
             //os << "\n";
         }
 
@@ -276,8 +277,20 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
     {
         os << "\n";
         os << indent6 << "// Accumulating in contracted workspace\n";
+
         os << indent6 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-        os << indent7 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
+
+        if(base.Intrinsics())
+        {
+            os << indent7 << "double vec[" << base.SimdLen() << "];\n";
+            os << indent7 << base.DoubleStore("vec", base.PrimVarName(qam), "n") << "\n";
+            os << indent7 << base.PrimPtrName(qam) << "[n] += vec[0]";
+            for(int i = 1; i < base.SimdLen(); i++)
+                os << " + vec[" << i << "]";
+            os << ";\n";
+        }
+        else
+            os << indent7 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";
 
         // TODO
         // if I don't need all, then don't accumulate all

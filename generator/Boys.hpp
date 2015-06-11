@@ -45,6 +45,8 @@ class BoysFO : public BoysGen
         };
 
         std::map<int, BoysFit> bfmap_;
+
+        void WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m, bool prefac) const;
 };
 
 
