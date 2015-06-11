@@ -1,10 +1,11 @@
 #include <stdexcept>
-
+#include <fstream>
+#include <iostream>
 #include "generator/WriterBase.hpp"
 
 
-WriterBase::WriterBase(const OptionsMap & options, const QAM & finalam)
-     : options_(options), finalam_(finalam)
+WriterBase::WriterBase(const OptionsMap & options, const std::string & prefix, const QAM & finalam)
+     : options_(options), prefix_(prefix), finalam_(finalam)
 { }
 
 
@@ -248,8 +249,38 @@ bool WriterBase::HasKetHRR(void) const
     return (finalam_[3] > 0);
 }
 
+const std::string & WriterBase::Prefix(void) const
+{
+    return prefix_;
+}
+
 
 //bool WriterBase::Permute(void) const
 //{
 //    return (GetOption(OPTION_PERMUTE) > 0 && HasHRR());
 //}
+
+
+void WriterBase::ReadCPUFlags(const std::string & file)
+{
+    std::ifstream cpufile(file.c_str());
+    if(!cpufile.is_open())
+        throw std::runtime_error("Error - cannot open cpu flags file!");
+
+    while(cpufile)
+    {
+        std::string s;
+        cpufile >> s;
+        if(s.size())
+            cpuflags_.insert(s);
+    }    
+
+    std::cout << "Read " << cpuflags_.size() << "flags\n";
+    //for(const auto & it : cpuflags_)
+    //    std::cout << "  \"" << it << "\"\n";
+}
+        
+bool WriterBase::HasCPUFlag(const std::string & flag) const
+{
+    return (cpuflags_.count(flag) > 0);
+}

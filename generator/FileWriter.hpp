@@ -8,19 +8,17 @@
 #include "generator/Options.hpp"
 
 class BoysGen;
-class VRR_Algorithm_Base;
-class ET_Algorithm_Base;
-class HRR_Algorithm_Base;
+class VRR_Writer;
+class ET_Writer;
+class HRR_Writer;
 
 typedef std::array<int, 4> QAM;
 
 void WriteFile(std::ostream & os,
-               const QAM & am,
-               const std::string & prefix,
-               const OptionsMap & options,
+               const WriterBase & base,
                const BoysGen & bg,
-               VRR_Algorithm_Base & vrralgo,
-               ET_Algorithm_Base & etalgo,
-               HRR_Algorithm_Base & hrralgo);
+               const VRR_Writer & vrr_writer,
+               const ET_Writer & et_writer,
+               const HRR_Writer & hrr_writer);
 
 #endif

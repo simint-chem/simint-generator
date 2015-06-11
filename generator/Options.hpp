@@ -11,5 +11,6 @@ typedef std::map<int, int> OptionsMap;
 #define OPTION_INLINEVRR 2
 #define OPTION_INLINEHRR 3
 #define OPTION_PERMUTE 4
+#define OPTION_INTRINSIC 5
 
 #endif

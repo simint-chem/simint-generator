@@ -2,6 +2,7 @@
 #include <map>
 
 #include "generator/Classes.hpp"
+#include "generator/Options.hpp"
 
 using std::cout;
 
@@ -137,4 +138,18 @@ GaussianSet AllGaussiansForAM(int am)
     } while(g.Iterate());
 
     return gs;
+}
+
+
+OptionsMap DefaultOptions(void)
+{
+    // default options
+    OptionsMap options;
+    options[OPTION_STACKMEM] = 0;
+    options[OPTION_INLINEVRR] = 1;
+    options[OPTION_INLINEHRR] = 1;
+    options[OPTION_PERMUTE] = 0;
+    options[OPTION_INTRINSIC] = 0;
+
+    return options;
 }

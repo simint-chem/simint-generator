@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/Classes.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/Options.hpp"
@@ -43,13 +42,14 @@ int main(int argc, char ** argv)
     try {
 
     // default options
-    OptionsMap options;
+    OptionsMap options = DefaultOptions();
 
     // max L value
     int maxL = 0;
 
     // other stuff
     std::string fpath;
+    std::string cpuinfofile;
 
     // parse command line
     int i = 1;
@@ -60,6 +60,11 @@ int main(int argc, char ** argv)
             maxL = GetIArg(i, argc, argv);
         else if(argstr == "-o")
             fpath = GetNextArg(i, argc, argv);
+        else if(argstr == "-i")
+        {
+            options[OPTION_INTRINSIC] = 1;
+            cpuinfofile = GetNextArg(i, argc, argv);
+        }
         else
         {
             std::cout << "\n\n";
@@ -120,7 +125,12 @@ int main(int argc, char ** argv)
     vrralgo->CreateAllMaps(vreq);
 
     // Create the writer and base writer
-    WriterBase base(options, {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
+    WriterBase base(options, "", {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
+
+    // read in cpuflags if needed
+    if(options[OPTION_INTRINSIC] != 0)
+        base.ReadCPUFlags(cpuinfofile); 
+
     VRR_Writer vrr_writer(*vrralgo);
 
     // write to the output file

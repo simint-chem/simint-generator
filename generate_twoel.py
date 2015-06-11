@@ -18,6 +18,7 @@ parser.add_argument("-ve", required=False, type=int, default=1000, help="Externa
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
+parser.add_argument("-i",  required=False, type=str, default="",   help="Use intrinsics corresponding to cpuflags in the given file")
 args = parser.parse_args()
 
 
@@ -163,6 +164,9 @@ for q in valid:
         cmdline.append("-he")
     if dopermute:
         cmdline.append("-P")
+
+    if(args.i)
+        cmdline.extend(["-i", args.i])
 
     print()
     print("Command line:")

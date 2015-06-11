@@ -4,9 +4,9 @@
 #include "generator/Classes.hpp"
 #include "generator/Helpers.hpp"
 
-#include "generator/VRR_Algorithm_Base.hpp"
-#include "generator/ET_Algorithm_Base.hpp"
-#include "generator/HRR_Algorithm_Base.hpp"
+#include "generator/VRR_Writer.hpp"
+#include "generator/ET_Writer.hpp"
+#include "generator/HRR_Writer.hpp"
 
 #include "generator/Boys.hpp"
 #include "generator/WriterBase.hpp"
@@ -16,15 +16,13 @@
 
 
 static void WriteFile_NotFlat(std::ostream & os,
-                              const QAM & am,
-                              const OptionsMap & options,
-                              const std::string & prefix,
-                              const BoysGen & bg,
                               const WriterBase & base,
+                              const BoysGen & bg,
                               const VRR_Writer & vrr_writer,
                               const ET_Writer & et_writer,
                               const HRR_Writer & hrr_writer)
 {
+    const QAM am = base.FinalAM();
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
@@ -39,7 +37,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
     std::stringstream ss;
-    ss << "int eri_" << prefix << "_"
+    ss << "int eri_" << base.Prefix() << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
@@ -329,15 +327,13 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
 static void WriteFile_Flat(std::ostream & os,
-                           const QAM & am,
-                           const OptionsMap & options,
-                           const std::string & prefix,
-                           const BoysGen & bg,
                            const WriterBase & base,
+                           const BoysGen & bg,
                            const VRR_Writer & vrr_writer,
                            const ET_Writer & et_writer,
                            const HRR_Writer & hrr_writer)
 {
+    const QAM am = base.FinalAM();
     int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
 
     // some helper bools
@@ -352,7 +348,7 @@ static void WriteFile_Flat(std::ostream & os,
 
 
     std::stringstream ss;
-    ss << "int eri_" << prefix << "_"
+    ss << "int eri_" << base.Prefix() << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
@@ -604,43 +600,12 @@ static void WriteFile_Flat(std::ostream & os,
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 void WriteFile(std::ostream & os,
-               const QAM & am,
-               const std::string & prefix,
-               const OptionsMap & options,
+               const WriterBase & base,
                const BoysGen & bg,
-               VRR_Algorithm_Base & vrralgo,
-               ET_Algorithm_Base & etalgo,
-               HRR_Algorithm_Base & hrralgo)
+               const VRR_Writer & vrr_writer,
+               const ET_Writer & et_writer,
+               const HRR_Writer & hrr_writer)
 {
-    // Base writer information
-    WriterBase base(options, am);
-
-    // Working backwards, I need:
-    // 1.) HRR Steps
-    hrralgo.Create_DoubletStepLists(am);
-    HRR_Writer hrr_writer(hrralgo);
-
-    // 2.) ET steps
-    //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit = hrralgo.TopQuartets();
-    etalgo.Create_ETStepList(etinit);
-    ET_Writer et_writer(etalgo);
-
-    // 3.) VRR Steps
-    // requirements for vrr are the top level stuff from ET
-    vrralgo.CreateAllMaps(etalgo.TopGaussians());
-    VRR_Writer vrr_writer(vrralgo);
-
-    // set the contracted quartets
-    base.SetContQ(hrralgo.TopQAM());
-
-    ///////////////////////////////////////////////
-    // Done with prerequisites
-    ///////////////////////////////////////////////
-
-
-    // print out some info
-    std::cout << "MEMORY (per shell quartet): " << base.MemoryReq() << "\n";
 
 
     //////////////////////////////////////////////////
@@ -648,7 +613,6 @@ void WriteFile(std::ostream & os,
     // Create the function
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
-    WriteFile_NotFlat(os, am, options, prefix, bg,
-                      base, vrr_writer, et_writer, hrr_writer);
+    WriteFile_NotFlat(os, base, bg, vrr_writer, et_writer, hrr_writer);
 }
 

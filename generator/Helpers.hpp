@@ -2,7 +2,7 @@
 #define HELPERS_HPP
 
 #include "generator/Classes.hpp"
-
+#include "generator/Options.hpp"
 
 static const std::string indent1(4, ' ');
 static const std::string indent2(8, ' ');
@@ -27,5 +27,6 @@ int GaussianOrder(const QAM & ijk);
 
 GaussianSet AllGaussiansForAM(int am);
 
+OptionsMap DefaultOptions(void);
 
 #endif

@@ -7,7 +7,9 @@
 class WriterBase
 {
     public:
-        WriterBase(const OptionsMap & options, const QAM & finalam);
+        WriterBase(const OptionsMap & options, const std::string & prefix, const QAM & finalam);
+
+        void ReadCPUFlags(const std::string & file);
 
         void SetContQ(const QAMSet & topquartets);
 
@@ -16,10 +18,12 @@ class WriterBase
         void FreeContwork(std::ostream & os) const;
 
         int GetOption(int option) const;
+        bool HasCPUFlag(const std::string & flag) const;
 
         bool IsContArray(const QAM & am) const;
         
         QAM FinalAM(void) const;
+        const std::string & Prefix(void) const;
 
         bool IsFinalAM(const QAM & am) const;
         //bool Permute(void) const;
@@ -49,9 +53,11 @@ class WriterBase
 
     private:
         QAMSet contq_;  // set of contracted integral AM
+        std::string prefix_;
         OptionsMap options_;
         size_t memory_;
         QAM finalam_;
+        std::set<std::string> cpuflags_;
 };
 
 

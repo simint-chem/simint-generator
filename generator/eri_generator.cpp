@@ -3,16 +3,20 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/Classes.hpp"
+#include "generator/Helpers.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Boys.hpp"
+#include "generator/WriterBase.hpp"
+#include "generator/VRR_Writer.hpp"
+#include "generator/ET_Writer.hpp"
+#include "generator/HRR_Writer.hpp"
 #include "generator/FileWriter.hpp"
 
 using namespace std;
 
 
 
-string GetNextArg(int & i, int argc, char ** argv)
+static string GetNextArg(int & i, int argc, char ** argv)
 {
     if(i >= argc)
         throw std::runtime_error("Error - no more arguments!");
@@ -20,7 +24,7 @@ string GetNextArg(int & i, int argc, char ** argv)
     return argv[i++];
 }
 
-int GetIArg(int & i, int argc, char ** argv)
+static int GetIArg(int & i, int argc, char ** argv)
 {   
     std::string str = GetNextArg(i, argc, argv);
     try {
@@ -40,18 +44,15 @@ int main(int argc, char ** argv)
 {
     try {
 
-    // default options
-    OptionsMap options;
-    options[OPTION_STACKMEM] = 0;
-    options[OPTION_INLINEVRR] = 1;
-    options[OPTION_INLINEHRR] = 1;
-    options[OPTION_PERMUTE] = 0;
+    OptionsMap options = DefaultOptions();
 
     // other stuff
     std::string prefix;
     std::string boystype;
     std::string fpath;
+    std::string cpuinfofile;
     QAM amlist;
+
     bool amlistset = false;
 
     // parse command line
@@ -69,6 +70,11 @@ int main(int argc, char ** argv)
             options[OPTION_PERMUTE] = 1;
         else if(argstr == "-p")
             prefix = GetNextArg(i, argc, argv);
+        else if(argstr == "-i")
+        {
+            options[OPTION_INTRINSIC] = 1;
+            cpuinfofile = GetNextArg(i, argc, argv);
+        }
 
         else if(argstr == "-q")
         {
@@ -123,6 +129,18 @@ int main(int argc, char ** argv)
         return 10;
     }
 
+
+
+
+    // open the output file
+    std::ofstream of(fpath);
+    if(!of.is_open())
+    {
+        std::cout << "Cannot open file: " << fpath << "\n";
+        return 2; 
+    }
+    
+
     // Read in the boys map
     std::unique_ptr<BoysGen> bg;
 
@@ -138,20 +156,41 @@ int main(int argc, char ** argv)
         return 3;
     }
 
-
     // algorithms used
     std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
     std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
     std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
 
-    std::ofstream of(fpath);
-    if(!of.is_open())
-    {
-        std::cout << "Cannot open file: " << fpath << "\n";
-        return 2; 
-    }
+    // Base writer information
+    WriterBase base(options, prefix, amlist);
 
-    WriteFile(of, amlist, prefix, options, *bg, *vrralgo, *etalgo, *hrralgo);
+    // read in cpuflags if needed
+    if(options[OPTION_INTRINSIC] != 0)
+        base.ReadCPUFlags(cpuinfofile); 
+
+    // Working backwards, I need:
+    // 1.) HRR Steps
+    hrralgo->Create_DoubletStepLists(amlist);
+    HRR_Writer hrr_writer(*hrralgo);
+
+    // 2.) ET steps
+    //     with the HRR top level stuff as the initial targets
+    QuartetSet etinit = hrralgo->TopQuartets();
+    etalgo->Create_ETStepList(etinit);
+    ET_Writer et_writer(*etalgo);
+
+    // 3.) VRR Steps
+    // requirements for vrr are the top level stuff from ET
+    vrralgo->CreateAllMaps(etalgo->TopGaussians());
+    VRR_Writer vrr_writer(*vrralgo);
+
+    // set the contracted quartets
+    base.SetContQ(hrralgo->TopQAM());
+
+    // print out some info
+    std::cout << "MEMORY (per shell quartet): " << base.MemoryReq() << "\n";
+
+    WriteFile(of, base, *bg, vrr_writer, et_writer, hrr_writer);
 
     }
     catch(std::exception & ex)

@@ -3,9 +3,8 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/Classes.hpp"
-#include "generator/Algorithms.hpp"
 #include "generator/Helpers.hpp"
+#include "generator/Algorithms.hpp"
 #include "generator/Options.hpp"
 #include "generator/WriterBase.hpp"
 #include "generator/HRR_Writer.hpp"
@@ -43,13 +42,14 @@ int main(int argc, char ** argv)
     try {
 
     // default options
-    OptionsMap options;
+    OptionsMap options = DefaultOptions();
 
     // max L value
     int maxL = 0;
 
     // other stuff
     std::string fpath;
+    std::string cpuinfofile;
 
     // parse command line
     int i = 1;
@@ -60,6 +60,11 @@ int main(int argc, char ** argv)
             maxL = GetIArg(i, argc, argv);
         else if(argstr == "-o")
             fpath = GetNextArg(i, argc, argv);
+        else if(argstr == "-i")
+        {
+            options[OPTION_INTRINSIC] = 1;
+            cpuinfofile = GetNextArg(i, argc, argv);
+        }
         else
         {
             std::cout << "\n\n";
@@ -84,6 +89,7 @@ int main(int argc, char ** argv)
 
     if(fpath.back() != '/')
         fpath += '/';
+
 
 
 
@@ -129,6 +135,7 @@ int main(int argc, char ** argv)
     ofb << "\n";
     ofb << "#include \"vectorization.h\"\n";
     ofb << "\n\n";
+
     ofk << "\n";
     ofk << "#include \"vectorization.h\"\n";
     ofk << "\n\n";
@@ -137,13 +144,17 @@ int main(int argc, char ** argv)
     for(int i = 1; i <= maxL; i++)
     for(int j = 1; j <= i; j++)
     {
-        std::cout << "HEREHERE\n";
         // The algorithm to use
         std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
         // we can do both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
-        WriterBase base(options, am);
+        WriterBase base(options, "", am);
+
+        // read in cpuflags if needed
+        if(options[OPTION_INTRINSIC] != 0)
+            base.ReadCPUFlags(cpuinfofile); 
+
         hrralgo->Create_DoubletStepLists(am);
         HRR_Writer hrr_writer(*hrralgo);
 
