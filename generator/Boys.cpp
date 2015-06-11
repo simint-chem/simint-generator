@@ -84,9 +84,16 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m,
 
     // apply prefac and power
     os << indent6 << ssvar.str() << " = ";
+
     if(prefac)
         os << "allprefac * ";
-    os << base.Power(ssvar.str(), base.DoubleSet(sspow.str())) << ";\n";
+
+    os << base.Sqrt(ssvar.str());
+
+    for(int i = 0; i < bf.v; i++)
+        os << " * " << ssvar.str();
+    os << ";\n";
+    os << "\n";
 }
 
 void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
@@ -114,7 +121,7 @@ void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
             std::stringstream ss;
             ss.precision(18);
             ss << (1.0/(2.0*m+1.0));
-            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << ss.str() << ";\n";
+            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << base.DoubleSet(ss.str()) << ";\n";
         }
 
         // add prefac now

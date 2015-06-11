@@ -98,7 +98,8 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
 
         // the value of i in the VRR eqn
         // = value of exponent of g1 in the position of the step
-        int vrr_i = g1.ijk[XYZStepToIdx(step)];
+        std::stringstream vrr_i;
+        vrr_i << g1.ijk[XYZStepToIdx(step)];
 
         os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
         os << indent7 << base.PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
@@ -109,7 +110,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const WriterBase & base, cons
         if(g2)
         {
             os << "\n"
-               << indent8 << "+ " << vrr_i 
+               << indent8 << "+ " << base.DoubleSet(vrr_i.str())
                << " * one_over_2p * ( " << base.PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
                << " - a_over_p * " << base.PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }

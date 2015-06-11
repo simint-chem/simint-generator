@@ -72,7 +72,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
     // if we are manually using intrinsics, we don't need these assume lines
-    if(!base.Intrinsics())
+    //if(!base.Intrinsics())
     {
         os << indent1 << "ASSUME_ALIGN(P.x);\n";
         os << indent1 << "ASSUME_ALIGN(P.y);\n";
@@ -153,7 +153,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
     // if we are manually using intrinsics, we don't need these assume lines
-    if(!base.Intrinsics())
+    //if(!base.Intrinsics())
     {
         os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
         os << indent2 << "ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
@@ -214,7 +214,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
     // if we are manually using intrinsics, we don't need these assume lines
-    if(!base.Intrinsics())
+    //if(!base.Intrinsics())
     {
         os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
         os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";
@@ -296,10 +296,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasvrr)
     {
         os << indent6 << "// for VRR\n";
-        os << indent6 << cdbltype << " one_over_p = 1.0 / P_alpha;\n";
+        os << indent6 << cdbltype << " one_over_p = " << base.DoubleSet("1.0") << " / P_alpha;\n";
         os << indent6 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)    
-            os << indent6 << cdbltype << " one_over_2p = 0.5 * one_over_p;  // gets multiplied by i in VRR\n";
+            os << indent6 << cdbltype << " one_over_2p = " << base.DoubleSet("0.5") << " * one_over_p;  // gets multiplied by i in VRR\n";
 
         os << "\n";
         os << indent6 << "// a_over_p * PQ_{xyz}\n";
@@ -312,8 +312,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(haset)
     {
         os << indent6 << "// for electron transfer\n";
-        os << indent6 << cdbltype << " one_over_q = 1.0 / Q_alpha;\n";
-        os << indent6 << cdbltype << " one_over_2q = 0.5 * one_over_q;\n";
+        os << indent6 << cdbltype << " one_over_q = " << base.DoubleSet("1.0") << " / Q_alpha;\n";
+        os << indent6 << cdbltype << " one_over_2q = " << base.DoubleSet("0.5") << " * one_over_q;\n";
         os << indent6 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 

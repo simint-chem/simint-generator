@@ -8,8 +8,23 @@ HE=1000
 P=1000
 STACK=2048
 
+CPUFILE=$1
+
+if [ $# -ne 1 ]
+then
+  echo "Give CPUInfo file as argument"
+  exit 1
+fi
+
+if [ ! -f ${CPUFILE} ]
+then
+  echo "Cannot find CPUFile: ${CPUFILE}"
+  exit 1
+fi
+
 mkdir -p ../eri/FO.gen
 python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
+                             -i ${CPUFILE} \
                              -s ${STACK} \
                              -b FO \
                              -p FO \
@@ -19,7 +34,7 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
 
 #mkdir -p ../eri/FO_flat.gen
 #python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
-                             -s ${STACK} \
+#                             -s ${STACK} \
 #                             -f \
 #                             -b FO \
 #                             -p FO_flat \

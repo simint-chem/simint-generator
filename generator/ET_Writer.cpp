@@ -42,7 +42,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << indent6 << "double " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
+                os << indent6 << base.DoubleType() << " " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
         } 
 
         os << "\n\n";
@@ -96,9 +96,22 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             int ncart = NCART(it[0])*NCART(it[2]);
 
             os << "\n";
-            os << indent5 << "// Accumulating in contracted workspace\n";
-            os << indent5 << "for(n = 0; n < " << ncart << "; n++)\n";
-            os << indent6 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
+            os << indent6 << "// Accumulating in contracted workspace\n";
+
+            if(base.Intrinsics())
+            {
+                os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
+                os << indent6 << "{\n";
+                os << indent7 << "double vec[" << base.SimdLen() << "] __attribute__((aligned(" << base.ByteAlign() << ")));\n";
+                os << indent7 << base.DoubleStore(base.PrimVarName(it) + "[n]", "vec", "") << ";\n";
+                os << indent7 << base.PrimPtrName(it) << "[n] += vec[0]";
+                for(int i = 1; i < base.SimdLen(); i++)
+                    os << " + vec[" << i << "]";
+                os << ";\n";
+                os << indent6 << "}\n";
+            }
+            else
+                os << indent7 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
         }
     }
 }
@@ -117,8 +130,10 @@ std::string ET_Writer::ETStepVar(const Quartet & q, const WriterBase & base)
 std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
 {
     int stepidx = XYZStepToIdx(et.xyz);
-    int ival = et.target.bra.left.ijk[stepidx];
-    int kval = et.target.ket.left.ijk[stepidx]-1;
+    std::stringstream ival;
+    ival << et.target.bra.left.ijk[stepidx];
+    std::stringstream kval;
+    kval << (et.target.ket.left.ijk[stepidx]-1);
 
     std::stringstream ss;
     ss << indent6 <<  ETStepVar(et.target, base);
@@ -128,9 +143,9 @@ std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
     ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, base);
 
     if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + " << ival << " * one_over_2q * " << ETStepVar(et.src2, base);
+        ss << " + " << base.DoubleSet(ival.str()) << " * one_over_2q * " << ETStepVar(et.src2, base);
     if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + " << kval << " * one_over_2q * " << ETStepVar(et.src3, base);
+        ss << " + " << base.DoubleSet(kval.str()) << " * one_over_2q * " << ETStepVar(et.src3, base);
     if(et.src4.bra.left && et.src4.ket.left)
         ss << " - p_over_q * " << ETStepVar(et.src4, base);
     ss << ";\n";
