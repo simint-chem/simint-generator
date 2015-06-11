@@ -110,9 +110,9 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
 
         PruneQuartets_(newtargets, pruned);
 
-        cout << "After pruning: " << newtargets.size() << " new targets\n";
-        for(const auto & it : newtargets)
-            cout << "    " << it << "\n";
+        //cout << "After pruning: " << newtargets.size() << " new targets\n";
+        //for(const auto & it : newtargets)
+        //    cout << "    " << it << "\n";
 
         targets = newtargets;
     } 
@@ -175,8 +175,8 @@ void ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     cout << "--------------------------------------------------------------------------------\n";
     cout << "ET step done. Solution is " << etsteps_.size() << " steps\n";
     cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : etsteps_)
-        cout << it << "\n";
+    //for(auto & it : etsteps_)
+    //    cout << it << "\n";
 
     cout << "\n\n";
 

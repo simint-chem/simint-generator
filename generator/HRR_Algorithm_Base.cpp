@@ -91,8 +91,8 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     cout << "--------------------------------------------------------------------------------\n";
     cout << "BRA HRR step done. Solution is " << brasteps_.size() << " steps\n";
     cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : brasteps_)
-        cout << it << "\n";
+    //for(auto & it : brasteps_)
+    //    cout << it << "\n";
     
 
     // now do kets
@@ -113,8 +113,8 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     cout << "--------------------------------------------------------------------------------\n";
     cout << "KET HRR step done. Solution is " << ketsteps_.size() << " steps\n";
     cout << "--------------------------------------------------------------------------------\n";
-    for(auto & it : ketsteps_)
-        cout << it << "\n";
+    //for(auto & it : ketsteps_)
+    //    cout << it << "\n";
 
     cout << "\n\n";
 
