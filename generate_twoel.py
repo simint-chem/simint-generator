@@ -165,7 +165,7 @@ for q in valid:
     if dopermute:
         cmdline.append("-P")
 
-    if(args.i)
+    if args.i:
         cmdline.extend(["-i", args.i])
 
     print()
