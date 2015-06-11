@@ -42,6 +42,8 @@ class WriterBase
         int L(void) const;
 
         int SimdLen(void) const;
+        int ByteAlign(void) const;
+
         std::string DoubleType(void) const;
         std::string ConstDoubleType(void) const;
         std::string DoubleSet(const std::string & dbl) const;
@@ -82,6 +84,7 @@ class WriterBase
         std::map<std::string, std::string> intrinsicmap_;
 
         std::set<std::string> cpuflags_;
+        std::vector<std::string> includes_;
 };
 
 

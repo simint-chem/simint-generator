@@ -56,8 +56,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include \"vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
     os << "#include \"shell/shell.h\"\n";
-
+    os << "\n";
     base.WriteIncludes(os);
+    os << "\n";
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os, base);
     hrr_writer.WriteIncludes(os, base);
@@ -69,34 +70,39 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent << "double * const " << base.ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
-    os << indent1 << "ASSUME_ALIGN(P.x);\n";
-    os << indent1 << "ASSUME_ALIGN(P.y);\n";
-    os << indent1 << "ASSUME_ALIGN(P.z);\n";
-    os << indent1 << "ASSUME_ALIGN(P.PA_x);\n";
-    os << indent1 << "ASSUME_ALIGN(P.PA_y);\n";
-    os << indent1 << "ASSUME_ALIGN(P.PA_z);\n";
-    os << indent1 << "ASSUME_ALIGN(P.bAB_x);\n";
-    os << indent1 << "ASSUME_ALIGN(P.bAB_y);\n";
-    os << indent1 << "ASSUME_ALIGN(P.bAB_z);\n";
-    os << indent1 << "ASSUME_ALIGN(P.alpha);\n";
-    os << indent1 << "ASSUME_ALIGN(P.prefac);\n";
-    os << "\n";
-    os << indent1 << "ASSUME_ALIGN(Q.x);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.y);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.z);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.PA_x);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.PA_y);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.PA_z);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.bAB_x);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.bAB_y);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.bAB_z);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.alpha);\n";
-    os << indent1 << "ASSUME_ALIGN(Q.prefac);\n";
 
-    os << "\n";
-    os << indent1 << "ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
-    os << "\n";
-    os << "\n";
+    // if we are manually using intrinsics, we don't need these assume lines
+    if(!base.Intrinsics())
+    {
+        os << indent1 << "ASSUME_ALIGN(P.x);\n";
+        os << indent1 << "ASSUME_ALIGN(P.y);\n";
+        os << indent1 << "ASSUME_ALIGN(P.z);\n";
+        os << indent1 << "ASSUME_ALIGN(P.PA_x);\n";
+        os << indent1 << "ASSUME_ALIGN(P.PA_y);\n";
+        os << indent1 << "ASSUME_ALIGN(P.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN(P.bAB_x);\n";
+        os << indent1 << "ASSUME_ALIGN(P.bAB_y);\n";
+        os << indent1 << "ASSUME_ALIGN(P.bAB_z);\n";
+        os << indent1 << "ASSUME_ALIGN(P.alpha);\n";
+        os << indent1 << "ASSUME_ALIGN(P.prefac);\n";
+        os << "\n";
+        os << indent1 << "ASSUME_ALIGN(Q.x);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.y);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.z);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.PA_x);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.PA_y);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.bAB_x);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.bAB_y);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.bAB_z);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.alpha);\n";
+        os << indent1 << "ASSUME_ALIGN(Q.prefac);\n";
+
+        os << "\n";
+        os << indent1 << "ASSUME_ALIGN(" << base.ArrVarName(am) << ");\n";
+        os << "\n";
+        os << "\n";
+    }
 
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
@@ -144,9 +150,16 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent2 << "const int istart = P.primstart[ab];\n";
     os << indent2 << "const int iend = istart + P.nprim12[ab];\n";
     os << "\n";
-    os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-    os << indent2 << "ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
-    os << "\n";
+
+
+    // if we are manually using intrinsics, we don't need these assume lines
+    if(!base.Intrinsics())
+    {
+        os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
+        os << indent2 << "ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
+        os << "\n";
+    }
+
 
     if(hashrr)
     {
@@ -190,11 +203,23 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << indent4 << "const int jstart = Q.primstart[cd];\n";
-    os << indent4 << "const int jend = jstart + Q.nprim12[cd];\n";
+
+
+    if(base.Intrinsics())
+        os << indent4 << "const int jend = Q.primend[cd];\n"; // we want the end, including the padding
+    else
+        os << indent4 << "const int jend = jstart + Q.nprim12[cd];\n";
+
+
     os << "\n";
-    os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-    os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";
-    os << "\n";
+
+    // if we are manually using intrinsics, we don't need these assume lines
+    if(!base.Intrinsics())
+    {
+        os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
+        os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";
+        os << "\n";
+    }
  
     vrr_writer.DeclarePrimPointers(os, base);
     os << "\n";
@@ -228,8 +253,20 @@ static void WriteFile_NotFlat(std::ostream & os,
     }
 
     os << "\n";
-    os << indent5 << "//#pragma omp simd private(n)\n";
-    os << indent5 << "for(j = jstart; j < jend; ++j)\n";
+
+
+    if(base.Intrinsics())
+    {
+        os << indent5 << "#pragma novector\n";
+        os << indent5 << "for(j = jstart; j < jend; j += " << base.SimdLen() << ")\n";
+    }
+    else
+    {
+        os << indent5 << "//#pragma omp simd private(n)\n";
+        os << indent5 << "for(j = jstart; j < jend; ++j)\n";
+    }
+
+
     os << indent5 << "{\n";
     os << "\n";
 

@@ -96,6 +96,8 @@ QAM WriterBase::FinalAM(void) const
 
 void WriterBase::WriteIncludes(std::ostream & os) const
 {
+    for(const auto & it : includes_)
+        os << "#include " << it << "\n";
 }
 
 
@@ -331,6 +333,7 @@ void WriterBase::ReadCPUFlags(const std::string & file)
     if(HasCPUFlag("avx"))
     {
         simdlen_ = 4;  // 4 packed doubles
+        includes_.push_back("<immintrin.h>");
 
         intrinsicmap_["dbl_type"] = "__m256d";
         intrinsicmap_["cdbl_type"] = "const __m256d";
@@ -375,6 +378,11 @@ int WriterBase::SimdLen(void) const
     return simdlen_;
 }
 
+int WriterBase::ByteAlign(void) const
+{
+    return 8*simdlen_;
+}
+
 std::string WriterBase::DoubleType(void) const
 {
     return intrinsicmap_.at("dbl_type");
@@ -396,7 +404,13 @@ std::string WriterBase::DoubleSet(const std::string & dbl) const
 std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & idx) const
 {
     if(useintrinsics_)
-        return intrinsicmap_.at("dbl_load") + "(" + ptr + " + " + idx + ")";
+    {
+        std::string ptrstr = ptr;
+        if(idx.size())
+            ptrstr += " + " + idx;
+
+        return intrinsicmap_.at("dbl_load") + "(" + ptrstr + ")";
+    }
     else
         return ptr + "[" + idx + "]";
 }
@@ -404,7 +418,13 @@ std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & 
 std::string WriterBase::DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
 {
     if(useintrinsics_)
-        return intrinsicmap_.at("dbl_store") + "(" + ptr + " + " + idx + ", " + var + ")";
+    {
+        std::string ptrstr = ptr;
+        if(idx.size())
+            ptrstr += " + " + idx;
+
+        return intrinsicmap_.at("dbl_store") + "(" + ptrstr + ", " + var + ")";
+    }
     else
         return ptr + "[" + idx + "] = " + var;
 }

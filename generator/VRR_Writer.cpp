@@ -282,12 +282,14 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
 
         if(base.Intrinsics())
         {
-            os << indent7 << "double vec[" << base.SimdLen() << "];\n";
-            os << indent7 << base.DoubleStore("vec", base.PrimVarName(qam), "n") << "\n";
+            os << indent6 << "{\n";
+            os << indent7 << "double vec[" << base.SimdLen() << "] __attribute__((aligned(" << base.ByteAlign() << ")));\n";
+            os << indent7 << base.DoubleStore(base.PrimVarName(qam) + "[n]", "vec", "") << ";\n";
             os << indent7 << base.PrimPtrName(qam) << "[n] += vec[0]";
             for(int i = 1; i < base.SimdLen(); i++)
                 os << " + vec[" << i << "]";
             os << ";\n";
+            os << indent6 << "}\n";
         }
         else
             os << indent7 << base.PrimPtrName(qam) << "[n] += " << base.PrimVarName(qam) << "[n];\n";

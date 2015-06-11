@@ -66,26 +66,27 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m,
     os << indent6 << "              (\n";
     os << indent6 << "                 (\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << bf.a[0] << "\n";
+    os << indent6 << "                               " << base.DoubleSet(bf.a[0]) << "\n";
     for(int i = 1; i < bf.a.size(); i++)
-        os << indent6 << "                     + F_x * ( " << bf.a[i] << "\n";
-    os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";
+        os << indent6 << "                     + F_x * ( " << base.DoubleSet(bf.a[i]) << "\n";
+    os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                   /\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << bf.b[0] << "\n";
+    os << indent6 << "                               " << base.DoubleSet(bf.b[0]) << "\n";
     for(int i = 1; i < bf.b.size(); i++)
-        os << indent6 << "                     + F_x * ( " << bf.b[i] << "\n";
-    os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";
+        os << indent6 << "                     + F_x * ( " << base.DoubleSet(bf.b[i]) << "\n";
+    os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                 )\n";
     os << indent6 << "              );\n";
+    os << "\n";
 
     // apply prefac and power
     os << indent6 << ssvar.str() << " = ";
     if(prefac)
         os << "allprefac * ";
-    os << base.Power(ssvar.str(), sspow.str()) << ";\n";
+    os << base.Power(ssvar.str(), base.DoubleSet(sspow.str())) << ";\n";
 }
 
 void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
