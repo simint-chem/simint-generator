@@ -316,3 +316,8 @@ bool WriterBase::HasCPUFlag(const std::string & flag) const
 {
     return (cpuflags_.count(flag) > 0);
 }
+        
+bool WriterBase::Instrinsics(void) const
+{
+    return (GetOption(OPTION_INTRINSIC) != 0);
+}

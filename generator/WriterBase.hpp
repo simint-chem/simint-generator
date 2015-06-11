@@ -19,6 +19,7 @@ class WriterBase
 
         int GetOption(int option) const;
         bool HasCPUFlag(const std::string & flag) const;
+        bool Instrinsics(void) const;
 
         bool IsContArray(const QAM & am) const;
         
