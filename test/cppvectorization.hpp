@@ -1,7 +1,7 @@
 #ifndef CPPVECTORIZATION_H
 #define CPPVECTORIZATION_H
 
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 template <typename T>
 struct AlignedAllocator

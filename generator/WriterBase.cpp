@@ -333,7 +333,7 @@ void WriterBase::ReadCPUFlags(const std::string & file)
     if(HasCPUFlag("avx"))
     {
         simdlen_ = 4;  // 4 packed doubles
-        includes_.push_back("<immintrin.h>");
+        includes_.push_back("\"vectorization/avx.h\"");
 
         intrinsicmap_["dbl_type"] = "__m256d";
         intrinsicmap_["cdbl_type"] = "const __m256d";

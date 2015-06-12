@@ -53,7 +53,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include <math.h>\n";
     os << "\n";
 
-    os << "#include \"vectorization.h\"\n";
+    os << "#include \"vectorization/vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
     os << "#include \"shell/shell.h\"\n";
     os << "\n";

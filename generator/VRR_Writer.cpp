@@ -166,7 +166,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, const WriterBase & base) const
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
     os << "\n";
-    os << "#include \"vectorization.h\"\n";
+    os << "#include \"vectorization/vectorization.h\"\n";
     os << "\n";
 
     // iterate over increasing am
@@ -227,7 +227,7 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) 
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
     os << "\n";
-    os << "#include \"vectorization.h\"\n";
+    os << "#include \"vectorization/vectorization.h\"\n";
     os << "\n";
 
     // iterate over increasing am
@@ -284,11 +284,19 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am, const WriterBase & 
         if(base.Intrinsics())
         {
             os << indent6 << "{\n";
+            
+            /*
             os << indent7 << "double vec[" << base.SimdLen() << "] __attribute__((aligned(" << base.ByteAlign() << ")));\n";
             os << indent7 << base.DoubleStore(base.PrimVarName(qam) + "[n]", "vec", "") << ";\n";
             os << indent7 << base.PrimPtrName(qam) << "[n] += vec[0]";
+            */
+
+            os << indent7 << "union double4 vec = (union double4)" << base.PrimVarName(qam) << "[n];\n";    
+            os << indent7 << base.PrimPtrName(qam) << "[n] += vec.v[0]";
+
             for(int i = 1; i < base.SimdLen(); i++)
-                os << " + vec[" << i << "]";
+                os << " + vec.v[" << i << "]";
+                //os << " + vec[" << i << "]";
             os << ";\n";
             os << indent6 << "}\n";
         }

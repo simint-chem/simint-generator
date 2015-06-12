@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "shell/shell.h"
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 // 2 * pi**(2.5) * sqrt(pi) / 16
 //#define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683

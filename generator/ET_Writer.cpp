@@ -98,15 +98,24 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
             os << "\n";
             os << indent6 << "// Accumulating in contracted workspace\n";
 
+            os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
+
             if(base.Intrinsics())
             {
-                os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
                 os << indent6 << "{\n";
+
+                /*
                 os << indent7 << "double vec[" << base.SimdLen() << "] __attribute__((aligned(" << base.ByteAlign() << ")));\n";
                 os << indent7 << base.DoubleStore(base.PrimVarName(it) + "[n]", "vec", "") << ";\n";
                 os << indent7 << base.PrimPtrName(it) << "[n] += vec[0]";
+                */
+
+                os << indent7 << "union double4 vec = (union double4)" << base.PrimVarName(it) << "[n];\n";    
+                os << indent7 << base.PrimPtrName(it) << "[n] += vec.v[0]";
+
                 for(int i = 1; i < base.SimdLen(); i++)
-                    os << " + vec[" << i << "]";
+                    os << " + vec.v[" << i << "]";
+                    //os << " + vec[" << i << "]";
                 os << ";\n";
                 os << indent6 << "}\n";
             }

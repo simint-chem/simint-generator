@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 #include "boys/boys_shortgrid.h"
 
 extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];

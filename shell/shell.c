@@ -1,7 +1,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 #include "constants.h"
 #include "shell/shell.h"
 #include "shell/shell_constants.h"
