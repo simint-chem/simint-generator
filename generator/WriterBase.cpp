@@ -31,18 +31,20 @@ void WriterBase::SetContQ(const QAMSet & topquartets)
         contq_.insert(it);
 
     // calculate the memory
-    memory_ = 0;
+    nelements_ = 0;
     for(const auto & it : contq_)
     {
         if(it != finalam_)
-            memory_ += (sizeof(double) * NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]));
+            nelements_ += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
     }
 
     // add memory for AB_{xyz} and CD_{xyz}
     if(HasBraHRR())
-        memory_ += 3 * sizeof(double);
+        nelements_ += 3;
     if(HasKetHRR())
-        memory_ += 3 * sizeof(double);
+        nelements_ += 3;
+
+    memory_ = nelements_ * sizeof(double); 
 }
 
 
@@ -186,7 +188,7 @@ void WriterBase::DeclareContwork(std::ostream & os) const
         if(memory_ > GetOption(OPTION_STACKMEM))
             os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         else
-            os << "    double contwork[SIMINT_NSHELL_SIMD * " << memory_ << "];\n";
+            os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "];\n";
         os << "\n";
 
         os << "    // partition workspace into shells\n";

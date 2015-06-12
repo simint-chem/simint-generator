@@ -77,6 +77,7 @@ class WriterBase
         std::string prefix_;
         OptionsMap options_;
         size_t memory_;
+        size_t nelements_;
         QAM finalam_;
 
         int simdlen_;
