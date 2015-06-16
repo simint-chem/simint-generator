@@ -6,7 +6,7 @@
 #include "generator/Algorithms.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/Options.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/VRR_Writer.hpp"
 
 using namespace std;
@@ -125,17 +125,17 @@ int main(int argc, char ** argv)
     vrralgo->CreateAllMaps(vreq);
 
     // Create the writer and base writer
-    WriterBase base(options, "", {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
+    WriterInfo::Init(options, "", {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
 
     // read in cpuflags if needed
     if(options[OPTION_INTRINSIC] != 0)
-        base.ReadCPUFlags(cpuinfofile); 
+        WriterInfo::ReadCPUFlags(cpuinfofile); 
 
     VRR_Writer vrr_writer(*vrralgo);
 
     // write to the output file
-    vrr_writer.WriteVRRFile(of, base);
-    vrr_writer.WriteVRRHeaderFile(ofh, base);
+    vrr_writer.WriteVRRFile(of);
+    vrr_writer.WriteVRRHeaderFile(ofh);
     cout << "Done!\n";
 
     }

@@ -5,12 +5,12 @@
 #include <vector>
 #include <map>
 
-class WriterBase;
+
 
 class BoysGen
 {
     public:
-        virtual void WriteBoys(std::ostream & os, const WriterBase & base) const = 0;
+        virtual void WriteBoys(std::ostream & os) const = 0;
 
         void WriteIncludes(std::ostream & os) const;
 
@@ -25,7 +25,7 @@ class BoysFO : public BoysGen
     public:
         BoysFO(std::string dir); // read from directory
 
-        virtual void WriteBoys(std::ostream & os, const WriterBase & base) const;
+        virtual void WriteBoys(std::ostream & os) const;
 
     private:
         struct BoysFit
@@ -46,7 +46,7 @@ class BoysFO : public BoysGen
 
         std::map<int, BoysFit> bfmap_;
 
-        void WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m, bool prefac) const;
+        void WriteBoysSingle_(std::ostream & os, int m, bool prefac) const;
 };
 
 
@@ -54,7 +54,7 @@ struct BoysSplit : public BoysGen
 {
     public:
         // default constructors ok
-        virtual void WriteBoys(std::ostream & os, const WriterBase & base) const;
+        virtual void WriteBoys(std::ostream & os) const;
 
     protected:
         virtual std::vector<std::string> Includes(void) const;
@@ -65,7 +65,7 @@ struct BoysVRef : public BoysGen
 {
     public:
         // default constructors ok
-        virtual void WriteBoys(std::ostream & os, const WriterBase & base) const;
+        virtual void WriteBoys(std::ostream & os) const;
 
     protected:
         virtual std::vector<std::string> Includes(void) const;

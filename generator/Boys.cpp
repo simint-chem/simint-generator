@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 #include "generator/Boys.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/Helpers.hpp"
         
 ////////////////////////////////////
@@ -54,28 +54,28 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
     f.close();
 }
 
-void BoysFO::WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m, bool prefac) const
+void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
 {
     const BoysFit & bf = bfmap_.at(m); 
 
     std::stringstream ssvar, sspow;
-    ssvar << base.PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
+    ssvar << WriterInfo::PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
     sspow << bf.v << ".0+0.5";
 
     os << indent6 << ssvar.str() << " =\n";
     os << indent6 << "              (\n";
     os << indent6 << "                 (\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << base.DoubleSet(bf.a[0]) << "\n";
+    os << indent6 << "                               " << WriterInfo::DoubleSet(bf.a[0]) << "\n";
     for(int i = 1; i < bf.a.size(); i++)
-        os << indent6 << "                     + F_x * ( " << base.DoubleSet(bf.a[i]) << "\n";
+        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleSet(bf.a[i]) << "\n";
     os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                   /\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << base.DoubleSet(bf.b[0]) << "\n";
+    os << indent6 << "                               " << WriterInfo::DoubleSet(bf.b[0]) << "\n";
     for(int i = 1; i < bf.b.size(); i++)
-        os << indent6 << "                     + F_x * ( " << base.DoubleSet(bf.b[i]) << "\n";
+        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleSet(bf.b[i]) << "\n";
     os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                 )\n";
@@ -88,7 +88,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m,
     if(prefac)
         os << "allprefac * ";
 
-    os << base.Sqrt(ssvar.str());
+    os << WriterInfo::Sqrt(ssvar.str());
 
     for(int i = 0; i < bf.v; i++)
         os << " * " << ssvar.str();
@@ -96,37 +96,37 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, const WriterBase & base, int m,
     os << "\n";
 }
 
-void BoysFO::WriteBoys(std::ostream & os, const WriterBase & base) const
+void BoysFO::WriteBoys(std::ostream & os) const
 {
-    std::string primname = base.PrimVarName({0,0,0,0});
+    std::string primname = WriterInfo::PrimVarName({0,0,0,0});
 
     // just calculate them all if L is small
     // value of 3 found by testing
-    if(base.L() < 3)
+    if(WriterInfo::L() < 3)
     {
-        for(int m = 0; m <= base.L(); m++)
-            WriteBoysSingle_(os, base, m, true);
+        for(int m = 0; m <= WriterInfo::L(); m++)
+            WriteBoysSingle_(os, m, true);
     }
     else
     {
         // calculate highest, and recurse down
-        WriteBoysSingle_(os, base, base.L(), false);
+        WriteBoysSingle_(os, WriterInfo::L(), false);
 
         // calculate the downward recursion factors
-        os << indent6 << base.ConstDoubleType() << " x2 = " << base.DoubleSet("2.0") << " * F_x;\n";
-        os << indent6 << base.ConstDoubleType() << " ex = " << base.Exp("-F_x") << ";\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::DoubleSet("2.0") << " * F_x;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
 
-        for(int m = base.L()-1; m >= 0; m--)
+        for(int m = WriterInfo::L()-1; m >= 0; m--)
         {
             std::stringstream ss;
             ss.precision(18);
             ss << (1.0/(2.0*m+1.0));
-            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << base.DoubleSet(ss.str()) << ";\n";
+            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::DoubleSet(ss.str()) << ";\n";
         }
 
         // add prefac now
         os << "\n";
-        os << indent6 << "for(n = 0; n <= " << base.L() << "; ++n)\n";
+        os << indent6 << "for(n = 0; n <= " << WriterInfo::L() << "; ++n)\n";
         os << indent6 << "    " << primname << "[n] *= allprefac;\n";
         os << "\n";
     }
@@ -160,11 +160,11 @@ BoysFO::BoysFO(std::string dir)
 // Boys Split
 ////////////////////////////////////
 
-void BoysSplit::WriteBoys(std::ostream & os, const WriterBase & base) const
+void BoysSplit::WriteBoys(std::ostream & os) const
 {
-    os << indent6 << "Boys_F_split(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
-    for(int i = 0; i <= base.L(); i++)
-        os << indent6 << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+    os << indent6 << "Boys_F_split(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
+    for(int i = 0; i <= WriterInfo::L(); i++)
+        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const
@@ -178,11 +178,11 @@ std::vector<std::string> BoysSplit::Includes(void) const
 // Boys Valeev Reference
 ////////////////////////////////////
 
-void BoysVRef::WriteBoys(std::ostream & os, const WriterBase & base) const
+void BoysVRef::WriteBoys(std::ostream & os) const
 {
-    os << indent6 << "Boys_F_VRef(" << base.PrimVarName({0,0,0,0}) << ", " << base.L() << ", F_x);\n";
-    for(int i = 0; i <= base.L(); i++)
-        os << indent6 << base.PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+    os << indent6 << "Boys_F_VRef(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
+    for(int i = 0; i <= WriterInfo::L(); i++)
+        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::Includes(void) const

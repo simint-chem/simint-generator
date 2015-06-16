@@ -1,5 +1,5 @@
 #include "generator/ET_Writer.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
 #include "generator/Helpers.hpp"
 
@@ -26,13 +26,13 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 
 
 
-void ET_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
+void ET_Writer::WriteIncludes(std::ostream & os) const
 {
 }
 
 
 
-void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) const
+void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     if(etint_.size())
     {
@@ -42,7 +42,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << indent6 << base.DoubleType() << " " << base.PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
+                os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "];\n";
         } 
 
         os << "\n\n";
@@ -51,15 +51,15 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os, const WriterBase & base) co
 }
 
 
-void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) const
+void ET_Writer::DeclarePrimPointers(std::ostream & os) const
 {
     if(etint_.size())
     {
         for(const auto & it : etint_)
         {
-            if(base.IsContArray(it))
-                os << indent4  << "double * const restrict " << base.PrimPtrName(it)
-                   << " = " << base.ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
+            if(WriterInfo::IsContArray(it))
+                os << indent4  << "double * const restrict " << WriterInfo::PrimPtrName(it)
+                   << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
         }
 
         os << "\n\n";
@@ -68,7 +68,7 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os, const WriterBase & base) 
 }
 
 
-void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
+void ET_Writer::WriteETInline(std::ostream & os) const
 {
     os << "\n";
     os << indent6 << "//////////////////////////////////////////////\n";
@@ -83,7 +83,7 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
         for(const auto & it : etsl_)
         {
             os << indent6 << "// " << it << "\n";
-            os << ETStepString(it, base);
+            os << ETStepString(it);
             os << "\n";
         }
     }
@@ -91,7 +91,7 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
     // add to needed contracted integrals
     for(const auto & it : etint_)
     {
-        if(base.IsContArray(it))
+        if(WriterInfo::IsContArray(it))
         {
             int ncart = NCART(it[0])*NCART(it[2]);
 
@@ -100,43 +100,43 @@ void ET_Writer::WriteETInline(std::ostream & os, const WriterBase & base) const
 
             os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
 
-            if(base.Intrinsics())
+            if(WriterInfo::Intrinsics())
             {
                 os << indent6 << "{\n";
 
                 /*
-                os << indent7 << "double vec[" << base.SimdLen() << "] __attribute__((aligned(" << base.ByteAlign() << ")));\n";
-                os << indent7 << base.DoubleStore(base.PrimVarName(it) + "[n]", "vec", "") << ";\n";
-                os << indent7 << base.PrimPtrName(it) << "[n] += vec[0]";
+                os << indent7 << "double vec[" << WriterInfo::SimdLen() << "] __attribute__((aligned(" << WriterInfo::ByteAlign() << ")));\n";
+                os << indent7 << WriterInfo::DoubleStore(WriterInfo::PrimVarName(it) + "[n]", "vec", "") << ";\n";
+                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec[0]";
                 */
 
-                os << indent7 << "union double4 vec = (union double4)" << base.PrimVarName(it) << "[n];\n";    
-                os << indent7 << base.PrimPtrName(it) << "[n] += vec.v[0]";
+                os << indent7 << "union double4 vec = (union double4)" << WriterInfo::PrimVarName(it) << "[n];\n";    
+                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec.v[0]";
 
-                for(int i = 1; i < base.SimdLen(); i++)
+                for(int i = 1; i < WriterInfo::SimdLen(); i++)
                     os << " + vec.v[" << i << "]";
                     //os << " + vec[" << i << "]";
                 os << ";\n";
                 os << indent6 << "}\n";
             }
             else
-                os << indent7 << base.PrimPtrName(it) << "[n] += " << base.PrimVarName(it) << "[n];\n";
+                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += " << WriterInfo::PrimVarName(it) << "[n];\n";
         }
     }
 }
 
 
 
-std::string ET_Writer::ETStepVar(const Quartet & q, const WriterBase & base)
+std::string ET_Writer::ETStepVar(const Quartet & q)
 {
     std::stringstream ss; 
-    ss << base.PrimVarName(q.amlist()) << "[" << q.idx() << "]";
+    ss << WriterInfo::PrimVarName(q.amlist()) << "[" << q.idx() << "]";
     return ss.str();
 }
 
 
 
-std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
+std::string ET_Writer::ETStepString(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
     std::stringstream ival;
@@ -145,18 +145,18 @@ std::string ET_Writer::ETStepString(const ETStep & et, const WriterBase & base)
     kval << (et.target.ket.left.ijk[stepidx]-1);
 
     std::stringstream ss;
-    ss << indent6 <<  ETStepVar(et.target, base);
+    ss << indent6 <<  ETStepVar(et.target);
 
     ss << " = ";
 
-    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1, base);
+    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1);
 
     if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + " << base.DoubleSet(ival.str()) << " * one_over_2q * " << ETStepVar(et.src2, base);
+        ss << " + " << WriterInfo::DoubleSet(ival.str()) << " * one_over_2q * " << ETStepVar(et.src2);
     if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + " << base.DoubleSet(kval.str()) << " * one_over_2q * " << ETStepVar(et.src3, base);
+        ss << " + " << WriterInfo::DoubleSet(kval.str()) << " * one_over_2q * " << ETStepVar(et.src3);
     if(et.src4.bra.left && et.src4.ket.left)
-        ss << " - p_over_q * " << ETStepVar(et.src4, base);
+        ss << " - p_over_q * " << ETStepVar(et.src4);
     ss << ";\n";
 
     return ss.str();

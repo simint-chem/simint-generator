@@ -6,7 +6,7 @@
 #include "generator/Helpers.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Boys.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/VRR_Writer.hpp"
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
@@ -162,11 +162,11 @@ int main(int argc, char ** argv)
     std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
 
     // Base writer information
-    WriterBase base(options, prefix, amlist);
+    WriterInfo::Init(options, prefix, amlist);
 
     // read in cpuflags if needed
     if(options[OPTION_INTRINSIC] != 0)
-        base.ReadCPUFlags(cpuinfofile); 
+        WriterInfo::ReadCPUFlags(cpuinfofile); 
 
     // Working backwards, I need:
     // 1.) HRR Steps
@@ -185,12 +185,12 @@ int main(int argc, char ** argv)
     VRR_Writer vrr_writer(*vrralgo);
 
     // set the contracted quartets
-    base.SetContQ(hrralgo->TopQAM());
+    WriterInfo::SetContQ(hrralgo->TopQAM());
 
     // print out some info
-    std::cout << "MEMORY (per shell quartet): " << base.MemoryReq() << "\n";
+    std::cout << "MEMORY (per shell quartet): " << WriterInfo::MemoryReq() << "\n";
 
-    WriteFile(of, base, *bg, vrr_writer, et_writer, hrr_writer);
+    WriteFile(of, *bg, vrr_writer, et_writer, hrr_writer);
 
     }
     catch(std::exception & ex)

@@ -1,5 +1,5 @@
 #include "generator/HRR_Writer.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
 
@@ -14,15 +14,15 @@ HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo)
 
 
 
-void HRR_Writer::WriteIncludes(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteIncludes(std::ostream & os) const
 {
-    if(base.GetOption(OPTION_INLINEHRR) == 0)
+    if(WriterInfo::GetOption(OPTION_INLINEHRR) == 0)
         os << "#include \"eri/hrr.gen/hrr.h\"\n";
 }
 
 
 
-void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_ket, const std::string & ketstr) const
+void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << "\n";
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
@@ -37,12 +37,12 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, cons
         std::stringstream ss;
         os << std::string(20, ' ');
 
-        os << HRRBraStepVar_(hit.target, ncart_ket, ketstr, true, base);
+        os << HRRBraStepVar_(hit.target, ncart_ket, ketstr, true);
 
         os << " = ";
-        os << HRRBraStepVar_(hit.src1, ncart_ket, ketstr, false, base);
+        os << HRRBraStepVar_(hit.src1, ncart_ket, ketstr, false);
         os << " + ( b" << xyztype << hit.xyz << " * ";
-        os << HRRBraStepVar_(hit.src2, ncart_ket, ketstr, false, base);
+        os << HRRBraStepVar_(hit.src2, ncart_ket, ketstr, false);
         os << " );";
         os << "\n\n";
     }
@@ -53,7 +53,7 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const WriterBase & base, cons
 
 
 
-void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, const std::string & ncart_bra, const std::string & brastr) const
+void HRR_Writer::WriteKetSteps_(std::ostream & os, const std::string & ncart_bra, const std::string & brastr) const
 {
         os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << indent4 << "{\n"; 
@@ -65,12 +65,12 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, cons
 
             os << std::string(20, ' ');
     
-            os << HRRKetStepVar_(hit.target, ncart_bra, brastr, true, base);
+            os << HRRKetStepVar_(hit.target, ncart_bra, brastr, true);
 
             os << " = ";
-            os << HRRKetStepVar_(hit.src1, ncart_bra, brastr, false, base);
+            os << HRRKetStepVar_(hit.src1, ncart_bra, brastr, false);
             os << " + ( k" << xyztype << hit.xyz << " * ";
-            os << HRRKetStepVar_(hit.src2, ncart_bra, brastr, false, base);
+            os << HRRKetStepVar_(hit.src2, ncart_bra, brastr, false);
             os << " );";
             os << "\n\n";
         }
@@ -81,11 +81,11 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const WriterBase & base, cons
 
 
 std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
-                                       const std::string & ketstr, bool istarget, const WriterBase & base) const
+                                       const std::string & ketstr, bool istarget) const
 {
     std::stringstream ss;
 
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
 
     // is final doublet?
     bool isfinald = (d.left.am() == finalam[0] && d.right.am() == finalam[1]);
@@ -94,9 +94,9 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
     bool istop = ( d.right.am() == 0);
 
     // actually the final quartet?
-    bool isfinalq = isfinald && !base.HasKetHRR();
+    bool isfinalq = isfinald && !WriterInfo::HasKetHRR();
 
-    std::string arrname = base.ArrVarName(d.left.am(), d.right.am(), ketstr);
+    std::string arrname = WriterInfo::ArrVarName(d.left.am(), d.right.am(), ketstr);
 
     if(istop || isfinalq)
         ss << arrname << "[idx_" << arrname << " + " << d.idx() << " * " << ncart_ket << " + iket]";
@@ -116,11 +116,11 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
 
 
 std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra,
-                                       const std::string & brastr, bool istarget, const WriterBase & base) const
+                                       const std::string & brastr, bool istarget) const
 {
     std::stringstream ss;
 
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
 
     // is final doublet? This would be the final quartet also
     bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
@@ -133,7 +133,7 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
     // is top level ket? (ie result from bra, but not VRR, etc)
     bool istopbra = ( !istop && d.right.am() == 0 );
 
-    std::string arrname = base.ArrVarName(brastr, d.left.am(), d.right.am());
+    std::string arrname = WriterInfo::ArrVarName(brastr, d.left.am(), d.right.am());
 
     if(istopbra)
         ss << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
@@ -152,12 +152,12 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & nc
 
 
 
-void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 {
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
 
-    if(base.HasHRR())
+    if(WriterInfo::HasHRR())
     {
         os << indent3 << "//////////////////////////////////////////////\n";
         os << indent3 << "// Contracted integrals: Horizontal recurrance\n";
@@ -169,13 +169,13 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 
         // variables
         os << "\n";
-        if(base.HasBraHRR())
+        if(WriterInfo::HasBraHRR())
         {
             os << indent4 << "const double bAB_x = AB_x[abcd];\n";
             os << indent4 << "const double bAB_y = AB_y[abcd];\n";
             os << indent4 << "const double bAB_z = AB_z[abcd];\n";
         }
-        if(base.HasKetHRR())
+        if(WriterInfo::HasKetHRR())
         {
             os << indent4 << "const double kCD_x = CD_x[abcd];\n";
             os << indent4 << "const double kCD_y = CD_y[abcd];\n";
@@ -186,22 +186,22 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 
         // we may be able to do some index math up front
         for(const auto & it : topquartetam_)
-            os << indent4 << "const int idx_" << base.ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+            os << indent4 << "const int idx_" << WriterInfo::ArrVarName(it) << " = abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
 
         // and also for the final integral
-        os << indent4 << "const int idx_" << base.ArrVarName(finalam) << " = real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        os << indent4 << "const int idx_" << WriterInfo::ArrVarName(finalam) << " = real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
         os << "\n";
 
-        if(base.HasBraHRR())
+        if(WriterInfo::HasBraHRR())
         {
             // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
             // but skip the final AM if we aren't permuting. They are stored directly
             for(const auto & it : brakettopam_.second)
             {
                 QAM qam{finalbra[0], finalbra[1], it[0], 0};
-                if(!base.IsFinalAM(qam))
+                if(!WriterInfo::IsFinalAM(qam))
                 {
-                    os << indent4 << "double " << base.ArrVarName(qam)
+                    os << indent4 << "double " << WriterInfo::ArrVarName(qam)
                        << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
                 }
             }
@@ -211,7 +211,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
             for(const auto & it : brakettopam_.second)
             {
                 // it.first is the AM for the ket part
-                os << indent4 << "// form " << base.ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
+                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
 
                 // ncart_ket in string form
                 std::stringstream ss;
@@ -222,14 +222,14 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
                 ssket << amchar[it[0]] << "_s";
         
                 // actually write out the steps now
-                WriteBraSteps_(os, base, ss.str(), ssket.str());
+                WriteBraSteps_(os, ss.str(), ssket.str());
             }
         }
 
         os << "\n";
         os << "\n";
 
-        if(base.HasKetHRR())
+        if(WriterInfo::HasKetHRR())
         {
             // ncart_bra in string form
             DAM braam{finalam[0], finalam[1]};
@@ -240,7 +240,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
             std::stringstream ssbra;
             ssbra << amchar[finalbra[0]] << "_" << amchar[finalbra[1]];
 
-            WriteKetSteps_(os, base, ss.str(), ssbra.str());
+            WriteKetSteps_(os, ss.str(), ssbra.str());
 
     
         }
@@ -254,10 +254,10 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os, const WriterBase & base) con
 }
 
 
-void HRR_Writer::WriteHRRExternal_(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 {
 /*
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
 
     if(hrrsteps_.first.size() > 0)
     {
@@ -278,14 +278,14 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os, const WriterBase & base) c
         {
             // it.first is the AM for the ket part
             QAM thisam{finalam[0], finalam[1], it.first, 0};
-            os << indent2 << "// form " << base.ArrVarName(thisam) << "\n";
+            os << indent2 << "// form " << WriterInfo::ArrVarName(thisam) << "\n";
             os << indent2 << "HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
             // Pass the pointers
             for(const auto & itb : brahrr_ptrs_)
             {
                  os << "               "
-                    << base.ArrVarName({itb[0], itb[1], it.first, 0}) 
+                    << WriterInfo::ArrVarName({itb[0], itb[1], it.first, 0}) 
                     << " + ( abcd * " << NCART(itb[0]) * NCART(itb[1]) * NCART(it.first) << " ),\n";
             }
 
@@ -315,14 +315,14 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os, const WriterBase & base) c
         os << indent1 << "for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << indent1 << "{\n";
 
-        os << indent2 << "// form " << base.ArrVarName(finalam) << "\n";
+        os << indent2 << "// form " << WriterInfo::ArrVarName(finalam) << "\n";
         os << indent2 << "HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes
         for(auto & it : kethrr_ptrs_)
         {
             os << "               "
-               << base.ArrVarName({finalam[0], finalam[1], it[0], it[1]})
+               << WriterInfo::ArrVarName({finalam[0], finalam[1], it[0], it[1]})
                << " + ( abcd * " << NCART(braam[0]) * NCART(braam[1]) * NCART(it[0]) * NCART(it[1]) << " ),\n"; 
         }
         os << "               CD_x[abcd], CD_y[abcd], CD_z[abcd], " << (NCART(braam[0]) * NCART(braam[1])) << ");\n";
@@ -338,19 +338,19 @@ os << "TODO\n";
 
 
 
-void HRR_Writer::WriteHRR(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRR(std::ostream & os) const
 {
-    if(base.GetOption(OPTION_INLINEHRR) > 0)
-        WriteHRRInline_(os, base);
+    if(WriterInfo::GetOption(OPTION_INLINEHRR) > 0)
+        WriteHRRInline_(os);
     else
-        WriteHRRExternal_(os, base);
+        WriteHRRExternal_(os);
 }
 
 
 
-void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const WriterBase & base) const
+void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
 {
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
 
 
     if(hrrsteps_.first.size() > 0)
@@ -379,7 +379,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
         ofb << indent1 << "int iket;\n";
         ofb << "\n";
 
-        WriteBraSteps_(ofb, base, "ncart_ket", ""); 
+        WriteBraSteps_(ofb, "ncart_ket", ""); 
 
         ofb << "\n";
         ofb << "}\n";
@@ -411,7 +411,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
         ofk << indent1 << "int ibra;\n";
         ofk << "\n";
 
-        WriteKetSteps_(ofk, base, "ncart_bra", ""); 
+        WriteKetSteps_(ofk, "ncart_bra", ""); 
 
         ofk << "\n";
         ofk << "}\n";
@@ -422,9 +422,9 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, const Writ
 
 
 
-void HRR_Writer::WriteHRRHeaderFile(std::ostream & os, const WriterBase & base) const
+void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
 {
-    QAM finalam = base.FinalAM();
+    QAM finalam = WriterInfo::FinalAM();
 
     if(hrrsteps_.first.size() > 0)
     {

@@ -6,7 +6,7 @@
 #include "generator/Helpers.hpp"
 #include "generator/Algorithms.hpp"
 #include "generator/Options.hpp"
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
 #include "generator/HRR_Writer.hpp"
 
 using namespace std;
@@ -149,18 +149,18 @@ int main(int argc, char ** argv)
 
         // we can do both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
-        WriterBase base(options, "", am);
+        WriterInfo::Init(options, "", am);
 
         // read in cpuflags if needed
         if(options[OPTION_INTRINSIC] != 0)
-            base.ReadCPUFlags(cpuinfofile); 
+            WriterInfo::ReadCPUFlags(cpuinfofile); 
 
         hrralgo->Create_DoubletStepLists(am);
         HRR_Writer hrr_writer(*hrralgo);
 
         // write to the output file (appending)
-        hrr_writer.WriteHRRFile(ofb, ofk, base);
-        hrr_writer.WriteHRRHeaderFile(ofh, base);
+        hrr_writer.WriteHRRFile(ofb, ofk);
+        hrr_writer.WriteHRRHeaderFile(ofh);
     }
 
     ofh << "#endif\n";

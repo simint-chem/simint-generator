@@ -17,7 +17,7 @@ add_library(generator_common STATIC
                          HRR_Algorithm_Base.cpp
                          Helpers.cpp
                          Boys.cpp
-                         WriterBase.cpp
+                         WriterInfo.cpp
                          VRR_Writer.cpp
                          ET_Writer.cpp
                          HRR_Writer.cpp

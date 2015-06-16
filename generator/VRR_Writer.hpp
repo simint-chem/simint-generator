@@ -6,7 +6,7 @@
 
 #include "generator/Classes.hpp"
 
-class WriterBase;
+
 class VRR_Algorithm_Base;
 
 class VRR_Writer
@@ -14,26 +14,26 @@ class VRR_Writer
     public:
         VRR_Writer(const VRR_Algorithm_Base & vrr_algo_);
 
-        void WriteVRR(std::ostream & os, const WriterBase & base) const;
+        void WriteVRR(std::ostream & os) const;
 
-        void WriteIncludes(std::ostream & os, const WriterBase & base) const;
-        void DeclarePrimArrays(std::ostream & os, const WriterBase & base) const;
-        void DeclarePrimPointers(std::ostream & os, const WriterBase & base) const;
+        void WriteIncludes(std::ostream & os) const;
+        void DeclarePrimArrays(std::ostream & os) const;
+        void DeclarePrimPointers(std::ostream & os) const;
 
-        void WriteVRRFile(std::ostream & os, const WriterBase & base) const;
-        void WriteVRRHeaderFile(std::ostream & os, const WriterBase & base) const;
+        void WriteVRRFile(std::ostream & os) const;
+        void WriteVRRHeaderFile(std::ostream & os) const;
 
     private:
         VRRMap vrrmap_;
         GaussianMap vrramreq_;
 
-        void WriteVRRInline_(std::ostream & os, const WriterBase & base) const;
-        void WriteVRRExternal_(std::ostream & os, const WriterBase & base) const;
+        void WriteVRRInline_(std::ostream & os) const;
+        void WriteVRRExternal_(std::ostream & os) const;
 
-        void WriteAccumulate_(std::ostream & os, int am, const WriterBase & base) const;
+        void WriteAccumulate_(std::ostream & os, int am) const;
 
-        void WriteVRRSteps_(std::ostream & os, const WriterBase & base) const;
-        void WriteVRRSteps_(std::ostream & os, const WriterBase & base, const GaussianSet & greq, const std::string & num_n) const;
+        void WriteVRRSteps_(std::ostream & os) const;
+        void WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, const std::string & num_n) const;
 };
 
 #endif

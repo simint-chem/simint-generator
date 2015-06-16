@@ -2,12 +2,33 @@
 #include <fstream>
 #include <iostream>
 #include <cctype> // for tolower
-#include "generator/WriterBase.hpp"
+#include "generator/WriterInfo.hpp"
+
+namespace {
+        QAMSet contq_;  // set of contracted integral AM
+        std::string prefix_;
+        OptionsMap options_;
+        size_t memory_;
+        size_t nelements_;
+        QAM finalam_;
+
+        int simdlen_;
+        bool useintrinsics_;
+        std::map<std::string, std::string> intrinsicmap_;
+
+        std::set<std::string> cpuflags_;
+        std::vector<std::string> includes_;
+}
 
 
-WriterBase::WriterBase(const OptionsMap & options, const std::string & prefix, const QAM & finalam)
-     : options_(options), prefix_(prefix), finalam_(finalam)
+
+namespace WriterInfo {
+
+void Init(const OptionsMap & options, const std::string & prefix, const QAM & finalam)
 {
+    options_ = options;
+    prefix_ = prefix;
+    finalam_ = finalam;
     simdlen_ = 1;
     useintrinsics_ = false;
     intrinsicmap_["dbl_type"] = "double";
@@ -22,7 +43,7 @@ WriterBase::WriterBase(const OptionsMap & options, const std::string & prefix, c
 
 
 
-void WriterBase::SetContQ(const QAMSet & topquartets)
+void SetContQ(const QAMSet & topquartets)
 {
     contq_.clear();
 
@@ -49,21 +70,21 @@ void WriterBase::SetContQ(const QAMSet & topquartets)
 
 
 
-size_t WriterBase::MemoryReq(void) const
+size_t MemoryReq(void) 
 {
     return memory_;
 }
 
 
 
-int WriterBase::L(void) const
+int L(void) 
 {
     return finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3];
 }
 
 
 
-int WriterBase::GetOption(int option) const
+int GetOption(int option) 
 {
     if(options_.count(option) > 0)
         return options_.at(option);
@@ -77,33 +98,33 @@ int WriterBase::GetOption(int option) const
 
 
 
-bool WriterBase::IsContArray(const QAM & am) const
+bool IsContArray(const QAM & am) 
 {
     return contq_.count(am);
 }
 
 
 
-bool WriterBase::IsFinalAM(const QAM & am) const
+bool IsFinalAM(const QAM & am) 
 {
     return am == finalam_;
 }
 
 
-QAM WriterBase::FinalAM(void) const
+QAM FinalAM(void) 
 {
     return finalam_;
 }
 
 
-void WriterBase::WriteIncludes(std::ostream & os) const
+void WriteIncludes(std::ostream & os) 
 {
     for(const auto & it : includes_)
         os << "#include " << it << "\n";
 }
 
 
-std::string WriterBase::ArrVarName(const QAM & am, const std::string & prefix)
+std::string ArrVarName(const QAM & am, const std::string & prefix)
 {
     std::stringstream ss;
 
@@ -114,7 +135,7 @@ std::string WriterBase::ArrVarName(const QAM & am, const std::string & prefix)
     return ss.str();
 }
 
-std::string WriterBase::ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix)
+std::string ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix)
 {
     std::stringstream ss;
 
@@ -125,7 +146,7 @@ std::string WriterBase::ArrVarName(int am1, int am2, const std::string & ketstr,
     return ss.str();
 }
 
-std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4, const std::string & prefix)
+std::string ArrVarName(const std::string & brastr, int am3, int am4, const std::string & prefix)
 {
     std::stringstream ss;
 
@@ -137,48 +158,36 @@ std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4,
 }
 
 
-std::string WriterBase::HRRVarName(const QAM & am)
+std::string HRRVarName(const QAM & am)
 {
     return ArrVarName(am, "HRR");
 }
 
 
-std::string WriterBase::ArrVarName(int am1, int am2, const std::string & ketstr)
+std::string HRRVarName(int am1, int am2, const std::string & ketstr)
 {
     return ArrVarName(am1, am2, ketstr, "HRR");
 }
 
-std::string WriterBase::ArrVarName(const std::string & brastr, int am3, int am4)
+std::string HRRVarName(const std::string & brastr, int am3, int am4)
 {
     return ArrVarName(brastr, am3, am4, "HRR");
 }
 
 
-std::string WriterBase::PrimVarName(const QAM & am)
+std::string PrimVarName(const QAM & am)
 {
     return ArrVarName(am, "PRIM");
 }
 
 
-std::string WriterBase::PrimPtrName(const QAM & am)
+std::string PrimPtrName(const QAM & am)
 {
     return ArrVarName(am, "PRIM_PTR");
 }
         
 
-/*
-void WriterBase::PermuteResult(std::ostream & os, const std::string & src) const
-{
-    int ncart = NCART(finalam_[0]) * NCART(finalam_[1]) * NCART(finalam_[2]) * NCART(finalam_[3]);
-    os << "\n";
-    os << "        //Permute the result\n";
-    os << "        for(ir = 0; ir < " << ncart << "; ir++)\n";
-    os << "            result[abcd * " << ncart << " + ir] = " << src << "[ir];\n"; 
-    os << "\n";
-}
-*/
-
-void WriterBase::DeclareContwork(std::ostream & os) const
+void DeclareContwork(std::ostream & os) 
 {
 
     if(memory_ > 0)
@@ -227,14 +236,14 @@ void WriterBase::DeclareContwork(std::ostream & os) const
 }
 
 
-void WriterBase::ZeroContWork(std::ostream & os, const std::string & nshell) const
+void ZeroContWork(std::ostream & os, const std::string & nshell) 
 {
     if(memory_ > 0)
         os << "            memset(contwork, 0, " << nshell << " * " << memory_ << ");\n";
 }
 
 
-void WriterBase::FreeContwork(std::ostream & os) const
+void FreeContwork(std::ostream & os) 
 {
     if((memory_ > 0) && (memory_ > GetOption(OPTION_STACKMEM)))
     {
@@ -244,44 +253,38 @@ void WriterBase::FreeContwork(std::ostream & os) const
     }
 }
 
-bool WriterBase::HasVRR(void) const
+bool HasVRR(void) 
 {
     return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
 }
 
-bool WriterBase::HasET(void) const
+bool HasET(void) 
 {
     return (finalam_[2]+finalam_[3] > 0);
 }
 
-bool WriterBase::HasHRR(void) const
+bool HasHRR(void) 
 {
     return (HasBraHRR() || HasKetHRR());
 }
 
-bool WriterBase::HasBraHRR(void) const
+bool HasBraHRR(void) 
 {
     return (finalam_[1] > 0);
 }
 
-bool WriterBase::HasKetHRR(void) const
+bool HasKetHRR(void) 
 {
     return (finalam_[3] > 0);
 }
 
-const std::string & WriterBase::Prefix(void) const
+const std::string & Prefix(void) 
 {
     return prefix_;
 }
 
 
-//bool WriterBase::Permute(void) const
-//{
-//    return (GetOption(OPTION_PERMUTE) > 0 && HasHRR());
-//}
-
-
-void WriterBase::ReadCPUFlags(const std::string & file)
+void ReadCPUFlags(const std::string & file)
 {
     std::set<std::string> cpuflags_tmp;
 
@@ -365,37 +368,37 @@ void WriterBase::ReadCPUFlags(const std::string & file)
     useintrinsics_ = true;
 }
 
-bool WriterBase::HasCPUFlag(const std::string & flag) const
+bool HasCPUFlag(const std::string & flag) 
 {
     return (cpuflags_.count(flag) > 0);
 }
         
-bool WriterBase::Intrinsics(void) const
+bool Intrinsics(void) 
 {
     return useintrinsics_;
 }
 
-int WriterBase::SimdLen(void) const
+int SimdLen(void) 
 {
     return simdlen_;
 }
 
-int WriterBase::ByteAlign(void) const
+int ByteAlign(void) 
 {
     return 8*simdlen_;
 }
 
-std::string WriterBase::DoubleType(void) const
+std::string DoubleType(void) 
 {
     return intrinsicmap_.at("dbl_type");
 }
 
-std::string WriterBase::ConstDoubleType(void) const
+std::string ConstDoubleType(void) 
 {
     return intrinsicmap_.at("cdbl_type");
 }
 
-std::string WriterBase::DoubleSet(const std::string & dbl) const
+std::string DoubleSet(const std::string & dbl) 
 {
     if(useintrinsics_)
         return intrinsicmap_.at("dbl_set") + "(" + dbl + ")";
@@ -403,7 +406,7 @@ std::string WriterBase::DoubleSet(const std::string & dbl) const
         return dbl;
 }
 
-std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & idx) const
+std::string DoubleLoad(const std::string & ptr, const std::string & idx) 
 {
     if(useintrinsics_)
     {
@@ -417,7 +420,7 @@ std::string WriterBase::DoubleLoad(const std::string & ptr, const std::string & 
         return ptr + "[" + idx + "]";
 }
 
-std::string WriterBase::DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
+std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) 
 {
     if(useintrinsics_)
     {
@@ -431,46 +434,49 @@ std::string WriterBase::DoubleStore(const std::string & var, const std::string &
         return ptr + "[" + idx + "] = " + var;
 }
 
-std::string WriterBase::NewDoubleSet(const std::string & var, const std::string & val) const
+std::string NewDoubleSet(const std::string & var, const std::string & val) 
 {
     std::stringstream ss;
     ss << DoubleType() << " " << var << " = " << DoubleSet(val);
     return ss.str();
 }
 
-std::string WriterBase::NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
+std::string NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) 
 {
     std::stringstream ss;
     ss << DoubleType() << " " << var << " = " << DoubleLoad(ptr, idx);
     return ss.str();
 }
 
-std::string WriterBase::NewConstDoubleSet(const std::string & var, const std::string & val) const
+std::string NewConstDoubleSet(const std::string & var, const std::string & val) 
 {
     return std::string("const ") + NewDoubleSet(var, val);
 }
 
-std::string WriterBase::NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
+std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) 
 {
     return std::string("const ") + NewDoubleLoad(var, ptr, idx);
 }
         
-std::string WriterBase::Sqrt(const std::string & val) const
+std::string Sqrt(const std::string & val) 
 {
     return intrinsicmap_.at("sqrt") + "(" + val + ")";
 }
 
-std::string WriterBase::RSqrt(const std::string & val) const
+std::string RSqrt(const std::string & val) 
 {
     return std::string("1.0 / ") + Sqrt(val);
 }
        
-std::string WriterBase::Power(const std::string & base, const std::string & exp) const
+std::string Power(const std::string & base, const std::string & exp) 
 {
     return intrinsicmap_.at("pow") + "(" + base + ", " + exp + ")";
 }
 
-std::string WriterBase::Exp(const std::string & exp) const
+std::string Exp(const std::string & exp) 
 {
     return intrinsicmap_.at("exp") + "(" + exp + ")";
 }
+
+
+} // close namespace WriterInfo
