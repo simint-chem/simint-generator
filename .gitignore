@@ -1,7 +1,5 @@
 build
-build-mic
-build-avx
-build-sse
+build-*
 __pycache__
 *.swp
 eri/*.gen
