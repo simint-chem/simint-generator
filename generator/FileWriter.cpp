@@ -137,11 +137,11 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     // load constants into variables
     // (important only really for instrinsics)
+    bg.AddConstants(os);
+    et_writer.AddConstants(os);
+    vrr_writer.AddConstants(os);
+    hrr_writer.AddConstants(os);
     WriterInfo::WriteConstants(os);
-    bg.WriteConstants(os);
-    et_writer.WriteConstants(os);
-    vrr_writer.WriteConstants(os);
-    hrr_writer.WriteConstants(os);
 
     
 

@@ -32,7 +32,7 @@ void ET_Writer::WriteIncludes(std::ostream & os) const
 
 
 
-void ET_Writer::WriteConstants(std::ostream & os) const
+void ET_Writer::AddConstants(std::ostream & os) const
 {
 }
 

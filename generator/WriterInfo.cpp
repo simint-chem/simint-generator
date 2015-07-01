@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <cctype> // for tolower
+#include "generator/Helpers.hpp"
 #include "generator/WriterInfo.hpp"
 
 namespace {
@@ -16,6 +17,7 @@ namespace {
 
         std::set<std::string> cpuflags_;
         std::vector<std::string> includes_;
+        std::map<std::string, std::string> constants_;
 }
 
 
@@ -113,8 +115,20 @@ void WriteIncludes(std::ostream & os)
 }
 
 
+void AddConstant(const std::string & name, const std::string & val)
+{
+    constants_[name] = val;
+}
+
+
 void WriteConstants(std::ostream & os)
 {
+    if(Intrinsics())
+    {
+        os << indent1 << "//Create constant simd vectors\n";
+        for(const auto & it : constants_)
+            os << indent1 << NewConstDoubleSet(it.first, it.second) << ";\n";  
+    }
 }
 
 
@@ -422,6 +436,14 @@ std::string DoubleSet(const std::string & dbl)
         return intrinsicmap_.at("dbl_set") + "(" + dbl + ")";
     else
         return dbl;
+}
+
+std::string DoubleConstant(const std::string & cname)
+{
+    if(Intrinsics())
+        return cname;
+    else
+        return DoubleSet(constants_.at(cname));
 }
 
 std::string DoubleLoad(const std::string & ptr, const std::string & idx) 

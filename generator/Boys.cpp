@@ -23,7 +23,7 @@ void BoysGen::WriteIncludes(std::ostream & os) const
 
 
 
-void BoysGen::WriteConstants(std::ostream & os) const
+void BoysGen::AddConstants(std::ostream & os) const
 {
 }
 
@@ -65,6 +65,10 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
 {
     const BoysFit & bf = bfmap_.at(m); 
 
+    std::stringstream ssa0, ssb0;
+    ssa0 << "FO_" << m << "_a_0";
+    ssb0 << "FO_" << m << "_b_0";
+
     std::stringstream ssvar, sspow;
     ssvar << WriterInfo::PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
     sspow << bf.v << ".0+0.5";
@@ -73,16 +77,26 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     os << indent6 << "              (\n";
     os << indent6 << "                 (\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << WriterInfo::DoubleSet(bf.a[0]) << "\n";
+    os << indent6 << "                               " << WriterInfo::DoubleConstant(ssa0.str()) << "\n";
     for(int i = 1; i < bf.a.size(); i++)
-        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleSet(bf.a[i]) << "\n";
+    {
+        // determine the constant name for the lookup
+        std::stringstream ssa;
+        ssa << "FO_" << m << "_a_" << i;
+        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleConstant(ssa.str()) << "\n";
+    }
     os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                   /\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << WriterInfo::DoubleSet(bf.b[0]) << "\n";
+    os << indent6 << "                               " << WriterInfo::DoubleConstant(ssb0.str()) << "\n";
     for(int i = 1; i < bf.b.size(); i++)
-        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleSet(bf.b[i]) << "\n";
+    {
+        // determine the constant name for the lookup
+        std::stringstream ssb;
+        ssb << "FO_" << m << "_b_" << i;
+        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleConstant(ssb.str()) << "\n";
+    }
     os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                 )\n";
@@ -101,6 +115,48 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
         os << " * " << ssvar.str();
     os << ";\n";
     os << "\n";
+}
+
+void BoysFO::AddConstants(std::ostream & os) const
+{
+    const int L = WriterInfo::L();
+
+    if(L < 3)
+    {
+        for(int m = 0; m <= L; m++)
+        {
+            const BoysFit & bf = bfmap_.at(m);
+            for(int i = 0; i < bf.a.size(); i++)
+            { 
+                std::stringstream cname;
+                cname << "FO_" << m << "_a_" << i;
+                WriterInfo::AddConstant(cname.str(), bf.a[i]);
+            }        
+            for(int i = 0; i < bf.b.size(); i++)
+            { 
+                std::stringstream cname;
+                cname << "FO_" << m << "_b_" << i;
+                WriterInfo::AddConstant(cname.str(), bf.b[i]);
+            }        
+        }
+    } 
+    else
+    {
+        const BoysFit & bf = bfmap_.at(L);
+        for(int i = 0; i < bf.a.size(); i++)
+        { 
+            std::stringstream cname;
+            cname << "FO_" << L << "_a_" << i;
+            WriterInfo::AddConstant(cname.str(), bf.a[i]);
+        }        
+        for(int i = 0; i < bf.b.size(); i++)
+        { 
+            std::stringstream cname;
+            cname << "FO_" << L << "_b_" << i;
+            WriterInfo::AddConstant(cname.str(), bf.b[i]);
+        }        
+    }
+       
 }
 
 void BoysFO::WriteBoys(std::ostream & os) const

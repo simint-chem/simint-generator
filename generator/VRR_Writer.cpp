@@ -19,7 +19,7 @@ void VRR_Writer::WriteIncludes(std::ostream & os) const
 
 
 
-void VRR_Writer::WriteConstants(std::ostream & os) const
+void VRR_Writer::AddConstants(std::ostream & os) const
 {
 }
 
@@ -192,8 +192,10 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
         os << "\n\n\n";
         os << "// VRR to obtain " << WriterInfo::PrimVarName(qam) << "\n";
+
         if(!WriterInfo::Scalar())
             os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
+
         os << "void VRR_" << amchar[am] << "(const int num_n,\n";
         os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
