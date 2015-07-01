@@ -155,6 +155,16 @@ void BoysFO::AddConstants(std::ostream & os) const
             cname << "FO_" << L << "_b_" << i;
             WriterInfo::AddConstant(cname.str(), bf.b[i]);
         }        
+
+        // constants for the recursion
+        for(int i = L-1; i >= 0; i--)
+        {
+            std::stringstream cname, ssval;
+            cname << "FO_RECUR_" << i;
+            ssval.precision(18);
+            ssval << (1.0/(2.0*i+1.0));
+            WriterInfo::AddConstant(cname.str(), ssval.str());
+        }
     }
        
 }
@@ -181,10 +191,9 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
         for(int m = WriterInfo::L()-1; m >= 0; m--)
         {
-            std::stringstream ss;
-            ss.precision(18);
-            ss << (1.0/(2.0*m+1.0));
-            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::DoubleSet(ss.str()) << ";\n";
+            std::stringstream cname;
+            cname << "FO_RECUR_" << m;
+            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::DoubleConstant(cname.str()) << ";\n";
         }
 
         // add prefac now
