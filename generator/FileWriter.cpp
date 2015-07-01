@@ -137,6 +137,10 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     // load constants into variables
     // (important only really for instrinsics)
+    // include the factor of TWO_PI_52
+
+    WriterInfo::AddConstant("const_two_pi_52", "TWO_PI_52");
+
     bg.AddConstants(os);
     et_writer.AddConstants(os);
     vrr_writer.AddConstants(os);
@@ -278,7 +282,6 @@ static void WriteFile_NotFlat(std::ostream & os,
         if(!WriterInfo::Scalar())
             os << indent5 << "//#pragma omp simd private(n)\n";
 
-        os << indent5 << "#endif\n";
         os << indent5 << "for(j = jstart; j < jend; ++j)\n";
     }
 
@@ -293,7 +296,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent6 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
     os << indent6 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
     os << "\n";
-    os << indent6 << cdbltype << " pfac = " << WriterInfo::DoubleSet("TWO_PI_52") << " / (PQalpha_mul * " << WriterInfo::Sqrt("PQalpha_sum") << ");\n";
+    os << indent6 << cdbltype << " pfac = " << WriterInfo::DoubleConstant("const_two_pi_52") << " / (PQalpha_mul * " << WriterInfo::Sqrt("PQalpha_sum") << ");\n";
     os << "\n";
     os << indent6 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
     os << indent6 << cdbltype << " PQ_x = P_x - " << WriterInfo::DoubleLoad("Q.x", "j") << ";\n";

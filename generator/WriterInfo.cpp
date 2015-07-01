@@ -335,6 +335,18 @@ void ReadCPUFlags(const std::string & file)
     //for(const auto & it : cpuflags_)
     //    std::cout << "  \"" << it << "\"\n";
     std::cout << "\n";
+
+
+    // defaults
+    simdlen_ = 1;
+    intrinsicmap_["dbl_type"] = "double";
+    intrinsicmap_["cdbl_type"] = "const double";
+    intrinsicmap_["dbl_set"] = "";
+    intrinsicmap_["dbl_load"] = "";
+    intrinsicmap_["dbl_store"] = "";
+    intrinsicmap_["sqrt"] = "sqrt";
+    intrinsicmap_["pow"] = "pow";
+    intrinsicmap_["exp"] = "exp";
     
 
     // determine simdlen, types, etc
@@ -378,17 +390,8 @@ void ReadCPUFlags(const std::string & file)
     }
     else
     {
-        simdlen_ = 1;
-        intrinsicmap_["dbl_type"] = "double";
-        intrinsicmap_["cdbl_type"] = "const double";
-        intrinsicmap_["dbl_set"] = "";
-        intrinsicmap_["dbl_load"] = "";
-        intrinsicmap_["dbl_store"] = "";
-        intrinsicmap_["sqrt"] = "sqrt";
-        intrinsicmap_["pow"] = "pow";
-        intrinsicmap_["exp"] = "exp";
-
-        // force intrinsics off
+        // keep the ones from Init()
+        // but force intrinsics off
         options_[OPTION_INTRINSICS] = 0;
     }
 }

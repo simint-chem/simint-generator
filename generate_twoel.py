@@ -27,6 +27,7 @@ parser.add_argument("-he", required=False, type=int, default=1000, help="Externa
 parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
+parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
 args = parser.parse_args()
 
 
@@ -97,6 +98,8 @@ cmdline.extend(["-o", outfile])
 cmdline.extend(["-c", str(args.c)])
 if args.i:
     cmdline.append("-i")
+if args.S:
+    cmdline.append("-S")
 
 ret = subprocess.call(cmdline)
 
@@ -198,6 +201,8 @@ for q in valid:
 
     if args.i:
         cmdline.append("-i")
+    if args.S:
+        cmdline.append("-S")
 
     print()
     print("Command line:")
