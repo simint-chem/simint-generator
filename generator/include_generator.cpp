@@ -83,10 +83,6 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(fpath.back() != '/')
-        fpath += '/';
-    fpath += "vectorization_generated.h";
-
     cout << "Generating header file " << fpath << "\n";
 
     std::ofstream of(fpath);
