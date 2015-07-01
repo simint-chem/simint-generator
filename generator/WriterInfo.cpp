@@ -113,6 +113,11 @@ void WriteIncludes(std::ostream & os)
 }
 
 
+void WriteConstants(std::ostream & os)
+{
+}
+
+
 std::string ArrVarName(const QAM & am, const std::string & prefix)
 {
     std::stringstream ss;

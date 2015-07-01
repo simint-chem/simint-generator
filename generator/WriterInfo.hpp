@@ -14,6 +14,7 @@ namespace WriterInfo {
         void SetContQ(const QAMSet & topquartets);
 
         void WriteIncludes(std::ostream & os);
+        void WriteConstants(std::ostream & os);
 
         void DeclareContwork(std::ostream & os);
         void ZeroContWork(std::ostream & os);
