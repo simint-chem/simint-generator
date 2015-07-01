@@ -6,14 +6,12 @@
 
 namespace {
         QAMSet contq_;  // set of contracted integral AM
-        std::string prefix_;
         OptionsMap options_;
         size_t memory_;
         size_t nelements_;
         QAM finalam_;
 
         int simdlen_;
-        bool useintrinsics_;
         std::map<std::string, std::string> intrinsicmap_;
 
         std::set<std::string> cpuflags_;
@@ -24,21 +22,12 @@ namespace {
 
 namespace WriterInfo {
 
-void Init(const OptionsMap & options, const std::string & prefix, const QAM & finalam)
+void Init(const OptionsMap & options, const QAM & finalam,
+          const std::string & cpuinfofile)
 {
     options_ = options;
-    prefix_ = prefix;
     finalam_ = finalam;
-    simdlen_ = 1;
-    useintrinsics_ = false;
-    intrinsicmap_["dbl_type"] = "double";
-    intrinsicmap_["cdbl_type"] = "const double";
-    intrinsicmap_["dbl_set"] = "";
-    intrinsicmap_["dbl_load"] = "";
-    intrinsicmap_["dbl_store"] = "";
-    intrinsicmap_["sqrt"] = "sqrt";
-    intrinsicmap_["pow"] = "pow";
-    intrinsicmap_["exp"] = "exp";
+    ReadCPUFlags(cpuinfofile);
 }
 
 
@@ -195,9 +184,9 @@ void DeclareContwork(std::ostream & os)
         os << "    // Workspace for contracted integrals\n";
 
         if(memory_ > GetOption(OPTION_STACKMEM))
-            os << "    double * const contwork = malloc(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
+            os << "    double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         else
-            os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "];\n";
+            os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "] SIMINT_ALIGN_ARRAY;\n";
         os << "\n";
 
         os << "    // partition workspace into shells\n";
@@ -236,10 +225,10 @@ void DeclareContwork(std::ostream & os)
 }
 
 
-void ZeroContWork(std::ostream & os, const std::string & nshell) 
+void ZeroContWork(std::ostream & os) 
 {
     if(memory_ > 0)
-        os << "            memset(contwork, 0, " << nshell << " * " << memory_ << ");\n";
+        os << "            memset(contwork, 0, SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
 }
 
 
@@ -248,7 +237,7 @@ void FreeContwork(std::ostream & os)
     if((memory_ > 0) && (memory_ > GetOption(OPTION_STACKMEM)))
     {
         os << "    // Free contracted work space\n";
-        os << "    free(contwork);\n";
+        os << "    FREE(contwork);\n";
         os << "\n";
     }
 }
@@ -276,11 +265,6 @@ bool HasBraHRR(void)
 bool HasKetHRR(void) 
 {
     return (finalam_[3] > 0);
-}
-
-const std::string & Prefix(void) 
-{
-    return prefix_;
 }
 
 
@@ -328,9 +312,9 @@ void ReadCPUFlags(const std::string & file)
     }
 
     
-    std::cout << "Processed into " << cpuflags_.size() << " flags\n";
-    for(const auto & it : cpuflags_)
-        std::cout << "  \"" << it << "\"\n";
+    std::cout << "Processed cpuflags into " << cpuflags_.size() << " flags\n";
+    //for(const auto & it : cpuflags_)
+    //    std::cout << "  \"" << it << "\"\n";
     std::cout << "\n";
     
 
@@ -338,34 +322,56 @@ void ReadCPUFlags(const std::string & file)
     if(HasCPUFlag("avx"))
     {
         simdlen_ = 4;  // 4 packed doubles
-        includes_.push_back("\"vectorization/avx.h\"");
+        includes_.push_back("\"vectorization/vectorization.h\"");
 
-        intrinsicmap_["dbl_type"] = "__m256d";
-        intrinsicmap_["cdbl_type"] = "const __m256d";
-        intrinsicmap_["dbl_set"] = "_mm256_set1_pd";
-        intrinsicmap_["dbl_load"] = "_mm256_load_pd";
-        intrinsicmap_["dbl_store"] = "_mm256_store_pd";
-        intrinsicmap_["sqrt"] = "_mm256_sqrt_pd";
-        intrinsicmap_["pow"] = "_mm256_pow_pd";
-        intrinsicmap_["exp"] = "_mm256_exp_pd";
+        if(Intrinsics())
+        {
+            includes_.push_back("\"vectorization/intrinsics_avx.h\"");
+
+            intrinsicmap_["dbl_type"] = "__m256d";
+            intrinsicmap_["cdbl_type"] = "const __m256d";
+            intrinsicmap_["dbl_set"] = "_mm256_set1_pd";
+            intrinsicmap_["dbl_load"] = "_mm256_load_pd";
+            intrinsicmap_["dbl_store"] = "_mm256_store_pd";
+            intrinsicmap_["sqrt"] = "_mm256_sqrt_pd";
+            intrinsicmap_["pow"] = "_mm256_pow_pd";
+            intrinsicmap_["exp"] = "_mm256_exp_pd";
+        }
     }
     else if(HasCPUFlag("sse"))
     {
         simdlen_ = 2;
-        intrinsicmap_["dbl_type"] = "TODO";
-        intrinsicmap_["cdbl_type"] = "TODO";
-        intrinsicmap_["dbl_set"] = "TODO";
-        intrinsicmap_["dbl_load"] = "TODO";
-        intrinsicmap_["dbl_store"] = "TODO";
-        intrinsicmap_["sqrt"] = "TODO";
-        intrinsicmap_["pow"] = "TODO";
-        intrinsicmap_["exp"] = "TODO";
-    }
-    // else leave defaults from constructor
-    {
-    }
+        includes_.push_back("\"vectorization/vectorization.h\"");
 
-    useintrinsics_ = true;
+        if(Intrinsics())
+        {
+            includes_.push_back("\"vectorization/intrinsics_sse.h\"");
+
+            intrinsicmap_["dbl_type"] = "TODO";
+            intrinsicmap_["cdbl_type"] = "TODO";
+            intrinsicmap_["dbl_set"] = "TODO";
+            intrinsicmap_["dbl_load"] = "TODO";
+            intrinsicmap_["dbl_store"] = "TODO";
+            intrinsicmap_["sqrt"] = "TODO";
+            intrinsicmap_["pow"] = "TODO";
+            intrinsicmap_["exp"] = "TODO";
+        }
+    }
+    else
+    {
+        simdlen_ = 1;
+        intrinsicmap_["dbl_type"] = "double";
+        intrinsicmap_["cdbl_type"] = "const double";
+        intrinsicmap_["dbl_set"] = "";
+        intrinsicmap_["dbl_load"] = "";
+        intrinsicmap_["dbl_store"] = "";
+        intrinsicmap_["sqrt"] = "sqrt";
+        intrinsicmap_["pow"] = "pow";
+        intrinsicmap_["exp"] = "exp";
+
+        // force intrinsics off
+        options_[OPTION_INTRINSICS] = 0;
+    }
 }
 
 bool HasCPUFlag(const std::string & flag) 
@@ -375,8 +381,15 @@ bool HasCPUFlag(const std::string & flag)
         
 bool Intrinsics(void) 
 {
-    return useintrinsics_;
+    return options_[OPTION_INTRINSICS];
 }
+
+
+bool Scalar(void)
+{
+    return options_[OPTION_SCALAR];
+}
+
 
 int SimdLen(void) 
 {
@@ -400,7 +413,7 @@ std::string ConstDoubleType(void)
 
 std::string DoubleSet(const std::string & dbl) 
 {
-    if(useintrinsics_)
+    if(Intrinsics())
         return intrinsicmap_.at("dbl_set") + "(" + dbl + ")";
     else
         return dbl;
@@ -408,7 +421,7 @@ std::string DoubleSet(const std::string & dbl)
 
 std::string DoubleLoad(const std::string & ptr, const std::string & idx) 
 {
-    if(useintrinsics_)
+    if(Intrinsics())
     {
         std::string ptrstr = ptr;
         if(idx.size())
@@ -422,7 +435,7 @@ std::string DoubleLoad(const std::string & ptr, const std::string & idx)
 
 std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) 
 {
-    if(useintrinsics_)
+    if(Intrinsics())
     {
         std::string ptrstr = ptr;
         if(idx.size())

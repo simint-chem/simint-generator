@@ -40,7 +40,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     std::string cdbltype = WriterInfo::ConstDoubleType();
 
     std::stringstream ss;
-    ss << "int eri_" << WriterInfo::Prefix() << "_"
+    ss << "int eri_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
@@ -52,12 +52,12 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include <math.h>\n";
     os << "\n";
 
-    os << "#include \"vectorization/vectorization.h\"\n";
     os << "#include \"constants.h\"\n";
     os << "#include \"shell/shell.h\"\n";
     os << "\n";
     WriterInfo::WriteIncludes(os);
     os << "\n";
+
     bg.WriteIncludes(os);
     vrr_writer.WriteIncludes(os);
     hrr_writer.WriteIncludes(os);
@@ -71,7 +71,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
     // if we are manually using intrinsics, we don't need these assume lines
-    //if(!WriterInfo::Intrinsics())
+    // TODO: We won't need them for intrinsic calculations either, but HRR is still
+    //       auto vectorized
+    if(!WriterInfo::Scalar())
     {
         os << indent1 << "ASSUME_ALIGN(P.x);\n";
         os << indent1 << "ASSUME_ALIGN(P.y);\n";
@@ -133,6 +135,16 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hashrr)
         WriterInfo::DeclareContwork(os);
 
+    // load constants into variables
+    // (important only really for instrinsics)
+    bg.WriteConstants(os);
+    et_writer.WriteConstants(os);
+    vrr_writer.WriteConstants(os);
+    hrr_writer.WriteConstants(os);
+
+    
+
+
     os << "\n\n";
     os << indent1 << "////////////////////////////////////////\n";
     os << indent1 << "// Loop over shells and primitives\n";
@@ -152,10 +164,10 @@ static void WriteFile_NotFlat(std::ostream & os,
 
 
     // if we are manually using intrinsics, we don't need these assume lines
-    //if(!WriterInfo::Intrinsics())
+    if(!WriterInfo::Scalar() && !WriterInfo::Intrinsics())
     {
         os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-        os << indent2 << "ASSUME(istart%SIMD_ALIGN_DBL == 0);\n";
+        os << indent2 << "ASSUME(istart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
         os << "\n";
     }
 
@@ -174,7 +186,7 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent3 << "const int nshell1234 = cdstop - cd;   // how many we are actually calcualting\n";
         os << "\n";
         
-        WriterInfo::ZeroContWork(os, "SIMINT_NSHELL_SIMD");
+        WriterInfo::ZeroContWork(os);
 
         os << "\n";
         os << indent3 << "for(abcd = 0; abcd < nshell1234; ++cd, ++abcd)\n";
@@ -213,10 +225,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
     // if we are manually using intrinsics, we don't need these assume lines
-    //if(!WriterInfo::Intrinsics())
+    if(!WriterInfo::Scalar() && !WriterInfo::Intrinsics())
     {
         os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-        os << indent4 << "ASSUME(jstart%SIMD_ALIGN_DBL == 0);\n";
+        os << indent4 << "ASSUME(jstart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
         os << "\n";
     }
  
@@ -257,11 +269,15 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(WriterInfo::Intrinsics())
     {
         os << indent5 << "#pragma novector\n";
-        os << indent5 << "for(j = jstart; j < jend; j += " << WriterInfo::SimdLen() << ")\n";
+        os << indent5 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
     }
     else
     {
-        os << indent5 << "//#pragma omp simd private(n)\n";
+        // commented out due to intel bug
+        if(!WriterInfo::Scalar())
+            os << indent5 << "//#pragma omp simd private(n)\n";
+
+        os << indent5 << "#endif\n";
         os << indent5 << "for(j = jstart; j < jend; ++j)\n";
     }
 

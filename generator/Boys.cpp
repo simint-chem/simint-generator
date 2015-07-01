@@ -22,6 +22,13 @@ void BoysGen::WriteIncludes(std::ostream & os) const
 }
 
 
+
+void BoysGen::WriteConstants(std::ostream & os) const
+{
+}
+
+
+
 ////////////////////////////////////
 // FO fitting
 ////////////////////////////////////

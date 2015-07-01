@@ -47,7 +47,6 @@ int main(int argc, char ** argv)
     OptionsMap options = DefaultOptions();
 
     // other stuff
-    std::string prefix;
     std::string boystype;
     std::string fpath;
     std::string cpuinfofile;
@@ -66,15 +65,14 @@ int main(int argc, char ** argv)
             options[OPTION_INLINEHRR] = 0;
         else if(argstr == "-s")
             options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
-        else if(argstr == "-P")
-            options[OPTION_PERMUTE] = 1;
-        else if(argstr == "-p")
-            prefix = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-        {
-            options[OPTION_INTRINSIC] = 1;
+
+        else if(argstr == "-c")
             cpuinfofile = GetNextArg(i, argc, argv);
-        }
+
+        else if(argstr == "-i")
+            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-S")
+            options[OPTION_SCALAR] = 1;
 
         else if(argstr == "-q")
         {
@@ -99,12 +97,6 @@ int main(int argc, char ** argv)
     }
 
     // check for required options
-    if(prefix == "")
-    {
-        std::cout << "\nprefix (-p) required\n\n";
-        return 2;
-    }
-
     if(boystype == "")
     {
         std::cout << "\nBoys type (-b) required\n\n";
@@ -123,13 +115,17 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(options[OPTION_PERMUTE] != 0)
+    if(cpuinfofile == "")
     {
-        std::cout << "\nPermutation of integrals not implemented\n\n";
-        return 10;
+        std::cout << "\nCPU info file required\n\n";
+        return 2;
     }
 
-
+    if(options[OPTION_INTRINSICS] != 0 && options[OPTION_SCALAR] != 0)
+    {
+        std::cout << "\nUsing intrinsics with a scalar calculation doesn't make sense...\n\n";
+        return 2;
+    }
 
 
     // open the output file
@@ -162,11 +158,7 @@ int main(int argc, char ** argv)
     std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
 
     // Base writer information
-    WriterInfo::Init(options, prefix, amlist);
-
-    // read in cpuflags if needed
-    if(options[OPTION_INTRINSIC] != 0)
-        WriterInfo::ReadCPUFlags(cpuinfofile); 
+    WriterInfo::Init(options, amlist, cpuinfofile);
 
     // Working backwards, I need:
     // 1.) HRR Steps

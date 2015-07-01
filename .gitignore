@@ -2,5 +2,6 @@ build
 build-*
 __pycache__
 *.swp
-eri/*.gen
+eri/gen
+vectorization/vectorization_generated.h
 test/dat/C6H6.DZP.mol.ref

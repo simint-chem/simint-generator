@@ -5,11 +5,7 @@
 extern "C" {
 #endif
 
-#include "shell/shell.h"
-
-#include "eri/FO.gen/eri_FO.h"
-#include "eri/vref.gen/eri_vref.h"
-
+#include "eri/gen/eri_generated.h"
 
 #ifdef __cplusplus
 }

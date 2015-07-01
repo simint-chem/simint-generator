@@ -14,6 +14,7 @@ class ET_Writer
         ET_Writer(const ET_Algorithm_Base & et_algo); 
 
         void WriteIncludes(std::ostream & os) const;
+        void WriteConstants(std::ostream & os) const;
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclarePrimPointers(std::ostream & os) const;
 

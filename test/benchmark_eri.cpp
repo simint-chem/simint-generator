@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
             struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                               it_l.size(), it_l.data());
             // actually calculate
-            Integral_FO(P, Q, res_ints);
+            Integral(P, Q, res_ints);
 
 
             #ifdef BENCHMARK_VALIDATE

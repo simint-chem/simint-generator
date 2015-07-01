@@ -40,8 +40,7 @@ int main(int argc, char ** argv)
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
-    double * res_FO              = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_vref            = (double *)ALLOC(maxsize * sizeof(double));
+    double * res              = (double *)ALLOC(maxsize * sizeof(double));
     double * res_liberd          = (double *)ALLOC(maxsize * sizeof(double));
     double * res_valeev          = (double *)ALLOC(maxsize * sizeof(double));
 
@@ -52,12 +51,12 @@ int main(int argc, char ** argv)
              
              
     printf("\n");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", 
-                                                         "Quartet", "MaxErr", "", "", 
-                                                         "MaxRelErr", "", "");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", "",
-                                                         "FO", "vref", "erd", 
-                                                         "FO", "vref", "erd");
+    printf("%17s    %10s  %10s   %10s  %10s\n", 
+                                                         "Quartet", "MaxErr", "", 
+                                                         "MaxRelErr", "");
+    printf("%17s    %10s  %10s   %10s  %10s\n", "",
+                                                         "Me", "erd", 
+                                                         "Me", "erd");
 
 
     // Read the reference integrals
@@ -125,29 +124,26 @@ int main(int argc, char ** argv)
         */
 
         // acutally calculate
-        Integral_FO(P, Q, res_FO);
-        Integral_vref(P, Q, res_vref);
+        Integral(P, Q, res);
 
 
         // chop
         Chop(res_valeev, arrlen);
-        Chop(res_FO, arrlen);
-        Chop(res_vref, arrlen);
+        Chop(res, arrlen);
 
 
         // Analyze
-        std::pair<double, double> err_FO        = CalcError(res_FO,        res_valeev,  arrlen);
-        std::pair<double, double> err_vref      = CalcError(res_vref,      res_valeev,  arrlen);
+        std::pair<double, double> err        = CalcError(res,        res_valeev,  arrlen);
         std::pair<double, double> err_erd       = CalcError(res_liberd,    res_valeev,  arrlen);
 
-        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
-                                                      err_FO.first,  err_vref.first,  err_erd.first,
-                                                      err_FO.second, err_vref.second, err_erd.second);
+        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e    %10.3e  %10.3e\n", i, j, k, l,
+                                                      err.first,  err_erd.first,
+                                                      err.second, err_erd.second);
 
 
         // For debugging
         //for(int i = 0; i < ncart1234 * nshell1234; i++)
-        //    printf("%25.15e  %25.15e  %25.15e\n", res_valeev[i], res_liberd[i], res_vref[i]);
+        //    printf("%25.15e  %25.15e\n", res_valeev[i], res_liberd[i]);
 
 
         free_multishell_pair(P);
@@ -167,8 +163,7 @@ int main(int argc, char ** argv)
 
     FREE(res_valeev);
     FREE(res_liberd);
-    FREE(res_vref);
-    FREE(res_FO);
+    FREE(res);
 
     return 0;
 }

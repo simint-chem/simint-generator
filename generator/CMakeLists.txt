@@ -32,13 +32,18 @@ set_target_properties(eri_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_
 set_target_properties(eri_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 target_link_libraries(eri_generator generator_common)
 
+add_executable(include_generator include_generator.cpp)
+set_target_properties(include_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+set_target_properties(include_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+target_link_libraries(include_generator generator_common)
 
-add_executable(vrr_generator vrr_generator.cpp)
-set_target_properties(vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-target_link_libraries(vrr_generator generator_common)
 
-add_executable(hrr_generator hrr_generator.cpp)
-set_target_properties(hrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(hrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-target_link_libraries(hrr_generator generator_common)
+#add_executable(vrr_generator vrr_generator.cpp)
+#set_target_properties(vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+#set_target_properties(vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+#target_link_libraries(vrr_generator generator_common)
+
+#add_executable(hrr_generator hrr_generator.cpp)
+#set_target_properties(hrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+#set_target_properties(hrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+#target_link_libraries(hrr_generator generator_common)

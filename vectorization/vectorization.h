@@ -1,65 +1,35 @@
 #ifndef SIMINT_VECTORIZATION_H
 #define SIMINT_VECTORIZATION_H
 
+// This file included below is auto generated from the 
+// eri_generator program
+// It defines SIMINT_SIMD_LEN
+#include "vectorization/vectorization_generated.h"
+
+
 #include <stdlib.h>
 
-#if defined SIMINT_AVX
 
-  #define SIMD_LEN 4
-  #define SIMD_ALIGN 32
+#define SIMINT_SIMD_ALIGN 8*SIMINT_SIMD_LEN
+#define SIMINT_SIMD_ALIGN_DBL (SIMINT_SIMD_ALIGN/8)
 
-  #define SIMD_ALIGN_DBL (SIMD_ALIGN/8)
+#define ASSUME_ALIGN(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN)
+#define ASSUME __assume
 
-  #define ASSUME_ALIGN(x)  __assume_aligned((x), SIMD_ALIGN)
-  #define ASSUME __assume
+// Aligned memory allocation
+#define ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
+#define FREE(x) _mm_free((x))
 
-  // Aligned memory allocation
-  #define ALLOC(x) _mm_malloc((x), SIMD_ALIGN)
-  #define FREE(x) _mm_free((x))
+// round up to the nearest SIMD_ALIGN boundary
+#define SIMINT_SIMD_ROUND(x) ((x + ((SIMINT_SIMD_ALIGN-1))) & (~(SIMINT_SIMD_ALIGN-1)))
+#define SIMINT_SIMD_ROUND_DBL(x) ((x + ((SIMINT_SIMD_ALIGN_DBL-1))) & (~(SIMINT_SIMD_ALIGN_DBL-1)))
 
-  // round up to the nearest SIMD_ALIGN boundary
-  #define SIMD_ROUND(x) ((x + ((SIMD_ALIGN-1))) & (~(SIMD_ALIGN-1)))
-  #define SIMD_ROUND_DBL(x) ((x + ((SIMD_ALIGN_DBL-1))) & (~(SIMD_ALIGN_DBL-1)))
-
-#elif defined SIMINT_MIC
-
-  #define SIMD_LEN 8
-  #define SIMD_ALIGN 64
-
-  #define SIMD_ALIGN_DBL (SIMD_ALIGN/8)
-
-  #define ASSUME_ALIGN(x)  __assume_aligned((x), SIMD_ALIGN)
-  #define ASSUME __assume
-
-  // Aligned memory allocation
-  #define ALLOC(x) _mm_malloc((x), SIMD_ALIGN)
-  #define FREE(x) _mm_free((x))
-
-  // round up to the nearest SIMD_ALIGN boundary
-  #define SIMD_ROUND(x) ((x + ((SIMD_ALIGN-1))) & (~(SIMD_ALIGN-1)))
-  #define SIMD_ROUND_DBL(x) ((x + ((SIMD_ALIGN_DBL-1))) & (~(SIMD_ALIGN_DBL-1)))
-
-#else
-
-  #define SIMD_LEN 1
-  #define SIMD_ALIGN 1
-  #define SIMD_ALIGN_DBL 1
-
-  // empty; do nothing
-  #define ASSUME_ALIGN(x)
-  #define ASSUME
-
-  #define ALLOC(x) malloc((x))
-  #define FREE(x) free((x))
-  #define SIMD_ROUND(x) (x)
-  #define SIMD_ROUND(x) (x)
-  #define SIMD_ROUND_DBL(x) (x)
-
-#endif
+// align an array
+// ie double somearr[200] SIMINT_ALIGN_ARRAY
+#define SIMINT_ALIGN_ARRAY __attribute__((aligned(SIMINT_SIMD_ALIGN)));
 
 
-
-#define SIMINT_NSHELL_SIMD (2*SIMD_LEN)
+#define SIMINT_NSHELL_SIMD (2*SIMINT_SIMD_LEN)
 
 
 

@@ -44,9 +44,6 @@ int main(int argc, char ** argv)
     // default options
     OptionsMap options = DefaultOptions();
 
-    // max L value
-    int maxL = 0;
-
     // other stuff
     std::string fpath;
     std::string cpuinfofile;
@@ -56,15 +53,14 @@ int main(int argc, char ** argv)
     while(i < argc)
     {
         std::string argstr(GetNextArg(i, argc, argv));
-        if(argstr == "-L")
-            maxL = GetIArg(i, argc, argv);
-        else if(argstr == "-o")
+        if(argstr == "-o")
             fpath = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-        {
-            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-c")
             cpuinfofile = GetNextArg(i, argc, argv);
-        }
+        else if(argstr == "-i")
+            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-S")
+            options[OPTION_SCALAR] = 1;
         else
         {
             std::cout << "\n\n";
@@ -81,61 +77,44 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(maxL == 0)
+    if(cpuinfofile == "")
     {
-        std::cout << "\nMaximum L value (-L) required\n\n";
+        std::cout << "\nCPU info file required\n\n";
         return 2;
     }
 
     if(fpath.back() != '/')
         fpath += '/';
+    fpath += "vectorization_generated.h";
 
+    cout << "Generating header file " << fpath << "\n";
 
-    // The algorithm to use 
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
-
-    // different source and header files
-    std::string srcpath = fpath + "vrr.c";
-    std::string headpath = fpath + "vrr.h";
-    
-    cout << "Generating source file " << srcpath << "\n";
-    cout << "Generating header file " << headpath << "\n";
-
-    std::ofstream of(srcpath);
+    std::ofstream of(fpath);
     if(!of.is_open())
     {
-        std::cout << "Cannot open file: " << srcpath << "\n";
+        std::cout << "Cannot open file: " << fpath << "\n";
         return 2; 
     }
 
-    std::ofstream ofh(headpath);
-    if(!ofh.is_open())
-    {
-        std::cout << "Cannot open file: " << headpath << "\n";
-        return 2; 
-    }
-
-
-    // we want all gaussians up to the maximum L value
-    GaussianMap vreq;
-    for(int i = 0; i <= maxL; i++)
-        vreq[i] = AllGaussiansForAM(i);
-
-    // Create the mapping
-    vrralgo->CreateAllMaps(vreq);
 
     // Create the writer and base writer
-    WriterInfo::Init(options, "", {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
+    WriterInfo::Init(options, {0, 0, 0, 0}, cpuinfofile);  // the amlist parameter doesn't matter much here
 
     // read in cpuflags if needed
     if(options[OPTION_INTRINSICS] != 0)
         WriterInfo::ReadCPUFlags(cpuinfofile); 
 
-    VRR_Writer vrr_writer(*vrralgo);
 
-    // write to the output file
-    vrr_writer.WriteVRRFile(of);
-    vrr_writer.WriteVRRHeaderFile(ofh);
+
+
+    // create the header file containing the simd length
+    of << "#ifndef VECTORIZATION_GENERATED_H\n";
+    of << "#define VECTORIZATION_GENERATED_H\n";
+    of << "\n";
+    of << "#define SIMINT_SIMD_LEN " << WriterInfo::SimdLen() << "\n";
+    of << "\n";
+    of << "#endif\n";
+
     cout << "Done!\n";
 
     }

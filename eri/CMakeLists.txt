@@ -1,4 +1,4 @@
-file(GLOB SIMINT_ERI_FILES *.gen/*.c)
+file(GLOB SIMINT_ERI_FILES gen/*.c)
 
 add_library(simint_eri STATIC ${SIMINT_ERI_FILES} )
 

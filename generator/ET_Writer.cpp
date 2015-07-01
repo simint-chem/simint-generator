@@ -32,6 +32,12 @@ void ET_Writer::WriteIncludes(std::ostream & os) const
 
 
 
+void ET_Writer::WriteConstants(std::ostream & os) const
+{
+}
+
+
+
 void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     if(etint_.size())
@@ -103,12 +109,6 @@ void ET_Writer::WriteETInline(std::ostream & os) const
             if(WriterInfo::Intrinsics())
             {
                 os << indent6 << "{\n";
-
-                /*
-                os << indent7 << "double vec[" << WriterInfo::SimdLen() << "] __attribute__((aligned(" << WriterInfo::ByteAlign() << ")));\n";
-                os << indent7 << WriterInfo::DoubleStore(WriterInfo::PrimVarName(it) + "[n]", "vec", "") << ";\n";
-                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec[0]";
-                */
 
                 os << indent7 << "union double4 vec = (union double4)" << WriterInfo::PrimVarName(it) << "[n];\n";    
                 os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec.v[0]";

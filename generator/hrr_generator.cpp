@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
             fpath = GetNextArg(i, argc, argv);
         else if(argstr == "-i")
         {
-            options[OPTION_INTRINSIC] = 1;
+            options[OPTION_INTRINSICS] = 1;
             cpuinfofile = GetNextArg(i, argc, argv);
         }
         else
@@ -152,7 +152,7 @@ int main(int argc, char ** argv)
         WriterInfo::Init(options, "", am);
 
         // read in cpuflags if needed
-        if(options[OPTION_INTRINSIC] != 0)
+        if(options[OPTION_INTRINSICS] != 0)
             WriterInfo::ReadCPUFlags(cpuinfofile); 
 
         hrralgo->Create_DoubletStepLists(am);

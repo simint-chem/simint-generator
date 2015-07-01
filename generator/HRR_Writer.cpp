@@ -22,6 +22,12 @@ void HRR_Writer::WriteIncludes(std::ostream & os) const
 
 
 
+void HRR_Writer::WriteConstants(std::ostream & os) const
+{
+}
+
+
+
 void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << "\n";
@@ -163,7 +169,9 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << indent3 << "// Contracted integrals: Horizontal recurrance\n";
         os << indent3 << "//////////////////////////////////////////////\n";
         os << "\n";
-        os << "            #pragma omp simd linear(real_abcd)\n";
+
+        if(!WriterInfo::Scalar())
+            os << indent3 << "#pragma omp simd linear(real_abcd)\n";
         os << indent3 << "for(abcd = 0; abcd < nshell1234; ++abcd, ++real_abcd)\n";
         os << indent3 << "{\n";
 
@@ -267,7 +275,8 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         os << indent1 << "// Steps: " << hrrsteps_.first.size() << "\n";
         os << indent1 << "//////////////////////////////////////////////\n";
         os << "\n";
-        os << "    #pragma simd\n";
+        if(!WriterInfo::Scalar())
+            os << "    #pragma simd\n";
         os << indent1 << "for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << indent1 << "{\n";
 
@@ -311,7 +320,8 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         std::stringstream ss;
         ss << (NCART(braam[0]) * NCART(braam[1])); 
 
-        os << "    #pragma simd\n";
+        if(!WriterInfo::Scalar())
+            os << "    #pragma simd\n";
         os << indent1 << "for(abcd = 0; abcd < nshell1234; ++abcd)\n";
         os << indent1 << "{\n";
 
@@ -362,7 +372,8 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
         ofb << "\n";
 
         // it.first is the AM for the ket part
-        ofb << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)\n";
+        if(!WriterInfo::Scalar())
+            ofb << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
         ofb << "void HRR_BRA_";
         ofb << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
@@ -395,7 +406,8 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
         ofk << "//////////////////////////////////////////////\n";
         ofk << "\n";
 
-        ofk << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)\n";
+        if(!WriterInfo::Scalar())
+            ofk << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
         ofk << "void HRR_KET_";
         ofk << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
@@ -435,7 +447,8 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << "\n";
 
         // it.first is the AM for the ket part
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_ket)\n";
+        if(!WriterInfo::Scalar())
+            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
         os << "void HRR_BRA_" << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 /*
         for(const auto & itb : brahrr_ptrs_)
@@ -454,7 +467,8 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << indent1 << "//////////////////////////////////////////////\n";
         os << "\n";
 
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(ncart_bra)\n";
+        if(!WriterInfo::Scalar())
+            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
         os << "void HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // Pass the pointes

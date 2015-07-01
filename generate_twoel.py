@@ -7,23 +7,32 @@ import os
 import subprocess
 import re
 
+
+# path to this file
+thisfile = os.path.realpath(__file__)
+topdir = os.path.dirname(thisfile)
+
+# some helpers
+amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
+validboys = [ "FO", "split", "vref" ]
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")
-parser.add_argument("-g", type=str, required=True, help="Path to generator binary")
-parser.add_argument("-d", type=str, required=True, help="Directory in which to create files")
-parser.add_argument("-p", type=str, required=True, help="Type prefix")
+parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
+parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags file")
 
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
-parser.add_argument("-i",  required=False, type=str, default="",   help="Use intrinsics corresponding to cpuflags in the given file")
+parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 args = parser.parse_args()
 
 
-amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
-validboys = [ "FO", "split", "vref" ]
+# directory for the eri files
+eridir = os.path.join(topdir, "eri", "gen")
+vinclude_dir = os.path.join(topdir, "vectorization")
 
 def ValidQuartet(q):
   if q[0] < q[1]:
@@ -62,13 +71,15 @@ def QStr(q):
 ###################################
 # Actual code starts here
 ###################################
+eri_gen = os.path.join(args.g, "eri_generator")
+vinclude_gen = os.path.join(args.g, "include_generator")
 
-if not os.path.isdir(args.d):
-  print("The path \"{}\" does not exist or is not a directory".format(args.d))
+if not os.path.isfile(eri_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(eri_gen))
   quit(1)
 
-if not os.path.isfile(args.g):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(args.g))
+if not os.path.isfile(vinclude_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(vinclude_gen))
   quit(1)
 
 if not args.b in validboys:
@@ -76,6 +87,33 @@ if not args.b in validboys:
   quit(1)
 
 
+####################################################
+# Generate the vectorization header file
+# TODO - could probably be moved to a python script
+outfile = os.path.join(vinclude_dir, "vectorization_generated.h")
+cmdline = [vinclude_gen]
+cmdline.extend(["-c", str(args.c)])
+cmdline.extend(["-o", outfile])
+cmdline.extend(["-c", str(args.c)])
+if args.i:
+    cmdline.append("-i")
+
+ret = subprocess.call(cmdline)
+
+if ret != 0:
+  print("\n")
+  print("*********************************")
+  print("When generating include file")
+  print("Subprocess returned {} - aborting".format(ret))
+  print("*********************************")
+  print("\n")
+
+
+
+
+
+####################################################
+# Generate the ERI sources and headers
 print("-------------------------------")
 print("Maximum AM: {}".format(args.l))
 print("Naive combinations: {}".format((args.l+1) ** 4))
@@ -114,18 +152,20 @@ print()
 print("==========================================================================================")
 print()
 
-headerbase = "eri_{}.h".format(args.p)
-headerfile = os.path.join(args.d, headerbase)
+
+
+
+# Generate the eri
+headerbase = "eri_generated.h"
+headerfile = os.path.join(eridir, headerbase)
 
 print()
 print("Header file: {}".format(headerfile))
 print()
-
-
 for q in valid:
-  filebase = "eri_{}_{}_{}_{}_{}".format(args.p, amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-  outfile = os.path.join(args.d, filebase + ".c")
-  logfile = os.path.join(args.d, filebase + ".log")
+  filebase = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+  outfile = os.path.join(eridir, filebase + ".c")
+  logfile = os.path.join(eridir, filebase + ".log")
   print("Creating: {}".format(filebase))
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
@@ -142,31 +182,22 @@ for q in valid:
     hrrtype = "Inline";
   print("         HRR: {}".format(hrrtype))
 
-  if sum(q) >= args.P:
-    dopermute = True
-  else:
-    dopermute = False
-  print("     PERMUTE: {}".format(dopermute))
-
-
 
   with open(logfile, 'w') as lf:
-    cmdline = [args.g];
+    cmdline = [eri_gen];
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
-    cmdline.extend(["-p", args.p])
     cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-s", str(args.s)])
+    cmdline.extend(["-c", str(args.c)])
 
     if vrrtype == "External":
         cmdline.append("-ve")
     if hrrtype == "External":
         cmdline.append("-he")
-    if dopermute:
-        cmdline.append("-P")
 
     if args.i:
-        cmdline.extend(["-i", args.i])
+        cmdline.append("-i")
 
     print()
     print("Command line:")
@@ -177,6 +208,7 @@ for q in valid:
     if ret != 0:
       print("\n")
       print("*********************************")
+      print("While generating eri")
       print("Subprocess returned {} - aborting".format(ret))
       print("*********************************")
       print("\n")
@@ -184,6 +216,7 @@ for q in valid:
   print()
 
 
+# Create the header file for all eri
 with open(headerfile, 'w') as hfile:
   defineline = re.sub('[\W]', '_', headerbase.upper()) 
   hfile.write("#ifndef {}\n".format(defineline))
@@ -198,11 +231,11 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#include \"shell/shell.h\"\n")
   hfile.write("\n\n")
 
-  hfile.write("#define ERI_{}_MAXAM {}\n".format(args.p.upper(), args.l))
+  hfile.write("#define ERI_MAXAM {}\n".format(args.l))
   hfile.write("\n\n")
 
   for q in valid:
-    funcname = "eri_{}_{}_{}_{}_{}".format(args.p, amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+    funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
     intname = "INT__{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
     hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict {});\n".format(funcname, intname))
 
@@ -219,6 +252,6 @@ print("\n")
 print("Array filling lines:")
 print("\n")
 for q in valid:
-  funcname = "eri_{}_{}_{}_{}_{}".format(args.p, amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+  funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   print("funcs[{}][{}][{}][{}] = {};".format(q[0], q[1], q[2], q[3], funcname))
 print("\n\n")

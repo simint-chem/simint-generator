@@ -13,6 +13,7 @@ class BoysGen
         virtual void WriteBoys(std::ostream & os) const = 0;
 
         void WriteIncludes(std::ostream & os) const;
+        void WriteConstants(std::ostream & os) const;
 
         virtual ~BoysGen() { };
 

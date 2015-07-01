@@ -19,6 +19,11 @@ void VRR_Writer::WriteIncludes(std::ostream & os) const
 
 
 
+void VRR_Writer::WriteConstants(std::ostream & os) const
+{
+}
+
+
 void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     if(vrramreq_.size())
@@ -187,7 +192,8 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
         os << "\n\n\n";
         os << "// VRR to obtain " << WriterInfo::PrimVarName(qam) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_n)\n";
+        if(!WriterInfo::Scalar())
+            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
         os << "void VRR_" << amchar[am] << "(const int num_n,\n";
         os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
@@ -243,8 +249,8 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
             continue;
 
         os << "\n\n\n";
-        os << "// VRR to obtain " << WriterInfo::PrimVarName(qam) << "\n";
-        os << "#pragma omp declare simd simdlen(SIMD_LEN) uniform(num_n)\n";
+        if(!WriterInfo::Scalar())
+            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
         os << "void VRR_" << amchar[am] << "(const int num_n,\n";
         os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
         os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
@@ -285,12 +291,6 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am) const
         {
             os << indent6 << "{\n";
             
-            /*
-            os << indent7 << "double vec[" << WriterInfo::SimdLen() << "] __attribute__((aligned(" << WriterInfo::ByteAlign() << ")));\n";
-            os << indent7 << WriterInfo::DoubleStore(WriterInfo::PrimVarName(qam) + "[n]", "vec", "") << ";\n";
-            os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += vec[0]";
-            */
-
             os << indent7 << "union double4 vec = (union double4)" << WriterInfo::PrimVarName(qam) << "[n];\n";    
             os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += vec.v[0]";
 

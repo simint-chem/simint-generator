@@ -11,7 +11,7 @@ extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 // Allocate a gaussian shell with correct alignment
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
 {
-    const int prim_size = SIMD_ROUND_DBL(nprim);
+    const int prim_size = SIMINT_SIMD_ROUND_DBL(nprim);
     const int size = prim_size * sizeof(double);   
 
     double * mem = ALLOC(2*size);
@@ -164,7 +164,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        prim_size += SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
+        prim_size += SIMINT_SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
 
     const int shell12_size = na*nb;
 
@@ -314,7 +314,7 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
 
-            ASSUME(idx%SIMD_ALIGN_DBL == 0);
+            ASSUME(idx%SIMINT_SIMD_ALIGN_DBL == 0);
 
             ASSUME_ALIGN(A[sa].alpha);
             ASSUME_ALIGN(A[sa].coef);
@@ -351,7 +351,7 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             }
 
             // align to the next boundary
-            idx = SIMD_ROUND_DBL(idx);
+            idx = SIMINT_SIMD_ROUND_DBL(idx);
 
             // store the end of this shell pair
             P->primend[sasb] = idx;
