@@ -350,7 +350,26 @@ void ReadCPUFlags(const std::string & file)
     
 
     // determine simdlen, types, etc
-    if(HasCPUFlag("avx"))
+    if(HasCPUFlag("avx512f"))
+    {
+        simdlen_ = 8;  // 4 packed doubles
+        includes_.push_back("\"vectorization/vectorization.h\"");
+
+        if(Intrinsics())
+        {
+            includes_.push_back("\"vectorization/intrinsics_avx512.h\"");
+
+            intrinsicmap_["dbl_type"] = "__m512d";
+            intrinsicmap_["cdbl_type"] = "const __m512d";
+            intrinsicmap_["dbl_set"] = "_mm512_set1_pd";
+            intrinsicmap_["dbl_load"] = "_mm512_load_pd";
+            intrinsicmap_["dbl_store"] = "_mm512_store_pd";
+            intrinsicmap_["sqrt"] = "_mm512_sqrt_pd";
+            intrinsicmap_["pow"] = "_mm512_pow_pd";
+            intrinsicmap_["exp"] = "_mm512_exp_pd";
+        }
+    }
+    else if(HasCPUFlag("avx"))
     {
         simdlen_ = 4;  // 4 packed doubles
         includes_.push_back("\"vectorization/vectorization.h\"");
