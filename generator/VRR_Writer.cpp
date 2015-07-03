@@ -293,7 +293,7 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am) const
         {
             os << indent6 << "{\n";
             
-            os << indent7 << "union double4 vec = (union double4)" << WriterInfo::PrimVarName(qam) << "[n];\n";    
+            os << indent7 << WriterInfo::UnionType() << " vec = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[n];\n";    
             os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += vec.v[0]";
 
             for(int i = 1; i < WriterInfo::SimdLen(); i++)

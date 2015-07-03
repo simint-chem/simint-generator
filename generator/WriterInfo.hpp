@@ -56,6 +56,8 @@ namespace WriterInfo {
         std::string NewConstDoubleSet(const std::string & var, const std::string & val);
         std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx);
 
+        std::string UnionType(void);
+
         std::string Sqrt(const std::string & val);
         std::string RSqrt(const std::string & val);
         std::string Power(const std::string & base, const std::string & exp);

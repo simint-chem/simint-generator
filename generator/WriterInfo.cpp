@@ -344,6 +344,7 @@ void ReadCPUFlags(const std::string & file)
     intrinsicmap_["dbl_set"] = "";
     intrinsicmap_["dbl_load"] = "";
     intrinsicmap_["dbl_store"] = "";
+    intrinsicmap_["union_type"] = "";
     intrinsicmap_["sqrt"] = "sqrt";
     intrinsicmap_["pow"] = "pow";
     intrinsicmap_["exp"] = "exp";
@@ -364,6 +365,7 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["dbl_set"] = "_mm512_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm512_load_pd";
             intrinsicmap_["dbl_store"] = "_mm512_store_pd";
+            intrinsicmap_["union_type"] = "union double8";
             intrinsicmap_["sqrt"] = "_mm512_sqrt_pd";
             intrinsicmap_["pow"] = "_mm512_pow_pd";
             intrinsicmap_["exp"] = "_mm512_exp_pd";
@@ -383,6 +385,7 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["dbl_set"] = "_mm256_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm256_load_pd";
             intrinsicmap_["dbl_store"] = "_mm256_store_pd";
+            intrinsicmap_["union_type"] = "union double4";
             intrinsicmap_["sqrt"] = "_mm256_sqrt_pd";
             intrinsicmap_["pow"] = "_mm256_pow_pd";
             intrinsicmap_["exp"] = "_mm256_exp_pd";
@@ -402,6 +405,7 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["dbl_set"] = "TODO";
             intrinsicmap_["dbl_load"] = "TODO";
             intrinsicmap_["dbl_store"] = "TODO";
+            intrinsicmap_["union_type"] = "union double2";
             intrinsicmap_["sqrt"] = "TODO";
             intrinsicmap_["pow"] = "TODO";
             intrinsicmap_["exp"] = "TODO";
@@ -518,6 +522,11 @@ std::string NewConstDoubleSet(const std::string & var, const std::string & val)
 std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) 
 {
     return std::string("const ") + NewDoubleLoad(var, ptr, idx);
+}
+
+std::string UnionType(void)
+{
+    return intrinsicmap_.at("union_type");
 }
         
 std::string Sqrt(const std::string & val) 
