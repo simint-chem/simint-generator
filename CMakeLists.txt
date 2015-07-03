@@ -33,9 +33,13 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
     list(APPEND SIMINT_C_FLAGS "-xavx")
   elseif(SIMINT_MIC)
     list(APPEND SIMINT_C_FLAGS "-mmic")
-  elseif(SIMINT_SCALAR)
+  endif()
+
+  # Separate, since we may want -mmic and -no-vec, etc
+  if(SIMINT_SCALAR)
     list(APPEND SIMINT_C_FLAGS "-no-vec -no-simd")
   endif()
+
 endif()
 
 
