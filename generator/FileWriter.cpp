@@ -66,7 +66,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const " << WriterInfo::ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict " << WriterInfo::ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
 
