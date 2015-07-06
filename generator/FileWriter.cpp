@@ -141,10 +141,16 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     WriterInfo::AddConstant("const_two_pi_52", "TWO_PI_52");
 
-    bg.AddConstants(os);
-    et_writer.AddConstants(os);
-    vrr_writer.AddConstants(os);
-    hrr_writer.AddConstants(os);
+    // need these factors if there is VRR or ET
+    if(hasoneover2p || haset)
+        WriterInfo::AddConstant("one_half", "0.5");
+    if(hasvrr || haset)
+        WriterInfo::AddConstant("const_1", "1.0");
+
+    bg.AddConstants();
+    et_writer.AddConstants();
+    vrr_writer.AddConstants();
+    hrr_writer.AddConstants();
     WriterInfo::WriteConstants(os);
 
     
@@ -315,10 +321,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasvrr)
     {
         os << indent6 << "// for VRR\n";
-        os << indent6 << cdbltype << " one_over_p = " << WriterInfo::DoubleSet("1.0") << " / P_alpha;\n";
+        os << indent6 << cdbltype << " one_over_p = " << WriterInfo::DoubleConstant("const_1") << " / P_alpha;\n";
         os << indent6 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)    
-            os << indent6 << cdbltype << " one_over_2p = " << WriterInfo::DoubleSet("0.5") << " * one_over_p;  // gets multiplied by i in VRR\n";
+            os << indent6 << cdbltype << " one_over_2p = " << WriterInfo::DoubleConstant("one_half") << " * one_over_p;  // gets multiplied by i in VRR\n";
 
         os << "\n";
         os << indent6 << "// a_over_p * PQ_{xyz}\n";
@@ -331,8 +337,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(haset)
     {
         os << indent6 << "// for electron transfer\n";
-        os << indent6 << cdbltype << " one_over_q = " << WriterInfo::DoubleSet("1.0") << " / Q_alpha;\n";
-        os << indent6 << cdbltype << " one_over_2q = " << WriterInfo::DoubleSet("0.5") << " * one_over_q;\n";
+        os << indent6 << cdbltype << " one_over_q = " << WriterInfo::DoubleConstant("const_1") << " / Q_alpha;\n";
+        os << indent6 << cdbltype << " one_over_2q = " << WriterInfo::DoubleConstant("one_half") << " * one_over_q;\n";
         os << indent6 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 

@@ -23,7 +23,7 @@ void BoysGen::WriteIncludes(std::ostream & os) const
 
 
 
-void BoysGen::AddConstants(std::ostream & os) const
+void BoysGen::AddConstants(void) const
 {
 }
 
@@ -117,7 +117,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     os << "\n";
 }
 
-void BoysFO::AddConstants(std::ostream & os) const
+void BoysFO::AddConstants(void) const
 {
     const int L = WriterInfo::L();
 
@@ -142,6 +142,9 @@ void BoysFO::AddConstants(std::ostream & os) const
     } 
     else
     {
+        // add the factor of 2.0
+        WriterInfo::AddConstant("two", "2.0");
+
         const BoysFit & bf = bfmap_.at(L);
         for(int i = 0; i < bf.a.size(); i++)
         { 
@@ -186,7 +189,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
         WriteBoysSingle_(os, WriterInfo::L(), false);
 
         // calculate the downward recursion factors
-        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::DoubleSet("2.0") << " * F_x;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::DoubleConstant("two") << " * F_x;\n";
         os << indent6 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
 
         for(int m = WriterInfo::L()-1; m >= 0; m--)

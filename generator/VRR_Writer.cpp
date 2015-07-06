@@ -19,8 +19,33 @@ void VRR_Writer::WriteIncludes(std::ostream & os) const
 
 
 
-void VRR_Writer::AddConstants(std::ostream & os) const
+void VRR_Writer::AddConstants(void) const
 {
+    // iterate over increasing am
+    for(const auto & it3 : vrramreq_)
+    {
+        int am = it3.first;
+
+        // don't do zero - that is handled by the boys function stuff
+        if(am == 0)
+            continue;
+
+        for(const auto & it : it3.second)
+        {
+            // Get the stepping
+            XYZStep step = vrrmap_.at(it);
+
+            // and then step to the the required gaussians
+            Gaussian g1 = it.StepDown(step, 1);
+            Gaussian g2 = it.StepDown(step, 2);
+            if(g2)
+            {
+                std::stringstream vrr_i;
+                vrr_i << g1.ijk[XYZStepToIdx(step)];
+                WriterInfo::AddConstant(std::string("const_") + vrr_i.str(), vrr_i.str());
+            }
+        }
+    }
 }
 
 
@@ -104,7 +129,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         // the value of i in the VRR eqn
         // = value of exponent of g1 in the position of the step
         std::stringstream vrr_i;
-        vrr_i << g1.ijk[XYZStepToIdx(step)];
+        vrr_i << "const_" << g1.ijk[XYZStepToIdx(step)];
 
         os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
         os << indent7 << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
@@ -115,7 +140,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         if(g2)
         {
             os << "\n"
-               << indent8 << "+ " << WriterInfo::DoubleSet(vrr_i.str())
+               << indent8 << "+ " << WriterInfo::DoubleConstant(vrr_i.str())
                << " * one_over_2p * ( " << WriterInfo::PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
                << " - a_over_p * " << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }

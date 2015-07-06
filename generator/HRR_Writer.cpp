@@ -22,7 +22,7 @@ void HRR_Writer::WriteIncludes(std::ostream & os) const
 
 
 
-void HRR_Writer::AddConstants(std::ostream & os) const
+void HRR_Writer::AddConstants(void) const
 {
 }
 

@@ -17,7 +17,7 @@ class HRR_Writer
         void WriteHRR(std::ostream & os) const;
 
         void WriteIncludes(std::ostream & os) const;
-        void AddConstants(std::ostream & os) const;
+        void AddConstants(void) const;
         void WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const;
         void WriteHRRHeaderFile(std::ostream & os) const;
 

@@ -13,7 +13,7 @@ class BoysGen
         virtual void WriteBoys(std::ostream & os) const = 0;
 
         void WriteIncludes(std::ostream & os) const;
-        virtual void AddConstants(std::ostream & os) const;
+        virtual void AddConstants(void) const;
 
         virtual ~BoysGen() { };
 
@@ -27,7 +27,7 @@ class BoysFO : public BoysGen
         BoysFO(std::string dir); // read from directory
 
         virtual void WriteBoys(std::ostream & os) const;
-        virtual void AddConstants(std::ostream & os) const;
+        virtual void AddConstants(void) const;
 
     private:
         struct BoysFit

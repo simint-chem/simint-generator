@@ -32,8 +32,30 @@ void ET_Writer::WriteIncludes(std::ostream & os) const
 
 
 
-void ET_Writer::AddConstants(std::ostream & os) const
+void ET_Writer::AddConstants(void) const
 {
+    for(const auto & et : etsl_)
+    {
+        int stepidx = XYZStepToIdx(et.xyz);
+
+        int ival_val = et.target.bra.left.ijk[stepidx];
+        int kval_val = (et.target.ket.left.ijk[stepidx]-1);
+
+
+        // ok to add duplicates. They are stored as a map
+        if(ival_val != 0)
+        {
+            std::stringstream ival;
+            ival << ival_val;
+            WriterInfo::AddConstant(std::string("const_") + ival.str(), ival.str());
+        }
+        if(kval_val != 0)
+        {
+            std::stringstream kval;
+            kval << kval_val;
+            WriterInfo::AddConstant(std::string("const_") + kval.str(), kval.str());
+        }
+    }
 }
 
 
@@ -140,9 +162,9 @@ std::string ET_Writer::ETStepString(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
     std::stringstream ival;
-    ival << et.target.bra.left.ijk[stepidx];
+    ival << "const_" << et.target.bra.left.ijk[stepidx];
     std::stringstream kval;
-    kval << (et.target.ket.left.ijk[stepidx]-1);
+    kval << "const_" << (et.target.ket.left.ijk[stepidx]-1);
 
     std::stringstream ss;
     ss << indent6 <<  ETStepVar(et.target);
@@ -152,9 +174,9 @@ std::string ET_Writer::ETStepString(const ETStep & et)
     ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1);
 
     if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + " << WriterInfo::DoubleSet(ival.str()) << " * one_over_2q * " << ETStepVar(et.src2);
+        ss << " + " << WriterInfo::DoubleConstant(ival.str()) << " * one_over_2q * " << ETStepVar(et.src2);
     if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + " << WriterInfo::DoubleSet(kval.str()) << " * one_over_2q * " << ETStepVar(et.src3);
+        ss << " + " << WriterInfo::DoubleConstant(kval.str()) << " * one_over_2q * " << ETStepVar(et.src3);
     if(et.src4.bra.left && et.src4.ket.left)
         ss << " - p_over_q * " << ETStepVar(et.src4);
     ss << ";\n";
