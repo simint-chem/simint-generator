@@ -6,6 +6,7 @@
 union double4
 {
     __m256d d;
+    __m128d d_128[2];
     double v[4];
 };
 
