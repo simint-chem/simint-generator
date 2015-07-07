@@ -5,10 +5,14 @@
 
 union double8
 {
-    __m512d d;
+    __m512d d_512;
     __m256d d_256[2];
     __m128d d_128[4];
-    double v[8];
+    double d[8];
 };
+
+// These aren't defined in KNCI, so make some macros
+#define MM512_SET1_PD(val) (((union double8){ .d_256 = { _mm256_set1_pd((val)), _mm256_set1_pd((val)) } }).d_512)
+#define MM512_SQRT_PD(val) (((union double8){ .d_256 = { _mm256_sqrt_pd((val)), _mm256_sqrt_pd((val)) } }).d_512)
 
 #endif

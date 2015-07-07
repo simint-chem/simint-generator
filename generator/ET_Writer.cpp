@@ -133,10 +133,10 @@ void ET_Writer::WriteETInline(std::ostream & os) const
                 os << indent6 << "{\n";
 
                 os << indent7 << WriterInfo::UnionType() << " vec = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(it) << "[n];\n";    
-                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec.v[0]";
+                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec.d[0]";
 
                 for(int i = 1; i < WriterInfo::SimdLen(); i++)
-                    os << " + vec.v[" << i << "]";
+                    os << " + vec.d[" << i << "]";
                     //os << " + vec[" << i << "]";
                 os << ";\n";
                 os << indent6 << "}\n";

@@ -362,11 +362,11 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m512d";
             intrinsicmap_["cdbl_type"] = "const __m512d";
-            intrinsicmap_["dbl_set"] = "_mm512_set1_pd";
+            intrinsicmap_["dbl_set"] = "MM512_SET1_PD";  // macro in intrinsics_kncni.h
             intrinsicmap_["dbl_load"] = "_mm512_load_pd";
             intrinsicmap_["dbl_store"] = "_mm512_store_pd";
             intrinsicmap_["union_type"] = "union double8";
-            intrinsicmap_["sqrt"] = "_mm512_sqrt_pd";
+            intrinsicmap_["sqrt"] = "MM512_SQRT_PD"; // macro in intrinsics_kncni.h
             intrinsicmap_["pow"] = "_mm512_pow_pd";
             intrinsicmap_["exp"] = "_mm512_exp_pd";
         }
