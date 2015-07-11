@@ -167,7 +167,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
     os << "\n";
     os << indent6 << "// Precompute (integer) * 1/2p\n";
     for(const auto & it : vrr_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = const_" << it << " * one_over_2p;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::DoubleConstant(std::string("const_") + it) << " * one_over_2p;\n";
 
     os << "\n";
 

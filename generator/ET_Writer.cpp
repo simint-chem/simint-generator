@@ -109,7 +109,7 @@ void ET_Writer::WriteETInline(std::ostream & os) const
     os << "\n";
     os << indent6 << "// Precompute (integer) * 1/2q\n";
     for(const auto & it : et_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = const_" << it << " * one_over_2q;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::DoubleConstant(std::string("const_") + it) << " * one_over_2q;\n";
 
     os << "\n";
 
