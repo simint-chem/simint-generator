@@ -8,20 +8,11 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
 { 
     vrrmap_ = vrr_algo.GetVRRMap();
     vrramreq_ = vrr_algo.GetAMReq();
-}
 
+    // determine the constant integers
+    // needed. These are multiplied by
+    // 1/2p in the VRR eqn
 
-void VRR_Writer::WriteIncludes(std::ostream & os) const
-{
-    if(WriterInfo::GetOption(OPTION_INLINEVRR) == 0)
-        os << "#include \"eri/vrr.gen/vrr.h\"\n";
-}
-
-
-
-void VRR_Writer::AddConstants(void) const
-{
-    // iterate over increasing am
     for(const auto & it3 : vrramreq_)
     {
         int am = it3.first;
@@ -42,10 +33,25 @@ void VRR_Writer::AddConstants(void) const
             {
                 std::stringstream vrr_i;
                 vrr_i << g1.ijk[XYZStepToIdx(step)];
-                WriterInfo::AddConstant(std::string("const_") + vrr_i.str(), vrr_i.str());
+                vrr_i_.insert(vrr_i.str());
             }
         }
     }
+}
+
+
+void VRR_Writer::WriteIncludes(std::ostream & os) const
+{
+    if(WriterInfo::GetOption(OPTION_INLINEVRR) == 0)
+        os << "#include \"eri/vrr.gen/vrr.h\"\n";
+}
+
+
+
+void VRR_Writer::AddConstants(void) const
+{
+    for(const auto & it : vrr_i_)
+        WriterInfo::AddConstant(std::string("const_") + it, it);
 }
 
 
@@ -129,7 +135,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         // the value of i in the VRR eqn
         // = value of exponent of g1 in the position of the step
         std::stringstream vrr_i;
-        vrr_i << "const_" << g1.ijk[XYZStepToIdx(step)];
+        vrr_i << g1.ijk[XYZStepToIdx(step)];
 
         os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
         os << indent7 << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
@@ -140,8 +146,8 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         if(g2)
         {
             os << "\n"
-               << indent8 << "+ " << WriterInfo::DoubleConstant(vrr_i.str())
-               << " * one_over_2p * ( " << WriterInfo::PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
+               << indent8 << "+ vrr_const_" << vrr_i.str() 
+               << " * ( " << WriterInfo::PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
                << " - a_over_p * " << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }
         os << ";\n\n"; 
@@ -159,6 +165,12 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
     os << indent6 << "// Primitive integrals: Vertical recurrance\n";
     os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
+    os << indent6 << "// Precompute (integer) * 1/2p\n";
+    for(const auto & it : vrr_i_)
+        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = const_" << it << " * one_over_2p;\n";
+
+    os << "\n";
+
 
     // iterate over increasing am
     for(const auto & it3 : vrramreq_)

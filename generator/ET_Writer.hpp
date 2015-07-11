@@ -24,6 +24,8 @@ class ET_Writer
         ETStepList etsl_;
         QAMSet etint_;
 
+        std::set<std::string> et_i_; // gets multiplied by one_over_2q
+
         static std::string ETStepString(const ETStep & et);
         static std::string ETStepVar(const Quartet & q);
 };
