@@ -1,17 +1,28 @@
 #include <cstdio>
 
+#include <omp.h>
+
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
+
+
+#define CLOCK(ticks, time) do {                                 \
+    volatile unsigned int a, d;                              \
+    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d) : );   \
+    (ticks) = ((unsigned long long) a)|(((unsigned long long)d)<<32); \
+    (time) = (ticks) / 3700000000.;                              \
+  } while(0)
+
 
 int main(int argc, char ** argv)
 {
     // set up the function pointers
     Init_Test();
 
-    if(argc != 3)
+    if(argc < 3 || argc > 4)
     {
-        printf("Give me 2 argument! I got %d\n", argc-1);
+        printf("Give me 2 or 3 arguments! I got %d\n", argc-1);
         return 1;
     }
 
@@ -20,6 +31,12 @@ int main(int argc, char ** argv)
 
     // number of times to run
     const int ntest = atoi(argv[2]);
+
+    // number of threads
+    int nthread = 1;
+
+    if(argc == 4)
+        nthread = atoi(argv[3]);
 
     // read in the shell info
     ShellMap shellmap = ReadBasis(basfile);
@@ -47,7 +64,8 @@ int main(int argc, char ** argv)
     #endif
 
 
-    // loop ntest times
+    // loop ntest times omp threads
+    #pragma omp parallel for num_threads(nthread)
     for(int n = 0; n < ntest; n++)
     {
         #ifdef BENCHMARK_VALIDATE
@@ -75,8 +93,24 @@ int main(int argc, char ** argv)
                                                               it_j.size(), it_j.data());
             struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                               it_l.size(), it_l.data());
+            // for timing
+            double wallclock0, wallclock1;
+            unsigned long long ticks0, ticks1;
+
             // actually calculate
+            CLOCK(ticks0, wallclock0); 
             Integral(P, Q, res_ints);
+            CLOCK(ticks1, wallclock1); 
+
+            unsigned long ncont = (unsigned long)(P.nshell12) * (unsigned long)(Q.nshell12);
+            unsigned long nprim = (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
+            printf("( %d %d | %d %d ) Calculated %12lu contracted, %12lu primitive integrals in %16lu ticks (%8.3f secs)     %12.3f ticks / prim\n",
+                                                                                                    i, j, k, l,
+                                                                                                    ncont,
+                                                                                                    nprim,
+                                                                                                    ticks1 - ticks0,
+                                                                                                    wallclock1 - wallclock0,
+                                                                                                    (double)(ticks1-ticks0)/(double)(nprim));
 
 
             #ifdef BENCHMARK_VALIDATE
@@ -91,6 +125,7 @@ int main(int argc, char ** argv)
             Chop(res_ints, arrlen);
             Chop(res_ref, arrlen);
             std::pair<double, double> err = CalcError(res_ints, res_ref, arrlen);
+
             printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
             #endif
 
