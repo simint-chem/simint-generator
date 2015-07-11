@@ -52,7 +52,9 @@ int main(int argc, char ** argv)
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
-    double * res_ints = (double *)ALLOC(maxsize * sizeof(double));
+    std::vector<double *> res_ints(nthread);
+    for(int i = 0; i < nthread; i++)
+        res_ints[i] = (double *)ALLOC(maxsize * sizeof(double));
 
     // initialize stuff
     // nothing needs initializing!
@@ -63,6 +65,9 @@ int main(int argc, char ** argv)
     RefIntegralReader refint(basfile);
     #endif
 
+    // Timing header
+    printf("%5s %13s %12s   %12s   %16s  %15s    %12s\n", "ID",
+                           "Quartet", "NCont", "NPrim", "Ticks", "Clock", "Ticks/Prim");
 
     // loop ntest times omp threads
     #pragma omp parallel for num_threads(nthread)
@@ -82,6 +87,10 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
+
+            int ithread = omp_get_thread_num();
+
+
             const AlignedGaussianVec & it_i = shellmap[i];
             const AlignedGaussianVec & it_j = shellmap[j];
             const AlignedGaussianVec & it_k = shellmap[k];
@@ -99,18 +108,19 @@ int main(int argc, char ** argv)
 
             // actually calculate
             CLOCK(ticks0, wallclock0); 
-            Integral(P, Q, res_ints);
+            Integral(P, Q, res_ints[ithread]);
             CLOCK(ticks1, wallclock1); 
 
             unsigned long ncont = (unsigned long)(P.nshell12) * (unsigned long)(Q.nshell12);
             unsigned long nprim = (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
-            printf("( %d %d | %d %d ) Calculated %12lu contracted, %12lu primitive integrals in %16lu ticks (%8.3f secs)     %12.3f ticks / prim\n",
-                                                                                                    i, j, k, l,
-                                                                                                    ncont,
-                                                                                                    nprim,
-                                                                                                    ticks1 - ticks0,
-                                                                                                    wallclock1 - wallclock0,
-                                                                                                    (double)(ticks1-ticks0)/(double)(nprim));
+
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16lu  (%8.3f secs)    %12.3f\n",
+                                                                          ithread,
+                                                                          i, j, k, l,
+                                                                          ncont, nprim,
+                                                                          ticks1 - ticks0,
+                                                                          wallclock1 - wallclock0,
+                                                                          (double)(ticks1-ticks0)/(double)(nprim));
 
 
             #ifdef BENCHMARK_VALIDATE
@@ -122,9 +132,9 @@ int main(int argc, char ** argv)
             const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
             const int arrlen = nshell1234 * ncart1234;
             refint.ReadNext(res_ref, arrlen);
-            Chop(res_ints, arrlen);
+            Chop(res_ints[i], arrlen);
             Chop(res_ref, arrlen);
-            std::pair<double, double> err = CalcError(res_ints, res_ref, arrlen);
+            std::pair<double, double> err = CalcError(res_ints[i], res_ref, arrlen);
 
             printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
             #endif
@@ -136,7 +146,8 @@ int main(int argc, char ** argv)
     }
 
     FreeShellMap(shellmap);
-    FREE(res_ints);
+    for(int i = 0; i < nthread; i++)
+        FREE(res_ints[i]);
 
 
     #ifdef BENCHMARK_VALIDATE
