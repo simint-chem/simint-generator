@@ -35,6 +35,11 @@ int main(int argc, char ** argv)
     // number of threads
     int nthread = 1;
 
+    #ifdef BENCHMARK_VALIDATE
+    printf("Disabling threading since BENCHMARK_VALIDATE is set\n");
+    nthread = 1;
+    #endif
+
     if(argc == 4)
         nthread = atoi(argv[3]);
 
@@ -56,6 +61,7 @@ int main(int argc, char ** argv)
     for(int i = 0; i < nthread; i++)
         res_ints[i] = (double *)ALLOC(maxsize * sizeof(double));
 
+
     // initialize stuff
     // nothing needs initializing!
 
@@ -69,7 +75,7 @@ int main(int argc, char ** argv)
     printf("%5s %13s %12s   %12s   %16s  %15s    %12s\n", "ID",
                            "Quartet", "NCont", "NPrim", "Ticks", "Clock", "Ticks/Prim");
 
-    // loop ntest times omp threads
+    // loop ntest times
     #pragma omp parallel for num_threads(nthread)
     for(int n = 0; n < ntest; n++)
     {
@@ -102,6 +108,7 @@ int main(int argc, char ** argv)
                                                               it_j.size(), it_j.data());
             struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                               it_l.size(), it_l.data());
+
             // for timing
             double wallclock0, wallclock1;
             unsigned long long ticks0, ticks1;
@@ -132,9 +139,9 @@ int main(int argc, char ** argv)
             const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
             const int arrlen = nshell1234 * ncart1234;
             refint.ReadNext(res_ref, arrlen);
-            Chop(res_ints[i], arrlen);
+            Chop(res_ints[ithread], arrlen);
             Chop(res_ref, arrlen);
-            std::pair<double, double> err = CalcError(res_ints[i], res_ref, arrlen);
+            std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
 
             printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
             #endif
