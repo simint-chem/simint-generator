@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-MAXHRR=3
+MAXHRR=2
 MAXVRR=12
 VE=1000
 HE=1000
@@ -68,5 +68,6 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
 #                             -d ../eri/vref_flat.gen
 
 
+generator/hrr_generator -o ../eri/gen -c /tmp/cpuinfo -L ${MAXHRR}
 
 touch ../eri/CMakeLists.txt

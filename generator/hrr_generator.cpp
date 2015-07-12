@@ -60,11 +60,10 @@ int main(int argc, char ** argv)
             maxL = GetIArg(i, argc, argv);
         else if(argstr == "-o")
             fpath = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-        {
-            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-c")
             cpuinfofile = GetNextArg(i, argc, argv);
-        }
+        else if(argstr == "-i")
+            options[OPTION_INTRINSICS] = 1;
         else
         {
             std::cout << "\n\n";
@@ -84,6 +83,12 @@ int main(int argc, char ** argv)
     if(maxL == 0)
     {
         std::cout << "\nMaximum L value (-L) required\n\n";
+        return 2;
+    }
+
+    if(cpuinfofile == "")
+    {
+        std::cout << "\nCPU info file required\n\n";
         return 2;
     }
 
@@ -147,13 +152,9 @@ int main(int argc, char ** argv)
         // The algorithm to use
         std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
-        // we can do both bras/kets in the same loop iteration
+        // we can create functions for both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
-        WriterInfo::Init(options, "", am);
-
-        // read in cpuflags if needed
-        if(options[OPTION_INTRINSICS] != 0)
-            WriterInfo::ReadCPUFlags(cpuinfofile); 
+        WriterInfo::Init(options, am, cpuinfofile);
 
         hrralgo->Create_DoubletStepLists(am);
         HRR_Writer hrr_writer(*hrralgo);
