@@ -139,13 +139,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     // (important only really for instrinsics)
     // include the factor of TWO_PI_52
 
-    WriterInfo::AddConstant("const_two_pi_52", "TWO_PI_52");
+    WriterInfo::AddNamedConstant("const_two_pi_52", "TWO_PI_52");
 
     // need these factors if there is VRR or ET
     if(hasoneover2p || haset)
-        WriterInfo::AddConstant("one_half", "0.5");
+        WriterInfo::AddNamedConstant("one_half", "0.5");
     if(hasvrr || haset)
-        WriterInfo::AddConstant("const_1", "1.0");
+        WriterInfo::AddNamedConstant("const_1", "1.0");
 
     bg.AddConstants();
     et_writer.AddConstants();
@@ -302,7 +302,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent6 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
     os << indent6 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
     os << "\n";
-    os << indent6 << cdbltype << " pfac = " << WriterInfo::DoubleConstant("const_two_pi_52") << " / (PQalpha_mul * " << WriterInfo::Sqrt("PQalpha_sum") << ");\n";
+    os << indent6 << cdbltype << " pfac = " << WriterInfo::NamedConstant("const_two_pi_52") << " / (PQalpha_mul * " << WriterInfo::Sqrt("PQalpha_sum") << ");\n";
     os << "\n";
     os << indent6 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
     os << indent6 << cdbltype << " PQ_x = P_x - " << WriterInfo::DoubleLoad("Q.x", "j") << ";\n";
@@ -321,10 +321,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasvrr)
     {
         os << indent6 << "// for VRR\n";
-        os << indent6 << cdbltype << " one_over_p = " << WriterInfo::DoubleConstant("const_1") << " / P_alpha;\n";
+        os << indent6 << cdbltype << " one_over_p = " << WriterInfo::NamedConstant("const_1") << " / P_alpha;\n";
         os << indent6 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
         if(hasoneover2p)    
-            os << indent6 << cdbltype << " one_over_2p = " << WriterInfo::DoubleConstant("one_half") << " * one_over_p;  // gets multiplied by i in VRR\n";
+            os << indent6 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied by i in VRR\n";
 
         os << "\n";
         os << indent6 << "// a_over_p * PQ_{xyz}\n";
@@ -337,8 +337,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(haset)
     {
         os << indent6 << "// for electron transfer\n";
-        os << indent6 << cdbltype << " one_over_q = " << WriterInfo::DoubleConstant("const_1") << " / Q_alpha;\n";
-        os << indent6 << cdbltype << " one_over_2q = " << WriterInfo::DoubleConstant("one_half") << " * one_over_q;\n";
+        os << indent6 << cdbltype << " one_over_q = " << WriterInfo::NamedConstant("const_1") << " / Q_alpha;\n";
+        os << indent6 << cdbltype << " one_over_2q = " << WriterInfo::NamedConstant("one_half") << " * one_over_q;\n";
         os << indent6 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 

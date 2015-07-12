@@ -28,23 +28,14 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
     {
         int stepidx = XYZStepToIdx(et.xyz);
 
-        int ival_val = et.target.bra.left.ijk[stepidx];
-        int kval_val = (et.target.ket.left.ijk[stepidx]-1);
-
+        int ival = et.target.bra.left.ijk[stepidx];
+        int kval = (et.target.ket.left.ijk[stepidx]-1);
 
         // ok to add duplicates. They are stored as a map
-        if(ival_val != 0)
-        {
-            std::stringstream ival;
-            ival << ival_val;
-            et_i_.insert(ival.str());
-        }
-        if(kval_val != 0)
-        {
-            std::stringstream kval;
-            kval << kval_val;
-            et_i_.insert(kval.str());
-        }
+        if(ival > 0)
+            et_i_.insert(ival);
+        if(kval > 0)
+            et_i_.insert(kval);
     }
 }
 
@@ -59,7 +50,7 @@ void ET_Writer::WriteIncludes(std::ostream & os) const
 void ET_Writer::AddConstants(void) const
 {
     for(const auto & it : et_i_)
-        WriterInfo::AddConstant(std::string("const_") + it, it);
+        WriterInfo::AddIntConstant(it);
 }
 
 
@@ -109,7 +100,7 @@ void ET_Writer::WriteETInline(std::ostream & os) const
     os << "\n";
     os << indent6 << "// Precompute (integer) * 1/2q\n";
     for(const auto & it : et_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::DoubleConstant(std::string("const_") + it) << " * one_over_2q;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
 
     os << "\n";
 
@@ -170,10 +161,8 @@ std::string ET_Writer::ETStepVar(const Quartet & q)
 std::string ET_Writer::ETStepString(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
-    std::stringstream ival;
-    ival << et.target.bra.left.ijk[stepidx];
-    std::stringstream kval;
-    kval << (et.target.ket.left.ijk[stepidx]-1);
+    int ival = et.target.bra.left.ijk[stepidx];
+    int kval = (et.target.ket.left.ijk[stepidx]-1);
 
     std::stringstream ss;
     ss << indent6 <<  ETStepVar(et.target);
@@ -183,9 +172,9 @@ std::string ET_Writer::ETStepString(const ETStep & et)
     ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1);
 
     if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + et_const_" << ival.str() << " * " << ETStepVar(et.src2);
+        ss << " + et_const_" << ival << " * " << ETStepVar(et.src2);
     if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + et_const_" << kval.str() << " * " << ETStepVar(et.src3);
+        ss << " + et_const_" << kval << " * " << ETStepVar(et.src3);
     if(et.src4.bra.left && et.src4.ket.left)
         ss << " - p_over_q * " << ETStepVar(et.src4);
     ss << ";\n";

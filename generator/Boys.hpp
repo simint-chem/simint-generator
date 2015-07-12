@@ -48,6 +48,8 @@ class BoysFO : public BoysGen
 
         std::map<int, BoysFit> bfmap_;
 
+        std::string GetFOConstant(std::string ab, int m, int i) const;
+
         void WriteBoysSingle_(std::ostream & os, int m, bool prefac) const;
 };
 

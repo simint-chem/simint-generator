@@ -30,7 +30,7 @@ class VRR_Writer
 
         // all the vrr_i parameters needed
         // (multiplied by 1/2p in the VRR eqn)
-        std::set<std::string> vrr_i_;  
+        std::set<int> vrr_i_;  
 
         void WriteVRRInline_(std::ostream & os) const;
         void WriteVRRExternal_(std::ostream & os) const;

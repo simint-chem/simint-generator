@@ -115,9 +115,17 @@ void WriteIncludes(std::ostream & os)
 }
 
 
-void AddConstant(const std::string & name, const std::string & val)
+void AddNamedConstant(const std::string & name, const std::string & val)
 {
     constants_[name] = val;
+}
+
+void AddIntConstant(int i)
+{
+    std::stringstream ss, ssval;
+    ss << "const_" << i;
+    ssval << i;
+    AddNamedConstant(ss.str(), ssval.str());
 }
 
 
@@ -464,12 +472,19 @@ std::string DoubleSet(const std::string & dbl)
         return dbl;
 }
 
-std::string DoubleConstant(const std::string & cname)
+std::string NamedConstant(const std::string & cname)
 {
     if(Intrinsics())
         return cname;
     else
         return DoubleSet(constants_.at(cname));
+}
+
+std::string IntConstant(int i)
+{
+    std::stringstream ss;
+    ss << "const_" << i;
+    return NamedConstant(ss.str());
 }
 
 std::string DoubleLoad(const std::string & ptr, const std::string & idx) 

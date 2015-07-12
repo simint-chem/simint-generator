@@ -14,7 +14,8 @@ namespace WriterInfo {
         void SetContQ(const QAMSet & topquartets);
 
         void WriteIncludes(std::ostream & os);
-        void AddConstant(const std::string & name, const std::string & val);
+        void AddNamedConstant(const std::string & name, const std::string & val);
+        void AddIntConstant(int i);
         void WriteConstants(std::ostream & os);
 
         void DeclareContwork(std::ostream & os);
@@ -45,10 +46,12 @@ namespace WriterInfo {
         int SimdLen(void);
         int ByteAlign(void);
 
+        std::string NamedConstant(const std::string & cname);
+        std::string IntConstant(int i);
+
         std::string DoubleType(void);
         std::string ConstDoubleType(void);
         std::string DoubleSet(const std::string & dbl);
-        std::string DoubleConstant(const std::string & cname);
         std::string DoubleLoad(const std::string & ptr, const std::string & idx);
         std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx);
         std::string NewDoubleSet(const std::string & var, const std::string & val);

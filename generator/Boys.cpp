@@ -61,13 +61,18 @@ BoysFO::BoysFit::BoysFit(const std::string & filepath)
     f.close();
 }
 
+std::string BoysFO::GetFOConstant(std::string ab, int m, int i) const
+{
+    std::stringstream cname;
+    cname << "FO_" << m << "_" << ab << "_" << i;
+    return WriterInfo::NamedConstant(cname.str());
+}
+
+
+
 void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
 {
     const BoysFit & bf = bfmap_.at(m); 
-
-    std::stringstream ssa0, ssb0;
-    ssa0 << "FO_" << m << "_a_0";
-    ssb0 << "FO_" << m << "_b_0";
 
     std::stringstream ssvar, sspow;
     ssvar << WriterInfo::PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
@@ -77,26 +82,18 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     os << indent6 << "              (\n";
     os << indent6 << "                 (\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << WriterInfo::DoubleConstant(ssa0.str()) << "\n";
+    os << indent6 << "                               " << GetFOConstant("a", m, 0) << "\n";
     for(int i = 1; i < bf.a.size(); i++)
-    {
-        // determine the constant name for the lookup
-        std::stringstream ssa;
-        ssa << "FO_" << m << "_a_" << i;
-        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleConstant(ssa.str()) << "\n";
-    }
+        os << indent6 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
+
     os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                   /\n";
     os << indent6 << "                   (\n";
-    os << indent6 << "                               " << WriterInfo::DoubleConstant(ssb0.str()) << "\n";
+    os << indent6 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
     for(int i = 1; i < bf.b.size(); i++)
-    {
-        // determine the constant name for the lookup
-        std::stringstream ssb;
-        ssb << "FO_" << m << "_b_" << i;
-        os << indent6 << "                     + F_x * ( " << WriterInfo::DoubleConstant(ssb.str()) << "\n";
-    }
+        os << indent6 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
+
     os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
     os << indent6 << "                   )\n";
     os << indent6 << "                 )\n";
@@ -117,9 +114,14 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     os << "\n";
 }
 
+
+
 void BoysFO::AddConstants(void) const
 {
     const int L = WriterInfo::L();
+
+    // for b0
+    WriterInfo::AddIntConstant(1);
 
     if(L < 3)
     {
@@ -130,44 +132,46 @@ void BoysFO::AddConstants(void) const
             { 
                 std::stringstream cname;
                 cname << "FO_" << m << "_a_" << i;
-                WriterInfo::AddConstant(cname.str(), bf.a[i]);
+                WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
             }        
-            for(int i = 0; i < bf.b.size(); i++)
+            for(int i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
             { 
                 std::stringstream cname;
                 cname << "FO_" << m << "_b_" << i;
-                WriterInfo::AddConstant(cname.str(), bf.b[i]);
+                WriterInfo::AddNamedConstant(cname.str(), bf.b[i]);
             }        
         }
+
     } 
     else
     {
         // add the factor of 2.0
-        WriterInfo::AddConstant("two", "2.0");
+        WriterInfo::AddIntConstant(2);
 
         const BoysFit & bf = bfmap_.at(L);
         for(int i = 0; i < bf.a.size(); i++)
         { 
             std::stringstream cname;
             cname << "FO_" << L << "_a_" << i;
-            WriterInfo::AddConstant(cname.str(), bf.a[i]);
+            WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
         }        
-        for(int i = 0; i < bf.b.size(); i++)
+        for(int i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
         { 
             std::stringstream cname;
             cname << "FO_" << L << "_b_" << i;
-            WriterInfo::AddConstant(cname.str(), bf.b[i]);
+            WriterInfo::AddNamedConstant(cname.str(), bf.b[i]);
         }        
 
         // constants for the recursion
-        for(int i = L-1; i >= 0; i--)
+        // skipping i = 0 since that is 1.0
+        for(int i = L-1; i > 0; i--)
         {
             std::stringstream cname, ssval;
             cname << "FO_RECUR_" << i;
             ssval.precision(18);
             ssval << (1.0/(2.0*i+1.0));
-            WriterInfo::AddConstant(cname.str(), ssval.str());
-        }
+            WriterInfo::AddNamedConstant(cname.str(), ssval.str());
+        }        
     }
        
 }
@@ -189,15 +193,19 @@ void BoysFO::WriteBoys(std::ostream & os) const
         WriteBoysSingle_(os, WriterInfo::L(), false);
 
         // calculate the downward recursion factors
-        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::DoubleConstant("two") << " * F_x;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::IntConstant(2) << " * F_x;\n";
         os << indent6 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
 
-        for(int m = WriterInfo::L()-1; m >= 0; m--)
+        for(int m = WriterInfo::L()-1; m > 0; m--)
         {
             std::stringstream cname;
             cname << "FO_RECUR_" << m;
-            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::DoubleConstant(cname.str()) << ";\n";
+            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::NamedConstant(cname.str()) << ";\n";
         }
+
+        // do m = 0
+        os << indent6 << primname << "[0] = (x2 * " << primname << "[1] + ex);\n"; // times 1.0
+
 
         // add prefac now
         os << "\n";

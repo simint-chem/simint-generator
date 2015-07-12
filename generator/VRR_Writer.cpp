@@ -30,11 +30,7 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
             Gaussian g1 = it.StepDown(step, 1);
             Gaussian g2 = it.StepDown(step, 2);
             if(g2)
-            {
-                std::stringstream vrr_i;
-                vrr_i << g1.ijk[XYZStepToIdx(step)];
-                vrr_i_.insert(vrr_i.str());
-            }
+                vrr_i_.insert(g1.ijk[XYZStepToIdx(step)]);
         }
     }
 }
@@ -51,7 +47,7 @@ void VRR_Writer::WriteIncludes(std::ostream & os) const
 void VRR_Writer::AddConstants(void) const
 {
     for(const auto & it : vrr_i_)
-        WriterInfo::AddConstant(std::string("const_") + it, it);
+        WriterInfo::AddIntConstant(it);
 }
 
 
@@ -134,8 +130,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
 
         // the value of i in the VRR eqn
         // = value of exponent of g1 in the position of the step
-        std::stringstream vrr_i;
-        vrr_i << g1.ijk[XYZStepToIdx(step)];
+        int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
         os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
         os << indent7 << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
@@ -146,7 +141,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         if(g2)
         {
             os << "\n"
-               << indent8 << "+ vrr_const_" << vrr_i.str() 
+               << indent8 << "+ vrr_const_" << vrr_i 
                << " * ( " << WriterInfo::PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
                << " - a_over_p * " << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
         }
@@ -167,7 +162,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
     os << "\n";
     os << indent6 << "// Precompute (integer) * 1/2p\n";
     for(const auto & it : vrr_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::DoubleConstant(std::string("const_") + it) << " * one_over_2p;\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
 
     os << "\n";
 
