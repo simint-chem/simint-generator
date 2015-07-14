@@ -62,7 +62,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
         {
             //os << indent4 << "// AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
             os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName({greq.first, 0, 0, 0})
-               << "[" << (WriterInfo::L()-greq.first+1) << " * " << NCART(greq.first) << "];\n";
+               << "[" << (WriterInfo::L()-greq.first+1) << " * " << NCART(greq.first) << "] SIMINT_ALIGN_ARRAY;\n";
             //os << "\n";
         }
 

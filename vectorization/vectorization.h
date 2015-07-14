@@ -26,7 +26,7 @@
 
 // align an array
 // ie double somearr[200] SIMINT_ALIGN_ARRAY
-#define SIMINT_ALIGN_ARRAY __attribute__((aligned(SIMINT_SIMD_ALIGN)));
+#define SIMINT_ALIGN_ARRAY __attribute__((aligned(SIMINT_SIMD_ALIGN)))
 
 
 #define SIMINT_NSHELL_SIMD (2*SIMINT_SIMD_LEN)
