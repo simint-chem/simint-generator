@@ -83,16 +83,16 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     {
         // Horner's rule
         // Numerator
-        os << indent6 << "num = " << WriterInfo::FMA("F_x", GetFOConstant("a", m, bf.a.size()-1), GetFOConstant("a", m, bf.a.size()-2)) << ";\n";
+        os << indent6 << "num = " << WriterInfo::FMAdd("F_x", GetFOConstant("a", m, bf.a.size()-1), GetFOConstant("a", m, bf.a.size()-2)) << ";\n";
         for(int i = bf.a.size()-3; i >= 0; i--)
-            os << indent6 << "num = " << WriterInfo::FMA("F_x", "num", GetFOConstant("a", m, i)) << ";\n";
+            os << indent6 << "num = " << WriterInfo::FMAdd("F_x", "num", GetFOConstant("a", m, i)) << ";\n";
         os << "\n";
 
         // Denominator
-        os << indent6 << "den = " << WriterInfo::FMA("F_x", GetFOConstant("b", m, bf.b.size()-1), GetFOConstant("b", m, bf.b.size()-2)) << ";\n"; 
+        os << indent6 << "den = " << WriterInfo::FMAdd("F_x", GetFOConstant("b", m, bf.b.size()-1), GetFOConstant("b", m, bf.b.size()-2)) << ";\n"; 
         for(int i = bf.b.size()-3; i >= 1; i--)
-            os << indent6 << "den = " << WriterInfo::FMA("F_x", "den", GetFOConstant("b", m, i)) << ";\n";
-        os << indent6 << "den = " << WriterInfo::FMA("F_x", "den", WriterInfo::IntConstant(1)) << ";\n";
+            os << indent6 << "den = " << WriterInfo::FMAdd("F_x", "den", GetFOConstant("b", m, i)) << ";\n";
+        os << indent6 << "den = " << WriterInfo::FMAdd("F_x", "den", WriterInfo::IntConstant(1)) << ";\n";
         os << "\n";
         os << indent6 << ssvar.str() << " = num / den;\n";
     }

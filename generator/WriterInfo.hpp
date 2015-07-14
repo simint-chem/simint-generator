@@ -62,7 +62,8 @@ namespace WriterInfo {
 
         std::string UnionType(void);
 
-        std::string FMA(const std::string & a, const std::string & b, const std::string & c);
+        std::string FMAdd(const std::string & a, const std::string & b, const std::string & c);
+        std::string FMSub(const std::string & a, const std::string & b, const std::string & c);
         std::string Sqrt(const std::string & val);
         std::string RSqrt(const std::string & val);
         std::string Power(const std::string & base, const std::string & exp);

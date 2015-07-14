@@ -430,7 +430,8 @@ void ReadCPUFlags(const std::string & file)
     // special instructions
     if(HasCPUFlag("fma"))
     {
-        intrinsicmap_["fma"] = "_mm256_fmadd_pd";
+        intrinsicmap_["fmadd"] = "_mm256_fmadd_pd";
+        intrinsicmap_["fmsub"] = "_mm256_fmsub_pd";
     }
 }
 
@@ -557,9 +558,13 @@ std::string UnionType(void)
     return intrinsicmap_.at("union_type");
 }
 
-std::string FMA(const std::string & a, const std::string & b, const std::string & c)
+std::string FMAdd(const std::string & a, const std::string & b, const std::string & c)
 {
-    return intrinsicmap_.at("fma") + "(" + a + ", " + b + ", " + c + ")";
+    return intrinsicmap_.at("fmadd") + "(" + a + ", " + b + ", " + c + ")";
+}
+std::string FMSub(const std::string & a, const std::string & b, const std::string & c)
+{
+    return intrinsicmap_.at("fmsub") + "(" + a + ", " + b + ", " + c + ")";
 }
         
 std::string Sqrt(const std::string & val) 

@@ -132,20 +132,49 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         // = value of exponent of g1 in the position of the step
         int vrr_i = g1.ijk[XYZStepToIdx(step)];
 
-        os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
-        os << indent7 << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "] = P_PA_" << step << " * ";
+        std::stringstream ppa, aop_pq;
+        ppa << "P_PA_" << step;
+        aop_pq << "aop_PQ_" << step;
+        
+        std::stringstream g1var, g11var, g2var, g21var;
+        g1var  << WriterInfo::PrimVarName(qam1) << "[idx1 + "  << g1.idx() << "]";
+        g11var << WriterInfo::PrimVarName(qam1) << "[idx11 + " << g1.idx() << "]";
 
-        if(g1)
-            os << WriterInfo::PrimVarName(qam1) << "[idx1 + " << g1.idx() 
-               << "] - aop_PQ_" << step << " * " << WriterInfo::PrimVarName(qam1) << "[idx11 + " << g1.idx() << "]";
         if(g2)
         {
-            os << "\n"
-               << indent8 << "+ vrr_const_" << vrr_i 
-               << " * ( " << WriterInfo::PrimVarName(qam2) << "[idx2 + " << g2.idx() << "]"
-               << " - a_over_p * " << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "] )";
+            g2var  << WriterInfo::PrimVarName(qam2) << "[idx2 + "  << g2.idx() << "]";
+            g21var << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "]";
         }
-        os << ";\n\n"; 
+
+       
+        std::stringstream vrrconst;
+        vrrconst << "vrr_const_" << vrr_i; 
+
+        std::stringstream primname;
+        primname << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "]";
+
+        os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
+        if(WriterInfo::HasFMA())
+        {
+            os << indent7 << primname.str() << " = " << WriterInfo::FMSub(ppa.str(), g1var.str(), aop_pq.str() + " * " + g11var.str()) << ";\n";
+            
+            if(g2)
+                os << indent7 << primname.str() << " = " << WriterInfo::FMAdd(vrrconst.str(), 
+                                                                              WriterInfo::FMAdd("-a_over_p", g21var.str(), g2var.str()),
+                                                                              primname.str()) << ";\n";
+        }
+        else
+        {
+            os << indent7 << primname.str() << " = " << ppa.str() << " * " << g1var.str() << " - " << aop_pq.str() << " * " << g11var.str();
+
+            if(g2)
+            {
+                os << "\n"
+                   << indent8 << "+ " << vrrconst.str()  << " * ( " << g2var.str() << " - a_over_p * " << g21var.str() << ")";
+            }
+            os << ";\n";
+        }
+        os << "\n"; 
     }
 
     os << indent6 << "}\n";
