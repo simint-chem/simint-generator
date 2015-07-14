@@ -425,13 +425,26 @@ void ReadCPUFlags(const std::string & file)
         // but force intrinsics off
         options_[OPTION_INTRINSICS] = 0;
     }
+
+
+    // special instructions
+    if(HasCPUFlag("fma"))
+    {
+        intrinsicmap_["fma"] = "_mm256_fmadd_pd";
+    }
 }
 
 bool HasCPUFlag(const std::string & flag) 
 {
     return (cpuflags_.count(flag) > 0);
 }
-        
+       
+
+bool HasFMA(void)
+{
+    return HasCPUFlag("fma");
+}
+ 
 bool Intrinsics(void) 
 {
     return options_[OPTION_INTRINSICS];
@@ -542,6 +555,11 @@ std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr,
 std::string UnionType(void)
 {
     return intrinsicmap_.at("union_type");
+}
+
+std::string FMA(const std::string & a, const std::string & b, const std::string & c)
+{
+    return intrinsicmap_.at("fma") + "(" + a + ", " + b + ", " + c + ")";
 }
         
 std::string Sqrt(const std::string & val) 

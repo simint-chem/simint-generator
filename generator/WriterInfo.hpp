@@ -24,6 +24,7 @@ namespace WriterInfo {
 
         int GetOption(int option);
         bool HasCPUFlag(const std::string & flag);
+        bool HasFMA(void);
         bool Intrinsics(void);
         bool Scalar(void);
 
@@ -61,6 +62,7 @@ namespace WriterInfo {
 
         std::string UnionType(void);
 
+        std::string FMA(const std::string & a, const std::string & b, const std::string & c);
         std::string Sqrt(const std::string & val);
         std::string RSqrt(const std::string & val);
         std::string Power(const std::string & base, const std::string & exp);

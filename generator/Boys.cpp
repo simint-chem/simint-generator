@@ -78,27 +78,48 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     ssvar << WriterInfo::PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
     sspow << bf.v << ".0+0.5";
 
-    os << indent6 << ssvar.str() << " =\n";
-    os << indent6 << "              (\n";
-    os << indent6 << "                 (\n";
-    os << indent6 << "                   (\n";
-    os << indent6 << "                               " << GetFOConstant("a", m, 0) << "\n";
-    for(int i = 1; i < bf.a.size(); i++)
-        os << indent6 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
 
-    os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
-    os << indent6 << "                   )\n";
-    os << indent6 << "                   /\n";
-    os << indent6 << "                   (\n";
-    os << indent6 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
-    for(int i = 1; i < bf.b.size(); i++)
-        os << indent6 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
+    if(WriterInfo::HasFMA())
+    {
+        // Horner's rule
+        // Numerator
+        os << indent6 << "num = " << WriterInfo::FMA("F_x", GetFOConstant("a", m, bf.a.size()-1), GetFOConstant("a", m, bf.a.size()-2)) << ";\n";
+        for(int i = bf.a.size()-3; i >= 0; i--)
+            os << indent6 << "num = " << WriterInfo::FMA("F_x", "num", GetFOConstant("a", m, i)) << ";\n";
+        os << "\n";
 
-    os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
-    os << indent6 << "                   )\n";
-    os << indent6 << "                 )\n";
-    os << indent6 << "              );\n";
-    os << "\n";
+        // Denominator
+        os << indent6 << "den = " << WriterInfo::FMA("F_x", GetFOConstant("b", m, bf.b.size()-1), GetFOConstant("b", m, bf.b.size()-2)) << ";\n"; 
+        for(int i = bf.b.size()-3; i >= 1; i--)
+            os << indent6 << "den = " << WriterInfo::FMA("F_x", "den", GetFOConstant("b", m, i)) << ";\n";
+        os << indent6 << "den = " << WriterInfo::FMA("F_x", "den", WriterInfo::IntConstant(1)) << ";\n";
+        os << "\n";
+        os << indent6 << ssvar.str() << " = num / den;\n";
+    }
+    else
+    {
+        os << indent6 << ssvar.str() << " =\n";
+        os << indent6 << "              (\n";
+        os << indent6 << "                 (\n";
+        os << indent6 << "                   (\n";
+        os << indent6 << "                               " << GetFOConstant("a", m, 0) << "\n";
+        for(int i = 1; i < bf.a.size(); i++)
+            os << indent6 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
+
+        os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
+        os << indent6 << "                   )\n";
+        os << indent6 << "                   /\n";
+        os << indent6 << "                   (\n";
+        os << indent6 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
+        for(int i = 1; i < bf.b.size(); i++)
+            os << indent6 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
+
+        os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
+        os << indent6 << "                   )\n";
+        os << indent6 << "                 )\n";
+        os << indent6 << "              );\n";
+        os << "\n";
+    }
 
     // apply prefac and power
     os << indent6 << ssvar.str() << " = ";
@@ -179,6 +200,10 @@ void BoysFO::AddConstants(void) const
 void BoysFO::WriteBoys(std::ostream & os) const
 {
     std::string primname = WriterInfo::PrimVarName({0,0,0,0});
+
+    // if using FMA, we need to declare the numerator and denominator separately
+    if(WriterInfo::HasFMA())
+        os << indent6 << WriterInfo::DoubleType() << " num, den;\n\n";
 
     // just calculate them all if L is small
     // value of 3 found by testing
