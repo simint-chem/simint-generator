@@ -164,20 +164,45 @@ std::string ET_Writer::ETStepString(const ETStep & et)
     int ival = et.target.bra.left.ijk[stepidx];
     int kval = (et.target.ket.left.ijk[stepidx]-1);
 
+    // for output
     std::stringstream ss;
-    ss << indent6 <<  ETStepVar(et.target);
 
-    ss << " = ";
 
-    ss << "etfac[" << stepidx << "] * " << ETStepVar(et.src1);
+    std::stringstream etconst_i, etconst_k;
+    etconst_i << "et_const_" << ival;
+    etconst_k << "et_const_" << kval;
 
-    if(et.src2.bra.left && et.src2.ket.left)
-        ss << " + et_const_" << ival << " * " << ETStepVar(et.src2);
-    if(et.src3.bra.left && et.src3.ket.left)
-        ss << " + et_const_" << kval << " * " << ETStepVar(et.src3);
-    if(et.src4.bra.left && et.src4.ket.left)
-        ss << " - p_over_q * " << ETStepVar(et.src4);
-    ss << ";\n";
+    std::stringstream etfac;
+    etfac << "etfac[" << stepidx << "]";
+
+    if(WriterInfo::HasFMA())
+    {
+        ss << indent6 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src1) << ";\n";
+        if(et.src2.bra.left && et.src2.ket.left)
+            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src2), ETStepVar(et.target)) << ";\n";
+        if(et.src3.bra.left && et.src3.ket.left)
+            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src3), ETStepVar(et.target)) << ";\n";
+        if(et.src4.bra.left && et.src4.ket.left)
+            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src4), ETStepVar(et.target)) << ";\n";
+
+    }
+    else
+    {
+        ss << indent6 << ETStepVar(et.target);
+
+
+        ss << " = ";
+
+        ss << etfac.str() << " * " << ETStepVar(et.src1);
+
+        if(et.src2.bra.left && et.src2.ket.left)
+            ss << " + " << etconst_i.str() << " * " << ETStepVar(et.src2);
+        if(et.src3.bra.left && et.src3.ket.left)
+            ss << " + " << etconst_k.str() << " * " << ETStepVar(et.src3);
+        if(et.src4.bra.left && et.src4.ket.left)
+            ss << " - p_over_q * " << ETStepVar(et.src4);
+        ss << ";\n";
+    }
 
     return ss.str();
 }
