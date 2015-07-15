@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cmath>
+#include <cstdlib>
 
 #include "constants.h"
 #include "boys/boys.h"
