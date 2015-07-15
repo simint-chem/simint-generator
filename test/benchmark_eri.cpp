@@ -5,14 +5,7 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
-
-
-#define CLOCK(ticks, time) do {                                 \
-    volatile unsigned int a, d;                              \
-    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d) : );   \
-    (ticks) = ((unsigned long long) a)|(((unsigned long long)d)<<32); \
-    (time) = (ticks) / 3700000000.;                              \
-  } while(0)
+#include "test/timer.hpp"
 
 
 int main(int argc, char ** argv)
@@ -108,14 +101,8 @@ int main(int argc, char ** argv)
             struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                               it_l.size(), it_l.data());
 
-            // for timing
-            double wallclock0, wallclock1;
-            unsigned long long ticks0, ticks1;
-
             // actually calculate
-            CLOCK(ticks0, wallclock0); 
-            Integral(P, Q, res_ints[ithread]);
-            CLOCK(ticks1, wallclock1); 
+            TimerInfo time = Integral(P, Q, res_ints[ithread]);
 
             unsigned long ncont = (unsigned long)(P.nshell12) * (unsigned long)(Q.nshell12);
             unsigned long nprim = (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
@@ -124,9 +111,9 @@ int main(int argc, char ** argv)
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           ncont, nprim,
-                                                                          ticks1 - ticks0,
-                                                                          wallclock1 - wallclock0,
-                                                                          (double)(ticks1-ticks0)/(double)(nprim));
+                                                                          time.first,
+                                                                          time.second,
+                                                                          (double)(time.first)/(double)(nprim));
 
 
             #ifdef BENCHMARK_VALIDATE

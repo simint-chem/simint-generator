@@ -183,11 +183,11 @@ void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
 
 
 
-void ERD_ERI::Compute_shell(struct gaussian_shell const A,
-                       struct gaussian_shell const B,
-                       struct gaussian_shell const C,
-                       struct gaussian_shell const D,
-                       double * integrals)
+TimerInfo ERD_ERI::Compute_shell(struct gaussian_shell const A,
+                                 struct gaussian_shell const B,
+                                 struct gaussian_shell const C,
+                                 struct gaussian_shell const D,
+                                 double * integrals)
 {
     // todo - general contraction?
     int ncgto1 = 1;
@@ -220,6 +220,11 @@ void ERD_ERI::Compute_shell(struct gaussian_shell const A,
     int buffer_offset = 0;
 
 
+    unsigned long long ticks0, ticks1;
+    double walltime0, walltime1;
+
+    CLOCK(ticks0, walltime0);
+
     erd__gener_eri_batch_(&i_buffer_size, &d_buffer_size,
                           &npgto, &npgto, &ncgto,
                           &ncgto4, &ncgto3, &ncgto2, &ncgto1,
@@ -232,6 +237,7 @@ void ERD_ERI::Compute_shell(struct gaussian_shell const A,
                           alpha, cc, ccbeg, ccend, &spheric, &screen,
                           iscratch, &nbatch, &buffer_offset, dscratch);
 
+    CLOCK(ticks1, walltime1);
 
     // remember, fortran has 1-based indexing
     //printf("ERD: %d integrals computed\n", nbatch); 
@@ -239,12 +245,14 @@ void ERD_ERI::Compute_shell(struct gaussian_shell const A,
 
         
     memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
+
+    return {ticks1 - ticks0, walltime1-walltime0};
 }
 
 
-void ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                           const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
-                           double * const integrals)
+TimerInfo ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                             const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+                             double * const integrals)
 {
     const gaussian_shell * A = g1.data();
     const gaussian_shell * B = g2.data();
@@ -267,15 +275,19 @@ void ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec 
     const int ncart = nshell1234 * ncart1234;
     std::fill(integrals, integrals + ncart, 0.0);
 
+    TimerInfo totaltime{0, 0.0};
+
     int idx = 0;
     for(int i = 0; i < nshell1; i++)
     for(int j = 0; j < nshell2; j++)
     for(int k = 0; k < nshell3; k++)
     for(int l = 0; l < nshell4; l++)
     {
-        Compute_shell(A[i], B[j], C[k], D[l], integrals + idx);
+        totaltime += Compute_shell(A[i], B[j], C[k], D[l], integrals + idx);
         idx += ncart1234;
     }
+
+    return totaltime;
 }
 
 

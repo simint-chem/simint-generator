@@ -3,6 +3,7 @@
 
 #include "shell/shell.h"
 #include "test/common.hpp"
+#include "test/timer.hpp"
 
 typedef std::vector<gaussian_shell, AlignedAllocator<gaussian_shell>> AlignedGaussianVec;
 
@@ -25,16 +26,16 @@ class ERD_ERI
         ~ERD_ERI(void); 
 
 
-        void Compute_shell(struct gaussian_shell const A,
-                               struct gaussian_shell const B,
-                               struct gaussian_shell const C,
-                               struct gaussian_shell const D,
-                               double * integrals);
+        TimerInfo Compute_shell(struct gaussian_shell const A,
+                                struct gaussian_shell const B,
+                                struct gaussian_shell const C,
+                                struct gaussian_shell const D,
+                                double * integrals);
 
 
-        void Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                          const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
-                          double * const integrals);
+        TimerInfo Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                            const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+                            double * const integrals);
 
 
 

@@ -9,6 +9,7 @@
     
 #include "test/cppvectorization.hpp"
 #include "shell/shell.h"
+#include "test/timer.hpp"
 
 #define MAXAM 2
 #define NTEST 10
@@ -97,7 +98,7 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
                               double * const restrict dummy);
 
 
-int Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
+TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
 
 
 #endif

@@ -7,13 +7,7 @@
 #include "boys/boys.h"
 #include "test/common.hpp"
 #include "test/ERD.hpp"
-
-#define CLOCK(ticks, time) do {                                 \
-    volatile unsigned int a, d;                              \
-    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d) : );   \
-    (ticks) = ((unsigned long long) a)|(((unsigned long long)d)<<32); \
-    (time) = (ticks) / 3700000000.;                              \
-  } while(0)
+#include "test/timer.hpp"
 
 
 int main(int argc, char ** argv)
@@ -91,6 +85,8 @@ int main(int argc, char ** argv)
         printf("\n");
         printf("Run %d\n", n);
         #endif
+
+
         for(int i = 0; i <= maxam; i++)
         for(int j = 0; j <= maxam; j++)
         for(int k = 0; k <= maxam; k++)
@@ -99,45 +95,21 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
-
-
-
-            // for timing
-            double wallclock0, wallclock1;
-            unsigned long long ticks0, ticks1;
+            const AlignedGaussianVec & A = shellmap[i];
+            const AlignedGaussianVec & B = shellmap[j];
+            const AlignedGaussianVec & C = shellmap[k];
+            const AlignedGaussianVec & D = shellmap[l];
 
             // actually calculate
-            const gaussian_shell * A = shellmap[i].data();
-            const gaussian_shell * B = shellmap[j].data();
-            const gaussian_shell * C = shellmap[k].data();
-            const gaussian_shell * D = shellmap[l].data();
-
-            const int nshell1 = shellmap[i].size();
-            const int nshell2 = shellmap[j].size();
-            const int nshell3 = shellmap[k].size();
-            const int nshell4 = shellmap[l].size();
-            const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-            const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
+            TimerInfo time = erd->Integrals(A, B, C, D, res_ints[ithread]);
 
 
-            const int ncart = nshell1234 * ncart1234;
-            std::fill(res_ints[ithread], res_ints[ithread] + ncart, 0.0);
-
-            CLOCK(ticks0, wallclock0); 
-
-            int idx = 0;
-            for(int a = 0; a < nshell1; a++)
-            for(int b = 0; b < nshell2; b++)
-            for(int c = 0; c < nshell3; c++)
-            for(int d = 0; d < nshell4; d++)
-            {
-                erd->Compute_shell(A[a], B[b], C[c], D[d], res_ints[ithread] + idx);
-                idx += ncart1234;
-            }
-
-            CLOCK(ticks1, wallclock1); 
-
-            unsigned long ncont = nshell1234;
+            // calculate the number of primitives
+            const unsigned long nshell1 = A.size();
+            const unsigned long nshell2 = B.size();
+            const unsigned long nshell3 = C.size();
+            const unsigned long nshell4 = D.size();
+            const unsigned long nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
             unsigned long nprim = 0;
             for(int a = 0; a < nshell1; a++)
             for(int b = 0; b < nshell2; b++)
@@ -148,10 +120,10 @@ int main(int argc, char ** argv)
             printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16lu  (%8.3f secs)    %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
-                                                                          ncont, nprim,
-                                                                          ticks1 - ticks0,
-                                                                          wallclock1 - wallclock0,
-                                                                          (double)(ticks1-ticks0)/(double)(nprim));
+                                                                          nshell1234, nprim,
+                                                                          time.first,
+                                                                          time.second,
+                                                                          (double)(time.first)/(double)(nprim));
 
 
             #ifdef BENCHMARK_VALIDATE
