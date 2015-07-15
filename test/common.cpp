@@ -12,7 +12,6 @@
 
 #include "test/common.hpp"
 #include "test/valeev.hpp"
-#include "test/erd_interface.hpp"
 #include "test/cppvectorization.hpp"
 
 static erifunc funcs[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
@@ -356,41 +355,6 @@ void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g
 
 
 
-void ERDIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                  const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
-                  double * const integrals)
-{
-    const gaussian_shell * A = g1.data();
-    const gaussian_shell * B = g2.data();
-    const gaussian_shell * C = g3.data();
-    const gaussian_shell * D = g4.data();
-
-    const int nshell1 = g1.size();
-    const int nshell2 = g2.size();
-    const int nshell3 = g3.size();
-    const int nshell4 = g4.size();
-    const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-
-    const int am1 = A[0].am;
-    const int am2 = B[0].am;
-    const int am3 = C[0].am;
-    const int am4 = D[0].am;
-    const int ncart1234 = NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
-
-
-    const int ncart = nshell1234 * ncart1234;
-    std::fill(integrals, integrals + ncart, 0.0);
-
-    int idx = 0;
-    for(int i = 0; i < nshell1; i++)
-    for(int j = 0; j < nshell2; j++)
-    for(int k = 0; k < nshell3; k++)
-    for(int l = 0; l < nshell4; l++)
-    {
-        ERD_Compute_shell(A[i], B[j], C[k], D[l], integrals + idx);
-        idx += ncart1234;
-    }
-}
 
 
 

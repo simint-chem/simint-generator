@@ -1,11 +1,12 @@
 #include <cstdio>
+#include <memory>
 
 #include <omp.h>
 
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
-#include "test/erd_interface.hpp"
+#include "test/ERD.hpp"
 
 #define CLOCK(ticks, time) do {                                 \
     volatile unsigned int a, d;                              \
@@ -63,7 +64,9 @@ int main(int argc, char ** argv)
 
 
     // initialize stuff
-    ERD_Init(maxam, maxnprim, 1);
+    std::vector<std::unique_ptr<ERD_ERI>> allerd(nthread);
+    for(auto & it : allerd)
+        it = std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1));
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -79,6 +82,9 @@ int main(int argc, char ** argv)
     #pragma omp parallel for num_threads(nthread)
     for(int n = 0; n < ntest; n++)
     {
+        int ithread = omp_get_thread_num();
+        ERD_ERI * erd = allerd[ithread].get();
+
         #ifdef BENCHMARK_VALIDATE
         // move the reader back to the beginning of the file
         refint.Reset();
@@ -94,7 +100,6 @@ int main(int argc, char ** argv)
                 continue;
 
 
-            int ithread = omp_get_thread_num();
 
 
             // for timing
@@ -126,7 +131,7 @@ int main(int argc, char ** argv)
             for(int c = 0; c < nshell3; c++)
             for(int d = 0; d < nshell4; d++)
             {
-                ERD_Compute_shell(A[a], B[b], C[c], D[d], res_ints[ithread] + idx);
+                erd->Compute_shell(A[a], B[b], C[c], D[d], res_ints[ithread] + idx);
                 idx += ncart1234;
             }
 
@@ -169,8 +174,5 @@ int main(int argc, char ** argv)
     FREE(res_ref);
     #endif
    
-    // Finalize stuff 
-    ERD_Finalize();
-
     return 0;
 }

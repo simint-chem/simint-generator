@@ -4,7 +4,7 @@
 #include "boys/boys.h"
 #include "test/common.hpp"
 #include "test/valeev.hpp"
-#include "test/erd_interface.hpp"
+#include "test/ERD.hpp"
 
 
 int main(int argc, char ** argv)
@@ -47,7 +47,8 @@ int main(int argc, char ** argv)
     // initialize stuff
     Valeev_Init();
     Boys_Init();
-    ERD_Init(maxam, maxnprim, 1);
+
+    ERD_ERI erd(maxam, maxnprim, 1);
              
              
     printf("\n");
@@ -103,7 +104,7 @@ int main(int argc, char ** argv)
         /////////////////////////////////
         // Calculate with liberd
         /////////////////////////////////
-        ERDIntegrals(erd_it_i, erd_it_j, erd_it_k, erd_it_l, res_liberd);
+        erd.Integrals(erd_it_i, erd_it_j, erd_it_k, erd_it_l, res_liberd);
 
 
         /////////////////////////////////
@@ -159,7 +160,6 @@ int main(int argc, char ** argv)
 
     Valeev_Finalize();
     Boys_Finalize();
-    ERD_Finalize();
 
     FREE(res_valeev);
     FREE(res_liberd);

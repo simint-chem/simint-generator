@@ -79,6 +79,8 @@ int main(int argc, char ** argv)
     #pragma omp parallel for num_threads(nthread)
     for(int n = 0; n < ntest; n++)
     {
+        int ithread = omp_get_thread_num();
+
         #ifdef BENCHMARK_VALIDATE
         // move the reader back to the beginning of the file
         refint.Reset();
@@ -92,9 +94,6 @@ int main(int argc, char ** argv)
         {
             if(!ValidQuartet(i, j, k, l))
                 continue;
-
-
-            int ithread = omp_get_thread_num();
 
 
             const AlignedGaussianVec & it_i = shellmap[i];

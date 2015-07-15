@@ -1,3 +1,6 @@
+#ifndef SIMINT_TEST_COMMON_HPP
+#define SIMINT_TEST_COMMON_HPP
+
 #include <array>
 #include <vector>
 #include <string>
@@ -95,3 +98,6 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
 
 
 int Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
+
+
+#endif

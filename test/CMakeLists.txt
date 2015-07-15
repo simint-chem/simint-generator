@@ -111,7 +111,7 @@ set_target_properties(test_valeev PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_IN
 set_target_properties(test_valeev PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 # Erd interface as well
-add_library(test_erd OBJECT erd_interface.cpp)
+add_library(test_erd OBJECT ERD.cpp)
 set_target_properties(test_erd PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 

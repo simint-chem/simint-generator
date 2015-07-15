@@ -3,11 +3,9 @@
 #include <string.h> // for memcpy
 #include <math.h>
 
-#include "shell/shell.h"
+#include "test/ERD.hpp"
 #include "vectorization/vectorization.h"
 
-// 2 * pi**(2.5) * sqrt(pi) / 16
-//#define ERD_NORM_FIX 3.875784585037477521934539383387674400278161070735638461768067262975799364683
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 extern "C" {
@@ -34,73 +32,35 @@ void erd__memory_eri_batch_(const int *nalpha, const int *ncoeff,
                             int *imin, int *iopt, int *zmin, int *zopt);
 }
 
-double * dscratch;
-int * iscratch;
-
-int i_buffer_size;
-int d_buffer_size;
-
-double * cc;
-double * alpha;
 
 
-void ERD_Init(int am1, int nprim1, int ncgto1,
-              int am2, int nprim2, int ncgto2,
-              int am3, int nprim3, int ncgto3,
-              int am4, int nprim4, int ncgto4)
+ERD_ERI::ERD_ERI(int am1, int nprim1, int ncgto1,
+                 int am2, int nprim2, int ncgto2,
+                 int am3, int nprim3, int ncgto3,
+                 int am4, int nprim4, int ncgto4)
 {
-    int nprim = nprim1 + nprim2 + nprim3 + nprim4;
-
-    cc    = (double *)ALLOC(nprim * sizeof(double));
-    alpha = (double *)ALLOC(nprim * sizeof(double));
-
-    for(int i = 0; i < nprim; i++)
-    {
-        cc[i] = 2.0;
-        alpha[i] = 10.0;
-    }
- 
-    double X[4] = {1.0, 2.0, 3.0, 4.0};
-    double Y[4] = {1.0, 2.0, 3.0, 4.0};
-    double Z[4] = {1.0, 2.0, 3.0, 4.0};
-    int zmin = 0;
-    int zopt = 0;
-    int imin = 0;
-    int iopt = 0;
-    int spheric = 0;
-    int maxam = MAX(MAX(am1, am2), MAX(am3, am4));
-
-    erd__memory_eri_batch_(&nprim, &nprim,
-                           &ncgto1, &ncgto2, &ncgto3, &ncgto4,
-                           &nprim1, &nprim2, &nprim3, &nprim4,
-                           &maxam,  &maxam,  &maxam,  &maxam,
-                           &X[0], &Y[0], &Z[0],
-                           &X[1], &Y[1], &Z[1],
-                           &X[2], &Y[2], &Z[2],
-                           &X[3], &Y[3], &Z[3],
-                           alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
-                             
-    iscratch = (int *)ALLOC(iopt * sizeof(int)); 
-    dscratch = (double *)ALLOC(zopt * sizeof(double)); 
-
-    i_buffer_size = iopt;
-    d_buffer_size = zopt;
+    Init_(am1, nprim1, ncgto1,
+          am2, nprim2, ncgto2,
+          am3, nprim3, ncgto3,
+          am4, nprim4, ncgto4);
 }
 
 
-void ERD_Init(int am, int nprim, int ncgto)
+
+ERD_ERI::ERD_ERI(int am, int nprim, int ncgto)
 {
-    ERD_Init(am, nprim, ncgto,
-             am, nprim, ncgto,
-             am, nprim, ncgto,
-             am, nprim, ncgto);
+    Init_(am, nprim, ncgto,
+          am, nprim, ncgto,
+          am, nprim, ncgto,
+          am, nprim, ncgto);
 }
 
 
-void ERD_Init(int na, struct gaussian_shell const * const restrict A,
-              int nb, struct gaussian_shell const * const restrict B,
-              int nc, struct gaussian_shell const * const restrict C,
-              int nd, struct gaussian_shell const * const restrict D)
+
+ERD_ERI::ERD_ERI(int na, struct gaussian_shell const * const restrict A,
+                 int nb, struct gaussian_shell const * const restrict B,
+                 int nc, struct gaussian_shell const * const restrict C,
+                 int nd, struct gaussian_shell const * const restrict D)
 {
     int am1 = A[0].am;
     int am2 = B[0].am;
@@ -157,17 +117,73 @@ void ERD_Init(int na, struct gaussian_shell const * const restrict A,
     int ncgto3 = 1;
     int ncgto4 = 1;
  
-    ERD_Init(am1, npgto1, ncgto1,
-             am2, npgto2, ncgto2,
-             am3, npgto3, ncgto3,
-             am4, npgto4, ncgto4);
+    Init_(am1, npgto1, ncgto1,
+              am2, npgto2, ncgto2,
+              am3, npgto3, ncgto3,
+              am4, npgto4, ncgto4);
+}
+
+
+
+ERD_ERI::~ERD_ERI(void)
+{
+    FREE(dscratch);
+    FREE(iscratch);
+    FREE(cc);
+    FREE(alpha);
+}
+
+
+
+void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
+               int am2, int nprim2, int ncgto2,
+               int am3, int nprim3, int ncgto3,
+               int am4, int nprim4, int ncgto4)
+{
+    int nprim = nprim1 + nprim2 + nprim3 + nprim4;
+
+    cc    = (double *)ALLOC(nprim * sizeof(double));
+    alpha = (double *)ALLOC(nprim * sizeof(double));
+
+    for(int i = 0; i < nprim; i++)
+    {
+        cc[i] = 2.0;
+        alpha[i] = 10.0;
+    }
+ 
+    double X[4] = {1.0, 2.0, 3.0, 4.0};
+    double Y[4] = {1.0, 2.0, 3.0, 4.0};
+    double Z[4] = {1.0, 2.0, 3.0, 4.0};
+    int zmin = 0;
+    int zopt = 0;
+    int imin = 0;
+    int iopt = 0;
+    int spheric = 0;
+    int maxam = MAX(MAX(am1, am2), MAX(am3, am4));
+
+    erd__memory_eri_batch_(&nprim, &nprim,
+                           &ncgto1, &ncgto2, &ncgto3, &ncgto4,
+                           &nprim1, &nprim2, &nprim3, &nprim4,
+                           &maxam,  &maxam,  &maxam,  &maxam,
+                           &X[0], &Y[0], &Z[0],
+                           &X[1], &Y[1], &Z[1],
+                           &X[2], &Y[2], &Z[2],
+                           &X[3], &Y[3], &Z[3],
+                           alpha, cc, &spheric, &imin, &iopt, &zmin, &zopt);
+                             
+    iscratch = (int *)ALLOC(iopt * sizeof(int)); 
+    dscratch = (double *)ALLOC(zopt * sizeof(double)); 
+
+    i_buffer_size = iopt;
+    d_buffer_size = zopt;
 }
 
 
 
 
 
-void ERD_Compute_shell(struct gaussian_shell const A,
+
+void ERD_ERI::Compute_shell(struct gaussian_shell const A,
                        struct gaussian_shell const B,
                        struct gaussian_shell const C,
                        struct gaussian_shell const D,
@@ -203,6 +219,7 @@ void ERD_Compute_shell(struct gaussian_shell const A,
     int screen = 0;
     int buffer_offset = 0;
 
+
     erd__gener_eri_batch_(&i_buffer_size, &d_buffer_size,
                           &npgto, &npgto, &ncgto,
                           &ncgto4, &ncgto3, &ncgto2, &ncgto1,
@@ -215,6 +232,7 @@ void ERD_Compute_shell(struct gaussian_shell const A,
                           alpha, cc, ccbeg, ccend, &spheric, &screen,
                           iscratch, &nbatch, &buffer_offset, dscratch);
 
+
     // remember, fortran has 1-based indexing
     //printf("ERD: %d integrals computed\n", nbatch); 
     //printf("Offset: %d\n", buffer_offset-1); 
@@ -224,12 +242,40 @@ void ERD_Compute_shell(struct gaussian_shell const A,
 }
 
 
-void ERD_Finalize(void)
+void ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
+                           const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+                           double * const integrals)
 {
-    FREE(dscratch);
-    FREE(iscratch);
-    FREE(cc);
-    FREE(alpha);
+    const gaussian_shell * A = g1.data();
+    const gaussian_shell * B = g2.data();
+    const gaussian_shell * C = g3.data();
+    const gaussian_shell * D = g4.data();
+
+    const int nshell1 = g1.size();
+    const int nshell2 = g2.size();
+    const int nshell3 = g3.size();
+    const int nshell4 = g4.size();
+    const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+
+    const int am1 = A[0].am;
+    const int am2 = B[0].am;
+    const int am3 = C[0].am;
+    const int am4 = D[0].am;
+    const int ncart1234 = NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
+
+
+    const int ncart = nshell1234 * ncart1234;
+    std::fill(integrals, integrals + ncart, 0.0);
+
+    int idx = 0;
+    for(int i = 0; i < nshell1; i++)
+    for(int j = 0; j < nshell2; j++)
+    for(int k = 0; k < nshell3; k++)
+    for(int l = 0; l < nshell4; l++)
+    {
+        Compute_shell(A[i], B[j], C[k], D[l], integrals + idx);
+        idx += ncart1234;
+    }
 }
 
 
