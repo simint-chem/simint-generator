@@ -1,5 +1,5 @@
 #include "test/Libint2.hpp"
-#include "boys/boys_split.h"
+#include "boys/boys_FO.h"
 #include "test/common.hpp"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -45,6 +45,10 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
         size_t nprim1234 = Q.nprim12[ab] * P.nprim12[cd];
         erival_[0].contrdepth = nprim1234;
         int nprim = 0;
+
+        // timing
+        unsigned long long ticks0, ticks1;
+        double walltime0, walltime1;
 
         for(int i = Q.primstart[ab]; i < Q.primstart[ab]+Q.nprim12[ab]; i++)
         for(int j = P.primstart[cd]; j < P.primstart[cd]+P.nprim12[cd]; j++)
@@ -97,9 +101,13 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             PQ2 += (Q.z[i] - P.z[j])*(Q.z[i] - P.z[j]);
             double T = rho * PQ2; 
 
+
             // calculate the boys function
             std::vector<double> F(M+1);
-            Boys_F_split(F.data(), M, T); 
+            CLOCK(ticks0, walltime0);
+            Boys_F_FO(F.data(), M, T); 
+            CLOCK(ticks1, walltime1);
+            totaltime += {ticks1 - ticks0, walltime1 - walltime0};
 
             double scale = Q.prefac[i] * P.prefac[j];
 
@@ -226,9 +234,6 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             nprim++;
         }
 
-        // timing
-        unsigned long long ticks0, ticks1;
-        double walltime0, walltime1;
 
 
         if(M)
