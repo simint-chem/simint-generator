@@ -5,6 +5,7 @@
 #include "test/common.hpp"
 #include "test/valeev.hpp"
 #include "test/ERD.hpp"
+#include "test/Libint2.hpp"
 
 
 int main(int argc, char ** argv)
@@ -42,22 +43,25 @@ int main(int argc, char ** argv)
     /* Storage of integrals */
     double * res              = (double *)ALLOC(maxsize * sizeof(double));
     double * res_liberd          = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_libint          = (double *)ALLOC(maxsize * sizeof(double));
     double * res_valeev          = (double *)ALLOC(maxsize * sizeof(double));
 
     // initialize stuff
     Valeev_Init();
     Boys_Init();
+    LIBINT2_PREFIXED_NAME(libint2_static_init)();
 
     ERD_ERI erd(maxam, maxnprim, 1);
+    Libint2_ERI libint(maxam, maxnprim, maxsize);
              
              
     printf("\n");
-    printf("%17s    %10s  %10s   %10s  %10s\n", 
-                                                         "Quartet", "MaxErr", "", 
-                                                         "MaxRelErr", "");
-    printf("%17s    %10s  %10s   %10s  %10s\n", "",
-                                                         "Me", "erd", 
-                                                         "Me", "erd");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", 
+                                                         "Quartet", "MaxErr", "", "", 
+                                                         "MaxRelErr", "", "");
+    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", "",
+                                                         "Me", "erd", "libint", 
+                                                         "Me", "erd", "libint");
 
 
     // Read the reference integrals
@@ -100,22 +104,24 @@ int main(int argc, char ** argv)
         //ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
         refint.ReadNext(res_valeev, arrlen);
 
-
-        /////////////////////////////////
-        // Calculate with liberd
-        /////////////////////////////////
-        erd.Integrals(erd_it_i, erd_it_j, erd_it_k, erd_it_l, res_liberd);
-
-
-        /////////////////////////////////
-        // calculate with my code
-        /////////////////////////////////
-
+        //////////////////////
         // set up shell pairs
+        //////////////////////
         struct multishell_pair P = create_multishell_pair(it_i.size(), it_i.data(),
                                                           it_j.size(), it_j.data());
         struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
                                                           it_l.size(), it_l.data());
+
+
+        /////////////////////////////////
+        // Calculate with liberd and libint2
+        /////////////////////////////////
+        erd.Integrals(erd_it_i, erd_it_j, erd_it_k, erd_it_l, res_liberd);
+        libint.Integrals(P, Q, res_libint);
+
+        /////////////////////////////////
+        // calculate with my code
+        /////////////////////////////////
 
         /*
         struct multishell_pair_flat Pf = create_multishell_pair_flat(it_i.size(), it_i.data(),
@@ -134,17 +140,18 @@ int main(int argc, char ** argv)
 
 
         // Analyze
-        std::pair<double, double> err        = CalcError(res,        res_valeev,  arrlen);
-        std::pair<double, double> err_erd       = CalcError(res_liberd,    res_valeev,  arrlen);
+        std::pair<double, double> err           = CalcError(res,         res_valeev,  arrlen);
+        std::pair<double, double> err_erd       = CalcError(res_liberd,  res_valeev,  arrlen);
+        std::pair<double, double> err_libint    = CalcError(res_libint,  res_valeev,  arrlen);
 
-        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e    %10.3e  %10.3e\n", i, j, k, l,
-                                                      err.first,  err_erd.first,
-                                                      err.second, err_erd.second);
+        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
+                                                      err.first,  err_erd.first,  err_libint.first,
+                                                      err.second, err_erd.second, err_libint.second);
 
 
         // For debugging
         //for(int i = 0; i < ncart1234 * nshell1234; i++)
-        //    printf("%25.15e  %25.15e\n", res_valeev[i], res_liberd[i]);
+        //    printf("%25.15e  %25.15e  %25.15e\n", res_valeev[i], res_liberd[i], res_libint[i]);
 
 
         free_multishell_pair(P);
@@ -163,6 +170,7 @@ int main(int argc, char ** argv)
 
     FREE(res_valeev);
     FREE(res_liberd);
+    FREE(res_libint);
     FREE(res);
 
     return 0;

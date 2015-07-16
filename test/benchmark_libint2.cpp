@@ -6,7 +6,7 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
-#include "test/ERD.hpp"
+#include "test/Libint2.hpp"
 #include "test/timer.hpp"
 
 
@@ -43,7 +43,7 @@ int main(int argc, char ** argv)
 
     // normalize
     for(auto & it : shellmap)
-        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
+        normalize_gaussian_shells(it.second.size(), it.second.data());
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
@@ -58,9 +58,11 @@ int main(int argc, char ** argv)
 
 
     // initialize stuff
-    std::vector<std::unique_ptr<ERD_ERI>> alleri(nthread);
+    LIBINT2_PREFIXED_NAME(libint2_static_init)();
+    Libint2_ERI libint(maxam, maxnprim, maxsize);
+    std::vector<std::unique_ptr<Libint2_ERI>> alleri(nthread);
     for(auto & it : alleri)
-        it = std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1));
+        it = std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim, maxsize));
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -77,7 +79,7 @@ int main(int argc, char ** argv)
     for(int n = 0; n < ntest; n++)
     {
         int ithread = omp_get_thread_num();
-        ERD_ERI * eri = alleri[ithread].get();
+        Libint2_ERI * eri = alleri[ithread].get();
 
         #ifdef BENCHMARK_VALIDATE
         // move the reader back to the beginning of the file
@@ -95,13 +97,23 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
+
             const AlignedGaussianVec & A = shellmap[i];
             const AlignedGaussianVec & B = shellmap[j];
             const AlignedGaussianVec & C = shellmap[k];
             const AlignedGaussianVec & D = shellmap[l];
 
+            //////////////////////
+            // set up shell pairs
+            //////////////////////
+            struct multishell_pair P = create_multishell_pair(A.size(), A.data(),
+                                                              B.size(), B.data());
+            struct multishell_pair Q = create_multishell_pair(C.size(), C.data(),
+                                                              D.size(), D.data());
+
+
             // actually calculate
-            TimerInfo time = eri->Integrals(A, B, C, D, res_ints[ithread]);
+            TimerInfo time = eri->Integrals(P, Q, res_ints[ithread]);
 
 
             // calculate the number of primitives
