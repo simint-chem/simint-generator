@@ -183,11 +183,11 @@ void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
 
 
 
-TimerInfo ERD_ERI::Compute_shell(struct gaussian_shell const A,
-                                 struct gaussian_shell const B,
-                                 struct gaussian_shell const C,
-                                 struct gaussian_shell const D,
-                                 double * integrals)
+TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
+                                  struct gaussian_shell const B,
+                                  struct gaussian_shell const C,
+                                  struct gaussian_shell const D,
+                                  double * integrals)
 {
     // todo - general contraction?
     int ncgto1 = 1;
@@ -283,7 +283,7 @@ TimerInfo ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussia
     for(int k = 0; k < nshell3; k++)
     for(int l = 0; l < nshell4; l++)
     {
-        totaltime += Compute_shell(A[i], B[j], C[k], D[l], integrals + idx);
+        totaltime += Compute_shell_(A[i], B[j], C[k], D[l], integrals + idx);
         idx += ncart1234;
     }
 

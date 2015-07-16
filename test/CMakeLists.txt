@@ -2,6 +2,7 @@ macro(ADDTESTS TNAME TFILES)
   add_executable(${TNAME} ${TFILES}
                  $<TARGET_OBJECTS:test_valeev>
                  $<TARGET_OBJECTS:test_erd>
+                 $<TARGET_OBJECTS:test_libint2>
                  $<TARGET_OBJECTS:test_common>)
 
   target_link_libraries(${TNAME} simint_eri simint_boys simint_shell
@@ -76,9 +77,10 @@ set(LIBINT2_PATH "" CACHE FILEPATH "Path to libint2 directory")
 set(LIBERD_PATH "" CACHE FILEPATH "Path to liberd lib directory")
 
 if(NOT(LIBINT2_PATH STREQUAL ""))
-  list(APPEND TESTS_CXX_FLAGS "-DTESTS_USE_LIBINT2")
   list(APPEND TESTS_CXX_INCLUDES "${LIBINT2_PATH}/include/libint2")
   set(LIBINT2_LIBRARY "${LIBINT2_PATH}/lib/libint2.a")
+else()
+  message(FATAL_ERROR "Error - set libint2 path!")
 endif()
 if(LIBERD_PATH STREQUAL "")
   message(FATAL_ERROR "Error - set liberd path!")
@@ -100,6 +102,10 @@ set(LIBERD_LIBRARY "${LIBERD_PATH}/lib/liberd.a")
 string(REPLACE ";" " " TESTS_CXX_FLAGS "${TESTS_CXX_FLAGS}")
 string(REPLACE ";" " " TESTS_LINK_FLAGS "${TESTS_LINK_FLAGS}")
 
+
+###########################
+# Add OBJECT targets
+###########################
 # Add common object files
 add_library(test_common OBJECT common.cpp)
 set_target_properties(test_common PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
@@ -110,10 +116,15 @@ add_library(test_valeev OBJECT valeev.cpp)
 set_target_properties(test_valeev PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_valeev PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
-# Erd interface as well
+# liberd
 add_library(test_erd OBJECT ERD.cpp)
 set_target_properties(test_erd PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+
+# Libint2
+add_library(test_libint2 OBJECT Libint2.cpp)
+set_target_properties(test_libint2 PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
+set_target_properties(test_libint2 PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 
 ADDTESTS(gen_ref gen_ref.cpp)

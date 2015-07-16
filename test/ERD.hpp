@@ -26,12 +26,6 @@ class ERD_ERI
         ~ERD_ERI(void); 
 
 
-        TimerInfo Compute_shell(struct gaussian_shell const A,
-                                struct gaussian_shell const B,
-                                struct gaussian_shell const C,
-                                struct gaussian_shell const D,
-                                double * integrals);
-
 
         TimerInfo Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
                             const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
@@ -54,6 +48,12 @@ class ERD_ERI
                    int am2, int nprim2, int ncgto2,
                    int am3, int nprim3, int ncgto3,
                    int am4, int nprim4, int ncgto4);
+
+        TimerInfo Compute_shell_(struct gaussian_shell const A,
+                                 struct gaussian_shell const B,
+                                 struct gaussian_shell const C,
+                                 struct gaussian_shell const D,
+                                 double * integrals);
 };
 
 
