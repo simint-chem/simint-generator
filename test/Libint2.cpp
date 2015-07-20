@@ -31,7 +31,6 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
     // so we switch P and Q, then permute
 
     int M = P.am1 + P.am2 + Q.am1 + Q.am2;
-    printf("M: %d\n", M);
 
     size_t ncart1234 = NCART(P.am1) * NCART(P.am2) * NCART(Q.am1) * NCART(Q.am2);
 
@@ -51,7 +50,6 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
 
         // timing
         unsigned long long ticks0, ticks1;
-        double walltime0, walltime1;
 
         for(int i = Q.primstart[ab]; i < Q.primstart[ab]+Q.nprim12[ab]; i++)
         for(int j = P.primstart[cd]; j < P.primstart[cd]+P.nprim12[cd]; j++)
@@ -102,10 +100,10 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
 
             // calculate the boys function
             std::vector<double> F(M+1);
-            CLOCK(ticks0, walltime0);
+            //CLOCK(ticks0);
             Boys_F_FO(F.data(), M, T); 
-            CLOCK(ticks1, walltime1);
-            totaltime += {ticks1 - ticks0, walltime1 - walltime0};
+            //CLOCK(ticks1);
+            //totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 
             double scale = Q.prefac[i] * P.prefac[j] * TWO_PI_52 * sqrt(rho) * pow( (1.0 / Q.alpha[i] ) * (1.0 / P.alpha[j]), 1.5);
 
@@ -239,10 +237,10 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
 
         if(M)
         {
-            CLOCK(ticks0, walltime0);
+            CLOCK(ticks0);
             LIBINT2_PREFIXED_NAME(libint2_build_eri)[Q.am1][Q.am2][P.am1][P.am2](erival_.data());
-            CLOCK(ticks1, walltime1);
-            totaltime += {ticks1 - ticks0, walltime1 - walltime0};
+            CLOCK(ticks1);
+            totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 
             // permute
             int nn = 0;

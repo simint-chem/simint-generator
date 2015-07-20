@@ -3,11 +3,10 @@
 
 #include <utility>
 
-#define CLOCK(ticks, time) do {                                 \
+#define CLOCK(ticks) do {                                 \
     volatile unsigned int a, d;                              \
     __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d) : );   \
     (ticks) = ((unsigned long long) a)|(((unsigned long long)d)<<32); \
-    (time) = (ticks) / 3700000000.;                              \
   } while(0)
 
 
@@ -23,6 +22,5 @@ inline TimerInfo & operator+=(TimerInfo & lhs, const TimerInfo & rhs)
     lhs = lhs + rhs;
     return lhs;
 }
-
 
 #endif

@@ -221,9 +221,8 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
 
 
     unsigned long long ticks0, ticks1;
-    double walltime0, walltime1;
 
-    CLOCK(ticks0, walltime0);
+    CLOCK(ticks0);
 
     erd__gener_eri_batch_(&i_buffer_size, &d_buffer_size,
                           &npgto, &npgto, &ncgto,
@@ -237,7 +236,7 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
                           alpha, cc, ccbeg, ccend, &spheric, &screen,
                           iscratch, &nbatch, &buffer_offset, dscratch);
 
-    CLOCK(ticks1, walltime1);
+    CLOCK(ticks1);
 
     // remember, fortran has 1-based indexing
     //printf("ERD: %d integrals computed\n", nbatch); 
@@ -246,7 +245,7 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
         
     memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
 
-    return {ticks1 - ticks0, walltime1-walltime0};
+    return {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 }
 
 

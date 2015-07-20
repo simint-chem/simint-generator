@@ -447,11 +447,10 @@ int eri_notyetimplemented(struct multishell_pair const P,
 TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
 {
     unsigned long long ticks0, ticks1;
-    double walltime0, walltime1;
 
-    CLOCK(ticks0, walltime0);
+    CLOCK(ticks0);
     funcs[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
-    CLOCK(ticks1, walltime1);
-    return {ticks1 - ticks0, walltime1 - walltime0};
+    CLOCK(ticks1);
+    return {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 }
 
