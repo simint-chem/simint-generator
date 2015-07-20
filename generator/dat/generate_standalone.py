@@ -30,7 +30,7 @@ for i,f in enumerate(files):
                         'v' : int(vnm[0]),
                         'n' : int(vnm[1]),
                         'm' : int(vnm[2]),
-                        'dat' : [ l.strip() for l in open(os.path.join(datdir, f)).readlines() ] 
+                        'dat' : [ l.strip() for l in open(os.path.join(datdir, f)).readlines()[3:] ] 
                       }
 
 # Output to file
@@ -108,4 +108,4 @@ with open(args.filename + ".h", 'w') as f:
   f.write("}\n");
   f.write("#endif\n")
   f.write("\n")
-  f.write("#endif")
+  f.write("#endif\n")

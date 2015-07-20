@@ -9,7 +9,7 @@ class Libint2_ERI
 {
 
     public:
-        Libint2_ERI(int maxam, int maxnprim, int maxsize);
+        Libint2_ERI(int maxam, size_t maxnprim, size_t maxsize);
         ~Libint2_ERI();
 
         TimerInfo Integrals(struct multishell_pair P, struct multishell_pair Q, double * integrals);

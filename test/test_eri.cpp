@@ -136,6 +136,7 @@ int main(int argc, char ** argv)
 
         // chop
         Chop(res_valeev, arrlen);
+        Chop(res_libint, arrlen);
         Chop(res, arrlen);
 
 

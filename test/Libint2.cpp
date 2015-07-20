@@ -1,13 +1,15 @@
+#include "constants.h"
 #include "test/Libint2.hpp"
 #include "boys/boys_FO.h"
 #include "test/common.hpp"
 
+
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 
-Libint2_ERI::Libint2_ERI(int maxam, int maxnprim, int maxsize)
+Libint2_ERI::Libint2_ERI(int maxam, size_t maxnprim, size_t maxsize)
 {
-    size_t size = (size_t)maxnprim * (size_t)maxnprim * (size_t)maxnprim * (size_t)maxnprim;
+    size_t size = maxnprim * maxnprim * maxnprim * maxnprim;
 
     erival_.resize(size);
     LIBINT2_PREFIXED_NAME(libint2_init_eri)(erival_.data(), maxam, 0); 
@@ -28,14 +30,15 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
     // according to libint, l(c)+l(d) >= l(a) + l(b)
     // so we switch P and Q, then permute
 
-    size_t ncart1234 = NCART(P.am1) * NCART(P.am2) * NCART(Q.am1) * NCART(Q.am2);
     int M = P.am1 + P.am2 + Q.am1 + Q.am2;
+    printf("M: %d\n", M);
+
+    size_t ncart1234 = NCART(P.am1) * NCART(P.am2) * NCART(Q.am1) * NCART(Q.am2);
+
+    std::fill(integrals, integrals + (P.nshell12 * Q.nshell12 * ncart1234), 999.0);
 
     // timing
     TimerInfo totaltime = {0, 0.0};
-
-    // we will stride with this
-    double * intptr = integrals;
 
     for(int a = 0, ab = 0; a < Q.nshell1; a++)
     for(int b = 0;         b < Q.nshell2; b++, ab++)
@@ -69,23 +72,18 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             erival_[nprim].QC_y[0] = P.PA_y[j];
             erival_[nprim].QC_z[0] = P.PA_z[j];
 
-            double W[3], WP[3], WQ[3];
+            double W[3];
             W[0] = (Q.alpha[i] * Q.x[i] + P.alpha[j] * P.x[j]) / (Q.alpha[i] + P.alpha[j]);
             W[1] = (Q.alpha[i] * Q.y[i] + P.alpha[j] * P.y[j]) / (Q.alpha[i] + P.alpha[j]);
             W[2] = (Q.alpha[i] * Q.z[i] + P.alpha[j] * P.z[j]) / (Q.alpha[i] + P.alpha[j]);
-            WP[0] = W[0] - Q.x[i];
-            WP[1] = W[1] - Q.y[i];
-            WP[2] = W[2] - Q.z[i];
-            WQ[0] = W[0] - P.x[j];
-            WQ[1] = W[1] - P.y[j];
-            WQ[2] = W[2] - P.z[j];
             
-            erival_[nprim].WP_x[0] = WP[0]; 
-            erival_[nprim].WP_y[0] = WP[1]; 
-            erival_[nprim].WP_z[0] = WP[2]; 
-            erival_[nprim].WQ_x[0] = WP[0]; 
-            erival_[nprim].WQ_y[0] = WP[1]; 
-            erival_[nprim].WQ_z[0] = WP[2]; 
+            erival_[nprim].WP_x[0] = W[0] - Q.x[i]; 
+            erival_[nprim].WP_y[0] = W[1] - Q.y[i]; 
+            erival_[nprim].WP_z[0] = W[2] - Q.z[i]; 
+
+            erival_[nprim].WQ_x[0] = W[0] - P.x[j]; 
+            erival_[nprim].WQ_y[0] = W[1] - P.y[j]; 
+            erival_[nprim].WQ_z[0] = W[2] - P.z[j]; 
 
             double rho = (Q.alpha[i] * P.alpha[j])/(Q.alpha[i] + P.alpha[j]);
             erival_[nprim].oo2z[0] = 1.0 / (2.0 * Q.alpha[i]); 
@@ -109,7 +107,7 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             CLOCK(ticks1, walltime1);
             totaltime += {ticks1 - ticks0, walltime1 - walltime0};
 
-            double scale = Q.prefac[i] * P.prefac[j];
+            double scale = Q.prefac[i] * P.prefac[j] * TWO_PI_52 * sqrt(rho) * pow( (1.0 / Q.alpha[i] ) * (1.0 / P.alpha[j]), 1.5);
 
             switch(M)
             {
@@ -234,17 +232,28 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             nprim++;
         }
 
-
+        double * intptr = integrals + (  c*P.nshell2*Q.nshell1*Q.nshell2
+                                       + d*Q.nshell1*Q.nshell2
+                                       + a*Q.nshell2
+                                       + b )*ncart1234;
 
         if(M)
         {
             CLOCK(ticks0, walltime0);
             LIBINT2_PREFIXED_NAME(libint2_build_eri)[Q.am1][Q.am2][P.am1][P.am2](erival_.data());
             CLOCK(ticks1, walltime1);
+            totaltime += {ticks1 - ticks0, walltime1 - walltime0};
 
             // permute
-            std::copy(erival_[0].targets[0], erival_[0].targets[0] + ncart1234, intptr);
-            totaltime += {ticks1 - ticks0, walltime1 - walltime0};
+            int nn = 0;
+            for(int n1 = 0; n1 < NCART(Q.am1); n1++)
+            for(int n2 = 0; n2 < NCART(Q.am2); n2++)
+            for(int n3 = 0; n3 < NCART(P.am1); n3++)
+            for(int n4 = 0; n4 < NCART(P.am2); n4++)
+                intptr[ n3*NCART(P.am2)*NCART(Q.am1)*NCART(Q.am2)
+                       +n4*NCART(Q.am1)*NCART(Q.am2)
+                       +n1*NCART(Q.am2)
+                       +n2] = erival_[0].targets[0][nn++];
         }
         else
         {
@@ -252,8 +261,6 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             for(size_t n = 0; n < nprim1234; n++)
                 intptr[0] += erival_[n].LIBINT_T_SS_EREP_SS(0)[0];
         }
-
-        intptr += ncart1234;
         
     }
 
