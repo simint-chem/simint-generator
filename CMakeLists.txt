@@ -21,7 +21,7 @@ list(APPEND SIMINT_C_FLAGS "-ggdb")
 
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  list(APPEND SIMINT_C_FLAGS "-qopt-report=4 -wd10397 -vec-threshold0 -override-limits")
+  list(APPEND SIMINT_C_FLAGS "-qopt-report=5 -wd10397 -vec-threshold0 -override-limits")
 endif()
 
 
