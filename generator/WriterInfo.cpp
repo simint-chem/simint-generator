@@ -377,6 +377,9 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["sqrt"] = "MM512_SQRT_PD"; // macro in intrinsics_kncni.h
             intrinsicmap_["pow"] = "_mm512_pow_pd";
             intrinsicmap_["exp"] = "_mm512_exp_pd";
+
+            intrinsicmap_["fmadd"] = "_mm512_fmadd_pd";
+            intrinsicmap_["fmsub"] = "_mm512_fmsub_pd";
         }
     }
     else if(HasCPUFlag("avx"))
@@ -398,6 +401,13 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["pow"] = "_mm256_pow_pd";
             intrinsicmap_["exp"] = "_mm256_exp_pd";
         }
+
+        if(HasCPUFlag("fma"))
+        {
+            intrinsicmap_["fmadd"] = "_mm256_fmadd_pd";
+            intrinsicmap_["fmsub"] = "_mm256_fmsub_pd";
+        }
+
     }
     else if(HasCPUFlag("sse2"))
     {
@@ -427,12 +437,6 @@ void ReadCPUFlags(const std::string & file)
     }
 
 
-    // special instructions
-    if(HasCPUFlag("fma"))
-    {
-        intrinsicmap_["fmadd"] = "_mm256_fmadd_pd";
-        intrinsicmap_["fmsub"] = "_mm256_fmsub_pd";
-    }
 }
 
 bool HasCPUFlag(const std::string & flag) 
