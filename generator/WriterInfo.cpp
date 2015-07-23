@@ -301,7 +301,7 @@ void ReadCPUFlags(const std::string & file)
 
     std::ifstream cpufile(file.c_str());
     if(!cpufile.is_open())
-        throw std::runtime_error("Error - cannot open cpu flags file!");
+        throw std::runtime_error(std::string("Error - cannot open cpu flags file: ") + file);
 
     while(cpufile)
     {
@@ -399,7 +399,7 @@ void ReadCPUFlags(const std::string & file)
             intrinsicmap_["exp"] = "_mm256_exp_pd";
         }
     }
-    else if(HasCPUFlag("sse"))
+    else if(HasCPUFlag("sse2"))
     {
         simdlen_ = 2;
         includes_.push_back("\"vectorization/vectorization.h\"");
@@ -408,15 +408,15 @@ void ReadCPUFlags(const std::string & file)
         {
             includes_.push_back("\"vectorization/intrinsics_sse.h\"");
 
-            intrinsicmap_["dbl_type"] = "TODO";
-            intrinsicmap_["cdbl_type"] = "TODO";
-            intrinsicmap_["dbl_set"] = "TODO";
-            intrinsicmap_["dbl_load"] = "TODO";
-            intrinsicmap_["dbl_store"] = "TODO";
+            intrinsicmap_["dbl_type"] = "__m128d";
+            intrinsicmap_["cdbl_type"] = "const __m128d";
+            intrinsicmap_["dbl_set"] = "_mm_set1_pd";
+            intrinsicmap_["dbl_load"] = "_mm_load_pd";
+            intrinsicmap_["dbl_store"] = "_mm_store_pd";
             intrinsicmap_["union_type"] = "union double2";
-            intrinsicmap_["sqrt"] = "TODO";
-            intrinsicmap_["pow"] = "TODO";
-            intrinsicmap_["exp"] = "TODO";
+            intrinsicmap_["sqrt"] = "_mm_sqrt_pd";
+            intrinsicmap_["pow"] = "_mm_pow_pd";
+            intrinsicmap_["exp"] = "_mm_exp_pd";
         }
     }
     else

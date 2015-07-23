@@ -68,6 +68,6 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
 #                             -d ../eri/vref_flat.gen
 
 
-generator/hrr_generator -o ../eri/gen -c /tmp/cpuinfo -L ${MAXHRR}
+generator/hrr_generator -o ../eri/gen -c ${CPUFILE} -L ${MAXHRR}
 
 touch ../eri/CMakeLists.txt
