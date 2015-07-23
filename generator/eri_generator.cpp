@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
     std::unique_ptr<BoysGen> bg;
 
     if(boystype == "FO")
-        bg = std::unique_ptr<BoysGen>(new BoysFO("/home/ben/programming/simint/generator/dat"));
+        bg = std::unique_ptr<BoysGen>(new BoysFO("/home/ben/programming/simint-avx/generator/dat"));
     else if(boystype == "split")
         bg = std::unique_ptr<BoysGen>(new BoysSplit());
     else if(boystype == "vref")
