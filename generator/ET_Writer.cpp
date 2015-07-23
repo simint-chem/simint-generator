@@ -98,9 +98,13 @@ void ET_Writer::WriteETInline(std::ostream & os) const
     os << indent6 << "// Primitive integrals: Electron transfer\n";
     os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
-    os << indent6 << "// Precompute (integer) * 1/2q\n";
-    for(const auto & it : et_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
+
+    if(et_i_.size())
+    {
+        os << indent6 << "// Precompute (integer) * 1/2q\n";
+        for(const auto & it : et_i_)
+            os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
+    }
 
     os << "\n";
 

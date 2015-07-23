@@ -189,9 +189,13 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
     os << indent6 << "// Primitive integrals: Vertical recurrance\n";
     os << indent6 << "//////////////////////////////////////////////\n";
     os << "\n";
-    os << indent6 << "// Precompute (integer) * 1/2p\n";
-    for(const auto & it : vrr_i_)
-        os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
+
+    if(vrr_i_.size())
+    {
+        os << indent6 << "// Precompute (integer) * 1/2p\n";
+        for(const auto & it : vrr_i_)
+            os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
+    }
 
     os << "\n";
 

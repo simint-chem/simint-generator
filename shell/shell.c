@@ -333,7 +333,8 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                     const double ABalpha = A[sa].alpha[i] * B[sb].alpha[j];
 
                     P->prefac[idx] = A[sa].coef[i] * B[sb].coef[j]
-                                     * exp(-Xab * ABalpha / p_ab);
+                                     * exp(-Xab * ABalpha / p_ab)
+                                     * SQRT_TWO_PI_52 / p_ab;
 
                     P->x[idx] = (AxAa + B[sb].alpha[j]*B[sb].x)/p_ab;
                     P->y[idx] = (AyAa + B[sb].alpha[j]*B[sb].y)/p_ab;

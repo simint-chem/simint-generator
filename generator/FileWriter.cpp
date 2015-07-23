@@ -138,8 +138,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     // load constants into variables
     // (important only really for instrinsics)
     // include the factor of TWO_PI_52
-
-    WriterInfo::AddNamedConstant("const_two_pi_52", "TWO_PI_52");
+    // WriterInfo::AddNamedConstant("const_two_pi_52", "TWO_PI_52");  moved to shell_pair
 
     // need these factors if there is VRR or ET
     if(hasoneover2p || haset)
@@ -301,8 +300,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent6 << WriterInfo::NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
     os << indent6 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
     os << indent6 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
+    os << indent6 << cdbltype << " one_over_PQalpha_sum = " << WriterInfo::NamedConstant("const_1") << " / PQalpha_sum;\n";
     os << "\n";
-    os << indent6 << cdbltype << " pfac = " << WriterInfo::NamedConstant("const_two_pi_52") << " / (PQalpha_mul * " << WriterInfo::Sqrt("PQalpha_sum") << ");\n";
     os << "\n";
     os << indent6 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
     os << indent6 << cdbltype << " PQ_x = P_x - " << WriterInfo::DoubleLoad("Q.x", "j") << ";\n";
@@ -312,11 +311,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     os << indent6 << cdbltype << " R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
     os << "\n";
-    os << indent6 << "// collected prefactors\n";
-    os << indent6 << cdbltype << " allprefac =  pfac * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
-    os << "\n";
-    os << indent6 << "// various factors\n";
-    os << indent6 << cdbltype << " alpha = PQalpha_mul/PQalpha_sum;   // alpha from MEST\n";
+    os << indent6 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
     if(hasvrr)
     {
