@@ -44,6 +44,7 @@ validboys = [ "FO", "split", "vref" ]
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
+parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags file")
 
@@ -76,6 +77,9 @@ eri_gen = os.path.join(args.g, "eri_generator")
 vinclude_gen = os.path.join(args.g, "include_generator")
 hrr_gen = os.path.join(args.g, "hrr_generator")
 
+if not os.path.isdir(args.d):
+  print("The directory \"{}\" does not exist or is not accessible".format(args.d))
+  quit(1)
 
 if not os.path.isfile(eri_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(eri_gen))
@@ -284,6 +288,7 @@ for q in valid:
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-s", str(args.s)])
     cmdline.extend(["-c", str(args.c)])
+    cmdline.extend(["-d", args.d])
 
     if vrrtype == "External":
         cmdline.append("-ve")

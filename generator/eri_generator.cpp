@@ -50,6 +50,7 @@ int main(int argc, char ** argv)
     std::string boystype;
     std::string fpath;
     std::string cpuinfofile;
+    std::string datdir;
     QAM amlist;
 
     bool amlistset = false;
@@ -65,6 +66,8 @@ int main(int argc, char ** argv)
             options[OPTION_INLINEHRR] = 0;
         else if(argstr == "-s")
             options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
+        else if(argstr == "-d")
+            datdir = GetNextArg(i, argc, argv);
 
         else if(argstr == "-c")
             cpuinfofile = GetNextArg(i, argc, argv);
@@ -109,6 +112,12 @@ int main(int argc, char ** argv)
         return 2;
     }
 
+    if(datdir == "")
+    {
+        std::cout << "\ndat directory (-d) required\n\n";
+        return 2;
+    }
+
     if(amlistset == false)
     {
         std::cout << "\nAM quartet (-q) required\n\n";
@@ -141,7 +150,7 @@ int main(int argc, char ** argv)
     std::unique_ptr<BoysGen> bg;
 
     if(boystype == "FO")
-        bg = std::unique_ptr<BoysGen>(new BoysFO("/home/ben/programming/simint-avx/generator/dat"));
+        bg = std::unique_ptr<BoysGen>(new BoysFO(datdir));
     else if(boystype == "split")
         bg = std::unique_ptr<BoysGen>(new BoysSplit());
     else if(boystype == "vref")
