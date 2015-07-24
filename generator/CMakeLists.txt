@@ -9,6 +9,7 @@ list(APPEND GENERATOR_CXX_FLAGS "-ggdb")
 
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
+# Prepare list for CXX Flags
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common STATIC

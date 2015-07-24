@@ -9,10 +9,13 @@ P=1000
 STACK=2048
 
 CPUFILE=$1
+APPEND=$2
 
-if [ $# -ne 1 ]
+OUTDIR="/home/ben/programming/simint-gen"
+
+if [ $# -ne 2 ]
 then
-  echo "Give CPUInfo file as argument"
+  echo "Give CPUInfo file and a name as argument"
   exit 1
 fi
 
@@ -31,7 +34,7 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
                              -i \
                              -s ${STACK} \
                              -b FO \
-                             -g generator \
+                             -g generator ${OUTDIR}/${APPEND}
 
 
 # Reference boys function
@@ -68,6 +71,6 @@ python3 ../generate_twoel.py -l 2 -ve ${VE} -he ${HE} -P ${P} \
 #                             -d ../eri/vref_flat.gen
 
 
-generator/hrr_generator -o ../eri/gen -c ${CPUFILE} -L ${MAXHRR}
+generator/hrr_generator -o ${OUTDIR}/${APPEND}/eri/gen -c ${CPUFILE} -L ${MAXHRR} > ${OUTDIR}/${APPEND}/eri/gen/hrr.log
 
 touch ../eri/CMakeLists.txt
