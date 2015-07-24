@@ -210,7 +210,7 @@ void DeclareContwork(std::ostream & os)
     {
         os << "    // Workspace for contracted integrals\n";
 
-        if(memory_ > GetOption(OPTION_STACKMEM))
+        if(memory_ > (size_t)GetOption(OPTION_STACKMEM))
             os << "    double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         else
             os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "] SIMINT_ALIGN_ARRAY;\n";
@@ -261,7 +261,7 @@ void ZeroContWork(std::ostream & os)
 
 void FreeContwork(std::ostream & os) 
 {
-    if((memory_ > 0) && (memory_ > GetOption(OPTION_STACKMEM)))
+    if((memory_ > 0) && (memory_ > (size_t)GetOption(OPTION_STACKMEM)))
     {
         os << "    // Free contracted work space\n";
         os << "    FREE(contwork);\n";

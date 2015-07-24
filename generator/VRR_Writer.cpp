@@ -214,7 +214,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
         // Write out the steps
         std::stringstream ss;
-        ss << (greq, WriterInfo::L()-am+1);
+        ss << (WriterInfo::L()-am+1);
         WriteVRRSteps_(os, greq, ss.str());
 
         // if this target is also a contracted array, accumulate there

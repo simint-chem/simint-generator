@@ -103,7 +103,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
         os << indent6 << "                 (\n";
         os << indent6 << "                   (\n";
         os << indent6 << "                               " << GetFOConstant("a", m, 0) << "\n";
-        for(int i = 1; i < bf.a.size(); i++)
+        for(size_t i = 1; i < bf.a.size(); i++)
             os << indent6 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
 
         os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
@@ -111,7 +111,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
         os << indent6 << "                   /\n";
         os << indent6 << "                   (\n";
         os << indent6 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
-        for(int i = 1; i < bf.b.size(); i++)
+        for(size_t i = 1; i < bf.b.size(); i++)
             os << indent6 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
 
         os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
@@ -156,13 +156,13 @@ void BoysFO::AddConstants(void) const
         for(int m = 0; m <= L; m++)
         {
             const BoysFit & bf = bfmap_.at(m);
-            for(int i = 0; i < bf.a.size(); i++)
+            for(size_t i = 0; i < bf.a.size(); i++)
             { 
                 std::stringstream cname;
                 cname << "FO_" << m << "_a_" << i;
                 WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
             }        
-            for(int i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
+            for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
             { 
                 std::stringstream cname;
                 cname << "FO_" << m << "_b_" << i;
@@ -177,13 +177,13 @@ void BoysFO::AddConstants(void) const
         WriterInfo::AddIntConstant(2);
 
         const BoysFit & bf = bfmap_.at(L);
-        for(int i = 0; i < bf.a.size(); i++)
+        for(size_t i = 0; i < bf.a.size(); i++)
         { 
             std::stringstream cname;
             cname << "FO_" << L << "_a_" << i;
             WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
         }        
-        for(int i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
+        for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
         { 
             std::stringstream cname;
             cname << "FO_" << L << "_b_" << i;
