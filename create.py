@@ -49,7 +49,6 @@ parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags 
 
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
-parser.add_argument("-P",  required=False, type=int, default=1000, help="Permute for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
@@ -75,6 +74,7 @@ skeldir = os.path.join(topdir, "skel")
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
 vinclude_gen = os.path.join(args.g, "include_generator")
+hrr_gen = os.path.join(args.g, "hrr_generator")
 
 
 if not os.path.isfile(eri_gen):
@@ -85,8 +85,21 @@ if not os.path.isfile(vinclude_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(vinclude_gen))
   quit(1)
 
+if not os.path.isfile(hrr_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
+  quit(1)
+
+if not os.path.isfile(args.c):
+  print("The file \"{}\" does not exist or is not a file".format(args.c))
+  quit(1)
+
 if not args.b in validboys:
   print("Invalid boys function type \"{}\"".format(args.b))
+  quit(1)
+
+
+if args.S and args.i:
+  print("Intrinsics don't make sense with scalar code")
   quit(1)
 
 
@@ -94,7 +107,8 @@ if not args.b in validboys:
 ####################################################
 # Create output directory
 ####################################################
-outdir_eri = os.path.join(args.outdir, "eri", "gen")
+outdir_eri = os.path.join(args.outdir, "eri")
+outdir_erigen = os.path.join(outdir_eri, "gen")
 outdir_vec = os.path.join(args.outdir, "vectorization")
 outdir_boys = os.path.join(args.outdir, "boys")
 outdir_shell = os.path.join(args.outdir, "shell")
@@ -102,36 +116,47 @@ outdir_test = os.path.join(args.outdir, "test")
 
 if os.path.isdir(args.outdir):
   print("WARNING - output directory exists. Overwriting...")
-  shutil.rmtree(os.path.join(args.outdir, "eri"), ignore_errors=True)
+  shutil.rmtree(outdir_eri, ignore_errors=True)
   shutil.rmtree(outdir_vec, ignore_errors=True)
   shutil.rmtree(outdir_boys, ignore_errors=True)
   shutil.rmtree(outdir_shell, ignore_errors=True)
   shutil.rmtree(outdir_test, ignore_errors=True)
 
 
-shutil.copytree(os.path.join(skeldir, "eri"), os.path.join(args.outdir, "eri")) 
+shutil.copytree(os.path.join(skeldir, "eri"),           outdir_eri) 
 shutil.copytree(os.path.join(skeldir, "vectorization"), outdir_vec)
-shutil.copytree(os.path.join(skeldir, "boys"), outdir_boys)
-shutil.copytree(os.path.join(skeldir, "shell"), outdir_shell)
-shutil.copytree(os.path.join(skeldir, "test"), outdir_test)
-shutil.copy(os.path.join(skeldir, "CMakeLists.txt"), args.outdir)
-shutil.copy(os.path.join(skeldir, "constants.h"), args.outdir)
+shutil.copytree(os.path.join(skeldir, "boys"),          outdir_boys)
+shutil.copytree(os.path.join(skeldir, "shell"),         outdir_shell)
+shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
+shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
+shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
+
 
 
 ####################################################
 # Generate the vectorization header file
 # TODO - could probably be moved to a python script
+####################################################
 voutfile = os.path.join(outdir_vec, "vectorization_generated.h")
+logfile = os.path.join(outdir_vec, "vectorization_generated.log")
+
 cmdline = [vinclude_gen]
 cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", voutfile])
-cmdline.extend(["-c", str(args.c)])
 if args.i:
     cmdline.append("-i")
 if args.S:
     cmdline.append("-S")
 
-ret = subprocess.call(cmdline)
+print("Creating {}".format(voutfile))
+print("     Logfile: {}".format(logfile))
+print()
+print("Command line:")
+print(' '.join(cmdline))
+print()
+
+with open(logfile, 'w') as lf:
+  ret = subprocess.call(cmdline, stdout=lf)
 
 if ret != 0:
   print("\n")
@@ -143,10 +168,46 @@ if ret != 0:
 
 
 
+####################################################
+# Generate the external HRR source
+# TODO - could probably be moved to a python script
+####################################################
+logfile = os.path.join(outdir_erigen, "hrr.log")
+
+cmdline = [hrr_gen]
+cmdline.extend(["-c", str(args.c)])
+cmdline.extend(["-o", outdir_erigen])
+cmdline.extend(["-L", str(args.l)])
+if args.i:
+    cmdline.append("-i")
+if args.S:
+    cmdline.append("-S")
+
+print("Creating HRR sources in {}".format(outdir_erigen))
+print("     Logfile: {}".format(logfile))
+print()
+print("Command line:")
+print(' '.join(cmdline))
+print()
+
+with open(logfile, 'w') as lf:
+  ret = subprocess.call(cmdline, stdout=lf)
+
+if ret != 0:
+  print("\n")
+  print("*********************************")
+  print("When generating hrr sources")
+  print("Subprocess returned {} - aborting".format(ret))
+  print("*********************************")
+  print("\n")
+
+
+
 
 
 ####################################################
 # Generate the ERI sources and headers
+####################################################
 print("-------------------------------")
 print("Maximum AM: {}".format(args.l))
 print("Naive combinations: {}".format((args.l+1) ** 4))
@@ -190,15 +251,15 @@ print()
 
 # Generate the eri
 headerbase = "eri_generated.h"
-headerfile = os.path.join(outdir_eri, headerbase)
+headerfile = os.path.join(outdir_erigen, headerbase)
 
 print()
 print("Header file: {}".format(headerfile))
 print()
 for q in valid:
   filebase = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-  outfile = os.path.join(outdir_eri, filebase + ".c")
-  logfile = os.path.join(outdir_eri, filebase + ".log")
+  outfile = os.path.join(outdir_erigen, filebase + ".c")
+  logfile = os.path.join(outdir_erigen, filebase + ".log")
   print("Creating: {}".format(filebase))
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
