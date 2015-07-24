@@ -125,16 +125,16 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     // apply prefac and power
     // calculate the prefactor if this is the first time it's needed
     if(prefac && m == 0)
-        os << indent6 << WriterInfo::ConstDoubleType() << " allprefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " prefac = P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
 
 
 
     os << indent6 << ssvar.str() << " = ";
     
     if(prefac)
-        os << "allprefac * ";
-
-    os << WriterInfo::Sqrt(ssvar.str());
+        os << "prefac * " << WriterInfo::Sqrt(ssvar.str() + " * one_over_PQalpha_sum");
+    else
+        os << WriterInfo::Sqrt(ssvar.str());
 
     for(int i = 0; i < bf.v; i++)
         os << " * " << ssvar.str();
@@ -240,11 +240,11 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
 
         // add prefac now
-        os << indent6 << WriterInfo::ConstDoubleType() << " allprefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent6 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
  
         os << "\n";
         os << indent6 << "for(n = 0; n <= " << WriterInfo::L() << "; ++n)\n";
-        os << indent6 << "    " << primname << "[n] *= allprefac;\n";
+        os << indent7 << primname << "[n] *= prefac;\n";
         os << "\n";
     }
 }
