@@ -84,7 +84,6 @@ void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G
 void free_gaussian_shell(struct gaussian_shell G);
 struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G);
 void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G);
-void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G);
 
 
 void free_multishell_pair(struct multishell_pair P);

@@ -56,5 +56,6 @@ class ERD_ERI
                                  double * integrals);
 };
 
+void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G);
 
 #endif

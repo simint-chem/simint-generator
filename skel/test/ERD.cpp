@@ -290,3 +290,76 @@ TimerInfo ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussia
 }
 
 
+void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G)
+{
+    //df[i] = (i-1)!!
+    const double df[] = {
+                          1.0,
+                          1.0,
+                          1.0,
+                          2.0,
+                          3.0,
+                          8.0,
+                          15.0,
+                          48.0,
+                          105.0,
+                          384.0,
+                          945.0,
+                          3840.0,
+                          10395.0,
+                          46080.0,
+                          135135.0,
+                          645120.0,
+                          2027025.0,
+                          10321920.0,
+                          34459425.0,
+                          185794560.0,
+                          654729075.0,
+                          3715891200.0,
+                          13749310575.0,
+                          81749606400.0,
+                          316234143225.0,
+                          1961990553600.0,
+                          7905853580625.0
+                        };
+ 
+    /* 
+     * libERD version of normalization 
+     */
+    for(int i = 0; i < n; ++i)
+    {
+        const double am = (double)(G[i].am);
+        const double m = am + 1.5;
+
+        double sum = 0.0;
+
+        for(int j = 0; j < G[i].nprim; j++)
+        {
+            const double a1 = G[i].alpha[j];
+
+            for(int k = 0; k < G[i].nprim; k++)
+            {
+                const double a2 = G[i].alpha[k];
+
+                double temp = G[i].coef[j] * G[i].coef[k];
+                double temp2 = (2.0 * sqrt(a1 * a2) / (a1 + a2));
+                temp2 = pow(temp2, m);
+                temp = temp * temp2;
+                sum += temp;
+            }
+        }
+
+        double prefac = 1.0;
+        if(G[i].am > 1)
+            prefac = pow(2.0, 2*G[i].am) / df[2*G[i].am];
+
+        const double norm = sqrt(prefac / sum);
+
+        // apply the normalization
+        for (int j = 0; j < G[i].nprim; ++j)
+            G[i].coef[j] *= norm * pow(G[i].alpha[j], 0.5*m);
+    }
+
+}
+
+
