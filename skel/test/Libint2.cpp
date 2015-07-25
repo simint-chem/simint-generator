@@ -105,7 +105,7 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             //CLOCK(ticks1);
             //totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 
-            double scale = Q.prefac[i] * P.prefac[j] * TWO_PI_52 * sqrt(rho) * pow( (1.0 / Q.alpha[i] ) * (1.0 / P.alpha[j]), 1.5);
+            double scale = Q.prefac[i] * P.prefac[j] * sqrt(rho) * sqrt( (1.0 / Q.alpha[i] ) * (1.0 / P.alpha[j]));
 
             switch(M)
             {
