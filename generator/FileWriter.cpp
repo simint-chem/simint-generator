@@ -120,7 +120,9 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent1 << "int real_abcd;\n";
 
     os << indent1 << "int i, j;\n";
-    os << indent1 << "int n;\n";
+
+    if(am[0] != 0 || !WriterInfo::Intrinsics()) // therefore, this is not an ssss quartet (given the restrictions on the am)
+        os << indent1 << "int n;\n";
 
     if(inline_hrr)
     {

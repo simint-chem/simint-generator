@@ -351,24 +351,7 @@ void VRR_Writer::WriteAccumulate_(std::ostream & os, int am) const
     {
         os << "\n";
         os << indent6 << "// Accumulating in contracted workspace\n";
-
-        os << indent6 << "for(n = 0; n < " << NCART(am) << "; n++)\n";
-
-        if(WriterInfo::Intrinsics())
-        {
-            os << indent6 << "{\n";
-            
-            os << indent7 << WriterInfo::UnionType() << " vec = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[n];\n";    
-            os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += vec.d[0]";
-
-            for(int i = 1; i < WriterInfo::SimdLen(); i++)
-                os << " + vec.d[" << i << "]";
-                //os << " + vec[" << i << "]";
-            os << ";\n";
-            os << indent6 << "}\n";
-        }
-        else
-            os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += " << WriterInfo::PrimVarName(qam) << "[n];\n";
+        WriterInfo::WriteAccumulation(os, qam, NCART(am));
 
         // TODO
         // if I don't need all, then don't accumulate all

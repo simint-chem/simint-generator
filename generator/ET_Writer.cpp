@@ -129,24 +129,7 @@ void ET_Writer::WriteETInline(std::ostream & os) const
 
             os << "\n";
             os << indent6 << "// Accumulating in contracted workspace\n";
-
-            os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
-
-            if(WriterInfo::Intrinsics())
-            {
-                os << indent6 << "{\n";
-
-                os << indent7 << WriterInfo::UnionType() << " vec = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(it) << "[n];\n";    
-                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += vec.d[0]";
-
-                for(int i = 1; i < WriterInfo::SimdLen(); i++)
-                    os << " + vec.d[" << i << "]";
-                    //os << " + vec[" << i << "]";
-                os << ";\n";
-                os << indent6 << "}\n";
-            }
-            else
-                os << indent7 << WriterInfo::PrimPtrName(it) << "[n] += " << WriterInfo::PrimVarName(it) << "[n];\n";
+            WriterInfo::WriteAccumulation(os, it, ncart);
         }
     }
 }

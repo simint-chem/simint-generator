@@ -3,6 +3,8 @@
 
 #include <immintrin.h>
 
+#include "vectorization/intrinsics_sse.h"
+
 union double4
 {
     __m256d d_256;
