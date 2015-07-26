@@ -253,24 +253,24 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << indent5 << "// Load these one per loop over i\n";
 
-    os << indent5 << WriterInfo::NewConstDoubleSet("P_alpha", "P.alpha[i]") << ";\n";
-    os << indent5 << WriterInfo::NewConstDoubleSet("P_prefac", "P.prefac[i]") << ";\n";
-    os << indent5 << WriterInfo::NewConstDoubleSet("P_x", "P.x[i]") << ";\n";
-    os << indent5 << WriterInfo::NewConstDoubleSet("P_y", "P.y[i]") << ";\n";
-    os << indent5 << WriterInfo::NewConstDoubleSet("P_z", "P.z[i]") << ";\n";
+    os << indent5 << WriterInfo::NewConstDoubleSet1("P_alpha", "P.alpha[i]") << ";\n";
+    os << indent5 << WriterInfo::NewConstDoubleSet1("P_prefac", "P.prefac[i]") << ";\n";
+    os << indent5 << WriterInfo::NewConstDoubleSet1("P_x", "P.x[i]") << ";\n";
+    os << indent5 << WriterInfo::NewConstDoubleSet1("P_y", "P.y[i]") << ";\n";
+    os << indent5 << WriterInfo::NewConstDoubleSet1("P_z", "P.z[i]") << ";\n";
 
     if(hasvrr)
     {
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_PA_x", "P.PA_x[i]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_PA_y", "P.PA_y[i]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_PA_z", "P.PA_z[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
     }
 
     if(haset)
     {
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_bAB_x", "P.bAB_x[i]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_bAB_y", "P.bAB_y[i]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet("P_bAB_z", "P.bAB_z[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_bAB_x", "P.bAB_x[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_bAB_y", "P.bAB_y[i]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("P_bAB_z", "P.bAB_z[i]") << ";\n";
     }
 
     os << "\n";

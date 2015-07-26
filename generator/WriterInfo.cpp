@@ -135,7 +135,7 @@ void WriteConstants(std::ostream & os)
     {
         os << indent1 << "//Create constant simd vectors\n";
         for(const auto & it : constants_)
-            os << indent1 << NewConstDoubleSet(it.first, it.second) << ";\n";  
+            os << indent1 << NewConstDoubleSet1(it.first, it.second) << ";\n";  
     }
 }
 
@@ -349,7 +349,7 @@ void ReadCPUFlags(const std::string & file)
     simdlen_ = 1;
     intrinsicmap_["dbl_type"] = "double";
     intrinsicmap_["cdbl_type"] = "const double";
-    intrinsicmap_["dbl_set"] = "";
+    intrinsicmap_["dbl_set1"] = "";
     intrinsicmap_["dbl_load"] = "";
     intrinsicmap_["dbl_store"] = "";
     intrinsicmap_["union_type"] = "";
@@ -370,7 +370,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m512d";
             intrinsicmap_["cdbl_type"] = "const __m512d";
-            intrinsicmap_["dbl_set"] = "MM512_SET1_PD";  // macro in intrinsics_kncni.h
+            intrinsicmap_["dbl_set1"] = "MM512_SET1_PD";  // macro in intrinsics_kncni.h
             intrinsicmap_["dbl_load"] = "_mm512_load_pd";
             intrinsicmap_["dbl_store"] = "_mm512_store_pd";
             intrinsicmap_["union_type"] = "union double8";
@@ -393,7 +393,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m256d";
             intrinsicmap_["cdbl_type"] = "const __m256d";
-            intrinsicmap_["dbl_set"] = "_mm256_set1_pd";
+            intrinsicmap_["dbl_set1"] = "_mm256_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm256_load_pd";
             intrinsicmap_["dbl_store"] = "_mm256_store_pd";
             intrinsicmap_["union_type"] = "union double4";
@@ -420,7 +420,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m128d";
             intrinsicmap_["cdbl_type"] = "const __m128d";
-            intrinsicmap_["dbl_set"] = "_mm_set1_pd";
+            intrinsicmap_["dbl_set1"] = "_mm_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm_load_pd";
             intrinsicmap_["dbl_store"] = "_mm_store_pd";
             intrinsicmap_["union_type"] = "union double2";
@@ -482,10 +482,10 @@ std::string ConstDoubleType(void)
     return intrinsicmap_.at("cdbl_type");
 }
 
-std::string DoubleSet(const std::string & dbl) 
+std::string DoubleSet1(const std::string & dbl) 
 {
     if(Intrinsics())
-        return intrinsicmap_.at("dbl_set") + "(" + dbl + ")";
+        return intrinsicmap_.at("dbl_set1") + "(" + dbl + ")";
     else
         return dbl;
 }
@@ -495,7 +495,7 @@ std::string NamedConstant(const std::string & cname)
     if(Intrinsics())
         return cname;
     else
-        return DoubleSet(constants_.at(cname));
+        return DoubleSet1(constants_.at(cname));
 }
 
 std::string IntConstant(int i)
@@ -533,10 +533,10 @@ std::string DoubleStore(const std::string & var, const std::string & ptr, const 
         return ptr + "[" + idx + "] = " + var;
 }
 
-std::string NewDoubleSet(const std::string & var, const std::string & val) 
+std::string NewDoubleSet1(const std::string & var, const std::string & val) 
 {
     std::stringstream ss;
-    ss << DoubleType() << " " << var << " = " << DoubleSet(val);
+    ss << DoubleType() << " " << var << " = " << DoubleSet1(val);
     return ss.str();
 }
 
@@ -547,9 +547,9 @@ std::string NewDoubleLoad(const std::string & var, const std::string & ptr, cons
     return ss.str();
 }
 
-std::string NewConstDoubleSet(const std::string & var, const std::string & val) 
+std::string NewConstDoubleSet1(const std::string & var, const std::string & val) 
 {
-    return std::string("const ") + NewDoubleSet(var, val);
+    return std::string("const ") + NewDoubleSet1(var, val);
 }
 
 std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) 

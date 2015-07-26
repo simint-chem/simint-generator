@@ -54,12 +54,12 @@ namespace WriterInfo {
 
         std::string DoubleType(void);
         std::string ConstDoubleType(void);
-        std::string DoubleSet(const std::string & dbl);
+        std::string DoubleSet1(const std::string & dbl);
         std::string DoubleLoad(const std::string & ptr, const std::string & idx);
         std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx);
-        std::string NewDoubleSet(const std::string & var, const std::string & val);
+        std::string NewDoubleSet1(const std::string & var, const std::string & val);
         std::string NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx);
-        std::string NewConstDoubleSet(const std::string & var, const std::string & val);
+        std::string NewConstDoubleSet1(const std::string & var, const std::string & val);
         std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx);
 
         std::string UnionType(void);
