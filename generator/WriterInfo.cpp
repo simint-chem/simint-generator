@@ -562,6 +562,11 @@ std::string UnionType(void)
     return intrinsicmap_.at("union_type");
 }
 
+std::string ConstUnionType(void)
+{
+    return std::string("const ") + UnionType();
+}
+
 std::string FMAdd(const std::string & a, const std::string & b, const std::string & c)
 {
     return intrinsicmap_.at("fmadd") + "(" + a + ", " + b + ", " + c + ")";

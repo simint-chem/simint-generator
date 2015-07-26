@@ -63,6 +63,7 @@ namespace WriterInfo {
         std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx);
 
         std::string UnionType(void);
+        std::string ConstUnionType(void);
 
         std::string FMAdd(const std::string & a, const std::string & b, const std::string & c);
         std::string FMSub(const std::string & a, const std::string & b, const std::string & c);
