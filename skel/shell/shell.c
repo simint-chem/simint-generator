@@ -99,7 +99,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
 
     const int dmemsize = (prim_size*11 + shell12_size*3)*sizeof(double);
-    const int imemsize = (3*shell12_size)*sizeof(int);
+    const int imemsize = (shell12_size)*sizeof(int);
     P->dmemsize = dmemsize;
     P->imemsize = imemsize;
     P->nprim_length = prim_size;
@@ -125,8 +125,6 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     /* Should this be aligned? I don't think so */
     int * intmem = malloc(imemsize);
     P->nprim12   = intmem;
-    P->primstart = intmem +   shell12_size;
-    P->primend   = intmem + 2*shell12_size;
 }
 
 
@@ -233,8 +231,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 
         for(sb = 0; sb < nb; ++sb)
         {
-            P->primstart[sasb] = idx;
-
             P->am2 = B[sb].am;
 
             // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
@@ -282,9 +278,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 
             // align to the next boundary
             idx = SIMINT_SIMD_ROUND_DBL(idx);
-
-            // store the end of this shell pair
-            P->primend[sasb] = idx;
 
             P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
             P->nprim += A[sa].nprim*B[sb].nprim;

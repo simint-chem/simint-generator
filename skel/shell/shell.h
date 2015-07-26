@@ -25,11 +25,6 @@ struct multishell_pair
 
     int nshell12;
     int * nprim12;   // length nshell12;
-    int * primstart; // length nshell12
-                     // primstart[n] = start of shell pair n
-    int * primend;   // length nshell12
-                     // primend[n] = end (not inclusive)
-                     // this includes padding
 
     // length nshell12
     double * AB_x;

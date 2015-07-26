@@ -115,6 +115,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     // abcd =  index within simd loop, real_abcd is the absolute
     // full abcd in terms of all the shells
     os << indent1 << "int ab, cd, abcd;\n";
+    os << indent1 << "int istart, jstart;\n";
 
     if(hashrr)
         os << indent1 << "int real_abcd;\n";
@@ -167,10 +168,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     else
         os << indent1 << "abcd = 0;\n";
 
+    os << indent1 << "istart = 0;\n";
     os << indent1 << "for(ab = 0; ab < P.nshell12; ++ab)\n";
     os << indent1 << "{\n";
 
-    os << indent2 << "const int istart = P.primstart[ab];\n";
     os << indent2 << "const int iend = istart + P.nprim12[ab];\n";
     os << "\n";
 
@@ -183,6 +184,9 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << "\n";
     }
 
+
+    os << indent2 << "jstart = 0;\n";
+    os << "\n";
 
     if(hashrr)
     {
@@ -225,13 +229,7 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << "\n";
     }
 
-    os << indent4 << "const int jstart = Q.primstart[cd];\n";
-
-
-    if(WriterInfo::Intrinsics())
-        os << indent4 << "const int jend = Q.primend[cd];\n"; // we want the end, including the padding
-    else
-        os << indent4 << "const int jend = jstart + Q.nprim12[cd];\n";
+    os << indent4 << "const int jend = jstart + Q.nprim12[cd];\n";
 
 
     os << "\n";
@@ -366,10 +364,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << indent5 << "}  // close loop over j\n";
     os << indent4 << "}  // close loop over i\n";
+
+    os << indent4 << "\n";
+    os << indent4 << "jstart = SIMINT_SIMD_ROUND_DBL(jend);\n";
+    os << indent4 << "\n";
+
     os << indent3 << "}\n";  // close loop over abcd or cd
 
-    os << "\n";
-    os << "\n";
 
     hrr_writer.WriteHRR(os);
 
@@ -378,6 +379,10 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     if(hashrr)
         os << indent2 << "}\n";   // close loop over ab or cd
+
+    os << "\n";
+    os << indent2 << "istart = SIMINT_SIMD_ROUND_DBL(iend);\n";
+    os << "\n";
 
     os << indent1 << "}  // close loop over ab\n";
     os << "\n";
