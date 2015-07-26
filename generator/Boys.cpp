@@ -279,9 +279,13 @@ BoysFO::BoysFO(std::string dir)
 
 void BoysSplit::WriteBoys(std::ostream & os) const
 {
-    os << indent6 << "Boys_F_split(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
+    os << indent6 << "Boys_F_split_simd((double *)" << WriterInfo::PrimVarName({0,0,0,0}) << ", " 
+                  << WriterInfo::L() << ", (const double *)(&F_x));\n";
+
+    os << indent6 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+
     for(int i = 0; i <= WriterInfo::L(); i++)
-        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= prefac;\n";
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const

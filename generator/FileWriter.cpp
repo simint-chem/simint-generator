@@ -39,6 +39,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     std::string dbltype = WriterInfo::DoubleType();
     std::string cdbltype = WriterInfo::ConstDoubleType();
 
+    // we need a constant one for 1/x
+    WriterInfo::AddIntConstant(1);
+
     std::stringstream ss;
     ss << "int eri_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"

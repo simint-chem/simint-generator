@@ -426,6 +426,41 @@ void Init_Test(void)
     funcs[2][2][2][1] = eri_d_d_d_p;
     funcs[2][2][2][2] = eri_d_d_d_d;
     #endif
+    #if MAXAM > 2
+    funcs[3][0][0][0] = eri_f_s_s_s;
+    funcs[3][0][1][0] = eri_f_s_p_s;
+    funcs[3][0][1][1] = eri_f_s_p_p;
+    funcs[3][0][2][0] = eri_f_s_d_s;
+    funcs[3][0][2][1] = eri_f_s_d_p;
+    funcs[3][0][3][0] = eri_f_s_f_s;
+    funcs[3][1][0][0] = eri_f_p_s_s;
+    funcs[3][1][1][0] = eri_f_p_p_s;
+    funcs[3][1][1][1] = eri_f_p_p_p;
+    funcs[3][1][2][0] = eri_f_p_d_s;
+    funcs[3][1][2][1] = eri_f_p_d_p;
+    funcs[3][1][2][2] = eri_f_p_d_d;
+    funcs[3][1][3][0] = eri_f_p_f_s;
+    funcs[3][1][3][1] = eri_f_p_f_p;
+    funcs[3][2][0][0] = eri_f_d_s_s;
+    funcs[3][2][1][0] = eri_f_d_p_s;
+    funcs[3][2][1][1] = eri_f_d_p_p;
+    funcs[3][2][2][0] = eri_f_d_d_s;
+    funcs[3][2][2][1] = eri_f_d_d_p;
+    funcs[3][2][2][2] = eri_f_d_d_d;
+    funcs[3][2][3][0] = eri_f_d_f_s;
+    funcs[3][2][3][1] = eri_f_d_f_p;
+    funcs[3][2][3][2] = eri_f_d_f_d;
+    funcs[3][3][0][0] = eri_f_f_s_s;
+    funcs[3][3][1][0] = eri_f_f_p_s;
+    funcs[3][3][1][1] = eri_f_f_p_p;
+    funcs[3][3][2][0] = eri_f_f_d_s;
+    funcs[3][3][2][1] = eri_f_f_d_p;
+    funcs[3][3][2][2] = eri_f_f_d_d;
+    funcs[3][3][3][0] = eri_f_f_f_s;
+    funcs[3][3][3][1] = eri_f_f_f_p;
+    funcs[3][3][3][2] = eri_f_f_f_d;
+    funcs[3][3][3][3] = eri_f_f_f_f;
+    #endif
 
 }
 

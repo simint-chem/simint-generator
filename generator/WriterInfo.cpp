@@ -496,6 +496,7 @@ std::string DoubleSet(const std::vector<std::string> & dbls)
         for(size_t i = 1; i < dbls.size(); ++i)
             ss << ", " << dbls[i];
         ss << ");\n";
+        return ss.str();
     }
     else
         return dbls[0];
