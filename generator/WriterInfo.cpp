@@ -349,6 +349,7 @@ void ReadCPUFlags(const std::string & file)
     simdlen_ = 1;
     intrinsicmap_["dbl_type"] = "double";
     intrinsicmap_["cdbl_type"] = "const double";
+    intrinsicmap_["dbl_set"] = "";
     intrinsicmap_["dbl_set1"] = "";
     intrinsicmap_["dbl_load"] = "";
     intrinsicmap_["dbl_store"] = "";
@@ -370,6 +371,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m512d";
             intrinsicmap_["cdbl_type"] = "const __m512d";
+            intrinsicmap_["dbl_set"] = "MM512_SET_PD";  // macro in intrinsics_kncni.h
             intrinsicmap_["dbl_set1"] = "MM512_SET1_PD";  // macro in intrinsics_kncni.h
             intrinsicmap_["dbl_load"] = "_mm512_load_pd";
             intrinsicmap_["dbl_store"] = "_mm512_store_pd";
@@ -393,6 +395,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m256d";
             intrinsicmap_["cdbl_type"] = "const __m256d";
+            intrinsicmap_["dbl_set"] = "_mm256_set_pd";
             intrinsicmap_["dbl_set1"] = "_mm256_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm256_load_pd";
             intrinsicmap_["dbl_store"] = "_mm256_store_pd";
@@ -420,6 +423,7 @@ void ReadCPUFlags(const std::string & file)
 
             intrinsicmap_["dbl_type"] = "__m128d";
             intrinsicmap_["cdbl_type"] = "const __m128d";
+            intrinsicmap_["dbl_set"] = "_mm_set_pd";
             intrinsicmap_["dbl_set1"] = "_mm_set1_pd";
             intrinsicmap_["dbl_load"] = "_mm_load_pd";
             intrinsicmap_["dbl_store"] = "_mm_store_pd";
@@ -480,6 +484,21 @@ std::string DoubleType(void)
 std::string ConstDoubleType(void) 
 {
     return intrinsicmap_.at("cdbl_type");
+}
+
+std::string DoubleSet(const std::vector<std::string> & dbls)
+{
+    // todo - exception if dbls.size() != SimdLen?
+    if(Intrinsics())
+    {
+        std::stringstream ss;
+        ss << intrinsicmap_.at("dbl_set") <<  "(" << dbls[0];
+        for(size_t i = 1; i < dbls.size(); ++i)
+            ss << ", " << dbls[i];
+        ss << ");\n";
+    }
+    else
+        return dbls[0];
 }
 
 std::string DoubleSet1(const std::string & dbl) 
