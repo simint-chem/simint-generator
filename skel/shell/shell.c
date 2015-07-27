@@ -11,8 +11,8 @@ extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 // Allocate a gaussian shell with correct alignment
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
 {
-    const int prim_size = SIMINT_SIMD_ROUND(nprim);
-    const int size = prim_size * sizeof(double);   
+    int prim_size = SIMINT_SIMD_ROUND(nprim);
+    size_t size = prim_size * sizeof(double);   
 
     double * mem = ALLOC(2*size);
     G->alpha = mem;
@@ -31,14 +31,16 @@ struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
     struct gaussian_shell G_copy;
     allocate_gaussian_shell(G.nprim, &G_copy);
 
+
     G_copy.nprim = G.nprim;
     G_copy.am = G.am;
     G_copy.x = G.x;
     G_copy.y = G.y;
     G_copy.z = G.z;
 
-    memcpy(G_copy.alpha, G.alpha, G.nprim * sizeof(double));
-    memcpy(G_copy.coef, G.coef, G.nprim * sizeof(double));
+    // only need to copy once, since coef comes right after alpha in memory
+    size_t size = SIMINT_SIMD_ROUND(G.nprim)*sizeof(double); 
+    memcpy(G_copy.alpha, G.alpha, size);
     return G_copy;
 }
 
@@ -73,7 +75,6 @@ void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
         for (int j = 0; j < G[i].nprim; ++j)
             G[i].coef[j] *= norm * pow(G[i].alpha[j], m2);
     }
-
 }
 
 
@@ -85,7 +86,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
                               int nb, struct gaussian_shell const * const restrict B,
                               struct multishell_pair * const restrict P)
 {
-    size_t nprim = 0;
+    int nprim = 0;
 
     // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
@@ -93,34 +94,42 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
         nprim += SIMINT_SIMD_ROUND(A[i].nprim * B[j].nprim);
 
 
-    const size_t nshell12 = na*nb;
+    int nshell12 = na*nb;
+    int nbatch = nshell12 / SIMINT_NSHELL_SIMD;
+    if(nbatch % SIMINT_NSHELL_SIMD)
+        nbatch++;
 
-    const size_t prim_size = nprim * sizeof(double);
+
+    const size_t dprim_size = nprim * sizeof(double);
+    const size_t iprim_size = nprim * sizeof(int);
     const size_t ishell12_size = nshell12 * sizeof(int);
     const size_t dshell12_size = nshell12 * sizeof(double);
+    const size_t ibatch_size = nbatch * sizeof(int);
 
-    const size_t memsize = prim_size*11 + dshell12_size*3 + ishell12_size;
+    const size_t memsize = dprim_size*11 + dshell12_size*3 + iprim_size + ishell12_size + ibatch_size;
     P->memsize = memsize;
 
     // allocate one large space
     void * mem = ALLOC(memsize); 
-    P->x        = mem;
-    P->y        = mem +   prim_size;
-    P->z        = mem + 2*prim_size;
-    P->PA_x     = mem + 3*prim_size;
-    P->PA_y     = mem + 4*prim_size;
-    P->PA_z     = mem + 5*prim_size;
-    P->bAB_x    = mem + 6*prim_size;
-    P->bAB_y    = mem + 7*prim_size;
-    P->bAB_z    = mem + 8*prim_size;
-    P->alpha    = mem + 9*prim_size;
-    P->prefac   = mem + 10*prim_size;
+    P->x         = mem;
+    P->y         = mem +    dprim_size;
+    P->z         = mem +  2*dprim_size;
+    P->PA_x      = mem +  3*dprim_size;
+    P->PA_y      = mem +  4*dprim_size;
+    P->PA_z      = mem +  5*dprim_size;
+    P->bAB_x     = mem +  6*dprim_size;
+    P->bAB_y     = mem +  7*dprim_size;
+    P->bAB_z     = mem +  8*dprim_size;
+    P->alpha     = mem +  9*dprim_size;
+    P->prefac    = mem + 10*dprim_size;
+    P->shellidx  = mem + 11*dprim_size;  // Should be aligned with the end of the doubles
 
-    P->AB_x     = mem + 11*prim_size;
-    P->AB_y     = mem + 11*prim_size +   dshell12_size;
-    P->AB_z     = mem + 11*prim_size + 2*dshell12_size;
-
-    P->nprim12  = mem + 11*prim_size + 3*dshell12_size;
+    // below are unaligned
+    P->AB_x      = mem + 11*dprim_size + iprim_size;
+    P->AB_y      = mem + 11*dprim_size + iprim_size +   dshell12_size;
+    P->AB_z      = mem + 11*dprim_size + iprim_size + 2*dshell12_size;
+    P->nprim12   = mem + 11*dprim_size + iprim_size + 3*dshell12_size;
+    P->batchprim = mem + 11*dprim_size + iprim_size + 3*dshell12_size + ishell12_size;
 }
 
 

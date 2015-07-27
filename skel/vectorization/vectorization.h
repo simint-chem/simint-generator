@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #define SIMINT_SIMD_ALIGN_DBL (SIMINT_SIMD_LEN*8)
-#define SIMINT_SIMD_ALIGN_INT32 (SIMINT_SIMD_LEN*sizeof(int32_t))  // also used for uint32_t
+#define SIMINT_SIMD_ALIGN_INT (SIMINT_SIMD_LEN*sizeof(int))
 
 // "Max" alignment. Can be used to allocate memory of mixed types
 // (ie ints and doubles can be allocated this way)
@@ -17,7 +17,7 @@
 
 
 #define ASSUME_ALIGN_DBL(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_DBL)
-#define ASSUME_ALIGN_INT32(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_INT32)
+#define ASSUME_ALIGN_INT(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_INT)
 #define ASSUME __assume
 
 
@@ -33,7 +33,7 @@
 // align an array
 // ie double somearr[200] SIMINT_ALIGN_ARRAY
 #define SIMINT_ALIGN_ARRAY_DBL __attribute__((aligned(SIMINT_SIMD_ALIGN_DBL)))
-#define SIMINT_ALIGN_ARRAY_INT32 __attribute__((aligned(SIMINT_SIMD_ALIGN_INT32)))
+#define SIMINT_ALIGN_ARRAY_INT __attribute__((aligned(SIMINT_SIMD_ALIGN_INT)))
 
 
 // Number of shells to use in a batch

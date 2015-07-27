@@ -2,6 +2,7 @@
 #define SIMINT_SHELL_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,8 +11,10 @@ extern "C" {
 struct gaussian_shell
 {
     int am;
-    double x, y, z;
     int nprim;
+
+    double x, y, z;
+
     double * alpha;
     double * coef;
 };
@@ -20,15 +23,16 @@ struct multishell_pair
 {
     int am1, am2;          // angular momentum.
     int nprim;             // Total number of primitives
-    int imemsize;          // Total memory for ints (in bytes)
+    int nprim_length;      // Acutal length of alpha, etc, arrays, including padding (for alignment)
 
-    size_t nprim_length;      // Acutal length of alpha, etc, arrays, including padding (for alignment)
     size_t memsize;          // Total memory for doubles (in bytes)
 
     int nshell1, nshell2;  // number of shells
+    int nshell12;          // nshell1 * nshell2
+    int * nprim12;    // length nshell12;
 
-    int nshell12;
-    int * nprim12;   // length nshell12;
+    int nbatch;
+    int * batchprim;   // length nbatch. number of primitives in a batch, including padding
 
     // length nshell12
     double * AB_x;
@@ -47,6 +51,7 @@ struct multishell_pair
     double * bAB_z;
     double * alpha;
     double * prefac;
+    int * shellidx;
 };
 
 
