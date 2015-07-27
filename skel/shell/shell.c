@@ -80,51 +80,47 @@ void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
 
 
 // Allocates a shell pair with correct alignment
-// Only fills in {i,d}memsize and nprim_length members
+// Only fills in memsize member
 void allocate_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                               int nb, struct gaussian_shell const * const restrict B,
                               struct multishell_pair * const restrict P)
 {
-    ASSUME_ALIGN_DBL(A);
-    ASSUME_ALIGN_DBL(B);
-
-    int prim_size = 0;
+    size_t nprim = 0;
 
     // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        prim_size += SIMINT_SIMD_ROUND(A[i].nprim * B[j].nprim);
-
-    const int shell12_size = na*nb;
+        nprim += SIMINT_SIMD_ROUND(A[i].nprim * B[j].nprim);
 
 
-    const int dmemsize = (prim_size*11 + shell12_size*3)*sizeof(double);
-    const int imemsize = (shell12_size)*sizeof(int);
-    P->dmemsize = dmemsize;
-    P->imemsize = imemsize;
-    P->nprim_length = prim_size;
+    const size_t nshell12 = na*nb;
+
+    const size_t prim_size = nprim * sizeof(double);
+    const size_t ishell12_size = nshell12 * sizeof(int);
+    const size_t dshell12_size = nshell12 * sizeof(double);
+
+    const size_t memsize = prim_size*11 + dshell12_size*3 + ishell12_size;
+    P->memsize = memsize;
 
     // allocate one large space
-    double * mem = ALLOC(dmemsize); 
-    P->x      = mem;
-    P->y      = mem +   prim_size;
-    P->z      = mem + 2*prim_size;
-    P->PA_x   = mem + 3*prim_size;
-    P->PA_y   = mem + 4*prim_size;
-    P->PA_z   = mem + 5*prim_size;
-    P->bAB_x  = mem + 6*prim_size;
-    P->bAB_y  = mem + 7*prim_size;
-    P->bAB_z  = mem + 8*prim_size;
-    P->alpha  = mem + 9*prim_size;
-    P->prefac = mem + 10*prim_size;
+    void * mem = ALLOC(memsize); 
+    P->x        = mem;
+    P->y        = mem +   prim_size;
+    P->z        = mem + 2*prim_size;
+    P->PA_x     = mem + 3*prim_size;
+    P->PA_y     = mem + 4*prim_size;
+    P->PA_z     = mem + 5*prim_size;
+    P->bAB_x    = mem + 6*prim_size;
+    P->bAB_y    = mem + 7*prim_size;
+    P->bAB_z    = mem + 8*prim_size;
+    P->alpha    = mem + 9*prim_size;
+    P->prefac   = mem + 10*prim_size;
 
-    P->AB_x   = mem + 11*prim_size;
-    P->AB_y   = mem + 11*prim_size +   shell12_size;
-    P->AB_z   = mem + 11*prim_size + 2*shell12_size;
+    P->AB_x     = mem + 11*prim_size;
+    P->AB_y     = mem + 11*prim_size +   dshell12_size;
+    P->AB_z     = mem + 11*prim_size + 2*dshell12_size;
 
-    /* Should this be aligned? I don't think so */
-    int * intmem = malloc(imemsize);
-    P->nprim12   = intmem;
+    P->nprim12  = mem + 11*prim_size + 3*dshell12_size;
 }
 
 
@@ -132,9 +128,6 @@ void free_multishell_pair(struct multishell_pair P)
 {
    // Only need to free P.x since that points to the beginning of mem
    FREE(P.x);
-
-   // similar with nprim12
-   free(P.nprim12);
 }
 
 
@@ -142,8 +135,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                           int nb, struct gaussian_shell const * const restrict B,
                           struct multishell_pair * const restrict P)
 {
-    ASSUME_ALIGN_DBL(A);
-    ASSUME_ALIGN_DBL(B);
     ASSUME_ALIGN_DBL(P->x);
     ASSUME_ALIGN_DBL(P->y);
     ASSUME_ALIGN_DBL(P->z);
@@ -164,12 +155,7 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
     P->nprim = 0;
 
     // zero out
-    memset(P->x, 0, P->dmemsize);
-    memset(P->nprim12, 0, P->imemsize);
-
-    // set alpha to one for all
-    for(i = 0; i < P->nprim_length; i++)
-        P->alpha[i] = 1.0;
+    memset(P->x, 0, P->memsize);
 
     sasb = 0;
     idx = 0;
@@ -224,8 +210,9 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 
             }
 
-            // align to the next boundary
-            idx = SIMINT_SIMD_ROUND(idx);
+            // fill in alpha = 1 until next boundary
+            while(idx < SIMINT_SIMD_ROUND(idx))
+                P->alpha[idx++] = 1.0;
 
             P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
             P->nprim += A[sa].nprim*B[sb].nprim;

@@ -1,6 +1,8 @@
 #ifndef SIMINT_SHELL_H
 #define SIMINT_SHELL_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,9 +20,11 @@ struct multishell_pair
 {
     int am1, am2;          // angular momentum.
     int nprim;             // Total number of primitives
-    int dmemsize;          // Total memory for doubles (in bytes)
     int imemsize;          // Total memory for ints (in bytes)
-    int nprim_length;      // Acutal length of alpha, etc, arrays, including padding (for alignment)
+
+    size_t nprim_length;      // Acutal length of alpha, etc, arrays, including padding (for alignment)
+    size_t memsize;          // Total memory for doubles (in bytes)
+
     int nshell1, nshell2;  // number of shells
 
     int nshell12;
