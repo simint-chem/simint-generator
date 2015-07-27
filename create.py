@@ -74,7 +74,6 @@ skeldir = os.path.join(topdir, "skel")
 
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
-vinclude_gen = os.path.join(args.g, "include_generator")
 hrr_gen = os.path.join(args.g, "hrr_generator")
 
 if not os.path.isdir(args.d):
@@ -83,10 +82,6 @@ if not os.path.isdir(args.d):
 
 if not os.path.isfile(eri_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(eri_gen))
-  quit(1)
-
-if not os.path.isfile(vinclude_gen):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(vinclude_gen))
   quit(1)
 
 if not os.path.isfile(hrr_gen):
@@ -134,41 +129,6 @@ shutil.copytree(os.path.join(skeldir, "shell"),         outdir_shell)
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
 shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
-
-
-
-####################################################
-# Generate the vectorization header file
-# TODO - could probably be moved to a python script
-####################################################
-voutfile = os.path.join(outdir_vec, "vectorization_generated.h")
-logfile = os.path.join(outdir_vec, "vectorization_generated.log")
-
-cmdline = [vinclude_gen]
-cmdline.extend(["-c", str(args.c)])
-cmdline.extend(["-o", voutfile])
-if args.i:
-    cmdline.append("-i")
-if args.S:
-    cmdline.append("-S")
-
-print("Creating {}".format(voutfile))
-print("     Logfile: {}".format(logfile))
-print()
-print("Command line:")
-print(' '.join(cmdline))
-print()
-
-with open(logfile, 'w') as lf:
-  ret = subprocess.call(cmdline, stdout=lf)
-
-if ret != 0:
-  print("\n")
-  print("*********************************")
-  print("When generating include file")
-  print("Subprocess returned {} - aborting".format(ret))
-  print("*********************************")
-  print("\n")
 
 
 

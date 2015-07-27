@@ -29,17 +29,17 @@ endif()
 # AVX, etc
 ##################################################
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  if(SIMINT_AVX)
-    list(APPEND SIMINT_C_FLAGS "-xavx")
-  elseif(SIMINT_SSE)
-    list(APPEND SIMINT_C_FLAGS "-msse2")
+  if(SIMINT_SSE)
+    list(APPEND SIMINT_C_FLAGS "-msse2 -DSIMINT_SIMD_LEN=2")
+  elseif(SIMINT_AVX)
+    list(APPEND SIMINT_C_FLAGS "-xavx -DSIMINT_SIMD_LEN=4")
   elseif(SIMINT_MIC)
-    list(APPEND SIMINT_C_FLAGS "-mmic")
+    list(APPEND SIMINT_C_FLAGS "-mmic -DSIMINT_SIMD_LEN=8")
   endif()
 
   # Separate, since we may want -mmic and -no-vec, etc
   if(SIMINT_SCALAR)
-    list(APPEND SIMINT_C_FLAGS "-no-vec -no-simd")
+    list(APPEND SIMINT_C_FLAGS "-no-vec -no-simd -DSIMINT_SIMD_LEN=1")
   endif()
 
 endif()

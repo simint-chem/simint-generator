@@ -1,11 +1,10 @@
 #ifndef SIMINT_VECTORIZATION_H
 #define SIMINT_VECTORIZATION_H
 
-// This file included below is auto generated from the 
-// eri_generator program
-// It defines SIMINT_SIMD_LEN
-#include "vectorization/vectorization_generated.h"
-
+// SIMINT_SIMD_LEN should be defined on the command line
+#ifndef SIMINT_SIMD_LEN
+  #error "SIMINT_SIMD_LEN is not defined!"
+#endif
 
 #include <stdlib.h>
 

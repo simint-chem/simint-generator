@@ -67,12 +67,20 @@ list(APPEND TESTS_CXX_FLAGS "-DPROC_CYCLES_PER_SECOND=${PROC_CYCLES_PER_SECOND}"
 # AVX, etc
 ##################################################
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  if(SIMINT_AVX)
-    list(APPEND TESTS_CXX_FLAGS "-xavx")
+  if(SIMINT_SSE)
+    list(APPEND TESTS_CXX_FLAGS "-msse2 -DSIMINT_SIMD_LEN=2")
+    list(APPEND TESTS_LINK_FLAGS "-msse2")
+  elseif(SIMINT_AVX)
+    list(APPEND TESTS_CXX_FLAGS "-xavx -DSIMINT_SIMD_LEN=4")
     list(APPEND TESTS_LINK_FLAGS "-xavx")
   elseif(SIMINT_MIC)
-    list(APPEND TESTS_CXX_FLAGS "-mmic")
+    list(APPEND TESTS_CXX_FLAGS "-mmic -DSIMINT_SIMD_LEN=8")
     list(APPEND TESTS_LINK_FLAGS "-mmic")
+  endif()
+
+  # --no-vec and stuff make no sense here, right?
+  if(SIMINT_SCALAR)
+    list(APPEND SIMINT_C_FLAGS "-DSIMINT_SIMD_LEN=1")
   endif()
 endif()
  
