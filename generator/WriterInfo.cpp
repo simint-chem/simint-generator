@@ -213,7 +213,7 @@ void DeclareContwork(std::ostream & os)
         if(memory_ > (size_t)GetOption(OPTION_STACKMEM))
             os << "    double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << memory_ << ");\n";
         else
-            os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "] SIMINT_ALIGN_ARRAY;\n";
+            os << "    double contwork[SIMINT_NSHELL_SIMD * " << nelements_ << "] SIMINT_ALIGN_ARRAY_DBL;\n";
         os << "\n";
 
         os << "    // partition workspace into shells\n";

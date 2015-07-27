@@ -74,7 +74,7 @@ inline void Boys_F_taylor_simd(double * restrict F, int n, double x)
                + dx * ( (1.0/5040.0)   * f7xi
                )))))));
 
-        F += SIMINT_SIMD_ALIGN_DBL;
+        F += SIMINT_SIMD_LEN;
     }
 }
 

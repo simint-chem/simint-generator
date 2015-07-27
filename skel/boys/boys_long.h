@@ -32,7 +32,7 @@ inline void Boys_F_long_simd(double * restrict F, int n, double x)
      {
         *F = boys_longfac[i] * x2;
         x2 *= x1;
-        F += SIMINT_SIMD_ALIGN_DBL;
+        F += SIMINT_SIMD_LEN;
      }
 }
 

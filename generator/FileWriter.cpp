@@ -78,32 +78,32 @@ static void WriteFile_NotFlat(std::ostream & os,
     //       auto vectorized
     if(!WriterInfo::Scalar())
     {
-        os << indent1 << "ASSUME_ALIGN(P.x);\n";
-        os << indent1 << "ASSUME_ALIGN(P.y);\n";
-        os << indent1 << "ASSUME_ALIGN(P.z);\n";
-        os << indent1 << "ASSUME_ALIGN(P.PA_x);\n";
-        os << indent1 << "ASSUME_ALIGN(P.PA_y);\n";
-        os << indent1 << "ASSUME_ALIGN(P.PA_z);\n";
-        os << indent1 << "ASSUME_ALIGN(P.bAB_x);\n";
-        os << indent1 << "ASSUME_ALIGN(P.bAB_y);\n";
-        os << indent1 << "ASSUME_ALIGN(P.bAB_z);\n";
-        os << indent1 << "ASSUME_ALIGN(P.alpha);\n";
-        os << indent1 << "ASSUME_ALIGN(P.prefac);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.alpha);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.prefac);\n";
         os << "\n";
-        os << indent1 << "ASSUME_ALIGN(Q.x);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.y);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.z);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.PA_x);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.PA_y);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.PA_z);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.bAB_x);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.bAB_y);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.bAB_z);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.alpha);\n";
-        os << indent1 << "ASSUME_ALIGN(Q.prefac);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.alpha);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.prefac);\n";
 
         os << "\n";
-        os << indent1 << "ASSUME_ALIGN(" << WriterInfo::ArrVarName(am) << ");\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(" << WriterInfo::ArrVarName(am) << ");\n";
         os << "\n";
         os << "\n";
     }
@@ -182,8 +182,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     // if we are manually using intrinsics, we don't need these assume lines
     if(!WriterInfo::Scalar() && !WriterInfo::Intrinsics())
     {
-        os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-        os << indent2 << "ASSUME(istart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
+        //os << indent2 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
+        //os << indent2 << "ASSUME(istart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
         os << "\n";
     }
 
@@ -240,8 +240,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     // if we are manually using intrinsics, we don't need these assume lines
     if(!WriterInfo::Scalar() && !WriterInfo::Intrinsics())
     {
-        os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
-        os << indent4 << "ASSUME(jstart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
+        //os << indent4 << "// this should have been set/aligned in fill_multishell_pair or something else\n";
+        //os << indent4 << "ASSUME(jstart%SIMINT_SIMD_ALIGN_DBL == 0);\n";
         os << "\n";
     }
  
@@ -369,7 +369,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent4 << "}  // close loop over i\n";
 
     os << indent4 << "\n";
-    os << indent4 << "jstart = SIMINT_SIMD_ROUND_DBL(jend);\n";
+    os << indent4 << "jstart = SIMINT_SIMD_ROUND(jend);\n";
     os << indent4 << "\n";
 
     os << indent3 << "}\n";  // close loop over abcd or cd
@@ -384,7 +384,7 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent2 << "}\n";   // close loop over ab or cd
 
     os << "\n";
-    os << indent2 << "istart = SIMINT_SIMD_ROUND_DBL(iend);\n";
+    os << indent2 << "istart = SIMINT_SIMD_ROUND(iend);\n";
     os << "\n";
 
     os << indent1 << "}  // close loop over ab\n";

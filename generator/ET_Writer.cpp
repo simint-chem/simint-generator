@@ -65,7 +65,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "] SIMINT_ALIGN_ARRAY;\n";
+                os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
         } 
 
         os << "\n\n";

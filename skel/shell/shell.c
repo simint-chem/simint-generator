@@ -11,7 +11,7 @@ extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 // Allocate a gaussian shell with correct alignment
 void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
 {
-    const int prim_size = SIMINT_SIMD_ROUND_DBL(nprim);
+    const int prim_size = SIMINT_SIMD_ROUND(nprim);
     const int size = prim_size * sizeof(double);   
 
     double * mem = ALLOC(2*size);
@@ -85,15 +85,15 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
                               int nb, struct gaussian_shell const * const restrict B,
                               struct multishell_pair * const restrict P)
 {
-    ASSUME_ALIGN(A);
-    ASSUME_ALIGN(B);
+    ASSUME_ALIGN_DBL(A);
+    ASSUME_ALIGN_DBL(B);
 
     int prim_size = 0;
 
     // with rounding up to the nearest boundary
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        prim_size += SIMINT_SIMD_ROUND_DBL(A[i].nprim * B[j].nprim);
+        prim_size += SIMINT_SIMD_ROUND(A[i].nprim * B[j].nprim);
 
     const int shell12_size = na*nb;
 
@@ -142,19 +142,19 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                           int nb, struct gaussian_shell const * const restrict B,
                           struct multishell_pair * const restrict P)
 {
-    ASSUME_ALIGN(A);
-    ASSUME_ALIGN(B);
-    ASSUME_ALIGN(P->x);
-    ASSUME_ALIGN(P->y);
-    ASSUME_ALIGN(P->z);
-    ASSUME_ALIGN(P->PA_x);
-    ASSUME_ALIGN(P->PA_y);
-    ASSUME_ALIGN(P->PA_z);
-    ASSUME_ALIGN(P->bAB_x);
-    ASSUME_ALIGN(P->bAB_y);
-    ASSUME_ALIGN(P->bAB_z);
-    ASSUME_ALIGN(P->alpha);
-    ASSUME_ALIGN(P->prefac);
+    ASSUME_ALIGN_DBL(A);
+    ASSUME_ALIGN_DBL(B);
+    ASSUME_ALIGN_DBL(P->x);
+    ASSUME_ALIGN_DBL(P->y);
+    ASSUME_ALIGN_DBL(P->z);
+    ASSUME_ALIGN_DBL(P->PA_x);
+    ASSUME_ALIGN_DBL(P->PA_y);
+    ASSUME_ALIGN_DBL(P->PA_z);
+    ASSUME_ALIGN_DBL(P->bAB_x);
+    ASSUME_ALIGN_DBL(P->bAB_y);
+    ASSUME_ALIGN_DBL(P->bAB_z);
+    ASSUME_ALIGN_DBL(P->alpha);
+    ASSUME_ALIGN_DBL(P->prefac);
 
     int i, j, sa, sb, sasb, idx;
 
@@ -187,12 +187,12 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
 
-            ASSUME(idx%SIMINT_SIMD_ALIGN_DBL == 0);
+            ASSUME(idx%SIMINT_SIMD_LEN == 0);
 
-            ASSUME_ALIGN(A[sa].alpha);
-            ASSUME_ALIGN(A[sa].coef);
-            ASSUME_ALIGN(B[sb].alpha);
-            ASSUME_ALIGN(B[sb].coef);
+            ASSUME_ALIGN_DBL(A[sa].alpha);
+            ASSUME_ALIGN_DBL(A[sa].coef);
+            ASSUME_ALIGN_DBL(B[sb].alpha);
+            ASSUME_ALIGN_DBL(B[sb].coef);
 
             for(i = 0; i < A[sa].nprim; ++i)
             {
@@ -225,7 +225,7 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             }
 
             // align to the next boundary
-            idx = SIMINT_SIMD_ROUND_DBL(idx);
+            idx = SIMINT_SIMD_ROUND(idx);
 
             P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
             P->nprim += A[sa].nprim*B[sb].nprim;
