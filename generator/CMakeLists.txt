@@ -1,13 +1,18 @@
 ###################
 # Generator flags
 ###################
-list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
-list(APPEND GENERATOR_CXX_FLAGS "-O3")
-list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wunused-variable -pedantic")
-#list(APPEND GENERATOR_CXX_FLAGS "-Werror -pedantic-errors")
-list(APPEND GENERATOR_CXX_FLAGS "-ggdb")
-
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
+
+
+if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+  list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
+  list(APPEND GENERATOR_CXX_FLAGS "-w3")
+else()
+  list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
+  list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wextra -pedantic")
+endif()
+
+
 
 # Prepare list for CXX Flags
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
@@ -24,9 +29,11 @@ add_library(generator_common STATIC
                          HRR_Writer.cpp
                          FileWriter.cpp
            )
+
+
+
 set_target_properties(generator_common PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
 set_target_properties(generator_common PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-
 
 add_executable(eri_generator eri_generator.cpp)
 set_target_properties(eri_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")

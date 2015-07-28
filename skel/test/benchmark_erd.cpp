@@ -117,7 +117,7 @@ int main(int argc, char ** argv)
             for(int d = 0; d < nshell4; d++)
                 nprim += A[a].nprim * B[b].nprim * C[c].nprim * D[d].nprim;
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16lu  (%8.3f secs)    %12.3f\n",
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           nshell1234, nprim,

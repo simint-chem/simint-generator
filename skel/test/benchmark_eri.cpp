@@ -107,7 +107,7 @@ int main(int argc, char ** argv)
             unsigned long ncont = (unsigned long)(P.nshell12) * (unsigned long)(Q.nshell12);
             unsigned long nprim = (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16lu  (%8.3f secs)    %12.3f\n",
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           ncont, nprim,

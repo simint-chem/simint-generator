@@ -6,6 +6,17 @@
 #include "shell/shell.h"
 #include "shell/shell_constants.h"
 
+
+// Disable intel warnings
+// 1338 : Pointer arithmetic on pointer to void. Done on purpose
+#ifdef __INTEL_COMPILER
+    #pragma warning(disable:1338)
+#endif
+
+
+
+
+
 extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 // Allocate a gaussian shell with correct alignment

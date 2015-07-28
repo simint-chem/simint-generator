@@ -40,10 +40,6 @@ set(PROC_CYCLES_PER_SECOND "" CACHE STRING "Processor cycles per second (in GHz)
 # Test stuff flags
 ###################
 list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
-list(APPEND TESTS_CXX_FLAGS "-std=c++11")
-list(APPEND TESTS_CXX_FLAGS "-O3")
-list(APPEND TESTS_CXX_FLAGS "-Wall -Wunused-variable -pedantic -Werror -pedantic-errors")
-list(APPEND TESTS_CXX_FLAGS "-ggdb")
 
 if(TESTS_BENCHMARK_VALIDATE)
   list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE")
@@ -51,10 +47,21 @@ endif()
 
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397 -restrict")
+  # Disabled diagnostics:
+  # 10397 : Remark about creating .optrpt files
+  #   981 : "operands are evaluated in unspecified order"
+  #         seems to have lots of false positives, even when it should be obvious
+  #  2620 : attribute appears more than once (??? in hrr)
+  #   383 : value copied to temporary, reference to temporary used
+  list(APPEND TESTS_CXX_FLAGS "-std=c++11")
+  list(APPEND TESTS_CXX_FLAGS "-qopt-report=5 -w3 -wd981 -wd10397 -wd2620 -wd383")
+  list(APPEND TESTS_CXX_FLAGS "-restrict")
+  #list(APPEND TESTS_CXX_FLAGS "-Werror -pedantic-errors")
 else()
-  list(APPEND TESTS_CXX_FLAGS "-qopt-report=4 -wd10397 -Drestrict=__restrict__")
+  #list(APPEND TESTS_CXX_FLAGS "-Drestrict=__restrict__")
+  message(FATAL_ERROR "Unsupported compiler (for now)")
 endif()
+
 
 if("${PROC_CYCLES_PER_SECOND}" STREQUAL "")
   message(WARNING "Warning - set PROC_CYCLES_PER_SECOND for accurate timing in seconds (ticks should still be accurate)")
@@ -62,6 +69,8 @@ if("${PROC_CYCLES_PER_SECOND}" STREQUAL "")
 endif()
 
 list(APPEND TESTS_CXX_FLAGS "-DPROC_CYCLES_PER_SECOND=${PROC_CYCLES_PER_SECOND}")
+
+
 
 ##################################################
 # AVX, etc
@@ -144,7 +153,7 @@ set_target_properties(test_libint2 PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 ADDTESTS(gen_ref gen_ref.cpp)
 
-ADDTESTS(test_f test_f.cpp)
+#ADDTESTS(test_f test_f.cpp)
 ADDTESTS(test_eri test_eri.cpp)
 
 ADDTESTS(benchmark_f benchmark_f.cpp)

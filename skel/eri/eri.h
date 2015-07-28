@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "eri/gen/eri_generated.h"
+#include "eri/gen/hrr.h"
 
 #ifdef __cplusplus
 }

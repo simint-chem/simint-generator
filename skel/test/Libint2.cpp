@@ -6,8 +6,16 @@
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
+// Disable intel warnings
+// 193 : zero used for undefined preprocessing identifier "LIBINT2_DEFINED__aB_s___0__s___1___TwoPRep_s___0__s___1___Ab__up_18
+//       Not much I can do about that 
+#ifdef __INTEL_COMPILER
+    #pragma warning(disable:193)
+#endif
 
-Libint2_ERI::Libint2_ERI(int maxam, size_t maxnprim, size_t maxsize)
+
+
+Libint2_ERI::Libint2_ERI(int maxam, size_t maxnprim)
 {
     size_t size = maxnprim * maxnprim * maxnprim * maxnprim;
 

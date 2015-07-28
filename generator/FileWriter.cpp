@@ -57,6 +57,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     os << "#include \"constants.h\"\n";
     os << "#include \"shell/shell.h\"\n";
+    os << "#include \"eri/eri.h\"\n";
     os << "\n";
     WriterInfo::WriteIncludes(os);
     os << "\n";

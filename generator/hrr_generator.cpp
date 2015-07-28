@@ -138,11 +138,11 @@ int main(int argc, char ** argv)
 
     // include files for sources
     ofb << "\n";
-    ofb << "#include \"vectorization/vectorization.h\"\n";
+    ofb << "#include \"eri/eri.h\"\n";
     ofb << "\n\n";
 
     ofk << "\n";
-    ofk << "#include \"vectorization/vectorization.h\"\n";
+    ofk << "#include \"eri/eri.h\"\n";
     ofk << "\n\n";
 
     // we want all doublets up to L

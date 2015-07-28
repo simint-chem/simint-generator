@@ -4,9 +4,9 @@
 #include <utility>
 
 #define CLOCK(ticks) do {                                 \
-    volatile unsigned int a, d;                              \
-    __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d) : );   \
-    (ticks) = ((unsigned long long) a)|(((unsigned long long)d)<<32); \
+    volatile unsigned int a__, d__;                              \
+    __asm__ __volatile__("rdtsc" : "=a" (a__), "=d" (d__) : );   \
+    (ticks) = ((unsigned long long) a__)|(((unsigned long long)d__)<<32); \
   } while(0)
 
 

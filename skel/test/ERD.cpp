@@ -68,47 +68,31 @@ ERD_ERI::ERD_ERI(int na, struct gaussian_shell const * const restrict A,
     int am4 = D[0].am;
 
     int npgto1 = 0;
-    int sh1 = 0;
     for(int i = 0; i < na; ++i)
     {
         if(npgto1 < A[i].nprim)
-        {
             npgto1 = A[i].nprim;
-            sh1 = i;
-        }
     }
 
     int npgto2 = 0;
-    int sh2 = 0;
     for(int i = 0; i < nb; ++i)
     {
         if(npgto2 < B[i].nprim)
-        {
             npgto2 = B[i].nprim;
-            sh2 = i;
-        }
     }
 
     int npgto3 = 0;
-    int sh3 = 0;
     for(int i = 0; i < nc; ++i)
     {
         if(npgto3 < C[i].nprim)
-        {
             npgto3 = C[i].nprim;
-            sh3 = i;
-        }
     }
 
     int npgto4 = 0;
-    int sh4 = 0;
     for(int i = 0; i < nd; ++i)
     {
         if(npgto4 < D[i].nprim)
-        {
             npgto4 = D[i].nprim;
-            sh4 = i;
-        }
     }
 
     // todo - general contraction?

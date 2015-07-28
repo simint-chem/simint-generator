@@ -204,15 +204,15 @@ ShellMap ReadBasis(const std::string & file)
             }
 
             // loop through general contractions
-            for(int i = 0; i < nprim; i++)
+            for(int k = 0; k < nprim; k++)
             {
                 double alpha;
                 f >> alpha;
 
-                for(int j = 0; j < ngen; j++)
+                for(int l = 0; l < ngen; l++)
                 {
-                    gvec[j].alpha[i] = alpha;
-                    f >> gvec[j].coef[i];
+                    gvec[l].alpha[k] = alpha;
+                    f >> gvec[l].coef[k];
                 }
 
             }
@@ -256,20 +256,20 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m)
 
 
 
-void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                     const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+void ValeevIntegrals(const AlignedGaussianVec & gv1, const AlignedGaussianVec & gv2,
+                     const AlignedGaussianVec & gv3, const AlignedGaussianVec & gv4,
                      double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
-    const gaussian_shell * A = g1.data();
-    const gaussian_shell * B = g2.data();
-    const gaussian_shell * C = g3.data();
-    const gaussian_shell * D = g4.data();
+    const gaussian_shell * A = gv1.data();
+    const gaussian_shell * B = gv2.data();
+    const gaussian_shell * C = gv3.data();
+    const gaussian_shell * D = gv4.data();
 
-    const int nshell1 = g1.size();
-    const int nshell2 = g2.size();
-    const int nshell3 = g3.size();
-    const int nshell4 = g4.size();
+    const int nshell1 = gv1.size();
+    const int nshell2 = gv2.size();
+    const int nshell3 = gv3.size();
+    const int nshell4 = gv4.size();
 
     const int am1 = A[0].am;
     const int am2 = B[0].am;

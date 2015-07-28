@@ -49,7 +49,6 @@ int main(int argc, char ** argv)
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
     const int maxam = maxparams[0];
     const int maxnprim = maxparams[1];
-    const int maxsize = maxparams[2];
 
     /* Storage of integrals */
     std::vector<double *> res_ints(nthread);
@@ -62,7 +61,7 @@ int main(int argc, char ** argv)
     Libint2_ERI libint(maxam, maxnprim, maxsize);
     std::vector<std::unique_ptr<Libint2_ERI>> alleri(nthread);
     for(auto & it : alleri)
-        it = std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim, maxsize));
+        it = std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim));
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -129,7 +128,7 @@ int main(int argc, char ** argv)
             for(int d = 0; d < nshell4; d++)
                 nprim += A[a].nprim * B[b].nprim * C[c].nprim * D[d].nprim;
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16lu  (%8.3f secs)    %12.3f\n",
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           nshell1234, nprim,

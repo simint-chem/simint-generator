@@ -27,8 +27,8 @@ class ERD_ERI
 
 
 
-        TimerInfo Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                            const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+        TimerInfo Integrals(const AlignedGaussianVec & gv1, const AlignedGaussianVec & gv2,
+                            const AlignedGaussianVec & gv3, const AlignedGaussianVec & gv4,
                             double * const integrals);
 
 

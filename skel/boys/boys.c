@@ -1,3 +1,4 @@
+#include "boys/boys.h"
 #include "boys/boys_vref.h"
 
 void Boys_Init(void)
