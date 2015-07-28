@@ -7,7 +7,6 @@
 #include <map>
 #include <fstream>
     
-#include "test/cppvectorization.hpp"
 #include "shell/shell.h"
 #include "test/timer.hpp"
 
@@ -18,8 +17,8 @@
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
-typedef std::vector<gaussian_shell, AlignedAllocator<gaussian_shell>> AlignedGaussianVec;
-typedef std::map<int, AlignedGaussianVec> ShellMap;
+typedef std::vector<gaussian_shell> GaussianVec;
+typedef std::map<int, GaussianVec> ShellMap;
 
 // Function pointer typedefs
 typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
@@ -53,8 +52,8 @@ bool ValidQuartet(int i, int j, int k, int l);
 
 
 // Deep copying and memory management
-AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v);
-void FreeAlignedGaussianVec(AlignedGaussianVec & agv);
+GaussianVec CopyGaussianVec(const GaussianVec & v);
+void FreeGaussianVec(GaussianVec & agv);
 
 ShellMap CopyShellMap(const ShellMap & m);
 void FreeShellMap(ShellMap & m);
@@ -68,13 +67,13 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m);
 
 
 // Calculating reference integrals
-void ValeevIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                     const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+void ValeevIntegrals(const GaussianVec & g1, const GaussianVec & g2,
+                     const GaussianVec & g3, const GaussianVec & g4,
                      double * const integrals, bool normalize);
 
 
-void ERDIntegrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                  const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+void ERDIntegrals(const GaussianVec & g1, const GaussianVec & g2,
+                  const GaussianVec & g3, const GaussianVec & g4,
                   double * const integrals);
 
 

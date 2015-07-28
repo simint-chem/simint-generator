@@ -5,7 +5,7 @@
 #include "test/common.hpp"
 #include "test/timer.hpp"
 
-typedef std::vector<gaussian_shell, AlignedAllocator<gaussian_shell>> AlignedGaussianVec;
+typedef std::vector<gaussian_shell> GaussianVec;
 
 class ERD_ERI
 {
@@ -27,8 +27,8 @@ class ERD_ERI
 
 
 
-        TimerInfo Integrals(const AlignedGaussianVec & gv1, const AlignedGaussianVec & gv2,
-                            const AlignedGaussianVec & gv3, const AlignedGaussianVec & gv4,
+        TimerInfo Integrals(const GaussianVec & gv1, const GaussianVec & gv2,
+                            const GaussianVec & gv3, const GaussianVec & gv4,
                             double * const integrals);
 
 
@@ -57,5 +57,33 @@ class ERD_ERI
 };
 
 void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G);
+
+
+
+// in the ERD library
+extern "C" {
+
+void erd__gener_eri_batch_(const int *imax, const int *zmax, const int *nalpha, const int *ncoeff,
+                           const int *ncsum, const int *ncgto1, const int *ncgto2,
+                           const int *ncgto3, const int *ncgto4, const int *npgto1,
+                           const int *npgto2, const int *npgto3, const int *npgto4,
+                           const int *shell1, const int *shell2, const int *shell3,
+                           const int *shell4, const double *x1, const double *y1, const double *z1,
+                           const double *x2,const double *y2,const double *z2, const double *x3,
+                           const double *y3,const double *z3,const double *x4, const double *y4, const double *z4,
+                           const double *alpha, const double *cc, const int *ccbeg, const int *ccend,
+                           const int *spheric,  const int *screen, int *icore,
+                           int *nbatch, int * nfirst, double *zcore );
+
+void erd__memory_eri_batch_(const int *nalpha, const int *ncoeff,
+                            const int *ncgto1, const int *ncgto2, const int *ncgto3, const int *ncgto4,
+                            const int *npgto1, const int *npgto2, const int *npgto3, const int *npgto4,
+                            const int *shell1, const int *shell2, const int *shell3, const int *shell4,
+                            const double *x1, const double *y1, const double *z1, const double *x2, const double *y2,
+                            const double *z2, const double *x3, const double *y3, const double *z3, const double *x4,
+                            const double *y4, const double *z4, const double *alpha, const double *cc, const int *spheric,
+                            int *imin, int *iopt, int *zmin, int *zopt);
+}
+
 
 #endif

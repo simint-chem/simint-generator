@@ -49,6 +49,7 @@ int main(int argc, char ** argv)
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
     const int maxam = maxparams[0];
     const int maxnprim = maxparams[1];
+    const int maxsize = maxparams[2];
 
     /* Storage of integrals */
     std::vector<double *> res_ints(nthread);
@@ -58,7 +59,6 @@ int main(int argc, char ** argv)
 
     // initialize stuff
     LIBINT2_PREFIXED_NAME(libint2_static_init)();
-    Libint2_ERI libint(maxam, maxnprim, maxsize);
     std::vector<std::unique_ptr<Libint2_ERI>> alleri(nthread);
     for(auto & it : alleri)
         it = std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim));
@@ -97,10 +97,10 @@ int main(int argc, char ** argv)
                 continue;
 
 
-            const AlignedGaussianVec & A = shellmap[i];
-            const AlignedGaussianVec & B = shellmap[j];
-            const AlignedGaussianVec & C = shellmap[k];
-            const AlignedGaussianVec & D = shellmap[l];
+            const GaussianVec & A = shellmap[i];
+            const GaussianVec & B = shellmap[j];
+            const GaussianVec & C = shellmap[k];
+            const GaussianVec & D = shellmap[l];
 
             //////////////////////
             // set up shell pairs
@@ -116,16 +116,16 @@ int main(int argc, char ** argv)
 
 
             // calculate the number of primitives
-            const unsigned long nshell1 = A.size();
-            const unsigned long nshell2 = B.size();
-            const unsigned long nshell3 = C.size();
-            const unsigned long nshell4 = D.size();
-            const unsigned long nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-            unsigned long nprim = 0;
-            for(int a = 0; a < nshell1; a++)
-            for(int b = 0; b < nshell2; b++)
-            for(int c = 0; c < nshell3; c++)
-            for(int d = 0; d < nshell4; d++)
+            const size_t nshell1 = A.size();
+            const size_t nshell2 = B.size();
+            const size_t nshell3 = C.size();
+            const size_t nshell4 = D.size();
+            const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+            size_t nprim = 0;
+            for(size_t a = 0; a < nshell1; a++)
+            for(size_t b = 0; b < nshell2; b++)
+            for(size_t c = 0; c < nshell3; c++)
+            for(size_t d = 0; d < nshell4; d++)
                 nprim += A[a].nprim * B[b].nprim * C[c].nprim * D[d].nprim;
 
             printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",

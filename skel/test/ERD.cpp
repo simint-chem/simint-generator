@@ -8,31 +8,6 @@
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
-extern "C" {
-
-void erd__gener_eri_batch_(const int *imax, const int *zmax, const int *nalpha, const int *ncoeff,
-                           const int *ncsum, const int *ncgto1, const int *ncgto2,
-                           const int *ncgto3, const int *ncgto4, const int *npgto1,
-                           const int *npgto2, const int *npgto3, const int *npgto4,
-                           const int *shell1, const int *shell2, const int *shell3,
-                           const int *shell4, const double *x1, const double *y1, const double *z1,
-                           const double *x2,const double *y2,const double *z2, const double *x3,
-                           const double *y3,const double *z3,const double *x4, const double *y4, const double *z4,
-                           const double *alpha, const double *cc, const int *ccbeg, const int *ccend,
-                           const int *spheric,  const int *screen, int *icore,
-                           int *nbatch, int * nfirst, double *zcore );
-
-void erd__memory_eri_batch_(const int *nalpha, const int *ncoeff,
-                            const int *ncgto1, const int *ncgto2, const int *ncgto3, const int *ncgto4,
-                            const int *npgto1, const int *npgto2, const int *npgto3, const int *npgto4,
-                            const int *shell1, const int *shell2, const int *shell3, const int *shell4,
-                            const double *x1, const double *y1, const double *z1, const double *x2, const double *y2,
-                            const double *z2, const double *x3, const double *y3, const double *z3, const double *x4,
-                            const double *y4, const double *z4, const double *alpha, const double *cc, const int *spheric,
-                            int *imin, int *iopt, int *zmin, int *zopt);
-}
-
-
 
 ERD_ERI::ERD_ERI(int am1, int nprim1, int ncgto1,
                  int am2, int nprim2, int ncgto2,
@@ -233,8 +208,8 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
 }
 
 
-TimerInfo ERD_ERI::Integrals(const AlignedGaussianVec & g1, const AlignedGaussianVec & g2,
-                             const AlignedGaussianVec & g3, const AlignedGaussianVec & g4,
+TimerInfo ERD_ERI::Integrals(const GaussianVec & g1, const GaussianVec & g2,
+                             const GaussianVec & g3, const GaussianVec & g4,
                              double * const integrals)
 {
     const gaussian_shell * A = g1.data();

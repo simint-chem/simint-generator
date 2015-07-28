@@ -2,7 +2,7 @@
 #include "test/Libint2.hpp"
 #include "boys/boys_FO.h"
 #include "test/common.hpp"
-
+#include "vectorization/vectorization.h"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -10,6 +10,7 @@
 // 193 : zero used for undefined preprocessing identifier "LIBINT2_DEFINED__aB_s___0__s___1___TwoPRep_s___0__s___1___Ab__up_18
 //       Not much I can do about that 
 #ifdef __INTEL_COMPILER
+    #pragma warning(push)
     #pragma warning(disable:193)
 #endif
 
@@ -288,4 +289,8 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
     return totaltime;
 }
 
+
+#ifdef __INTEL_COMPILER
+    #pragma warning(pop)
+#endif
 

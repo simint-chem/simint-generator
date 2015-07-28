@@ -89,10 +89,10 @@ int main(int argc, char ** argv)
                 continue;
 
 
-            const AlignedGaussianVec & it_i = shellmap[i];
-            const AlignedGaussianVec & it_j = shellmap[j];
-            const AlignedGaussianVec & it_k = shellmap[k];
-            const AlignedGaussianVec & it_l = shellmap[l];
+            const GaussianVec & it_i = shellmap[i];
+            const GaussianVec & it_j = shellmap[j];
+            const GaussianVec & it_k = shellmap[k];
+            const GaussianVec & it_l = shellmap[l];
 
 
             // set up shell pairs

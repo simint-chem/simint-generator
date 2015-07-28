@@ -6,7 +6,7 @@
 #include "test/valeev.hpp"
 #include "test/ERD.hpp"
 #include "test/Libint2.hpp"
-
+#include "vectorization/vectorization.h"
 
 int main(int argc, char ** argv)
 {
@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
     LIBINT2_PREFIXED_NAME(libint2_static_init)();
 
     ERD_ERI erd(maxam, maxnprim, 1);
-    Libint2_ERI libint(maxam, maxnprim, maxsize);
+    Libint2_ERI libint(maxam, maxnprim);
              
              
     printf("\n");
@@ -78,15 +78,15 @@ int main(int argc, char ** argv)
 
         const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
 
-        const AlignedGaussianVec & it_i = shellmap[i];
-        const AlignedGaussianVec & it_j = shellmap[j];
-        const AlignedGaussianVec & it_k = shellmap[k];
-        const AlignedGaussianVec & it_l = shellmap[l];
+        const GaussianVec & it_i = shellmap[i];
+        const GaussianVec & it_j = shellmap[j];
+        const GaussianVec & it_k = shellmap[k];
+        const GaussianVec & it_l = shellmap[l];
 
-        const AlignedGaussianVec & erd_it_i = shellmap_erd[i];
-        const AlignedGaussianVec & erd_it_j = shellmap_erd[j];
-        const AlignedGaussianVec & erd_it_k = shellmap_erd[k];
-        const AlignedGaussianVec & erd_it_l = shellmap_erd[l];
+        const GaussianVec & erd_it_i = shellmap_erd[i];
+        const GaussianVec & erd_it_j = shellmap_erd[j];
+        const GaussianVec & erd_it_k = shellmap_erd[k];
+        const GaussianVec & erd_it_l = shellmap_erd[l];
 
         // number of shells
         const int nshell1 = it_i.size();

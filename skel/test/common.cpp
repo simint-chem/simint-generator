@@ -12,7 +12,6 @@
 
 #include "test/common.hpp"
 #include "test/valeev.hpp"
-#include "test/cppvectorization.hpp"
 
 static erifunc funcs[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 
@@ -87,9 +86,9 @@ bool ValidQuartet(int i, int j, int k, int l)
 }
 
 
-AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
+GaussianVec CopyGaussianVec(const GaussianVec & v)
 {
-    AlignedGaussianVec copy;
+    GaussianVec copy;
     copy.reserve(v.size());
     for(const auto & it : v)
         copy.push_back(copy_gaussian_shell(it));
@@ -98,7 +97,7 @@ AlignedGaussianVec CopyAlignedGaussianVec(const AlignedGaussianVec & v)
 
 
 
-void FreeAlignedGaussianVec(AlignedGaussianVec & agv)
+void FreeGaussianVec(GaussianVec & agv)
 {
     for(auto & it : agv)
         free_gaussian_shell(it);
@@ -111,7 +110,7 @@ ShellMap CopyShellMap(const ShellMap & m)
 {
     ShellMap copy;
     for(auto & it : m)
-        copy.insert({it.first, CopyAlignedGaussianVec(it.second)});   
+        copy.insert({it.first, CopyGaussianVec(it.second)});   
     return copy;
 }
 
@@ -120,7 +119,7 @@ ShellMap CopyShellMap(const ShellMap & m)
 void FreeShellMap(ShellMap & m)
 {
     for(auto & it : m)
-        FreeAlignedGaussianVec(it.second);
+        FreeGaussianVec(it.second);
     m.clear();
 }
 
@@ -188,7 +187,7 @@ ShellMap ReadBasis(const std::string & file)
             // set the angular momentum
             // (circularly loop throught the type to handle sp, spd, etc)
             auto itg = type.begin();
-            AlignedGaussianVec gvec(ngen);
+            GaussianVec gvec(ngen);
             for(auto & it : gvec)
             {
                 allocate_gaussian_shell(nprim, &it);
@@ -256,8 +255,8 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m)
 
 
 
-void ValeevIntegrals(const AlignedGaussianVec & gv1, const AlignedGaussianVec & gv2,
-                     const AlignedGaussianVec & gv3, const AlignedGaussianVec & gv4,
+void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
+                     const GaussianVec & gv3, const GaussianVec & gv4,
                      double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
@@ -465,7 +464,10 @@ void Init_Test(void)
 }
 
 
-
+#ifdef __INTEL_COMPILER
+  #pragma warning(push)
+  #pragma warning(disable:869)
+#endif
 int eri_notyetimplemented(struct multishell_pair const P,
                           struct multishell_pair const Q,
                           double * const restrict dummy)
@@ -477,6 +479,9 @@ int eri_notyetimplemented(struct multishell_pair const P,
     exit(1);
     return 0;
 }
+#ifdef __INTEL_COMPILER
+  #pragma warning(pop)
+#endif
 
 
 TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
