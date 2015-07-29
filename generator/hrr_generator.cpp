@@ -120,6 +120,18 @@ int main(int argc, char ** argv)
     ofk << "#include \"eri/eri.h\"\n";
     ofk << "\n\n";
 
+
+    // disable this diagnostic (for now)
+    ofb << "#ifdef __INTEL_COMPILER\n";
+    ofb << "    #pragma warning(disable:2620)\n";
+    ofb << "#endif\n";
+    ofb << "\n\n";
+
+    ofk << "#ifdef __INTEL_COMPILER\n";
+    ofk << "    #pragma warning(disable:2620)\n";
+    ofk << "#endif\n";
+    ofk << "\n\n";
+
     // we want all doublets up to L
     for(i = 1; i <= maxL; i++)
     for(int j = 1; j <= i; j++)
