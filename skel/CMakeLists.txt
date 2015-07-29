@@ -21,7 +21,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   #   981 : "operands are evaluated in unspecified order"
   #         seems to have lots of false positives, even when it should be obvious
   list(APPEND SIMINT_C_FLAGS "-std=c99")
-  list(APPEND SIMINT_C_FLAGS "-qopt-report=5 -wd10397 -wd981")
+  list(APPEND SIMINT_C_FLAGS "-qopt-report=5 -w3 -wd10397 -wd981")
   list(APPEND SIMINT_C_FLAGS "-O3 -ggdb")
 else()
   message(FATAL_ERROR "Unsupported compiler (for now)")
