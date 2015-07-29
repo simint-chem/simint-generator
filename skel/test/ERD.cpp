@@ -208,19 +208,19 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
 }
 
 
-TimerInfo ERD_ERI::Integrals(const GaussianVec & g1, const GaussianVec & g2,
-                             const GaussianVec & g3, const GaussianVec & g4,
+TimerInfo ERD_ERI::Integrals(const GaussianVec & gv1, const GaussianVec & gv2,
+                             const GaussianVec & gv3, const GaussianVec & gv4,
                              double * const integrals)
 {
-    const gaussian_shell * A = g1.data();
-    const gaussian_shell * B = g2.data();
-    const gaussian_shell * C = g3.data();
-    const gaussian_shell * D = g4.data();
+    const gaussian_shell * A = gv1.data();
+    const gaussian_shell * B = gv2.data();
+    const gaussian_shell * C = gv3.data();
+    const gaussian_shell * D = gv4.data();
 
-    const int nshell1 = g1.size();
-    const int nshell2 = g2.size();
-    const int nshell3 = g3.size();
-    const int nshell4 = g4.size();
+    const int nshell1 = gv1.size();
+    const int nshell2 = gv2.size();
+    const int nshell3 = gv3.size();
+    const int nshell4 = gv4.size();
     const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     const int am1 = A[0].am;
