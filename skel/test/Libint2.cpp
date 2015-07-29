@@ -277,10 +277,14 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
             }
 
 
-            jstart = SIMINT_SIMD_ROUND(jend);
+            jstart = jend;
+            if(((cd+1) % SIMINT_NSHELL_SIMD) == 0)
+                jstart = SIMINT_SIMD_ROUND(jstart);
         }
 
-        istart = SIMINT_SIMD_ROUND(iend);
+        istart = iend;
+        if(((ab+1) % SIMINT_NSHELL_SIMD) == 0)
+            istart = SIMINT_SIMD_ROUND(istart);
         
     }
 
