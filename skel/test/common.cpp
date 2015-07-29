@@ -464,6 +464,7 @@ void Init_Test(void)
 }
 
 
+// Disable diagnostic about unused parameter "dummy"
 #ifdef __INTEL_COMPILER
   #pragma warning(push)
   #pragma warning(disable:869)
@@ -482,6 +483,7 @@ int eri_notyetimplemented(struct multishell_pair const P,
 #ifdef __INTEL_COMPILER
   #pragma warning(pop)
 #endif
+
 
 
 TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)

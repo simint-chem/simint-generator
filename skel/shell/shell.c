@@ -7,7 +7,7 @@
 #include "shell/shell_constants.h"
 
 
-// Disable intel warnings
+// Disable intel diagnostics
 // 1338 : Pointer arithmetic on pointer to void. Done on purpose
 #ifdef __INTEL_COMPILER
     #pragma warning(disable:1338)
