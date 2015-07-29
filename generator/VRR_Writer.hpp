@@ -35,8 +35,6 @@ class VRR_Writer
         void WriteVRRInline_(std::ostream & os) const;
         void WriteVRRExternal_(std::ostream & os) const;
 
-        void WriteAccumulate_(std::ostream & os, int am) const;
-
         void WriteVRRSteps_(std::ostream & os) const;
         void WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, const std::string & num_n) const;
 };

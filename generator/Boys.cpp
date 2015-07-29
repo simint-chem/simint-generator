@@ -83,41 +83,41 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     {
         // Horner's rule
         // Numerator
-        os << indent6 << "num = " << WriterInfo::FMAdd("F_x", GetFOConstant("a", m, bf.a.size()-1), GetFOConstant("a", m, bf.a.size()-2)) << ";\n";
+        os << indent5 << "num = " << WriterInfo::FMAdd("F_x", GetFOConstant("a", m, bf.a.size()-1), GetFOConstant("a", m, bf.a.size()-2)) << ";\n";
         for(int i = bf.a.size()-3; i >= 0; i--)
-            os << indent6 << "num = " << WriterInfo::FMAdd("F_x", "num", GetFOConstant("a", m, i)) << ";\n";
+            os << indent5 << "num = " << WriterInfo::FMAdd("F_x", "num", GetFOConstant("a", m, i)) << ";\n";
         os << "\n";
 
         // Denominator
-        os << indent6 << "den = " << WriterInfo::FMAdd("F_x", GetFOConstant("b", m, bf.b.size()-1), GetFOConstant("b", m, bf.b.size()-2)) << ";\n"; 
+        os << indent5 << "den = " << WriterInfo::FMAdd("F_x", GetFOConstant("b", m, bf.b.size()-1), GetFOConstant("b", m, bf.b.size()-2)) << ";\n"; 
         for(int i = bf.b.size()-3; i >= 1; i--)
-            os << indent6 << "den = " << WriterInfo::FMAdd("F_x", "den", GetFOConstant("b", m, i)) << ";\n";
-        os << indent6 << "den = " << WriterInfo::FMAdd("F_x", "den", WriterInfo::IntConstant(1)) << ";\n";
+            os << indent5 << "den = " << WriterInfo::FMAdd("F_x", "den", GetFOConstant("b", m, i)) << ";\n";
+        os << indent5 << "den = " << WriterInfo::FMAdd("F_x", "den", WriterInfo::IntConstant(1)) << ";\n";
         os << "\n";
-        os << indent6 << ssvar.str() << " = num / den;\n";
+        os << indent5 << ssvar.str() << " = num / den;\n";
     }
     else
     {
-        os << indent6 << ssvar.str() << " =\n";
-        os << indent6 << "              (\n";
-        os << indent6 << "                 (\n";
-        os << indent6 << "                   (\n";
-        os << indent6 << "                               " << GetFOConstant("a", m, 0) << "\n";
+        os << indent5 << ssvar.str() << " =\n";
+        os << indent5 << "              (\n";
+        os << indent5 << "                 (\n";
+        os << indent5 << "                   (\n";
+        os << indent5 << "                               " << GetFOConstant("a", m, 0) << "\n";
         for(size_t i = 1; i < bf.a.size(); i++)
-            os << indent6 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
+            os << indent5 << "                     + F_x * ( " << GetFOConstant("a", m, i) << "\n";
 
-        os << indent6 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
-        os << indent6 << "                   )\n";
-        os << indent6 << "                   /\n";
-        os << indent6 << "                   (\n";
-        os << indent6 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
+        os << indent5 << "                             " << std::string(bf.a.size()-1, ')') << "\n";  // prints a bunch of close paren
+        os << indent5 << "                   )\n";
+        os << indent5 << "                   /\n";
+        os << indent5 << "                   (\n";
+        os << indent5 << "                               " << WriterInfo::IntConstant(1) << "\n";   //<< GetFOConstant("b", 0, m) << "\n";
         for(size_t i = 1; i < bf.b.size(); i++)
-            os << indent6 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
+            os << indent5 << "                     + F_x * ( " << GetFOConstant("b", m, i) << "\n";
 
-        os << indent6 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
-        os << indent6 << "                   )\n";
-        os << indent6 << "                 )\n";
-        os << indent6 << "              );\n";
+        os << indent5 << "                             " << std::string(bf.b.size()-1, ')') << "\n";  // prints a bunch of close paren
+        os << indent5 << "                   )\n";
+        os << indent5 << "                 )\n";
+        os << indent5 << "              );\n";
         os << "\n";
     }
 
@@ -125,11 +125,11 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     // apply prefac and power
     // calculate the prefactor if this is the first time it's needed
     if(prefac && m == 0)
-        os << indent6 << WriterInfo::ConstDoubleType() << " prefac = P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << WriterInfo::ConstDoubleType() << " prefac = P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
 
 
 
-    os << indent6 << ssvar.str() << " = ";
+    os << indent5 << ssvar.str() << " = ";
     
     if(prefac)
         os << "prefac * " << WriterInfo::Sqrt(ssvar.str() + " * one_over_PQalpha_sum");
@@ -210,7 +210,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
     // if using FMA, we need to declare the numerator and denominator separately
     if(WriterInfo::HasFMA())
-        os << indent6 << WriterInfo::DoubleType() << " num, den;\n\n";
+        os << indent5 << WriterInfo::DoubleType() << " num, den;\n\n";
 
     // just calculate them all if L is small
     // value of 3 found by testing
@@ -225,26 +225,26 @@ void BoysFO::WriteBoys(std::ostream & os) const
         WriteBoysSingle_(os, WriterInfo::L(), false);
 
         // calculate the downward recursion factors
-        os << indent6 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::IntConstant(2) << " * F_x;\n";
-        os << indent6 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
+        os << indent5 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::IntConstant(2) << " * F_x;\n";
+        os << indent5 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
 
         for(int m = WriterInfo::L()-1; m > 0; m--)
         {
             std::stringstream cname;
             cname << "FO_RECUR_" << m;
-            os << indent6 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::NamedConstant(cname.str()) << ";\n";
+            os << indent5 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::NamedConstant(cname.str()) << ";\n";
         }
 
         // do m = 0
-        os << indent6 << primname << "[0] = (x2 * " << primname << "[1] + ex);\n"; // times 1.0
+        os << indent5 << primname << "[0] = (x2 * " << primname << "[1] + ex);\n"; // times 1.0
 
 
         // add prefac now
-        os << indent6 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
  
         os << "\n";
-        os << indent6 << "for(n = 0; n <= " << WriterInfo::L() << "; ++n)\n";
-        os << indent7 << primname << "[n] *= prefac;\n";
+        os << indent5 << "for(n = 0; n <= " << WriterInfo::L() << "; ++n)\n";
+        os << indent6 << primname << "[n] *= prefac;\n";
         os << "\n";
     }
 }
@@ -279,13 +279,13 @@ BoysFO::BoysFO(std::string dir)
 
 void BoysSplit::WriteBoys(std::ostream & os) const
 {
-    os << indent6 << "Boys_F_split_simd((double *)" << WriterInfo::PrimVarName({0,0,0,0}) << ", " 
+    os << indent5 << "Boys_F_split_simd((double *)" << WriterInfo::PrimVarName({0,0,0,0}) << ", " 
                   << WriterInfo::L() << ", (const double *)(&F_x));\n";
 
-    os << indent6 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+    os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
 
     for(int i = 0; i <= WriterInfo::L(); i++)
-        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= prefac;\n";
+        os << indent5 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= prefac;\n";
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const
@@ -301,9 +301,9 @@ std::vector<std::string> BoysSplit::Includes(void) const
 
 void BoysVRef::WriteBoys(std::ostream & os) const
 {
-    os << indent6 << "Boys_F_VRef(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
+    os << indent5 << "Boys_F_VRef(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
     for(int i = 0; i <= WriterInfo::L(); i++)
-        os << indent6 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+        os << indent5 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::Includes(void) const

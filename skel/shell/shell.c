@@ -14,8 +14,7 @@
 #endif
 
 
-
-
+#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
 extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
@@ -99,10 +98,20 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 {
     int nprim = 0;
 
-    // with rounding up to the nearest boundary
+    int nanb = 0;
+    int batchprim = 0;
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
-        nprim += SIMINT_SIMD_ROUND(A[i].nprim * B[j].nprim);
+    {
+        batchprim += A[i].nprim * B[j].nprim;
+        nanb++;
+
+        if((nanb % SIMINT_NSHELL_SIMD) == 0 || nanb >= na*nb)
+        {        
+            nprim += SIMINT_SIMD_ROUND(batchprim);
+            batchprim = 0;
+        }
+    }
 
 
     int nshell12 = na*nb;
@@ -112,35 +121,33 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
 
     const size_t dprim_size = nprim * sizeof(double);
-    const size_t iprim_size = nprim * sizeof(int);
     const size_t ishell12_size = nshell12 * sizeof(int);
     const size_t dshell12_size = nshell12 * sizeof(double);
     const size_t ibatch_size = nbatch * sizeof(int);
 
-    const size_t memsize = dprim_size*11 + dshell12_size*3 + iprim_size + ishell12_size + ibatch_size;
+    const size_t memsize = dprim_size*11 + dshell12_size*3 + ishell12_size + ibatch_size;
     P->memsize = memsize;
 
     // allocate one large space
     void * mem = ALLOC(memsize); 
-    P->x         = mem;
-    P->y         = mem +    dprim_size;
-    P->z         = mem +  2*dprim_size;
-    P->PA_x      = mem +  3*dprim_size;
-    P->PA_y      = mem +  4*dprim_size;
-    P->PA_z      = mem +  5*dprim_size;
-    P->bAB_x     = mem +  6*dprim_size;
-    P->bAB_y     = mem +  7*dprim_size;
-    P->bAB_z     = mem +  8*dprim_size;
-    P->alpha     = mem +  9*dprim_size;
-    P->prefac    = mem + 10*dprim_size;
-    P->shellidx  = mem + 11*dprim_size;  // Should be aligned with the end of the doubles
+    P->x          = mem;
+    P->y          = mem +    dprim_size;
+    P->z          = mem +  2*dprim_size;
+    P->PA_x       = mem +  3*dprim_size;
+    P->PA_y       = mem +  4*dprim_size;
+    P->PA_z       = mem +  5*dprim_size;
+    P->bAB_x      = mem +  6*dprim_size;
+    P->bAB_y      = mem +  7*dprim_size;
+    P->bAB_z      = mem +  8*dprim_size;
+    P->alpha      = mem +  9*dprim_size;
+    P->prefac     = mem + 10*dprim_size;
 
     // below are unaligned
-    P->AB_x      = mem + 11*dprim_size + iprim_size;
-    P->AB_y      = mem + 11*dprim_size + iprim_size +   dshell12_size;
-    P->AB_z      = mem + 11*dprim_size + iprim_size + 2*dshell12_size;
-    P->nprim12   = mem + 11*dprim_size + iprim_size + 3*dshell12_size;
-    P->batchprim = mem + 11*dprim_size + iprim_size + 3*dshell12_size + ishell12_size;
+    P->AB_x       = mem + 11*dprim_size;
+    P->AB_y       = mem + 11*dprim_size +   dshell12_size;
+    P->AB_z       = mem + 11*dprim_size + 2*dshell12_size;
+    P->nprim12    = mem + 11*dprim_size + 3*dshell12_size;
+    P->nbatchprim = mem + 11*dprim_size + 3*dshell12_size + ishell12_size;
 }
 
 
@@ -167,18 +174,24 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
     ASSUME_ALIGN_DBL(P->alpha);
     ASSUME_ALIGN_DBL(P->prefac);
 
-    int i, j, sa, sb, sasb, idx;
+    int i, j, sa, sb, sasb, idx, ibatch, batchprim;
 
     P->nshell1 = na;
     P->nshell2 = nb;
     P->nshell12 = na * nb;
     P->nprim = 0;
 
+    P->nbatch = P->nshell12 / SIMINT_NSHELL_SIMD;
+    if(P->nshell12 % SIMINT_NSHELL_SIMD)
+        P->nbatch++;
+
     // zero out
     memset(P->x, 0, P->memsize);
 
     sasb = 0;
     idx = 0;
+    ibatch = 0;
+    batchprim = 0;
     for(sa = 0; sa < na; ++sa)
     {
         P->am1 = A[sa].am;
@@ -192,8 +205,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             const double Xab_y = A[sa].y - B[sb].y;
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
-
-            ASSUME(idx%SIMINT_SIMD_LEN == 0);
 
             ASSUME_ALIGN_DBL(A[sa].alpha);
             ASSUME_ALIGN_DBL(A[sa].coef);
@@ -230,10 +241,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 
             }
 
-            // fill in alpha = 1 until next boundary
-            while(idx < SIMINT_SIMD_ROUND(idx))
-                P->alpha[idx++] = 1.0;
-
             P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
             P->nprim += A[sa].nprim*B[sb].nprim;
 
@@ -241,7 +248,22 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             P->AB_y[sasb] = Xab_y;
             P->AB_z[sasb] = Xab_z;
 
+            batchprim += P->nprim12[sasb]; 
+
             sasb++;
+
+            if((sasb % SIMINT_NSHELL_SIMD) == 0 || sasb >= na*nb)
+            {
+                // fill in alpha = 1 until next boundary
+                while(idx < SIMINT_SIMD_ROUND(idx))
+                    P->alpha[idx++] = 1.0;
+
+                // increment the batch and store the number of primitives
+                // in this batch
+                P->nbatchprim[ibatch] = SIMINT_SIMD_ROUND(batchprim);
+                batchprim = 0;
+                ibatch++;
+            }
         }
     }
 }

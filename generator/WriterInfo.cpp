@@ -617,78 +617,111 @@ std::string Exp(const std::string & exp)
 }
 
 
-void WriteAccumulation(std::ostream & os, QAM qam, int ncart)
+void WriteAccumulation(std::ostream & os)
 {
+
+    os << indent5 << "////////////////////////////////////\n";
+    os << indent5 << "// Accumulate contracted integrals\n";
+    os << indent5 << "////////////////////////////////////\n";
     if(Intrinsics())
     {
-        if(HasCPUFlag("avx"))
+        os << indent5 << "if(hasoffset == 0)\n";
+        os << indent5 << "{\n";
+
+        for(const auto qam : contq_)
         {
-            if(ncart > 3)
+            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+
+            if(HasCPUFlag("avx"))
             {
-                os << indent6 << "for(n = 0; n < " << (ncart/4)*4 << "; n += 4)\n";
-                os << indent6 << "{\n";
-                os << indent7 << "__m256d t1 = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n], " << WriterInfo::PrimVarName(qam) << "[n+1]);\n";
-                os << indent7 << "__m256d t2 = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n+2], " << WriterInfo::PrimVarName(qam) << "[n+3]);\n";
-                os << indent7 << "__m256d t3 = _mm256_set_m128d(  _mm256_extractf128_pd(t2, 0) + _mm256_extractf128_pd(t2, 1), _mm256_extractf128_pd(t1, 0) + _mm256_extractf128_pd(t1, 1));\n";
-                os << indent7 << "_mm256_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + n, _mm256_loadu_pd(" << WriterInfo::PrimPtrName(qam) << " + n) + t3);\n";
-                os << indent6 << "}\n";
+                if(ncart > 3)
+                {
+                    os << indent6 << "for(n = 0; n < " << (ncart/4)*4 << "; n += 4)\n";
+                    os << indent6 << "{\n";
+                    os << indent7 << "__m256d t1 = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n], " << WriterInfo::PrimVarName(qam) << "[n+1]);\n";
+                    os << indent7 << "__m256d t2 = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n+2], " << WriterInfo::PrimVarName(qam) << "[n+3]);\n";
+                    os << indent7 << "__m256d t3 = _mm256_set_m128d(  _mm256_extractf128_pd(t2, 0) + _mm256_extractf128_pd(t2, 1), _mm256_extractf128_pd(t1, 0) + _mm256_extractf128_pd(t1, 1));\n";
+                    os << indent7 << "_mm256_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + n, _mm256_loadu_pd(" << WriterInfo::PrimPtrName(qam) << " + n) + t3);\n";
+                    os << indent6 << "}\n";
+                }
+
+                if((ncart%4) > 1)
+                {
+                    int n = (ncart/4)*4;
+
+                    std::stringstream tmpname, ssename;
+                    tmpname << "tmp_" << WriterInfo::PrimVarName(qam);
+                    ssename << "sse_" << WriterInfo::PrimVarName(qam);
+
+                    os << indent6 << "__m256d " << tmpname.str() << " = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[" << n << "], " 
+                                  << WriterInfo::PrimVarName(qam) << "[" << n+1 << "]);\n";
+
+                    os << indent6 << "__m128d " << ssename.str() << " = _mm256_extractf128_pd("
+                                  << tmpname.str() << ", 0) + _mm256_extractf128_pd(" << tmpname.str() << ", 1);\n";
+                    os << indent6 << "_mm_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + " << n << ", _mm_loadu_pd(" << WriterInfo::PrimPtrName(qam)
+                                  << " + " << n << ") + " << ssename.str() << ");\n";
+                }
+                if((ncart%2) > 0)
+                {
+                    int n = ncart-1;
+                    std::stringstream vecname;
+                    vecname << "vec_" << WriterInfo::PrimVarName(qam);
+
+                    os << indent6 << "union double4 " << vecname.str()
+                                 << " = (union double4)" << WriterInfo::PrimVarName(qam) << "[" << n << "];\n";    
+                    os << indent6 << WriterInfo::PrimPtrName(qam) << "[" << n << "] += "
+                                  << vecname.str() << ".d[0] + " << vecname.str() << ".d[1] + "
+                                  << vecname.str() << ".d[2] + " << vecname.str() << ".d[3];\n";
+                }
             }
-
-            if((ncart%4) > 1)
+            else    // assume everyone has at least sse3
             {
-                int n = (ncart/4)*4;
+                if(ncart > 1)
+                {
+                    os << indent6 << "for(n = 0; n < " << (ncart/2)*2 << "; n+=2)\n";  // integer division on purpose
+                    os << indent6 << "{\n";
+                    os << indent7 << "__m128d t1 = _mm_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n], " << WriterInfo::PrimVarName(qam) << "[n+1]);\n";
+                    os << indent7 << "_mm_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + n, _mm_loadu_pd(" << WriterInfo::PrimPtrName(qam) << " + n) + t1);\n";
+                    os << indent6 << "}\n";
+                }
+                if((ncart % 2) > 0)
+                {
+                    int n = (ncart/2)*2;
+                    std::stringstream vecname;
+                    vecname << "vec_" << WriterInfo::PrimVarName(qam);
 
-                std::stringstream tmpname, ssename;
-                tmpname << "tmp_" << WriterInfo::PrimVarName(qam);
-                ssename << "sse_" << WriterInfo::PrimVarName(qam);
-
-                os << indent6 << "__m256d " << tmpname.str() << " = _mm256_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[" << n << "], " 
-                              << WriterInfo::PrimVarName(qam) << "[" << n+1 << "]);\n";
-
-                os << indent6 << "__m128d " << ssename.str() << " = _mm256_extractf128_pd("
-                              << tmpname.str() << ", 0) + _mm256_extractf128_pd(" << tmpname.str() << ", 1);\n";
-                os << indent6 << "_mm_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + " << n << ", _mm_loadu_pd(" << WriterInfo::PrimPtrName(qam)
-                              << " + " << n << ") + " << ssename.str() << ");\n";
-            }
-            if((ncart%2) > 0)
-            {
-                int n = ncart-1;
-                std::stringstream vecname;
-                vecname << "vec_" << WriterInfo::PrimVarName(qam);
-
-                os << indent6 << "union double4 " << vecname.str()
-                             << " = (union double4)" << WriterInfo::PrimVarName(qam) << "[" << n << "];\n";    
-                os << indent6 << WriterInfo::PrimPtrName(qam) << "[" << n << "] += "
-                              << vecname.str() << ".d[0] + " << vecname.str() << ".d[1] +"
-                              << vecname.str() << ".d[2] + " << vecname.str() << ".d[3];\n";
+                    os << indent6 << "union double2 " << vecname.str()
+                                 << " = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[" << n << "];\n";    
+                    os << indent6 << WriterInfo::PrimPtrName(qam) << "[" << n << "] += " << vecname.str() << ".d[0] + " << vecname.str() << ".d[1];\n";
+                }
             }
         }
-        else    // assume everyone has at least sse3
-        {
-            if(ncart > 1)
-            {
-                os << indent6 << "for(n = 0; n < " << (ncart/2)*2 << "; n+=2)\n";  // integer division on purpose
-                os << indent6 << "{\n";
-                os << indent7 << "__m128d t1 = _mm_hadd_pd(" << WriterInfo::PrimVarName(qam) << "[n], " << WriterInfo::PrimVarName(qam) << "[n+1]);\n";
-                os << indent7 << "_mm_storeu_pd(" << WriterInfo::PrimPtrName(qam) << " + n, _mm_loadu_pd(" << WriterInfo::PrimPtrName(qam) << " + n) + t1);\n";
-                os << indent6 << "}\n";
-            }
-            if((ncart % 2) > 0)
-            {
-                int n = (ncart/2)*2;
-                std::stringstream vecname;
-                vecname << "vec_" << WriterInfo::PrimVarName(qam);
+        os << indent5 << "}\n";
+        os << indent5 << "else\n";
+        os << indent5 << "{\n";
 
-                os << indent6 << "union double2 " << vecname.str()
-                             << " = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[" << n << "];\n";    
-                os << indent6 << WriterInfo::PrimPtrName(qam) << "[" << n << "] += " << vecname.str() << ".d[0] + " << vecname.str() << ".d[1];\n";
-            }
+        for(const auto qam : contq_)
+        {
+            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+            os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
+            os << indent6 << "{\n";
+            os << indent7 << WriterInfo::UnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
+            os << indent7 << "for(n = 0; n < SIMINT_SIMD_LEN; ++n)\n";
+            os << indent8 << WriterInfo::PrimPtrName(qam) << "[shelloffsets[n]*" << ncart << "+np] += tmp.d[n];\n";
+            os << indent6 << "}\n";
+            os << indent6 << WriterInfo::PrimPtrName(qam) << " += shelloffsets[SIMINT_SIMD_LEN-1]*" << ncart << ";\n";
         }
+
+        os << indent5 << "}\n";
     }
     else
     {
-        os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
-            os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += " << WriterInfo::PrimVarName(qam) << "[n];\n";
+        for(const auto qam : contq_)
+        {
+            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+            os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
+                os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += " << WriterInfo::PrimVarName(qam) << "[n];\n";
+        }
     }
 }
 

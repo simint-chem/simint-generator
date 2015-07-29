@@ -59,13 +59,13 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     if(etint_.size())
     {
-        os << indent6 << "// Holds temporary integrals for electron transfer\n";
+        os << indent5 << "// Holds temporary integrals for electron transfer\n";
 
         for(const auto & it : etint_)
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+                os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
         } 
 
         os << "\n\n";
@@ -81,7 +81,7 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
         for(const auto & it : etint_)
         {
             if(WriterInfo::IsContArray(it))
-                os << indent4  << "double * const restrict " << WriterInfo::PrimPtrName(it)
+                os << indent4  << "double * restrict " << WriterInfo::PrimPtrName(it)
                    << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
         }
 
@@ -93,47 +93,26 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
 
 void ET_Writer::WriteETInline(std::ostream & os) const
 {
-    os << "\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << indent6 << "// Primitive integrals: Electron transfer\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << "\n";
-
     if(et_i_.size())
     {
-        os << indent6 << "// Precompute (integer) * 1/2q\n";
+        os << "\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << indent5 << "// Primitive integrals: Electron transfer\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << "\n";
+
+        os << indent5 << "// Precompute (integer) * 1/2q\n";
         for(const auto & it : et_i_)
-            os << indent6 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
-    }
+            os << indent5 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
 
-    os << "\n";
-
-    if(etsl_.size() == 0)
-        os << indent6 << "//...nothing to do...\n";
-    else
-    {
         for(const auto & it : etsl_)
         {
-            os << indent6 << "// " << it << "\n";
+            os << indent5 << "// " << it << "\n";
             os << ETStepString(it);
             os << "\n";
         }
     }
-
-    // add to needed contracted integrals
-    for(const auto & it : etint_)
-    {
-        if(WriterInfo::IsContArray(it))
-        {
-            int ncart = NCART(it[0])*NCART(it[2]);
-
-            os << "\n";
-            os << indent6 << "// Accumulating in contracted workspace\n";
-            WriterInfo::WriteAccumulation(os, it, ncart);
-        }
-    }
 }
-
 
 
 std::string ET_Writer::ETStepVar(const Quartet & q)
@@ -164,18 +143,18 @@ std::string ET_Writer::ETStepString(const ETStep & et)
 
     if(WriterInfo::HasFMA())
     {
-        ss << indent6 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src1) << ";\n";
+        ss << indent5 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src1) << ";\n";
         if(et.src2.bra.left && et.src2.ket.left)
-            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src2), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src2), ETStepVar(et.target)) << ";\n";
         if(et.src3.bra.left && et.src3.ket.left)
-            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src3), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src3), ETStepVar(et.target)) << ";\n";
         if(et.src4.bra.left && et.src4.ket.left)
-            ss << indent6 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src4), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src4), ETStepVar(et.target)) << ";\n";
 
     }
     else
     {
-        ss << indent6 << ETStepVar(et.target);
+        ss << indent5 << ETStepVar(et.target);
 
 
         ss << " = ";

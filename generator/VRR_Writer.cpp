@@ -55,13 +55,13 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     if(vrramreq_.size())
     {
-        os << indent6 << "// Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-        os << indent6 << "// with m as the slowest index\n";
+        os << indent5 << "// Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
+        os << indent5 << "// with m as the slowest index\n";
 
         for(const auto & greq : vrramreq_)
         {
             //os << indent4 << "// AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << indent6 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName({greq.first, 0, 0, 0})
+            os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName({greq.first, 0, 0, 0})
                << "[" << (WriterInfo::L()-greq.first+1) << " * " << NCART(greq.first) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
             //os << "\n";
         }
@@ -80,7 +80,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
         {
             QAM qam({greq.first, 0, 0, 0});
             if(WriterInfo::IsContArray(qam))
-                os << indent4 << "double * const restrict " << WriterInfo::PrimPtrName(qam)
+                os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
                    << " = " << WriterInfo::ArrVarName(qam) << " + abcd * " << NCART(qam[0]) << ";\n";
         }
 
@@ -97,22 +97,22 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
     QAM qam1{am-1, 0, 0, 0};
     QAM qam2{am-2, 0, 0, 0};
 
-    os << indent6 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(am) << "];\n";
+    os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(am) << "];\n";
 
     //os << indent6 << "// Needed from this AM:\n";
     //for(const auto & it : greq)
     //    os << indent6 << "//    " << it << "\n";
 
-    os << indent6 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
-    os << indent6 << "{\n";
+    os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
+    os << indent5 << "{\n";
 
-    os << indent7 << "const int idx = n * " << NCART(am) << ";    // n * NCART(am)\n";
-    os << indent7 << "const int idx1 = n * " << NCART(am-1) << ";    // n * NCART(am-1)\n"; 
-    os << indent7 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (n+1) * NCART(am-1)\n"; 
+    os << indent6 << "const int idx = n * " << NCART(am) << ";    // n * NCART(am)\n";
+    os << indent6 << "const int idx1 = n * " << NCART(am-1) << ";    // n * NCART(am-1)\n"; 
+    os << indent6 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (n+1) * NCART(am-1)\n"; 
     if(am > 1)
     {
-        os << indent7 << "const int idx2 = n * " << NCART(am-2) << ";    // n * NCART(am-2)\n";
-        os << indent7 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (n+1) * NCART(am-2)\n";
+        os << indent6 << "const int idx2 = n * " << NCART(am-2) << ";    // n * NCART(am-2)\n";
+        os << indent6 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (n+1) * NCART(am-2)\n";
     }
         
     os << "\n";
@@ -153,79 +153,75 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         std::stringstream primname;
         primname << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "]";
 
-        os << indent7 << "//" << it <<  " : STEP: " << step << "\n";
+        os << indent6 << "//" << it <<  " : STEP: " << step << "\n";
         if(WriterInfo::HasFMA())
         {
-            os << indent7 << primname.str() << " = " << WriterInfo::FMSub(ppa.str(), g1var.str(), aop_pq.str() + " * " + g11var.str()) << ";\n";
+            os << indent6 << primname.str() << " = " << WriterInfo::FMSub(ppa.str(), g1var.str(), aop_pq.str() + " * " + g11var.str()) << ";\n";
             
             if(g2)
-                os << indent7 << primname.str() << " = " << WriterInfo::FMAdd(vrrconst.str(), 
+                os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(vrrconst.str(), 
                                                                               WriterInfo::FMAdd("-a_over_p", g21var.str(), g2var.str()),
                                                                               primname.str()) << ";\n";
         }
         else
         {
-            os << indent7 << primname.str() << " = " << ppa.str() << " * " << g1var.str() << " - " << aop_pq.str() << " * " << g11var.str();
+            os << indent6 << primname.str() << " = " << ppa.str() << " * " << g1var.str() << " - " << aop_pq.str() << " * " << g11var.str();
 
             if(g2)
             {
                 os << "\n"
-                   << indent8 << "+ " << vrrconst.str()  << " * ( " << g2var.str() << " - a_over_p * " << g21var.str() << ")";
+                   << indent7 << "+ " << vrrconst.str()  << " * ( " << g2var.str() << " - a_over_p * " << g21var.str() << ")";
             }
             os << ";\n";
         }
         os << "\n"; 
     }
 
-    os << indent6 << "}\n";
+    os << indent5 << "}\n";
 }
 
 
 
 void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 {
-    os << "\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << indent6 << "// Primitive integrals: Vertical recurrance\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << "\n";
-
-    if(vrr_i_.size())
+    if(vrramreq_.size())
     {
-        os << indent6 << "// Precompute (integer) * 1/2p\n";
-        for(const auto & it : vrr_i_)
-            os << indent6 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
-    }
+        os << "\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << indent5 << "// Primitive integrals: Vertical recurrance\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << "\n";
 
-    os << "\n";
+        if(vrr_i_.size())
+        {
+            os << indent5 << "// Precompute (integer) * 1/2p\n";
+            for(const auto & it : vrr_i_)
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
+            os << "\n";
+        }
 
+        // iterate over increasing am
+        for(const auto & it3 : vrramreq_)
+        {
+            int am = it3.first;
 
-    // iterate over increasing am
-    for(const auto & it3 : vrramreq_)
-    {
-        int am = it3.first;
+            // don't do zero - that is handled by the boys function stuff
+            if(am == 0)
+                continue;
 
-        // don't do zero - that is handled by the boys function stuff
-        if(am == 0)
-            continue;
+            // greq is what is actually required from this am
+            const GaussianSet & greq = it3.second;
 
-        // greq is what is actually required from this am
-        const GaussianSet & greq = it3.second;
+            // Write out the steps
+            std::stringstream ss;
+            ss << (WriterInfo::L()-am+1);
+            WriteVRRSteps_(os, greq, ss.str());
 
-        // Write out the steps
-        std::stringstream ss;
-        ss << (WriterInfo::L()-am+1);
-        WriteVRRSteps_(os, greq, ss.str());
+            os << "\n\n";
+        }
 
-        // if this target is also a contracted array, accumulate there
-        // (the check for contracted array happens in function)
-        WriteAccumulate_(os, am);
         os << "\n\n";
     }
-
-    // accumulate ssss if needed
-    WriteAccumulate_(os, 0);
-    os << "\n\n";
 }
 
 
@@ -342,25 +338,6 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
 
 
 
-void VRR_Writer::WriteAccumulate_(std::ostream & os, int am) const
-{
-    QAM qam{am, 0, 0, 0};
-
-    // if this target is also a contracted array, accumulate there
-    if(WriterInfo::IsContArray(qam))
-    {
-        os << "\n";
-        os << indent6 << "// Accumulating in contracted workspace\n";
-        WriterInfo::WriteAccumulation(os, qam, NCART(am));
-
-        // TODO
-        // if I don't need all, then don't accumulate all
-        //for(const auto & it : greq)
-        //    os << indent1 << WriterInfo::ArrVarName(qam) << "[" << it.idx() << " * nshell1234 + abcd" << "] += " << WriterInfo::PrimVarName(qam) << "[" << it.idx() << "];\n";
-    }
-}
-
-
 void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
 {
     os << "\n";
@@ -402,15 +379,7 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
 
         os << ");\n";
 
-
-        // if this target is also a contracted array, accumulate there
-        WriteAccumulate_(os, am);
-        os << "\n\n";
     }
-
-    // accumulate ssss if needed
-    WriteAccumulate_(os, 0);
-    os << "\n\n";
 }
 
 

@@ -32,7 +32,7 @@ struct multishell_pair
     int * nprim12;    // length nshell12;
 
     int nbatch;
-    int * batchprim;   // length nbatch. number of primitives in a batch, including padding
+    int * nbatchprim;   // length nbatch. number of primitives in a batch, including padding
 
     // length nshell12
     double * AB_x;
@@ -51,7 +51,6 @@ struct multishell_pair
     double * bAB_z;
     double * alpha;
     double * prefac;
-    int * shellidx;
 };
 
 

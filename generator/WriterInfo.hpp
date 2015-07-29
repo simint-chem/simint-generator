@@ -47,7 +47,7 @@ namespace WriterInfo {
         int SimdLen(void);
         int ByteAlign(void);
 
-        void WriteAccumulation(std::ostream & os, QAM qam, int ncart);
+        void WriteAccumulation(std::ostream & os);
 
         std::string NamedConstant(const std::string & cname);
         std::string IntConstant(int i);

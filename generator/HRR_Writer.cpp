@@ -177,7 +177,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
         if(!WriterInfo::Scalar())
             os << indent3 << "#pragma omp simd linear(real_abcd)\n";
-        os << indent3 << "for(abcd = 0; abcd < nshell1234; ++abcd, ++real_abcd)\n";
+        os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
         os << indent3 << "{\n";
 
         os << "\n";
