@@ -54,7 +54,7 @@ void Valeev_Finalize(void)
 }
 
 static double norm_const(unsigned int l1, unsigned int m1, unsigned int n1,
-                         double alpha1, const double* A)
+                         double alpha1)
 {
     return pow(2 * alpha1 / M_PI, 0.75) * pow(4 * alpha1, 0.5 * (l1 + m1 + n1))
            / sqrt(df[2 * l1] * df[2 * m1] * df[2 * n1]);
@@ -185,10 +185,10 @@ double Valeev_eri(int l1, int m1, int n1, double alpha1,
 
     if (norm_flag > 0)
     {
-        pfac *= norm_const(l1, m1, n1, alpha1, A);
-        pfac *= norm_const(l2, m2, n2, alpha2, B);
-        pfac *= norm_const(l3, m3, n3, alpha3, C);
-        pfac *= norm_const(l4, m4, n4, alpha4, D);
+        pfac *= norm_const(l1, m1, n1, alpha1);
+        pfac *= norm_const(l2, m2, n2, alpha2);
+        pfac *= norm_const(l3, m3, n3, alpha3);
+        pfac *= norm_const(l4, m4, n4, alpha4);
     }
 
     F = init_array(l1 + l2 + l3 + l4 + m1 + m2 + m3 + m4 + n1 + n2 + n3 + n4 + 1);
