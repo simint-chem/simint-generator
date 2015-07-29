@@ -477,8 +477,6 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << indent1 << "//////////////////////////////////////////////\n";
 
         // it.first is the AM for the ket part
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
         os << "void HRR_BRA_";
         os << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
@@ -500,8 +498,6 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << indent1 << "// Steps: " << hrrsteps_.second.size() << "\n";
         os << indent1 << "//////////////////////////////////////////////\n";
 
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
         os << "void HRR_KET_";
         os << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 

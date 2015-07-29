@@ -3,12 +3,40 @@
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
+#include "generator/Helpers.hpp"
 
 using std::cout;
 
 static std::map<ExpList, int> ordermap_;
 
-QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
+
+// For options parsing
+std::string GetNextArg(int & i, int argc, char ** argv)
+{
+    if(i >= argc)
+        throw std::runtime_error("Error - no more arguments!");
+
+    return argv[i++];
+}
+
+int GetIArg(int & i, int argc, char ** argv)
+{   
+    std::string str = GetNextArg(i, argc, argv);
+    try {
+
+        return stoi(str);
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << "Cannot convert to int: " << str;
+        throw std::runtime_error(ss.str());
+    }
+}
+
+
+
+QuartetSet GenerateInitialQuartetTargets(QAM amlst)
 {
     QuartetSet qs;
     int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;
@@ -46,7 +74,7 @@ QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial)
     return qs;
 }
 
-DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initial)
+DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type)
 {
     DoubletSet ds;
     int nam1 = ((amlst[0] + 1) * (amlst[0] + 2)) / 2;

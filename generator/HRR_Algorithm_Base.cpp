@@ -75,7 +75,7 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     DoubletSet solvedbras;
 
     // generate initial targets
-    DoubletSet initbras = GenerateInitialDoubletTargets({amlist[0],amlist[1]}, DoubletType::BRA, true);
+    DoubletSet initbras = GenerateInitialDoubletTargets({amlist[0],amlist[1]}, DoubletType::BRA);
     PrintDoubletSet(initbras, "Initial Targets");
 
     // Initial bra targets
@@ -98,7 +98,7 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     // now do kets
     // we only need the bras from the original targets
     DoubletSet solvedkets;
-    DoubletSet initkets = GenerateInitialDoubletTargets({amlist[2],amlist[3]}, DoubletType::KET, true);
+    DoubletSet initkets = GenerateInitialDoubletTargets({amlist[2],amlist[3]}, DoubletType::KET);
     targets = initkets;
     PruneDoublets_(targets, kettop_);
 

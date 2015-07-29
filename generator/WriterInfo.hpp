@@ -54,6 +54,7 @@ namespace WriterInfo {
 
         std::string DoubleType(void);
         std::string ConstDoubleType(void);
+        std::string DoubleSet(const std::vector<std::string> & dbls);
         std::string DoubleSet1(const std::string & dbl);
         std::string DoubleLoad(const std::string & ptr, const std::string & idx);
         std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx);

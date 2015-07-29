@@ -11,32 +11,6 @@
 
 using namespace std;
 
-
-
-string GetNextArg(int & i, int argc, char ** argv)
-{
-    if(i >= argc)
-        throw std::runtime_error("Error - no more arguments!");
-
-    return argv[i++];
-}
-
-int GetIArg(int & i, int argc, char ** argv)
-{   
-    std::string str = GetNextArg(i, argc, argv);
-    try {
-
-        return stoi(str);
-    }
-    catch(...)
-    {
-        std::stringstream ss;
-        ss << "Cannot convert to int: " << str;
-        throw std::runtime_error(ss.str());
-    }
-}
-
-
 int main(int argc, char ** argv)
 {
     try {

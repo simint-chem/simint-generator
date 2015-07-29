@@ -4,10 +4,7 @@
 #include "generator/Classes.hpp"
 #include "generator/Helpers.hpp"
 
-#include "generator/VRR_Writer.hpp"
-#include "generator/ET_Writer.hpp"
-#include "generator/HRR_Writer.hpp"
-
+#include "generator/FileWriter.hpp"
 #include "generator/Boys.hpp"
 #include "generator/WriterInfo.hpp"
 #include "generator/VRR_Writer.hpp"

@@ -310,7 +310,7 @@ void ReadCPUFlags(const std::string & file)
 
         // convert to lower case
         for(auto & it : s)
-            it = tolower(it);
+            it = (char)tolower(it);
 
         if(s.size())
             cpuflags_tmp.insert(s);

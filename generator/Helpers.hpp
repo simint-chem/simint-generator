@@ -13,9 +13,11 @@ static const std::string indent6(24, ' ');
 static const std::string indent7(28, ' ');
 static const std::string indent8(32, ' ');
 
+std::string GetNextArg(int & i, int argc, char ** argv);
+int GetIArg(int & i, int argc, char ** argv);
 
-QuartetSet GenerateInitialQuartetTargets(QAM amlst, bool initial);
-DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type, bool initial);
+QuartetSet GenerateInitialQuartetTargets(QAM amlst);
+DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type);
 
 void PrintDoubletSet(const DoubletSet & d, const std::string & title);
 void PrintQuartetSet(const QuartetSet & q, const std::string & title);

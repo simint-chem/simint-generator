@@ -16,13 +16,12 @@ list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  # Disabled diagnostics:
+  # Globally-disabled diagnostics:
   # 10397 : Remark about creating .optrpt files
   #   981 : "operands are evaluated in unspecified order"
   #         seems to have lots of false positives, even when it should be obvious
-  #  2620 : attribute appears more than once (??? in hrr)
   list(APPEND SIMINT_C_FLAGS "-std=c99")
-  list(APPEND SIMINT_C_FLAGS "-qopt-report=5 -w3 -wd981 -wd10397 -wd2620")
+  list(APPEND SIMINT_C_FLAGS "-qopt-report=5 -wd10397 -wd981")
   #list(APPEND SIMINT_C_FLAGS "-Werror -pedantic-errors")
 else()
   message(FATAL_ERROR "Unsupported compiler (for now)")

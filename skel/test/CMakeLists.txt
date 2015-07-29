@@ -47,14 +47,13 @@ endif()
 
 
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  # Disabled diagnostics:
+  # Globally-disabled diagnostics:
   # 10397 : Remark about creating .optrpt files
   #   981 : "operands are evaluated in unspecified order"
   #         seems to have lots of false positives, even when it should be obvious
-  #  2620 : attribute appears more than once (??? in hrr)
   #   383 : value copied to temporary, reference to temporary used
   list(APPEND TESTS_CXX_FLAGS "-std=c++11")
-  list(APPEND TESTS_CXX_FLAGS "-qopt-report=5 -w3 -wd981 -wd10397 -wd2620 -wd383")
+  list(APPEND TESTS_CXX_FLAGS "-qopt-report=5 -w3 -wd10397 -wd981 -wd383")
   list(APPEND TESTS_CXX_FLAGS "-restrict")
   #list(APPEND TESTS_CXX_FLAGS "-Werror -pedantic-errors")
 else()
