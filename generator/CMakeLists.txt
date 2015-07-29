@@ -12,9 +12,11 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   #   383 : value copied to temporary, reference to temporary used
   list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
   list(APPEND GENERATOR_CXX_FLAGS "-qopt-report=5 -w3 -wd10397 -wd981 -wd383")
+  list(APPEND GENERATOR_CXX_FLAGS "-O3 -ggdb")
 else()
   list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
   list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wextra -pedantic")
+  list(APPEND GENERATOR_CXX_FLAGS "-O3 -ggdb")
 endif()
 
 
