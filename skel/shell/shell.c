@@ -50,7 +50,7 @@ struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
 
     // only need to copy once, since coef comes right after alpha in memory
     size_t size = SIMINT_SIMD_ROUND(G.nprim)*sizeof(double); 
-    memcpy(G_copy.alpha, G.alpha, size);
+    memcpy(G_copy.alpha, G.alpha, 2*size);
     return G_copy;
 }
 
