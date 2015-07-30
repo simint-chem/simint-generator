@@ -65,7 +65,7 @@ int main(int argc, char ** argv)
 
 
     // Read the reference integrals
-    RefIntegralReader refint(basfile);
+    //RefIntegralReader refint(basfile);
 
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= maxam; i++)
@@ -101,8 +101,8 @@ int main(int argc, char ** argv)
         // Calculate or read valeev
         // reference integrals
         /////////////////////////////////
-        //ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
-        refint.ReadNext(res_valeev, arrlen);
+        ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
+        //refint.ReadNext(res_valeev, arrlen);
 
         //////////////////////
         // set up shell pairs
@@ -151,8 +151,8 @@ int main(int argc, char ** argv)
 
 
         // For debugging
-        //for(int i = 0; i < ncart1234 * nshell1234; i++)
-        //    printf("%25.15e  %25.15e  %25.15e\n", res_valeev[i], res_liberd[i], res_libint[i]);
+        for(int i = 0; i < ncart1234 * nshell1234; i++)
+            printf("%25.18e  %25.18e\n", res_valeev[i], res[i]);
 
 
         free_multishell_pair(P);
