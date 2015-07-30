@@ -716,7 +716,7 @@ void WriteAccumulation(std::ostream & os)
             os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
             os << indent6 << "{\n";
             os << indent7 << WriterInfo::ConstUnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
-            os << indent8 << WriterInfo::PrimPtrName(qam) << "[np] += tmp.d[0];   // first offset is always zero\n";
+            os << indent7 << WriterInfo::PrimPtrName(qam) << "[np] += tmp.d[0];   // first offset is always zero\n";
             os << indent7 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
             os << indent8 << WriterInfo::PrimPtrName(qam) << "[shelloffsets[n]*" << ncart << "+np] += tmp.d[n];\n";
             os << indent6 << "}\n";
