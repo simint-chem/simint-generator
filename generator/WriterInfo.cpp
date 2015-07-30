@@ -632,6 +632,7 @@ void WriteAccumulation(std::ostream & os)
         {
             int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
 
+            /*
             if(HasCPUFlag("avx"))
             {
                 if(ncart > 3)
@@ -695,6 +696,15 @@ void WriteAccumulation(std::ostream & os)
                     os << indent6 << WriterInfo::PrimPtrName(qam) << "[" << n << "] += " << vecname.str() << ".d[0] + " << vecname.str() << ".d[1];\n";
                 }
             }
+            */
+            os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
+            os << indent6 << "{\n";
+            os << indent7 << ConstUnionType() << " tmp = (" << UnionType() << ")" << PrimVarName(qam) << "[np];\n";
+            os << indent7 << "for(n = 0; n < SIMINT_SIMD_LEN; ++n)\n";
+            os << indent8 << WriterInfo::PrimPtrName(qam) << "[np] += tmp.d[n];\n";
+            os << indent6 << "}\n";
+
+            
         }
         os << indent5 << "}\n";
         os << indent5 << "else\n";
@@ -705,7 +715,7 @@ void WriteAccumulation(std::ostream & os)
             int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
             os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
             os << indent6 << "{\n";
-            os << indent7 << WriterInfo::UnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
+            os << indent7 << WriterInfo::ConstUnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
             os << indent8 << WriterInfo::PrimPtrName(qam) << "[np] += tmp.d[0];   // first offset is always zero\n";
             os << indent7 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
             os << indent8 << WriterInfo::PrimPtrName(qam) << "[shelloffsets[n]*" << ncart << "+np] += tmp.d[n];\n";
