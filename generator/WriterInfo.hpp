@@ -48,6 +48,7 @@ namespace WriterInfo {
         int ByteAlign(void);
 
         void WriteAccumulation(std::ostream & os);
+        void WriteShellOffsets(std::ostream & os);
 
         std::string NamedConstant(const std::string & cname);
         std::string IntConstant(int i);

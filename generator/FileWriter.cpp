@@ -258,28 +258,7 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
         os << indent4 << "{\n";
 
-        os << indent5 << "// calculate the shell offsets\n";
-        os << indent5 << "// these are the offset from the shell pointed to by cd\n";
-        os << indent5 << "// for each element\n";
-        os << indent5 << "int shelloffsets[SIMINT_SIMD_LEN] = {0};\n";
-        os << indent5 << "int hasoffset = 0;\n";
-        os << indent5 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
-        os << indent5 << "{\n";
-        os << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; ++n)\n";
-        os << indent6 << "{\n";
-        os << indent7 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
-        os << indent7 << "{\n";
-        os << indent8 << "hasoffset = 1;\n";
-        os << indent8 << "shelloffsets[n] = 1;\n";
-        os << indent8 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
-        os << indent7 << "}\n";
-        os << indent7 << "iprimcd++;\n";
-        os << indent6 << "}\n";
-        os << indent6 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
-        os << indent7 << "shelloffsets[n] = shelloffsets[n-1] + shelloffsets[n];\n";
-        os << indent5 << "}\n";
-        os << indent5 << "else\n";
-        os << indent6 << "iprimcd += SIMINT_SIMD_LEN;\n\n";
+        WriterInfo::WriteShellOffsets(os);
     }
     else
     {

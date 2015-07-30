@@ -706,7 +706,8 @@ void WriteAccumulation(std::ostream & os)
             os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
             os << indent6 << "{\n";
             os << indent7 << WriterInfo::UnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
-            os << indent7 << "for(n = 0; n < SIMINT_SIMD_LEN; ++n)\n";
+            os << indent8 << WriterInfo::PrimPtrName(qam) << "[np] += tmp.d[0];   // first offset is always zero\n";
+            os << indent7 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
             os << indent8 << WriterInfo::PrimPtrName(qam) << "[shelloffsets[n]*" << ncart << "+np] += tmp.d[n];\n";
             os << indent6 << "}\n";
             os << indent6 << WriterInfo::PrimPtrName(qam) << " += shelloffsets[SIMINT_SIMD_LEN-1]*" << ncart << ";\n";
@@ -724,5 +725,49 @@ void WriteAccumulation(std::ostream & os)
         }
     }
 }
+
+
+
+
+void WriteShellOffsets(std::ostream & os)
+{
+    os << indent5 << "// calculate the shell offsets\n";
+    os << indent5 << "// these are the offset from the shell pointed to by cd\n";
+    os << indent5 << "// for each element\n";
+    os << indent5 << "int shelloffsets[SIMINT_SIMD_LEN] = {0};\n";
+    os << indent5 << "int hasoffset = 0;\n";
+    os << indent5 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
+    os << indent5 << "{\n";
+
+    os << indent6 << "// Handle if the first element of the vector is a new shell\n";
+    os << indent6 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
+    os << indent6 << "{\n";
+    os << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
+    
+    for(const auto qam : contq_)
+        os << indent7 << WriterInfo::PrimPtrName(qam) << " += " << NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]) << ";\n";
+
+    os << indent6 << "}\n";
+    os << indent6 << "iprimcd++;\n";
+
+    os << indent6 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
+    os << indent6 << "{\n";
+    os << indent7 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
+    os << indent7 << "{\n";
+    os << indent8 << "hasoffset = 1;\n";
+    os << indent8 << "shelloffsets[n] = shelloffsets[n-1] + 1;\n";
+    os << indent8 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
+    os << indent7 << "}\n";
+    os << indent7 << "else\n";
+    os << indent8 << "shelloffsets[n] = shelloffsets[n-1];\n";
+    os << indent7 << "iprimcd++;\n";
+    os << indent6 << "}\n";
+    os << indent5 << "}\n";
+    os << indent5 << "else\n";
+    os << indent6 << "iprimcd += SIMINT_SIMD_LEN;\n\n";
+}
+
+
+
 
 } // close namespace WriterInfo
