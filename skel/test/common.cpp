@@ -289,10 +289,10 @@ void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
         for(int k = 0; k < nshell3; k++)
         for(int l = 0; l < nshell4; l++)
         {
-            double vA[3] = { A[i].x, A[i].y, A[i].z };
-            double vB[3] = { B[j].x, B[j].y, B[j].z };
-            double vC[3] = { C[k].x, C[k].y, C[k].z };
-            double vD[3] = { D[l].x, D[l].y, D[l].z };
+            long double vA[3] = { A[i].x, A[i].y, A[i].z };
+            long double vB[3] = { B[j].x, B[j].y, B[j].z };
+            long double vC[3] = { C[k].x, C[k].y, C[k].z };
+            long double vD[3] = { D[l].x, D[l].y, D[l].z };
 
             std::array<int, 3> g1{am1, 0, 0};
             do
@@ -314,10 +314,10 @@ void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
                             for(int p = 0; p < D[l].nprim; p++)
                             {
 
-                                double val = Valeev_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
-                                                        g2[0], g2[1], g2[2], B[j].alpha[n], vB,
-                                                        g3[0], g3[1], g3[2], C[k].alpha[o], vC,
-                                                        g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+                                double val = (double)Valeev_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
                                 myint += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
 
 /*
