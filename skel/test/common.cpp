@@ -277,9 +277,9 @@ void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
 
     const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
-    //#ifdef _OPENMP
-    //    #pragma omp parallel for
-    //#endif
+    #ifdef _OPENMP
+        #pragma omp parallel for
+    #endif
     for(int i = 0; i < nshell1; i++)
     {
         const int idxstart = i * n234;

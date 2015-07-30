@@ -1,6 +1,6 @@
 #include "constants.h"
 #include "test/Libint2.hpp"
-#include "boys/boys_FO.h"
+#include "boys/boys_split.h"
 #include "test/common.hpp"
 #include "vectorization/vectorization.h"
 
@@ -117,7 +117,7 @@ TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
                 // calculate the boys function
                 std::vector<double> F(M+1);
                 //CLOCK(ticks0);
-                Boys_F_FO(F.data(), M, T); 
+                Boys_F_split(F.data(), M, T); 
                 //CLOCK(ticks1);
                 //totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 
