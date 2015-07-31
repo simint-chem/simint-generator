@@ -117,13 +117,15 @@ static void WriteFile_NotFlat(std::ostream & os,
     // full abcd in terms of all the shells
     os << indent1 << "int ab, cd, cdbatch, abcd;\n";
     os << indent1 << "int istart, jstart;\n";
-    os << indent1 << "int icd, iprimcd, nprim_icd;\n";
+
+    if(WriterInfo::Intrinsics())
+        os << indent1 << "int iprimcd, nprim_icd, np;\n";
 
     if(hashrr)
-        os << indent1 << "int real_abcd;\n";
+        os << indent1 << "int real_abcd, icd;\n";
 
     os << indent1 << "int i, j;\n";
-    os << indent1 << "int n, np;\n";
+    os << indent1 << "int n;\n";
 
     if(inline_hrr)
     {
@@ -220,9 +222,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent3 << "for(i = istart; i < iend; ++i)\n";
     os << indent3 << "{\n";
     os << "\n";
-    os << indent4 << "icd = 0;\n";
-    os << indent4 << "iprimcd = 0;\n";
-    os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
+
+    if(WriterInfo::Intrinsics())
+    {
+        os << indent4 << "icd = 0;\n";
+        os << indent4 << "iprimcd = 0;\n";
+        os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
+    }
 
     vrr_writer.DeclarePrimPointers(os);
     os << "\n";

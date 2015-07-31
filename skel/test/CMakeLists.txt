@@ -88,7 +88,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 
   # --no-vec and stuff make no sense here, right?
   if(SIMINT_SCALAR)
-    list(APPEND SIMINT_C_FLAGS "-DSIMINT_SIMD_LEN=1")
+    list(APPEND TESTS_CXX_FLAGS "-DSIMINT_SIMD_LEN=1")
   endif()
 endif()
  
