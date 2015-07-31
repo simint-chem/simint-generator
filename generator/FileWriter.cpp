@@ -118,11 +118,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent1 << "int ab, cd, cdbatch, abcd;\n";
     os << indent1 << "int istart, jstart;\n";
 
-    if(WriterInfo::Intrinsics())
-        os << indent1 << "int iprimcd, nprim_icd, np;\n";
+    os << indent1 << "int iprimcd, nprim_icd, np, icd;\n";
 
     if(hashrr)
-        os << indent1 << "int real_abcd, icd;\n";
+        os << indent1 << "int real_abcd;\n";
 
     os << indent1 << "int i, j;\n";
     os << indent1 << "int n;\n";
@@ -168,7 +167,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hashrr)
         os << indent1 << "real_abcd = 0;\n";
     else
-        os << indent3 << "abcd = 0;\n";
+        os << indent1 << "abcd = 0;\n";
 
     os << indent1 << "istart = 0;\n";
     os << indent1 << "for(ab = 0; ab < P.nshell12; ++ab)\n";
@@ -177,15 +176,15 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent2 << "const int iend = istart + P.nprim12[ab];\n";
     os << "\n";
 
-
     os << indent2 << "cd = 0;\n";
     os << indent2 << "jstart = 0;\n";
     os << "\n";
 
     os << indent2 << "for(cdbatch = 0; cdbatch < Q.nbatch; ++cdbatch)\n";
     os << indent2 << "{\n";
-    os << indent3 << "const int jend = jstart + Q.nbatchprim[cdbatch];\n";
     os << indent3 << "const int nshellbatch = ((cd + SIMINT_NSHELL_SIMD) > Q.nshell12) ? Q.nshell12 - cd : SIMINT_NSHELL_SIMD;\n";
+
+    os << indent3 << "const int jend = jstart + Q.nbatchprim[cdbatch];\n";
 
     if(hashrr)
     {
@@ -223,12 +222,9 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent3 << "{\n";
     os << "\n";
 
-    if(WriterInfo::Intrinsics())
-    {
-        os << indent4 << "icd = 0;\n";
-        os << indent4 << "iprimcd = 0;\n";
-        os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
-    }
+    os << indent4 << "icd = 0;\n";
+    os << indent4 << "iprimcd = 0;\n";
+    os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
 
     vrr_writer.DeclarePrimPointers(os);
     os << "\n";
@@ -259,23 +255,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
 
-    if(WriterInfo::Intrinsics())
-    {
-        os << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
-        os << indent4 << "{\n";
+    os << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
+    os << indent4 << "{\n";
 
-        WriterInfo::WriteShellOffsets(os);
-    }
-    else
-    {
-        // commented out due to intel bug
-        if(!WriterInfo::Scalar())
-            os << indent4 << "//#pragma omp simd private(n)\n";
-
-        os << indent4 << "for(j = jstart; j < jend; ++j)\n";
-        os << indent4 << "{\n";
-    }
-
+    WriterInfo::WriteShellOffsets(os);
 
     os << "\n";
 
