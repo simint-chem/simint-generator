@@ -3,6 +3,7 @@
 
 #include <omp.h>
 
+#include "vectorization/vectorization.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"

@@ -150,12 +150,12 @@ set_target_properties(test_libint2 PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_I
 set_target_properties(test_libint2 PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 
-ADDTESTS(gen_ref gen_ref.cpp)
+#ADDTESTS(gen_ref gen_ref.cpp)
 
 #ADDTESTS(test_f test_f.cpp)
 ADDTESTS(test_eri test_eri.cpp)
 
-ADDTESTS(benchmark_f benchmark_f.cpp)
+#ADDTESTS(benchmark_f benchmark_f.cpp)
 ADDTESTS(benchmark_eri benchmark_eri.cpp)
 ADDTESTS(benchmark_erd benchmark_erd.cpp)
 ADDTESTS(benchmark_libint2 benchmark_libint2.cpp)

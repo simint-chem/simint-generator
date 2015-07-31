@@ -1,11 +1,11 @@
 #include <cstdio>
 #include <random>
 
+#include "vectorization/vectorization.h"
 #include "constants.h"
 #include "boys/boys.h"
 #include "boys/boys_split.h"
 #include "boys/boys_FO.h"
-#include "vectorization/vectorization.h"
 
 #ifdef TESTS_USE_LIBINT2
 #include <boys.h> // this is from libint
