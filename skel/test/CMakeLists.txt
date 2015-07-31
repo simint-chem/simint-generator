@@ -3,6 +3,7 @@ macro(ADDTESTS TNAME TFILES)
                  $<TARGET_OBJECTS:test_valeev>
                  $<TARGET_OBJECTS:test_erd>
                  $<TARGET_OBJECTS:test_libint2>
+                 $<TARGET_OBJECTS:test_libint2_c>
                  $<TARGET_OBJECTS:test_common>)
 
   target_link_libraries(${TNAME} simint_eri simint_boys simint_shell
@@ -148,6 +149,12 @@ set_target_properties(test_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 add_library(test_libint2 OBJECT Libint2.cpp)
 set_target_properties(test_libint2 PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_libint2 PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+
+# Libint2 - c portion
+# This is split out so that it can be compiled with the same flags as simint
+add_library(test_libint2_c OBJECT libint2/libint2.c)
+set_target_properties(test_libint2_c PROPERTIES INCLUDE_DIRECTORIES "${SIMINT_C_INCLUDES};${LIBINT2_PATH}/include/libint2")
+set_target_properties(test_libint2_c PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
 
 
 #ADDTESTS(gen_ref gen_ref.cpp)
