@@ -151,8 +151,8 @@ int main(int argc, char ** argv)
 
 
         // For debugging
-        for(int i = 0; i < ncart1234 * nshell1234; i++)
-            printf("%25.18e  %25.18e\n", res_valeev[i], res[i]);
+        for(int m = 0; m < ncart1234 * nshell1234; m++)
+            printf("%25.18e  %25.18e\n", res_valeev[m], res[m]);
 
 
         free_multishell_pair(P);
