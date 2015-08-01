@@ -54,8 +54,8 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
             for(int i = istart; i < iend; i++)
             for(int j = jstart; j < jend; j++)
             {
-                const double PQalpha_sum = Q.alpha[i] + P.alpha[j];
-                const double PQalpha_mul = Q.alpha[i] * P.alpha[j];
+                const double PQalpha_sum = P.alpha[j] + Q.alpha[i];
+                const double PQalpha_mul = P.alpha[j] * Q.alpha[i];
                 const double one_over_PQalpha_sum = 1 / PQalpha_sum;
 
                 erival[nprim].AB_x[0] = Q.AB_x[ab];
@@ -75,9 +75,9 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
                 erival[nprim].QC_z[0] = P.PA_z[j];
 
                 double W[3];
-                W[0] = (Q.alpha[i] * Q.x[i] + P.alpha[j] * P.x[j]) / (Q.alpha[i] + P.alpha[j]);
-                W[1] = (Q.alpha[i] * Q.y[i] + P.alpha[j] * P.y[j]) / (Q.alpha[i] + P.alpha[j]);
-                W[2] = (Q.alpha[i] * Q.z[i] + P.alpha[j] * P.z[j]) / (Q.alpha[i] + P.alpha[j]);
+                W[0] = (P.alpha[j] * P.x[j] + Q.alpha[i] * Q.x[i]) / (P.alpha[j] + Q.alpha[i]);
+                W[1] = (P.alpha[j] * P.y[j] + Q.alpha[i] * Q.y[i]) / (P.alpha[j] + Q.alpha[i]);
+                W[2] = (P.alpha[j] * P.z[j] + Q.alpha[i] * Q.z[i]) / (P.alpha[j] + Q.alpha[i]);
                 
                 erival[nprim].WP_x[0] = W[0] - Q.x[i]; 
                 erival[nprim].WP_y[0] = W[1] - Q.y[i]; 
@@ -90,25 +90,27 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
                 double rho = PQalpha_mul * one_over_PQalpha_sum;
                 erival[nprim].oo2z[0] = 1.0 / (2.0 * Q.alpha[i]); 
                 erival[nprim].oo2e[0] = 1.0 / (2.0 * P.alpha[j]); 
-                erival[nprim].oo2ze[0] = 1.0 / (2.0 * (Q.alpha[i] + P.alpha[j])); 
+                erival[nprim].oo2ze[0] = 1.0 / (2.0 * (P.alpha[j] + Q.alpha[i])); 
                 erival[nprim].roz[0] = rho / Q.alpha[i]; 
                 erival[nprim].roe[0] = rho / P.alpha[j]; 
                
 
                 double PQ2 = 0.0;
-                PQ2 += (Q.x[i] - P.x[j])*(Q.x[i] - P.x[j]);
-                PQ2 += (Q.y[i] - P.y[j])*(Q.y[i] - P.y[j]);
-                PQ2 += (Q.z[i] - P.z[j])*(Q.z[i] - P.z[j]);
+                PQ2 += (P.x[j] - Q.x[i])*(P.x[j] - Q.x[i]);
+                PQ2 += (P.y[j] - Q.y[i])*(P.y[j] - Q.y[i]);
+                PQ2 += (P.z[j] - Q.z[i])*(P.z[j] - Q.z[i]);
                 double T = rho * PQ2; 
 
 
                 // calculate the boys function
                 //CLOCK(ticks0);
                 Boys_F_split(F, M, T); 
+
                 //CLOCK(ticks1);
                 //totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
 
-                double scale = Q.prefac[i] * P.prefac[j] * sqrt(one_over_PQalpha_sum);
+                // temporarily disable so that it matches bit-for-bit my code
+                double scale = sqrt(one_over_PQalpha_sum) * P.prefac[j] * Q.prefac[i];
 
                 switch(M)
                 {
@@ -228,16 +230,13 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
                     case 0:
                         erival[nprim].LIBINT_T_SS_EREP_SS(0)[0] = F[0] * scale;
                     #endif
-                } 
+                }   
 
                 nprim++;
             }
-    
-            double * intptr = integrals + (  c*P.nshell2*Q.nshell1*Q.nshell2
-                                           + d*Q.nshell1*Q.nshell2
-                                           + a*Q.nshell2
-                                           + b )*ncart1234;
 
+            double * intptr = integrals + ( cd * Q.nshell12 + ab ) * ncart1234;
+    
             if(M)
             {
                 //CLOCK(ticks0);
@@ -259,10 +258,18 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
             else
             {
                 intptr[0] = 0.0;
-                for(size_t n = 0; n < nprim1234; n++)
-                    intptr[0] += erival[n].LIBINT_T_SS_EREP_SS(0)[0];
+                // sum in the same order as would happen in my code
+                #pragma novector
+                for(int i = 0; i < P.nprim12[cd]; ++i)
+                {
+                    #pragma novector
+                    for(int j = 0; j < Q.nprim12[ab]; ++j)
+                    {
+                        int idx = j * P.nprim12[cd] + i;
+                        intptr[0] += erival[idx].LIBINT_T_SS_EREP_SS(0)[0];
+                    }
+                }
             }
-
 
             jstart = jend;
             if(((cd+1) % SIMINT_NSHELL_SIMD) == 0)
