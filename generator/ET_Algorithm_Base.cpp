@@ -90,17 +90,17 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
             // add to the map
             etslmap[ets.target.amlist()].push_back(ets);
 
-            if(solvedquartets.count(ets.src1) == 0)
-                newtargets.insert(ets.src1);
+            if(solvedquartets.count(ets.src[0]) == 0)
+                newtargets.insert(ets.src[0]);
 
-            if(solvedquartets.count(ets.src2) == 0)
-                newtargets.insert(ets.src2);
+            if(solvedquartets.count(ets.src[1]) == 0)
+                newtargets.insert(ets.src[1]);
 
-            if(solvedquartets.count(ets.src3) == 0)
-                newtargets.insert(ets.src3);
+            if(solvedquartets.count(ets.src[2]) == 0)
+                newtargets.insert(ets.src[2]);
 
-            if(solvedquartets.count(ets.src4) == 0)
-                newtargets.insert(ets.src4);
+            if(solvedquartets.count(ets.src[3]) == 0)
+                newtargets.insert(ets.src[3]);
        
             // insert copy with no flags 
             solvedquartets.insert(*it);

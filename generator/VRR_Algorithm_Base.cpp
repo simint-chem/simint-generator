@@ -23,10 +23,8 @@ void VRR_Algorithm_Base::CreateAllMaps(const GaussianMap & greq)
     amreq_ = greq;
     PrintGaussianMap(greq, "Initial VRR");
 
-    // max am
+    // max am is the last entry of the map
     int maxam = amreq_.rbegin()->first;
-
-    cout << "VRR Max am: " << maxam << "\n";
 
     // generate the steps for all am
     for(int i = 0; i <= maxam; i++)

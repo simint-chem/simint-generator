@@ -11,14 +11,14 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
     // see what we need for arrays
     for(const auto & it : etsl_)
     {
-        if(it.src1)
-            etint_.insert(it.src1.amlist());
-        if(it.src2)
-            etint_.insert(it.src2.amlist());
-        if(it.src3)
-            etint_.insert(it.src3.amlist());
-        if(it.src3)
-            etint_.insert(it.src4.amlist());
+        if(it.src[0])
+            etint_.insert(it.src[0].amlist());
+        if(it.src[1])
+            etint_.insert(it.src[1].amlist());
+        if(it.src[2])
+            etint_.insert(it.src[2].amlist());
+        if(it.src[2])
+            etint_.insert(it.src[3].amlist());
         if(it.target)
             etint_.insert(it.target.amlist());
     }
@@ -143,13 +143,13 @@ std::string ET_Writer::ETStepString(const ETStep & et)
 
     if(WriterInfo::HasFMA())
     {
-        ss << indent5 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src1) << ";\n";
-        if(et.src2.bra.left && et.src2.ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src2), ETStepVar(et.target)) << ";\n";
-        if(et.src3.bra.left && et.src3.ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src3), ETStepVar(et.target)) << ";\n";
-        if(et.src4.bra.left && et.src4.ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src4), ETStepVar(et.target)) << ";\n";
+        ss << indent5 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src[0]) << ";\n";
+        if(et.src[1].bra.left && et.src[1].ket.left)
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src[1]), ETStepVar(et.target)) << ";\n";
+        if(et.src[2].bra.left && et.src[2].ket.left)
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src[2]), ETStepVar(et.target)) << ";\n";
+        if(et.src[3].bra.left && et.src[3].ket.left)
+            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src[3]), ETStepVar(et.target)) << ";\n";
 
     }
     else
@@ -159,14 +159,14 @@ std::string ET_Writer::ETStepString(const ETStep & et)
 
         ss << " = ";
 
-        ss << etfac.str() << " * " << ETStepVar(et.src1);
+        ss << etfac.str() << " * " << ETStepVar(et.src[0]);
 
-        if(et.src2.bra.left && et.src2.ket.left)
-            ss << " + " << etconst_i.str() << " * " << ETStepVar(et.src2);
-        if(et.src3.bra.left && et.src3.ket.left)
-            ss << " + " << etconst_k.str() << " * " << ETStepVar(et.src3);
-        if(et.src4.bra.left && et.src4.ket.left)
-            ss << " - p_over_q * " << ETStepVar(et.src4);
+        if(et.src[1].bra.left && et.src[1].ket.left)
+            ss << " + " << etconst_i.str() << " * " << ETStepVar(et.src[1]);
+        if(et.src[2].bra.left && et.src[2].ket.left)
+            ss << " + " << etconst_k.str() << " * " << ETStepVar(et.src[2]);
+        if(et.src[3].bra.left && et.src[3].ket.left)
+            ss << " - p_over_q * " << ETStepVar(et.src[3]);
         ss << ";\n";
     }
 

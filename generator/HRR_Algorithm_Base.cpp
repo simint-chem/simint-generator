@@ -44,10 +44,10 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
             HRRDoubletStep hrr = this->DoubletStep_(*it);
             hrrlist.push_back(hrr);
 
-            if(solveddoublets.count(hrr.src1) == 0)
-                newtargets.insert(hrr.src1);
-            if(solveddoublets.count(hrr.src2) == 0)
-                newtargets.insert(hrr.src2);
+            if(solveddoublets.count(hrr.src[0]) == 0)
+                newtargets.insert(hrr.src[0]);
+            if(solveddoublets.count(hrr.src[1]) == 0)
+                newtargets.insert(hrr.src[1]);
             
             solveddoublets.insert(*it);
         }

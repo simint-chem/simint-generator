@@ -154,6 +154,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
         primname << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "]";
 
         os << indent6 << "//" << it <<  " : STEP: " << step << "\n";
+
         if(WriterInfo::HasFMA())
         {
             os << indent6 << primname.str() << " = " << WriterInfo::FMSub(ppa.str(), g1var.str(), aop_pq.str() + " * " + g11var.str()) << ";\n";

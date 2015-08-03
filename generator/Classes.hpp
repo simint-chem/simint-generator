@@ -292,23 +292,21 @@ inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
 struct HRRDoubletStep
 {
     Doublet target;
-    Doublet src1;
-    Doublet src2;
+    std::array<Doublet, 2> src;
     XYZStep xyz;    
 
     std::string str(void) const
     {
         const char * xyztype = (target.type == DoubletType::BRA ? "ab" : "cd");
         std::stringstream ss;
-        ss << target << " = " << src1 << " + " << xyz << "_" << xyztype << " * " << src2;
+        ss << target << " = " << src[0] << " + " << xyz << "_" << xyztype << " * " << src[1];
         return ss.str();
     }
 
     bool operator==(const HRRDoubletStep & rhs) const
     {
         return (target == rhs.target &&
-                src1 == rhs.src1 &&
-                src2 == rhs.src2 &&
+                src == rhs.src &&
                 xyz == rhs.xyz);
     }
 };
@@ -325,19 +323,19 @@ inline std::ostream & operator<<(std::ostream & os, const HRRDoubletStep & hrr)
 struct ETStep
 {
     Quartet target;
-    Quartet src1, src2, src3, src4;
+    std::array<Quartet, 4> src;
     XYZStep xyz;
 
     std::string str(void) const
     {
         std::stringstream ss;
-        ss << target << " = " << xyz << " * " << src1;
-        if(src2.bra.left && src2.ket.left)
-            ss << " + " << src2;
-        if(src3.bra.left && src3.ket.left)
-            ss << " + " << src3;
-        if(src4.bra.left && src4.ket.left)
-            ss << " - " << src4;
+        ss << target << " = " << xyz << " * " << src[0];
+        if(src[1].bra.left && src[1].ket.left)
+            ss << " + " << src[1];
+        if(src[2].bra.left && src[2].ket.left)
+            ss << " + " << src[2];
+        if(src[3].bra.left && src[3].ket.left)
+            ss << " - " << src[3];
  
         return ss.str();
     }
@@ -345,10 +343,8 @@ struct ETStep
     bool operator==(const ETStep & rhs) const
     {
         return (target == rhs.target &&
-                src1 == rhs.src1 &&
-                src2 == rhs.src2 &&
-                src3 == rhs.src3 &&
-                src4 == rhs.src4);
+                src == rhs.src &&
+                xyz == rhs.xyz);
     }
 };
 

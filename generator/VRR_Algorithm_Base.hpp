@@ -17,7 +17,11 @@ class VRR_Algorithm_Base
         virtual ~VRR_Algorithm_Base() = default; 
 
     private:
+        // VRRMap maps a gaussian function to the step
+        // that should be used to produce it
         VRRMap vrrmap_;
+
+        // Holds which gaussians are required for a particular AM 
         GaussianMap amreq_;
 
         virtual VRRMap CreateVRRMap_(int am) = 0;

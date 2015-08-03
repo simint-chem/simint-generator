@@ -45,9 +45,9 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket
         os << HRRBraStepVar_(hit.target, ncart_ket, ketstr, true);
 
         os << " = ";
-        os << HRRBraStepVar_(hit.src1, ncart_ket, ketstr, false);
+        os << HRRBraStepVar_(hit.src[0], ncart_ket, ketstr, false);
         os << " + ( b" << xyztype << hit.xyz << " * ";
-        os << HRRBraStepVar_(hit.src2, ncart_ket, ketstr, false);
+        os << HRRBraStepVar_(hit.src[1], ncart_ket, ketstr, false);
         os << " );";
         os << "\n\n";
     }
@@ -73,9 +73,9 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const std::string & ncart_bra
             os << HRRKetStepVar_(hit.target, ncart_bra, brastr, true);
 
             os << " = ";
-            os << HRRKetStepVar_(hit.src1, ncart_bra, brastr, false);
+            os << HRRKetStepVar_(hit.src[0], ncart_bra, brastr, false);
             os << " + ( k" << xyztype << hit.xyz << " * ";
-            os << HRRKetStepVar_(hit.src2, ncart_bra, brastr, false);
+            os << HRRKetStepVar_(hit.src[1], ncart_bra, brastr, false);
             os << " );";
             os << "\n\n";
         }

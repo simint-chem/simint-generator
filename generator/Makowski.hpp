@@ -123,10 +123,12 @@ class Makowski_ET : public ET_Algorithm_Base
 
             // Create the electron transfer step
             ETStep et{target, 
-                      {src1d_bra, src1d_ket, 0},
-                      {src2d_bra, src2d_ket, 0},
-                      {src3d_bra, src3d_ket, 0},
-                      {src4d_bra, src4d_ket, 0},
+                      {{
+                        {src1d_bra, src1d_ket, 0},
+                        {src2d_bra, src2d_ket, 0},
+                        {src3d_bra, src3d_ket, 0},
+                        {src4d_bra, src4d_ket, 0}
+                      }},
                       xyzstep};
             return et;
         }
