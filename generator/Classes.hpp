@@ -322,40 +322,6 @@ inline std::ostream & operator<<(std::ostream & os, const HRRDoubletStep & hrr)
 }
 
 
-struct HRRQuartetStep
-{
-    Quartet target;
-    Quartet src1;
-    Quartet src2;
-    DoubletType steptype;  // bra or ket being stepped
-    XYZStep xyz;    
-
-
-    std::string str(void) const
-    {
-        const char * xyztype = (steptype == DoubletType::BRA ? "ab" : "cd");
-        std::stringstream ss;
-        ss << target << " = " << src1 << " + " << xyz << "_" << xyztype << " * " << src2;
-        return ss.str();
-    }
-
-    bool operator==(const HRRQuartetStep & rhs) const
-    {
-        return (target == rhs.target &&
-                src1 == rhs.src1 &&
-                src2 == rhs.src2 &&
-                steptype == rhs.steptype &&
-                xyz == rhs.xyz);
-    }
-};
-
-inline std::ostream & operator<<(std::ostream & os, const HRRQuartetStep & hrr)
-{
-    os << hrr.str();
-    return os;
-}
-
-
 struct ETStep
 {
     Quartet target;
@@ -387,6 +353,7 @@ struct ETStep
 };
 
 
+
 inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 {
     os << et.str();
@@ -412,10 +379,6 @@ typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
 
 
 typedef std::pair<DAMSet, DAMSet> HRRBraKetAMSet;
-
-typedef std::vector<HRRQuartetStep> HRRQuartetStepList;
-
-
 
 
 
