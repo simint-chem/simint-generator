@@ -9,6 +9,11 @@
 #include "test/timer.hpp"
 
 
+#ifdef BENCHMARK_VALIDATE
+#include "test/valeev.hpp"
+#endif
+
+
 int main(int argc, char ** argv)
 {
     // set up the function pointers
@@ -33,6 +38,7 @@ int main(int argc, char ** argv)
     printf("Disabling threading since BENCHMARK_VALIDATE is set\n");
     nthread = 1;
     #endif
+
 
     if(argc == 4)
         nthread = atoi(argv[3]);
@@ -60,6 +66,7 @@ int main(int argc, char ** argv)
 
 
     #ifdef BENCHMARK_VALIDATE
+    Valeev_Init();
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
@@ -119,6 +126,7 @@ int main(int argc, char ** argv)
 
 
                 #ifdef BENCHMARK_VALIDATE
+                const int ncart1234 = NCART(i) * NCART(j) * NCART(j) * NCART(l);
                 const int arrlen = nshell1234 * ncart1234;
                 ValeevIntegrals(A, nshell1, B, nshell2, C, nshell3, D, nshell4, res_ref, false);
                 std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);

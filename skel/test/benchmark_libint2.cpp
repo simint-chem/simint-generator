@@ -10,6 +10,9 @@
 #include "test/Libint2.hpp"
 #include "test/timer.hpp"
 
+#ifdef BENCHMARK_VALIDATE
+#include "test/valeev.hpp"
+#endif
 
 int main(int argc, char ** argv)
 {
@@ -66,6 +69,7 @@ int main(int argc, char ** argv)
 
 
     #ifdef BENCHMARK_VALIDATE
+    Valeev_Init();
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
@@ -125,6 +129,7 @@ int main(int argc, char ** argv)
 
 
                 #ifdef BENCHMARK_VALIDATE
+                const int ncart1234 = NCART(i) * NCART(j) * NCART(j) * NCART(l);
                 const int arrlen = nshell1234 * ncart1234;
                 ValeevIntegrals(A, nshell1,
                                 B, nshell2,

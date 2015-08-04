@@ -10,6 +10,10 @@
 #include "test/ERD.hpp"
 #include "test/timer.hpp"
 
+#ifdef BENCHMARK_VALIDATE
+#include "test/valeev.hpp"
+#endif
+
 
 int main(int argc, char ** argv)
 {
@@ -36,8 +40,10 @@ int main(int argc, char ** argv)
     nthread = 1;
     #endif
 
+
     if(argc == 4)
         nthread = atoi(argv[3]);
+
 
     // read in the shell info
     ShellMap shellmap_erd = ReadBasis(basfile);
@@ -45,18 +51,14 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     ShellMap shellmap = CopyShellMap(shellmap_erd);
+    for(auto & it : shellmap)
+        normalize_gaussian_shells(it.second.size(), it.second.data());
     #endif
 
 
     // normalize
     for(auto & it : shellmap_erd)
         normalize_gaussian_shells_erd(it.second.size(), it.second.data());
-
-
-    #ifdef BENCHMARK_VALIDATE
-    for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
-    #endif
 
 
 
@@ -79,6 +81,7 @@ int main(int argc, char ** argv)
 
 
     #ifdef BENCHMARK_VALIDATE
+    Valeev_Init();
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
@@ -141,6 +144,7 @@ int main(int argc, char ** argv)
 
 
                 #ifdef BENCHMARK_VALIDATE
+                const int ncart1234 = NCART(i) * NCART(j) * NCART(j) * NCART(l);
                 const int arrlen = nshell1234 * ncart1234;
                 ValeevIntegrals(&shellmap[i][a], nshell1,
                                 &shellmap[j][b], nshell2,
