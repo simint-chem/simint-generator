@@ -11,7 +11,6 @@
 #include "test/timer.hpp"
 
 #define MAXAM 2
-#define NTEST 10
 
 #define RND_ZERO 1.0e-15
 
