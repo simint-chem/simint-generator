@@ -16,31 +16,6 @@
 static erifunc funcs[MAXAM+1][MAXAM+1][MAXAM+1][MAXAM+1];
 
 
-/////////////////////////
-// For RefIntegralReader
-/////////////////////////
-RefIntegralReader::RefIntegralReader(const std::string & basfile)
-         : file_( (basfile + ".ref").c_str(), std::ifstream::in)
-{
-    if(!file_.is_open())
-        throw std::runtime_error(std::string("Error opening file ") + basfile + ".ref");
-    file_.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-}
-
-void RefIntegralReader::ReadNext(double * out, int nsize)
-{
-    file_.read(reinterpret_cast<char *>(out), nsize * sizeof(double));
-}
-
-
-
-void RefIntegralReader::Reset(void)
-{
-    file_.seekg(0, std::ifstream::beg);
-}
-
-
-
 bool IsValidGaussian(const std::array<int, 3> & g)
 {
     return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0);

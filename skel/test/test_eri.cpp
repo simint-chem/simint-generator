@@ -64,9 +64,6 @@ int main(int argc, char ** argv)
                                                          "Me", "erd", "libint");
 
 
-    // Read the reference integrals
-    //RefIntegralReader refint(basfile);
-
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= maxam; i++)
     for(int j = 0; j <= maxam; j++)
@@ -98,11 +95,10 @@ int main(int argc, char ** argv)
         const int arrlen = nshell1234 * ncart1234;
 
         /////////////////////////////////
-        // Calculate or read valeev
+        // Calculate valeev
         // reference integrals
         /////////////////////////////////
         ValeevIntegrals(it_i, it_j, it_k, it_l, res_valeev, false);
-        //refint.ReadNext(res_valeev, arrlen);
 
         //////////////////////
         // set up shell pairs

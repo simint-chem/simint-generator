@@ -24,25 +24,6 @@ typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair cons
 typedef int (*eriflatfunc)(struct multishell_pair_flat const, struct multishell_pair_flat const, double * const restrict);
 
 
-// Class for reading reference integrals
-class RefIntegralReader
-{
-    public:
-        RefIntegralReader(const std::string & basfile);
-        RefIntegralReader(const RefIntegralReader & rhs) = delete;
-        RefIntegralReader(const RefIntegralReader && rhs) = delete;
-
-        ~RefIntegralReader() = default;
-
-        void ReadNext(double * out, int nsize);
-        void Reset(void);
-
-    private:
-        std::ifstream file_;
-};
-
-
-
 // Some gaussian & quartet handling stuff
 bool IsValidGaussian(const std::array<int, 3> & g);
 bool IterateGaussian(std::array<int, 3> & g);
