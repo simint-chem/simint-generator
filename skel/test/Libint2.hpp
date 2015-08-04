@@ -12,7 +12,7 @@ class Libint2_ERI
         Libint2_ERI(int maxam, size_t maxnprim);
         ~Libint2_ERI();
 
-        TimerInfo Integrals(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        TimerType Integrals(struct multishell_pair P, struct multishell_pair Q, double * integrals);
 
     private:
         std::vector<Libint_eri_t> erival_;

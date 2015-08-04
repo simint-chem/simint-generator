@@ -32,11 +32,11 @@ Libint2_ERI::~Libint2_ERI()
 
 
 
-TimerInfo Libint2_ERI::Integrals(struct multishell_pair P,
+TimerType Libint2_ERI::Integrals(struct multishell_pair P,
                                  struct multishell_pair Q,
                                  double * integrals)
 {
-    unsigned long long totaltime = libint2_integrals(erival_.data(), P, Q, integrals);
-    return {totaltime, 0.0};
+    TimerType totaltime = libint2_integrals(erival_.data(), P, Q, integrals);
+    return totaltime;
 }
 

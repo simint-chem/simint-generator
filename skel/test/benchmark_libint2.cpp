@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = maxparams[0];
+    const int maxam = (maxparams[0] > MAXAM ? MAXAM : maxparams[0]);
     const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
@@ -67,12 +67,11 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
-    RefIntegralReader refint(basfile);
     #endif
 
     // Timing header
-    printf("%5s %13s %12s   %12s   %16s  %15s    %12s\n", "ID",
-                           "Quartet", "NCont", "NPrim", "Ticks", "Clock", "Ticks/Prim");
+    printf("%5s %13s %12s   %12s   %16s   %12s\n", "ID",
+                           "Quartet", "NCont", "NPrim", "Ticks", "Ticks/Prim");
 
     // loop ntest times
     #pragma omp parallel for num_threads(nthread)
@@ -82,8 +81,6 @@ int main(int argc, char ** argv)
         Libint2_ERI * eri = alleri[ithread].get();
 
         #ifdef BENCHMARK_VALIDATE
-        // move the reader back to the beginning of the file
-        refint.Reset();
         printf("\n");
         printf("Run %d\n", n);
         #endif
@@ -97,55 +94,67 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
+            const int nshell3 = shellmap[k].size();
+            const int nshell4 = shellmap[l].size();
 
-            const GaussianVec & A = shellmap[i];
-            const GaussianVec & B = shellmap[j];
-            const GaussianVec & C = shellmap[k];
-            const GaussianVec & D = shellmap[l];
+            gaussian_shell const * const C = &shellmap[k][0];
+            gaussian_shell const * const D = &shellmap[l][0];
+            struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
 
-            //////////////////////
-            // set up shell pairs
-            //////////////////////
-            struct multishell_pair P = create_multishell_pair(A.size(), A.data(),
-                                                              B.size(), B.data());
-            struct multishell_pair Q = create_multishell_pair(C.size(), C.data(),
-                                                              D.size(), D.data());
+            TimerType time_total = 0;
+            size_t nprim_total = 0;
+            size_t nshell1234_total = 0;
 
 
-            // actually calculate
-            TimerInfo time = eri->Integrals(P, Q, res_ints[ithread]);
+            // do one shell pair at a time on the bra side
+            for(size_t a = 0; a < shellmap[i].size(); a++)
+            for(size_t b = 0; b < shellmap[j].size(); b++)
+            {
+                const int nshell1 = 1; 
+                const int nshell2 = 1; 
+                const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+
+                gaussian_shell const * const A = &shellmap[i][a];
+                gaussian_shell const * const B = &shellmap[j][b];
+
+                struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
 
 
-            // calculate the number of primitives
-            const size_t nshell1 = A.size();
-            const size_t nshell2 = B.size();
-            const size_t nshell3 = C.size();
-            const size_t nshell4 = D.size();
-            const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-            size_t nprim = 0;
-            for(size_t a = 0; a < nshell1; a++)
-            for(size_t b = 0; b < nshell2; b++)
-            for(size_t c = 0; c < nshell3; c++)
-            for(size_t d = 0; d < nshell4; d++)
-                nprim += A[a].nprim * B[b].nprim * C[c].nprim * D[d].nprim;
+                // actually calculate
+                time_total += eri->Integrals(P, Q, res_ints[ithread]);
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",
+
+                #ifdef BENCHMARK_VALIDATE
+                const int arrlen = nshell1234 * ncart1234;
+                ValeevIntegrals(A, nshell1,
+                                B, nshell2,
+                                C, nshell3,
+                                D, nshell4,
+                                res_ref, false);
+                std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
+                printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+                #endif
+                    
+                nshell1234_total += nshell1234;
+
+                // calculate the number of primitives
+                for(int p = 0; p < nshell1; p++)
+                for(int q = 0; q < nshell2; q++)
+                for(int r = 0; r < nshell3; r++)
+                for(int s = 0; s < nshell4; s++)
+                    nprim_total += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
+
+                free_multishell_pair(P);
+            }
+
+            free_multishell_pair(Q);
+
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
-                                                                          nshell1234, nprim,
-                                                                          time.first,
-                                                                          time.second,
-                                                                          (double)(time.first)/(double)(nprim));
-
-
-            #ifdef BENCHMARK_VALIDATE
-            const int arrlen = nshell1234 * ncart1234;
-            refint.ReadNext(res_ref, arrlen);
-            Chop(res_ints[ithread], arrlen);
-            Chop(res_ref, arrlen);
-            std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
-            printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
-            #endif
+                                                                          nshell1234_total, nprim_total,
+                                                                          time_total,
+                                                                          (double)(time_total)/(double)(nprim_total));
         }
     }
 

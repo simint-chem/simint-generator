@@ -47,14 +47,11 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m);
 
 
 // Calculating reference integrals
-void ValeevIntegrals(const GaussianVec & g1, const GaussianVec & g2,
-                     const GaussianVec & g3, const GaussianVec & g4,
+void ValeevIntegrals(gaussian_shell const * const A, int nshell1,
+                     gaussian_shell const * const B, int nshell2,
+                     gaussian_shell const * const C, int nshell3,
+                     gaussian_shell const * const D, int nshell4,
                      double * const integrals, bool normalize);
-
-
-void ERDIntegrals(const GaussianVec & g1, const GaussianVec & g2,
-                  const GaussianVec & g3, const GaussianVec & g4,
-                  double * const integrals);
 
 
 // Error analysis
@@ -77,7 +74,7 @@ int eriflat_notyetimplemented(struct multishell_pair_flat const P,
                               double * const restrict dummy);
 
 
-TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
+TimerType Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
 
 
 #endif

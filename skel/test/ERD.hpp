@@ -27,10 +27,11 @@ class ERD_ERI
 
 
 
-        TimerInfo Integrals(const GaussianVec & gv1, const GaussianVec & gv2,
-                            const GaussianVec & gv3, const GaussianVec & gv4,
+        TimerType Integrals(struct gaussian_shell const * const restrict A, int nshell1,
+                            struct gaussian_shell const * const restrict B, int nshell2,
+                            struct gaussian_shell const * const restrict C, int nshell3,
+                            struct gaussian_shell const * const restrict D, int nshell4,
                             double * const integrals);
-
 
 
 
@@ -49,7 +50,7 @@ class ERD_ERI
                    int am3, int nprim3, int ncgto3,
                    int am4, int nprim4, int ncgto4);
 
-        TimerInfo Compute_shell_(struct gaussian_shell const A,
+        TimerType Compute_shell_(struct gaussian_shell const A,
                                  struct gaussian_shell const B,
                                  struct gaussian_shell const C,
                                  struct gaussian_shell const D,

@@ -142,7 +142,7 @@ void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
 
 
 
-TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
+TimerType ERD_ERI::Compute_shell_(struct gaussian_shell const A,
                                   struct gaussian_shell const B,
                                   struct gaussian_shell const C,
                                   struct gaussian_shell const D,
@@ -179,7 +179,7 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
     int buffer_offset = 0;
 
 
-    unsigned long long ticks0, ticks1;
+    TimerType ticks0, ticks1;
 
     CLOCK(ticks0);
 
@@ -204,23 +204,16 @@ TimerInfo ERD_ERI::Compute_shell_(struct gaussian_shell const A,
         
     memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
 
-    return {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
+    return ticks1 - ticks0;
 }
 
 
-TimerInfo ERD_ERI::Integrals(const GaussianVec & gv1, const GaussianVec & gv2,
-                             const GaussianVec & gv3, const GaussianVec & gv4,
+TimerType ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, int nshell1,
+                             struct gaussian_shell const * const restrict B, int nshell2,
+                             struct gaussian_shell const * const restrict C, int nshell3,
+                             struct gaussian_shell const * const restrict D, int nshell4,
                              double * const integrals)
 {
-    const gaussian_shell * A = gv1.data();
-    const gaussian_shell * B = gv2.data();
-    const gaussian_shell * C = gv3.data();
-    const gaussian_shell * D = gv4.data();
-
-    const int nshell1 = gv1.size();
-    const int nshell2 = gv2.size();
-    const int nshell3 = gv3.size();
-    const int nshell4 = gv4.size();
     const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
     const int am1 = A[0].am;
@@ -229,11 +222,10 @@ TimerInfo ERD_ERI::Integrals(const GaussianVec & gv1, const GaussianVec & gv2,
     const int am4 = D[0].am;
     const int ncart1234 = NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
-
     const int ncart = nshell1234 * ncart1234;
     std::fill(integrals, integrals + ncart, 0.0);
 
-    TimerInfo totaltime{0, 0.0};
+    TimerType totaltime = 0;
 
     int idx = 0;
     for(int i = 0; i < nshell1; i++)

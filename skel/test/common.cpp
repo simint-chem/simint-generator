@@ -225,25 +225,18 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m)
         }
     }
 
-    return {maxam, maxnprim, maxel*maxel*maxel*maxel};
+    return {maxam, maxnprim, maxel*maxel*NCART(maxam)*NCART(maxam)};
 }
 
 
 
-void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
-                     const GaussianVec & gv3, const GaussianVec & gv4,
+void ValeevIntegrals(gaussian_shell const * const A, int nshell1,
+                     gaussian_shell const * const B, int nshell2,
+                     gaussian_shell const * const C, int nshell3,
+                     gaussian_shell const * const D, int nshell4,
                      double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
-    const gaussian_shell * A = gv1.data();
-    const gaussian_shell * B = gv2.data();
-    const gaussian_shell * C = gv3.data();
-    const gaussian_shell * D = gv4.data();
-
-    const int nshell1 = gv1.size();
-    const int nshell2 = gv2.size();
-    const int nshell3 = gv3.size();
-    const int nshell4 = gv4.size();
 
     const int am1 = A[0].am;
     const int am2 = B[0].am;
@@ -295,23 +288,6 @@ void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
                                                                 g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
                                 myint += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
 
-/*
-                                printf("IDX: %d\n", idx);
-                                printf("VAL: %8.3e\n", val);
-                                printf("%8.3e %8.3e %8.3e %8.3e\n", vA[0], vA[1], vA[2], A[i].alpha[m]);
-                                printf("%8.3e %8.3e %8.3e %8.3e\n", vB[0], vB[1], vB[2], B[j].alpha[n]);
-                                printf("%8.3e %8.3e %8.3e %8.3e\n", vC[0], vC[1], vC[2], C[k].alpha[o]);
-                                printf("%8.3e %8.3e %8.3e %8.3e\n", vD[0], vD[1], vD[2], D[l].alpha[p]);
-                                printf("%8.3e %8.3e %8.3e %8.3e\n", A[i].coef[m], B[j].coef[n], C[k].coef[o], D[l].coef[p]);
-                                std::cout << "i,j,k,l,idx = ";
-                                std::cout << g1[0] << "," << g1[1] << "," << g1[2] << "  ";
-                                std::cout << g2[0] << "," << g2[1] << "," << g2[2] << "  ";
-                                std::cout << g3[0] << "," << g3[1] << "," << g3[2] << "  ";
-                                std::cout << g4[0] << "," << g4[1] << "," << g4[2] << "  ";
-                                std::cout << idx << "  int = " << integrals[idx] << "\n";
-*/
-
-
                             }
 
                             integrals[idxstart + idx] = myint;
@@ -322,8 +298,6 @@ void ValeevIntegrals(const GaussianVec & gv1, const GaussianVec & gv2,
                 } while(IterateGaussian(g2));
             } while(IterateGaussian(g1));
         }
-
-
     }
 }
 
@@ -461,13 +435,13 @@ int eri_notyetimplemented(struct multishell_pair const P,
 
 
 
-TimerInfo Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
+TimerType Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals)
 {
-    unsigned long long ticks0, ticks1;
+    TimerType ticks0, ticks1;
 
     CLOCK(ticks0);
     funcs[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
     CLOCK(ticks1);
-    return {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
+    return ticks1 - ticks0;
 }
 

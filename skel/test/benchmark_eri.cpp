@@ -46,8 +46,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = maxparams[0];
-    //const int maxnprim = maxparams[1];
+    const int maxam = (maxparams[0] > MAXAM ? MAXAM : maxparams[0]);
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
@@ -62,12 +61,11 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
-    RefIntegralReader refint(basfile);
     #endif
 
     // Timing header
-    printf("%5s %13s %12s   %12s   %16s  %15s    %12s\n", "ID",
-                           "Quartet", "NCont", "NPrim", "Ticks", "Clock", "Ticks/Prim");
+    printf("%5s %13s %12s   %12s   %16s   %12s\n", "ID",
+                           "Quartet", "NCont", "NPrim", "Ticks", "Ticks/Prim");
 
     // loop ntest times
     #pragma omp parallel for num_threads(nthread)
@@ -77,10 +75,10 @@ int main(int argc, char ** argv)
 
         #ifdef BENCHMARK_VALIDATE
         // move the reader back to the beginning of the file
-        refint.Reset();
-        printf("\n");
         printf("Run %d\n", n);
         #endif
+
+
         for(int i = 0; i <= maxam; i++)
         for(int j = 0; j <= maxam; j++)
         for(int k = 0; k <= maxam; k++)
@@ -89,53 +87,58 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
-
-            const GaussianVec & it_i = shellmap[i];
-            const GaussianVec & it_j = shellmap[j];
-            const GaussianVec & it_k = shellmap[k];
-            const GaussianVec & it_l = shellmap[l];
-
-
-            // set up shell pairs
-            struct multishell_pair P = create_multishell_pair(it_i.size(), it_i.data(),
-                                                              it_j.size(), it_j.data());
-            struct multishell_pair Q = create_multishell_pair(it_k.size(), it_k.data(),
-                                                              it_l.size(), it_l.data());
-
-            // actually calculate
-            TimerInfo time = Integral(P, Q, res_ints[ithread]);
-
-            unsigned long ncont = (unsigned long)(P.nshell12) * (unsigned long)(Q.nshell12);
-            unsigned long nprim = (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
-
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu  (%8.3f secs)    %12.3f\n",
-                                                                          ithread,
-                                                                          i, j, k, l,
-                                                                          ncont, nprim,
-                                                                          time.first,
-                                                                          time.second,
-                                                                          (double)(time.first)/(double)(nprim));
-
-
-            #ifdef BENCHMARK_VALIDATE
-            const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
-            const int nshell1 = shellmap[i].size();
-            const int nshell2 = shellmap[j].size();
             const int nshell3 = shellmap[k].size();
             const int nshell4 = shellmap[l].size();
-            const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-            const int arrlen = nshell1234 * ncart1234;
-            refint.ReadNext(res_ref, arrlen);
-            Chop(res_ints[ithread], arrlen);
-            Chop(res_ref, arrlen);
-            std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
 
-            printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
-            #endif
+            gaussian_shell const * const C = &shellmap[k][0];
+            gaussian_shell const * const D = &shellmap[l][0];
+            struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
+
+            TimerType time_total = 0;
+            size_t nprim_total = 0;
+            size_t nshell1234_total = 0;
 
 
-            free_multishell_pair(P);
+            // do one shell pair at a time on the bra side
+            for(size_t a = 0; a < shellmap[i].size(); a++)
+            for(size_t b = 0; b < shellmap[j].size(); b++)
+            {
+                const int nshell1 = 1; 
+                const int nshell2 = 1; 
+                const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+
+                gaussian_shell const * const A = &shellmap[i][a];
+                gaussian_shell const * const B = &shellmap[j][b];
+
+                struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+
+
+                // actually calculate
+                time_total += Integral(P, Q, res_ints[ithread]);
+
+
+
+                #ifdef BENCHMARK_VALIDATE
+                const int arrlen = nshell1234 * ncart1234;
+                ValeevIntegrals(A, nshell1, B, nshell2, C, nshell3, D, nshell4, res_ref, false);
+                std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
+                printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+                #endif
+
+                nshell1234_total += nshell1234;
+                nprim_total += (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
+
+                free_multishell_pair(P);
+            }
+
             free_multishell_pair(Q);
+
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
+                                                                          ithread,
+                                                                          i, j, k, l,
+                                                                          nshell1234_total, nprim_total,
+                                                                          time_total,
+                                                                          (double)(time_total)/(double)(nprim_total));
         }
     }
 
