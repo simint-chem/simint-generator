@@ -10,6 +10,7 @@
 #include "generator/VRR_Writer.hpp"
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
+#include "generator/Ncart.hpp"
 
 
 static void WriteFile_NotFlat(std::ostream & os,
@@ -19,7 +20,7 @@ static void WriteFile_NotFlat(std::ostream & os,
                               const HRR_Writer & hrr_writer)
 {
     const QAM am = WriterInfo::FinalAM();
-    int ncart = NCART(am[0]) * NCART(am[1]) * NCART(am[2]) * NCART(am[3]);
+    int ncart = NCART(am);
 
     // some helper bools
     bool hashrr = WriterInfo::HasHRR();

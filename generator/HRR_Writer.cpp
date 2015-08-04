@@ -2,6 +2,7 @@
 #include "generator/WriterInfo.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
+#include "generator/Ncart.hpp"
 
 
 HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo) 
@@ -172,7 +173,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         //    os << indent3 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << ";\n";
 
         // and also for the final integral
-        //os << indent3 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        //os << indent3 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         //os << "\n";
 
         if(!WriterInfo::Scalar())
@@ -183,10 +184,10 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
         for(const auto & it : topquartetam_)
-            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
-        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         os << "\n";
 
 
@@ -207,7 +208,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
                 if(!WriterInfo::IsFinalAM(qam))
                 {
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(qam)
-                       << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
+                       << "[" << NCART(finalbra[0], finalbra[1], it[0]) << "];\n";
                 }
             }
 
@@ -244,7 +245,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
             // ncart_bra in string form
             std::stringstream ss;
-            ss << (NCART(finalbra[0]) * NCART(finalbra[1])); 
+            ss << NCART(finalbra); 
 
             // the bra part in string form
             std::stringstream ssbra;
@@ -258,9 +259,9 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << "\n";
         //os << indent4 << "// advance the pointers\n";
         //for(const auto & it : topquartetam_)
-        //    os << indent4 << "HRR_" << WriterInfo::ArrVarName(it) << " += " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n"; 
+        //    os << indent4 << "HRR_" << WriterInfo::ArrVarName(it) << " += " << NCART(it) << ";\n"; 
         // final integral
-        //os << indent4 << "HRR_" << WriterInfo::ArrVarName(finalam) << " += " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        //os << indent4 << "HRR_" << WriterInfo::ArrVarName(finalam) << " += " << NCART(finalam) << ";\n";
         //os << "\n";
         //
 
@@ -295,10 +296,10 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
         for(const auto & it : topquartetam_)
-            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]) << ";\n";
+            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
-        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam[0]) * NCART(finalam[1]) * NCART(finalam[2]) * NCART(finalam[3]) << ";\n";
+        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         os << "\n";
 
         if(WriterInfo::HasBraHRR())
@@ -317,7 +318,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
                 if(!WriterInfo::IsFinalAM(qam))
                 {
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(qam)
-                       << "[" << NCART(finalbra[0]) * NCART(finalbra[1]) * NCART(it[0]) << "];\n";
+                       << "[" << NCART(finalbra[0], finalbra[1], it[0]) << "];\n";
                 }
             }
             os << "\n";
@@ -355,7 +356,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
             // ncart_bra in string form
             std::stringstream ss;
-            ss << NCART(finalbra[0]) * NCART(finalbra[1]);
+            ss << NCART(finalbra);
 
             os << indent4 << "HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
             for(const auto & it2 : brakettopam_.second)

@@ -10,8 +10,6 @@
 #include <map>
 #include <utility>
 
-#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
-
 static const char * amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789";
 
 typedef std::array<int, 2> DAM;

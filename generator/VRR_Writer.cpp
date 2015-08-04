@@ -2,6 +2,7 @@
 #include "generator/WriterInfo.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
 #include "generator/Helpers.hpp"
+#include "generator/Ncart.hpp"
 
 
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)

@@ -2,6 +2,7 @@
 #include "generator/WriterInfo.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
 #include "generator/Helpers.hpp"
+#include "generator/Ncart.hpp"
 
 
 ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo) 
@@ -65,7 +66,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
         {
             // only if these aren't from vrr
             if(it[1] > 0 || it[2] > 0 || it[3] > 0)
-                os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0]) * NCART(it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+                os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0], it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
         } 
 
         os << "\n\n";
@@ -82,7 +83,7 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
         {
             if(WriterInfo::IsContArray(it))
                 os << indent4  << "double * restrict " << WriterInfo::PrimPtrName(it)
-                   << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0]) * NCART(it[2]) << ";\n";
+                   << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0], it[2]) << ";\n";
         }
 
         os << "\n\n";

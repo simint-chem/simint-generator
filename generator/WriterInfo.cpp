@@ -4,6 +4,7 @@
 #include <cctype> // for tolower
 #include "generator/Helpers.hpp"
 #include "generator/WriterInfo.hpp"
+#include "generator/Ncart.hpp"
 
 namespace {
         QAMSet contq_;  // set of contracted integral AM
@@ -47,7 +48,7 @@ void SetContQ(const QAMSet & topquartets)
     for(const auto & it : contq_)
     {
         if(it != finalam_)
-            nelements_ += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+            nelements_ += NCART(it);
     }
 
     // add memory for AB_{xyz} and CD_{xyz}
@@ -224,7 +225,7 @@ void DeclareContwork(std::ostream & os)
             if(it != finalam_)
             {
                 os << "    double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
-                ptidx += NCART(it[0]) * NCART(it[1]) * NCART(it[2]) * NCART(it[3]);
+                ptidx += NCART(it);
             }
         
         }
@@ -630,7 +631,7 @@ void WriteAccumulation(std::ostream & os)
 
         for(const auto qam : contq_)
         {
-            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+            int ncart = NCART(qam);
 
             /*
             if(HasCPUFlag("avx"))
@@ -712,7 +713,7 @@ void WriteAccumulation(std::ostream & os)
 
         for(const auto qam : contq_)
         {
-            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+            int ncart = NCART(qam);
             os << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
             os << indent6 << "{\n";
             os << indent7 << WriterInfo::ConstUnionType() << " tmp = (" << WriterInfo::UnionType() << ")" << WriterInfo::PrimVarName(qam) << "[np];\n";
@@ -729,7 +730,7 @@ void WriteAccumulation(std::ostream & os)
     {
         for(const auto qam : contq_)
         {
-            int ncart = NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]);
+            int ncart = NCART(qam);
             os << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
                 os << indent7 << WriterInfo::PrimPtrName(qam) << "[n] += " << WriterInfo::PrimVarName(qam) << "[n];\n";
         }
@@ -755,7 +756,7 @@ void WriteShellOffsets(std::ostream & os)
     os << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     
     for(const auto qam : contq_)
-        os << indent7 << WriterInfo::PrimPtrName(qam) << " += " << NCART(qam[0]) * NCART(qam[1]) * NCART(qam[2]) * NCART(qam[3]) << ";\n";
+        os << indent7 << WriterInfo::PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
 
     os << indent6 << "}\n";
     os << indent6 << "iprimcd++;\n";
