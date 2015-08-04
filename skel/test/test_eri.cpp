@@ -135,9 +135,9 @@ int main(int argc, char ** argv)
 
 
         // chop
-        Chop(res_valeev, arrlen);
-        Chop(res_libint, arrlen);
-        Chop(res, arrlen);
+        //Chop(res_valeev, arrlen);
+        //Chop(res_libint, arrlen);
+        //Chop(res, arrlen);
 
 
         // Analyze
@@ -151,8 +151,28 @@ int main(int argc, char ** argv)
 
 
         // For debugging
-        for(int m = 0; m < ncart1234 * nshell1234; m++)
-            printf("%25.18e  %25.18e\n", res_valeev[m], res[m]);
+        // For debugging
+        int m = 0;
+        for(int m1 = 0; m1 < nshell1; m1++)
+        for(int m2 = 0; m2 < nshell2; m2++)
+        for(int m3 = 0; m3 < nshell3; m3++)
+        for(int m4 = 0; m4 < nshell4; m4++)
+        for(int c1 = 0; c1 < NCART(i); c1++)
+        for(int c2 = 0; c2 < NCART(j); c2++)
+        for(int c3 = 0; c3 < NCART(k); c3++)
+        for(int c4 = 0; c4 < NCART(l); c4++, ++m)
+        {
+            double diff = fabs(res_valeev[m] - res[m]);
+            double rdiff = fabs(diff / res_valeev[m]);
+            double ldiff = fabs(res_valeev[m] - res_libint[m]);
+            double lrdiff = fabs(ldiff / res_valeev[m]);
+
+            if( (diff > 1e-14 && rdiff > 1e-8) || (ldiff > 1e-14 && lrdiff > 1e-8) )
+                printf("%d %d %d %d : %d %d %d %d  %25.16e  %25.16e  %25.16e   %25.16e  %25.16e  %25.16e  %25.16e\n",
+                                                                                          m1, m2, m3, m4, c1, c2, c3, c4,
+                                                                                          res_valeev[m], res_libint[m], res[m], 
+                                                                                          diff, rdiff, ldiff, lrdiff);
+        }
 
 
         free_multishell_pair(P);
