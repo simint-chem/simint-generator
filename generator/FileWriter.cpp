@@ -53,8 +53,6 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "#include <math.h>\n";
     os << "\n";
 
-    os << "#include \"constants.h\"\n";
-    os << "#include \"shell/shell.h\"\n";
     os << "#include \"eri/eri.h\"\n";
     os << "\n";
     WriterInfo::WriteIncludes(os);
@@ -139,11 +137,6 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     if(hashrr)
         WriterInfo::DeclareContwork(os);
-
-    // load constants into variables
-    // (important only really for instrinsics)
-    // include the factor of TWO_PI_52
-    // WriterInfo::AddNamedConstant("const_two_pi_52", "TWO_PI_52");  moved to shell_pair
 
     // need these factors if there is VRR or ET
     if(hasoneover2p || haset)

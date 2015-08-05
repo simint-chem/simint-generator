@@ -39,6 +39,8 @@ int main(int argc, char ** argv)
             cpuinfofile = GetNextArg(i, argc, argv);
         else if(argstr == "-i")
             options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-S")
+            options[OPTION_SCALAR] = 1;
         else
         {
             std::cout << "\n\n";
