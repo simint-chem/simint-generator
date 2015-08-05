@@ -29,6 +29,8 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool inline_hrr = (hashrr && WriterInfo::GetOption(OPTION_INLINEHRR) != 0);
 
     bool hasvrr = WriterInfo::HasVRR();
+    bool hasbravrr = WriterInfo::HasBraVRR();
+    bool hasketvrr = WriterInfo::HasKetVRR();
     bool haset = WriterInfo::HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
 
@@ -138,10 +140,10 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hashrr)
         WriterInfo::DeclareContwork(os);
 
-    // need these factors if there is VRR or ET
+    // need these factors sometimes
     if(hasoneover2p || haset)
         WriterInfo::AddNamedConstant("one_half", "0.5");
-    if(hasvrr || haset)
+    if(haset)
         WriterInfo::AddNamedConstant("const_1", "1.0");
 
     bg.AddConstants();
@@ -232,7 +234,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent4 << WriterInfo::NewConstDoubleSet1("P_y", "P.y[i]") << ";\n";
     os << indent4 << WriterInfo::NewConstDoubleSet1("P_z", "P.z[i]") << ";\n";
 
-    if(hasvrr)
+    if(hasbravrr)
     {
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
@@ -275,7 +277,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
-    if(hasvrr)
+    if(hasbravrr)
     {
         os << indent5 << "// for VRR\n";
         os << indent5 << cdbltype << " one_over_p = " << WriterInfo::NamedConstant("const_1") << " / P_alpha;\n";
@@ -284,10 +286,19 @@ static void WriteFile_NotFlat(std::ostream & os,
             os << indent5 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied by i in VRR\n";
 
         os << "\n";
-        os << indent5 << "// a_over_p * PQ_{xyz}\n";
-        os << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
-        os << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
-        os << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
+        os << indent5 << "// a_over_{pq} * PQ_{xyz}\n";
+        if(hasbravrr)
+        {
+            os << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
+            os << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
+            os << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
+        }
+        if(hasketvrr)
+        {
+            os << indent5 << cdbltype << " aoq_PQ_x = a_over_p * PQ_x;\n"; 
+            os << indent5 << cdbltype << " aoq_PQ_y = a_over_p * PQ_y;\n"; 
+            os << indent5 << cdbltype << " aoq_PQ_z = a_over_p * PQ_z;\n"; 
+        }
         os << "\n";
     }
 

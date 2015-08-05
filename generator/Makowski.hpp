@@ -46,29 +46,81 @@ class Makowski_HRR : public HRR_Algorithm_Base
 class Makowski_VRR : public VRR_Algorithm_Base
 {
     protected:
-        virtual VRRMap CreateVRRMap_(int am)
+        virtual VRRStep VRRStep_(const Quartet & q)
         {
-            VRRMap vm;
+            // if there is a ket part, we do that
+            if(q.ket.am() > 0)
+            {
+                const Gaussian & g = q.ket.left;
 
-            if(am == 0)
-                return vm;  // empty!
-
-            Gaussian g{am, 0, 0};
-
-            do {      
                 // lowest exponent, favoring the far right if equal
                 // idx is the xyz index
                 ExpList ijk = g.ijk;
                 std::sort(ijk.begin(), ijk.end());
                 auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
-                auto it = std::find(g.ijk.rbegin(), g.ijk.rend(), *v); 
-                int idx = 2 - std::distance(g.ijk.rbegin(), it);  // remember we are working with reverse iterators
+                auto vit = std::find(g.ijk.rbegin(), g.ijk.rend(), *v); 
+                int idx = 2 - std::distance(g.ijk.rbegin(), vit);  // remember we are working with reverse iterators
 
-                vm[g] = IdxToXYZStep(idx);
-            } while(g.Iterate());
+                VRRStep vs;
+                vs.type = DoubletType::KET;
+                vs.xyz = IdxToXYZStep(idx);
+                vs.target = q;
+                vs.src = {q, q, q, q, q, q, q, q};
+                vs.src[0].ket.left.ijk[idx]--;
+                vs.src[1].ket.left.ijk[idx]--;
+                vs.src[1].m++;
 
-            return vm;
-            
+                vs.src[2].ket.left.ijk[idx] -= 2;
+                vs.src[3].ket.left.ijk[idx] -= 2;
+                vs.src[3].m++;
+
+                vs.src[4].ket.right.ijk[idx]--;
+                vs.src[5].ket.right.ijk[idx]--;
+                vs.src[5].m++;
+
+                vs.src[6].bra.left.ijk[idx]--;
+                vs.src[6].m++;
+                vs.src[7].bra.right.ijk[idx]--;
+                vs.src[7].m++;
+                
+                return vs;
+            }
+            else
+            {
+                const Gaussian & g = q.bra.left;
+
+                // lowest exponent, favoring the far right if equal
+                // idx is the xyz index
+                ExpList ijk = g.ijk;
+                std::sort(ijk.begin(), ijk.end());
+                auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
+                auto vit = std::find(g.ijk.rbegin(), g.ijk.rend(), *v); 
+                int idx = 2 - std::distance(g.ijk.rbegin(), vit);  // remember we are working with reverse iterators
+
+                VRRStep vs;
+                vs.type = DoubletType::BRA;
+                vs.xyz = IdxToXYZStep(idx);
+                vs.target = q;
+                vs.src = {q, q, q, q, q, q, q, q};
+                vs.src[0].bra.left.ijk[idx]--;
+                vs.src[1].bra.left.ijk[idx]--;
+                vs.src[1].m++;
+
+                vs.src[2].bra.left.ijk[idx] -= 2;
+                vs.src[3].bra.left.ijk[idx] -= 2;
+                vs.src[3].m++;
+
+                vs.src[4].bra.right.ijk[idx]--;
+                vs.src[5].bra.right.ijk[idx]--;
+                vs.src[5].m++;
+
+                vs.src[6].ket.left.ijk[idx]--;
+                vs.src[6].m++;
+                vs.src[7].ket.right.ijk[idx]--;
+                vs.src[7].m++;
+                
+                return vs;
+            }
         }
 };
 

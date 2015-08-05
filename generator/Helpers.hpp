@@ -23,7 +23,6 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type);
 void PrintDoubletSet(const DoubletSet & d, const std::string & title);
 void PrintQuartetSet(const QuartetSet & q, const std::string & title);
 void PrintGaussianSet(const GaussianSet & g, const std::string & title);
-void PrintGaussianMap(const GaussianMap & g, const std::string & title);
 
 int GaussianOrder(const QAM & ijk);
 

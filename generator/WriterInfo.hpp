@@ -35,6 +35,8 @@ namespace WriterInfo {
         bool IsFinalAM(const QAM & am);
 
         bool HasVRR(void);
+        bool HasBraVRR(void);
+        bool HasKetVRR(void);
         bool HasET(void);
         bool HasHRR(void);
         bool HasBraHRR(void);

@@ -184,11 +184,9 @@ void ET_Algorithm_Base::Create_ETStepList(const QuartetSet & inittargets)
     for(const auto & it : ettop_)
     {
         ettopam_.insert(it.amlist());
-        ettopgauss_[it.bra.left.am()].insert(it.bra.left);
     }
 
     PrintQuartetSet(ettop_, "Top level ET");
-    PrintGaussianMap(ettopgauss_, "ET Top level gaussian map");
 }
 
 QAMSet ET_Algorithm_Base::TopQAM(void) const
@@ -201,11 +199,6 @@ QuartetSet ET_Algorithm_Base::TopQuartets(void) const
     return ettop_;
 }
 
-
-GaussianMap ET_Algorithm_Base::TopGaussians(void) const
-{
-    return ettopgauss_;
-}
 
 ETStepList ET_Algorithm_Base::ETSteps(void) const
 {

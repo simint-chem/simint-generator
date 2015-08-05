@@ -270,6 +270,16 @@ void FreeContwork(std::ostream & os)
     }
 }
 
+bool HasBraVRR(void) 
+{
+    return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
+}
+
+bool HasKetVRR(void)
+{
+    return false; // for now
+}
+
 bool HasVRR(void) 
 {
     return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
@@ -621,6 +631,7 @@ std::string Exp(const std::string & exp)
 void WriteAccumulation(std::ostream & os)
 {
 
+    os << "\n\n";
     os << indent5 << "////////////////////////////////////\n";
     os << indent5 << "// Accumulate contracted integrals\n";
     os << indent5 << "////////////////////////////////////\n";

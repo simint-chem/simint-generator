@@ -274,7 +274,7 @@ struct Quartet
 
     operator bool(void) const
     {
-        return bra && ket;
+        return bra && ket && (m >= 0);
     }
 
 };
@@ -354,6 +354,32 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
     return os;
 }
 
+
+
+struct VRRStep
+{
+    DoubletType type;
+    Quartet target;
+    std::array<Quartet, 8> src;    
+    XYZStep xyz;
+
+    std::string str(void) const
+    {
+        return "TODO";
+    }
+
+    bool operator==(const VRRStep & rhs) const
+    {
+        return (target == rhs.target &&
+                src == rhs.src &&
+                xyz == rhs.xyz &&
+                type == rhs.type);
+    }
+};
+
+
+
+
 typedef std::set<QAM> QAMSet;
 typedef std::set<DAM> DAMSet;
 
@@ -362,10 +388,12 @@ typedef std::set<Doublet> DoubletSet;
 
 
 typedef std::set<Gaussian> GaussianSet;
-typedef std::map<Gaussian, XYZStep> VRRMap;      // Which way to setp for a particular gaussian
-typedef std::map<int, GaussianSet> GaussianMap;  // Which cartesian gausians are required for a given AM
 
 typedef std::vector<ETStep> ETStepList;
+
+typedef std::vector<VRRStep> VRRStepList;
+typedef std::map<QAM, VRRStepList> VRRMap;
+typedef std::map<QAM, int> VRRMReq;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;

@@ -8,32 +8,50 @@
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
 { 
     vrrmap_ = vrr_algo.GetVRRMap();
-    vrramreq_ = vrr_algo.GetAMReq();
+    maxFm_ = vrr_algo.GetMaxFm();
+    vrrmreq_ = vrr_algo.GetVRRMReq();
 
     // determine the constant integers
-    // needed. These are multiplied by
-    // 1/2p in the VRR eqn
+    // needed
 
-    for(const auto & it3 : vrramreq_)
+    for(const auto & it : vrrmap_)
     {
-        int am = it3.first;
+        const VRRStepList & it2 = it.second;
 
-        // don't do zero - that is handled by the boys function stuff
-        if(am == 0)
-            continue;
 
-        for(const auto & it : it3.second)
+        for(const auto & its : it2)
         {
-            // Get the stepping
-            XYZStep step = vrrmap_.at(it);
-
-            // and then step to the the required gaussians
-            Gaussian g1 = it.StepDown(step, 1);
-            Gaussian g2 = it.StepDown(step, 2);
-            if(g2)
-                vrr_i_.insert(g1.ijk[XYZStepToIdx(step)]);
+            int istep = XYZStepToIdx(its.xyz);
+            if(its.type == DoubletType::BRA)
+            {
+                if(its.src[2] || its.src[3])
+                    vrr_bra_i_.insert(its.target.bra.left.ijk[istep]-1);
+                if(its.src[4] || its.src[5])
+                    vrr_bra_j_.insert(its.target.bra.right.ijk[istep]);
+                if(its.src[6])
+                    vrr_bra_k_.insert(its.target.ket.left.ijk[istep]);
+                if(its.src[7])
+                    vrr_bra_l_.insert(its.target.ket.right.ijk[istep]);
+            }
+            else
+            {
+                if(its.src[2] || its.src[3])
+                    vrr_ket_k_.insert(its.target.bra.left.ijk[istep]-1);
+                if(its.src[4] || its.src[5])
+                    vrr_ket_l_.insert(its.target.bra.right.ijk[istep]);
+                if(its.src[6])
+                    vrr_ket_i_.insert(its.target.ket.left.ijk[istep]);
+                if(its.src[7])
+                    vrr_ket_j_.insert(its.target.ket.right.ijk[istep]);
+            }
         }
     }
+
+    // these factors get multiplied by 1 / 2(p+q)
+    vrr_2pq_.insert(vrr_bra_k_.begin(), vrr_bra_k_.end());
+    vrr_2pq_.insert(vrr_bra_l_.begin(), vrr_bra_l_.end());
+    vrr_2pq_.insert(vrr_ket_i_.begin(), vrr_ket_i_.end());
+    vrr_2pq_.insert(vrr_ket_j_.begin(), vrr_ket_j_.end());
 }
 
 
@@ -47,136 +65,145 @@ void VRR_Writer::WriteIncludes(std::ostream & os) const
 
 void VRR_Writer::AddConstants(void) const
 {
-    for(const auto & it : vrr_i_)
+    for(const auto & it : vrr_bra_i_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_bra_j_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_bra_k_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_bra_l_)
+        WriterInfo::AddIntConstant(it);
+
+    for(const auto & it : vrr_ket_i_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_ket_j_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_ket_k_)
+        WriterInfo::AddIntConstant(it);
+    for(const auto & it : vrr_ket_l_)
         WriterInfo::AddIntConstant(it);
 }
 
 
 void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
-    if(vrramreq_.size())
+    os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
+    os << indent5 << "// with m as the slowest index\n";
+    for(const auto & it : vrrmap_)
     {
-        os << indent5 << "// Holds the auxiliary integrals ( i 0 | 0 0 )^m in the primitive basis\n";
-        os << indent5 << "// with m as the slowest index\n";
+        QAM qam = it.first;
 
-        for(const auto & greq : vrramreq_)
-        {
-            //os << indent4 << "// AM = " << greq.first << ": Needed from this AM: " << greq.second.size() << "\n";
-            os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName({greq.first, 0, 0, 0})
-               << "[" << (WriterInfo::L()-greq.first+1) << " * " << NCART(greq.first) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
-            //os << "\n";
-        }
-
-        os << "\n\n";
-
+        // add +1 fromm required m values to account for 0
+        os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
+        os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(qam)
+           << "[" << (vrrmreq_.at(qam)+1) << " * " << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+        //os << "\n";
     }
+
+    os << "\n\n";
 }
 
 
 void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
-    if(vrramreq_.size())
+    for(const auto & it : vrrmap_)
     {
-        for(const auto & greq : vrramreq_)
-        {
-            QAM qam({greq.first, 0, 0, 0});
-            if(WriterInfo::IsContArray(qam))
-                os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
-                   << " = " << WriterInfo::ArrVarName(qam) << " + abcd * " << NCART(qam[0]) << ";\n";
-        }
-
-        os << "\n\n";
-
+        QAM qam = it.first;
+        if(WriterInfo::IsContArray(qam))
+            os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
+               << " = " << WriterInfo::ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
     }
+
+    os << "\n\n";
 }
 
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, const std::string & num_n) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & vs, const std::string & num_n) const
 {
-    int am = greq.begin()->am();
-    QAM qam{am, 0, 0, 0};
-    QAM qam1{am-1, 0, 0, 0};
-    QAM qam2{am-2, 0, 0, 0};
-
-    os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(am) << "];\n";
-
-    //os << indent6 << "// Needed from this AM:\n";
-    //for(const auto & it : greq)
-    //    os << indent6 << "//    " << it << "\n";
+    os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
     os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
     os << indent5 << "{\n";
 
-    os << indent6 << "const int idx = n * " << NCART(am) << ";    // n * NCART(am)\n";
-    os << indent6 << "const int idx1 = n * " << NCART(am-1) << ";    // n * NCART(am-1)\n"; 
-    os << indent6 << "const int idx11 = idx1 + " << NCART(am-1) << ";    // (n+1) * NCART(am-1)\n"; 
-    if(am > 1)
-    {
-        os << indent6 << "const int idx2 = n * " << NCART(am-2) << ";    // n * NCART(am-2)\n";
-        os << indent6 << "const int idx21 = idx2 + " << NCART(am-2) << ";   // (n+1) * NCART(am-2)\n";
-    }
-        
     os << "\n";
 
+    // TODO - FMA
     // iterate over the requirements
     // should be in order since it's a set
-    for(const auto & it : greq)
+    for(const auto & it : vs)
     {
         // Get the stepping
-        XYZStep step = vrrmap_.at(it);
+        XYZStep step = it.xyz;
+        int istep = XYZStepToIdx(step);
 
-        // and then step to the the required gaussians
-        Gaussian g1 = it.StepDown(step, 1);
-        Gaussian g2 = it.StepDown(step, 2);
+        std::stringstream primname, srcname[8];
+        primname << WriterInfo::PrimVarName(qam) << "[n * " << NCART(qam) << " + " << it.target.idx() << "]";
+        if(it.src[0])
+            srcname[0] << WriterInfo::PrimVarName(it.src[0].amlist()) << "[n * " << it.src[0].ncart() << " + " << it.src[0].idx() << "]";
+        if(it.src[1])
+            srcname[1] << WriterInfo::PrimVarName(it.src[1].amlist()) << "[(n+1) * " << it.src[1].ncart() << " + " << it.src[1].idx() << "]";
+        if(it.src[2])
+            srcname[2] << WriterInfo::PrimVarName(it.src[2].amlist()) << "[n * " << it.src[2].ncart() << " + " << it.src[2].idx() << "]";
+        if(it.src[3])
+            srcname[3] << WriterInfo::PrimVarName(it.src[3].amlist()) << "[(n+1) * " << it.src[3].ncart() << " + " << it.src[3].idx() << "]";
+        if(it.src[4])
+            srcname[4] << WriterInfo::PrimVarName(it.src[4].amlist()) << "[n * " << it.src[4].ncart() << " + " << it.src[4].idx() << "]";
+        if(it.src[5])
+            srcname[5] << WriterInfo::PrimVarName(it.src[5].amlist()) << "[(n+1) * " << it.src[5].ncart() << " + " << it.src[5].idx() << "]";
+        if(it.src[6])
+            srcname[6] << WriterInfo::PrimVarName(it.src[6].amlist()) << "[(n+1) * " << it.src[6].ncart() << " + " << it.src[6].idx() << "]";
+        if(it.src[7])
+            srcname[7] << WriterInfo::PrimVarName(it.src[7].amlist()) << "[(n+1) * " << it.src[7].ncart() << " + " << it.src[7].idx() << "]";
 
-        // the value of i in the VRR eqn
-        // = value of exponent of g1 in the position of the step
-        int vrr_i = g1.ijk[XYZStepToIdx(step)];
+        os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 
-        std::stringstream ppa, aop_pq;
-        ppa << "P_PA_" << step;
-        aop_pq << "aop_PQ_" << step;
-        
-        std::stringstream g1var, g11var, g2var, g21var;
-        g1var  << WriterInfo::PrimVarName(qam1) << "[idx1 + "  << g1.idx() << "]";
-        g11var << WriterInfo::PrimVarName(qam1) << "[idx11 + " << g1.idx() << "]";
-
-        if(g2)
+        if(it.type == DoubletType::BRA)
         {
-            g2var  << WriterInfo::PrimVarName(qam2) << "[idx2 + "  << g2.idx() << "]";
-            g21var << WriterInfo::PrimVarName(qam2) << "[idx21 + " << g2.idx() << "]";
-        }
+            int vrr_i = it.target.bra.left.ijk[istep]-1;
+            int vrr_j = it.target.bra.right.ijk[istep];
+            int vrr_k = it.target.ket.left.ijk[istep];
+            int vrr_l = it.target.ket.right.ijk[istep];
 
-       
-        std::stringstream vrrconst;
-        vrrconst << "vrr_const_" << vrr_i; 
+            os << indent6 << primname.str() << " = P_PA_" << step << " * " << srcname[0].str();
 
-        std::stringstream primname;
-        primname << WriterInfo::PrimVarName(qam) << "[idx + " << it.idx() << "]";
+            if(it.src[1])
+                os << " - aop_PQ_" << step << " * " << srcname[1].str(); 
+            if(it.src[2] && it.src[3])
+                os << " + const_" << vrr_i << " * one_over_2p * (" << srcname[2].str() << " - a_over_p * " << srcname[3].str() << ")"; 
+            if(it.src[4] && it.src[5])
+                os << " + const_" << vrr_j << " * one_over_2p * (" << srcname[4].str() << " - a_over_p * " << srcname[5].str() << ")"; 
+            if(it.src[6])
+                os << " + const_" << vrr_k << " * one_over_2pq * " << srcname[6].str();
+            if(it.src[7])
+                os << " + const_" << vrr_l << " * one_over_2pq * " << srcname[7].str();
+            os << ";\n";
 
-        os << indent6 << "//" << it <<  " : STEP: " << step << "\n";
-
-        if(WriterInfo::HasFMA())
-        {
-            os << indent6 << primname.str() << " = " << WriterInfo::FMSub(ppa.str(), g1var.str(), aop_pq.str() + " * " + g11var.str()) << ";\n";
-            
-            if(g2)
-                os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(vrrconst.str(), 
-                                                                              WriterInfo::FMAdd("-a_over_p", g21var.str(), g2var.str()),
-                                                                              primname.str()) << ";\n";
         }
         else
         {
-            os << indent6 << primname.str() << " = " << ppa.str() << " * " << g1var.str() << " - " << aop_pq.str() << " * " << g11var.str();
+            int vrr_i = it.target.bra.left.ijk[istep];
+            int vrr_j = it.target.bra.right.ijk[istep];
+            int vrr_k = it.target.ket.left.ijk[istep]-1;
+            int vrr_l = it.target.ket.right.ijk[istep];
 
-            if(g2)
-            {
-                os << "\n"
-                   << indent7 << "+ " << vrrconst.str()  << " * ( " << g2var.str() << " - a_over_p * " << g21var.str() << ")";
-            }
+            os << indent6 << primname.str() << " = Q_PA_" << step << " * " << srcname[0].str();
+
+            // is this really supposed to be + aoq_PQ and not - ? That's how it's writtein in MEST
+            if(it.src[1])
+                os << " + aoq_PQ_" << step << " * " << srcname[1].str(); 
+            if(it.src[2] && it.src[3])
+                os << " + const_" << vrr_k << " * one_over_2q * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
+            if(it.src[4] && it.src[5])
+                os << " + const_" << vrr_l << " * one_over_2q * (" << srcname[4].str() << " - a_over_q * " << srcname[5].str() << ")"; 
+            if(it.src[6])
+                os << " + const_" << vrr_i << " * one_over_2pq * " << srcname[6].str();
+            if(it.src[7])
+                os << " + const_" << vrr_j << " * one_over_2pq * " << srcname[7].str();
             os << ";\n";
         }
-        os << "\n"; 
+        
+        os << "\n";
+
     }
 
     os << indent5 << "}\n";
@@ -186,7 +213,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, con
 
 void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 {
-    if(vrramreq_.size())
+    if(WriterInfo::HasVRR())
     {
         os << "\n";
         os << indent5 << "//////////////////////////////////////////////\n";
@@ -194,35 +221,13 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
         os << indent5 << "//////////////////////////////////////////////\n";
         os << "\n";
 
-        if(vrr_i_.size())
-        {
-            os << indent5 << "// Precompute (integer) * 1/2p\n";
-            for(const auto & it : vrr_i_)
-            {
-                if(it != 1)
-                    os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n";
-                else
-                    os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_1 = one_over_2p;\n";
-            }
-            os << "\n";
-        }
-
         // iterate over increasing am
-        for(const auto & it3 : vrramreq_)
+        for(const auto & it : vrrmap_)
         {
-            int am = it3.first;
-
-            // don't do zero - that is handled by the boys function stuff
-            if(am == 0)
-                continue;
-
-            // greq is what is actually required from this am
-            const GaussianSet & greq = it3.second;
-
             // Write out the steps
-            std::stringstream ss;
-            ss << (WriterInfo::L()-am+1);
-            WriteVRRSteps_(os, greq, ss.str());
+            QAM qam = it.first;
+            if(qam != QAM{0,0,0,0})
+                WriteVRRSteps_(os, qam, it.second, std::to_string(vrrmreq_.at(qam)+1));
 
             os << "\n\n";
         }
@@ -235,6 +240,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
 void VRR_Writer::WriteVRRFile(std::ostream & os) const
 {
+/*
     os << "//////////////////////////////////////////////\n";
     os << "// VRR functions\n";
     os << "//////////////////////////////////////////////\n";
@@ -289,6 +295,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
         os << "}\n";
     }
+*/
 }
 
 
@@ -296,6 +303,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
 void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
 {
+/*
     os << "#ifndef VRR__H\n";
     os << "#define VRR__H\n";
     os << "\n";
@@ -340,13 +348,14 @@ void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
     }
 
     os << "#endif\n";
-    
+*/  
 }
 
 
 
 void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
 {
+/*
     os << "\n";
     os << indent6 << "//////////////////////////////////////////////\n";
     os << indent6 << "// Primitive integrals: Vertical recurrance\n";
@@ -387,6 +396,7 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
         os << ");\n";
 
     }
+*/
 }
 
 

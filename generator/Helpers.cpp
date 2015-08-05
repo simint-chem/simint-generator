@@ -122,21 +122,6 @@ void PrintGaussianSet(const GaussianSet & g, const std::string & title)
     cout << "\n";
 }
 
-void PrintGaussianMap(const GaussianMap & g, const std::string & title)
-{
-    cout << title << ": " << g.size() << "\n";
-    for(const auto & it : g)
-    {
-        cout << "  AM: " << it.first << "\n";
-        for(const auto & it2 : it.second)
-            cout << "      " << it2 << "\n"; 
-        cout << "\n";
-    }
-    
-    cout << "\n";
-}
-
-
 int GaussianOrder(const ExpList & ijk)
 {
     if(!ordermap_.size())

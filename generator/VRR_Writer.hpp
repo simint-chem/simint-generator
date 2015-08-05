@@ -26,17 +26,20 @@ class VRR_Writer
 
     private:
         VRRMap vrrmap_;
-        GaussianMap vrramreq_;
+        int maxFm_;
+        VRRMReq vrrmreq_;
 
         // all the vrr_i parameters needed
-        // (multiplied by 1/2p in the VRR eqn)
-        std::set<int> vrr_i_;  
+        // (multiplied by 1/2p or other similar factors)
+        std::set<int> vrr_bra_i_, vrr_bra_j_, vrr_bra_k_, vrr_bra_l_;
+        std::set<int> vrr_ket_i_, vrr_ket_j_, vrr_ket_k_, vrr_ket_l_;
+        std::set<int> vrr_2pq_;
 
         void WriteVRRInline_(std::ostream & os) const;
         void WriteVRRExternal_(std::ostream & os) const;
 
         void WriteVRRSteps_(std::ostream & os) const;
-        void WriteVRRSteps_(std::ostream & os, const GaussianSet & greq, const std::string & num_n) const;
+        void WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & vs, const std::string & num_n) const;
 };
 
 #endif

@@ -6,25 +6,25 @@
 class VRR_Algorithm_Base
 {
     public:
-        // this will create a map for all possible
-        // components, but only some may
-        // be needed (although I haven't seen such a case...)
-        void CreateAllMaps(const GaussianMap & greq);
+        void Create(const QuartetSet & q);
 
         VRRMap GetVRRMap(void) const;
-        GaussianMap GetAMReq(void) const;
+        int GetMaxFm(void) const;
+        VRRMReq GetVRRMReq(void) const;
 
         virtual ~VRR_Algorithm_Base() = default; 
 
     private:
-        // VRRMap maps a gaussian function to the step
-        // that should be used to produce it
+        // VRRMap maps a AM quartet to its steps
         VRRMap vrrmap_;
 
-        // Holds which gaussians are required for a particular AM 
-        GaussianMap amreq_;
+        // Maximum m value needed for a quartet
+        VRRMReq vrrmreq_;
 
-        virtual VRRMap CreateVRRMap_(int am) = 0;
+        QuartetSet top_;
+
+        void PruneQuartets_(QuartetSet & q) const;
+        virtual VRRStep VRRStep_(const Quartet & q) = 0;
 };
 
 

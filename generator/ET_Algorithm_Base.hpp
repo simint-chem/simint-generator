@@ -11,7 +11,6 @@ class ET_Algorithm_Base
         ETStepList ETSteps(void) const;
         QAMSet TopQAM(void) const;
         QuartetSet TopQuartets(void) const;
-        GaussianMap TopGaussians(void) const;
 
         virtual ~ET_Algorithm_Base() = default;
 
@@ -19,7 +18,6 @@ class ET_Algorithm_Base
         ETStepList etsteps_;
         QuartetSet ettop_;
         QAMSet ettopam_;
-        GaussianMap ettopgauss_;
 
         virtual ETStep ETStep_(const Quartet & target) = 0;
 

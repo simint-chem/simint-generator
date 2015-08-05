@@ -157,7 +157,7 @@ int main(int argc, char ** argv)
 
     // 3.) VRR Steps
     // requirements for vrr are the top level stuff from ET
-    vrralgo->CreateAllMaps(etalgo->TopGaussians());
+    vrralgo->Create(etalgo->TopQuartets());
     VRR_Writer vrr_writer(*vrralgo);
 
     // set the contracted quartets
