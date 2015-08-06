@@ -28,11 +28,11 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool haskethrr = WriterInfo::HasKetHRR();
     bool inline_hrr = (hashrr && WriterInfo::GetOption(OPTION_INLINEHRR) != 0);
 
-    bool hasvrr = WriterInfo::HasVRR();
     bool hasbravrr = WriterInfo::HasBraVRR();
     bool hasketvrr = WriterInfo::HasKetVRR();
     bool haset = WriterInfo::HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
+    bool hasoneover2q = (haset || (hasketvrr && (am[2] + am[3]) > 1));
 
 
     // load this once here
@@ -276,35 +276,35 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
     if(hasbravrr)
-    {
-        os << indent5 << "// for VRR\n";
         os << indent5 << cdbltype << " one_over_p = " << WriterInfo::NamedConstant("const_1") << " / P_alpha;\n";
-        os << indent5 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
-        if(hasoneover2p)    
-            os << indent5 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied by i in VRR\n";
+    if(hasketvrr || haset)
+        os << indent5 << cdbltype << " one_over_q = " << WriterInfo::NamedConstant("const_1") << " / Q_alpha;\n";
 
-        os << "\n";
-        os << indent5 << "// a_over_{pq} * PQ_{xyz}\n";
-        if(hasbravrr)
-        {
-            os << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
-            os << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
-            os << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
-        }
-        if(hasketvrr)
-        {
-            os << indent5 << cdbltype << " aoq_PQ_x = a_over_p * PQ_x;\n"; 
-            os << indent5 << cdbltype << " aoq_PQ_y = a_over_p * PQ_y;\n"; 
-            os << indent5 << cdbltype << " aoq_PQ_z = a_over_p * PQ_z;\n"; 
-        }
-        os << "\n";
+    if(hasoneover2p)    
+        os << indent5 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied in VRR\n";
+    if(hasoneover2q)    
+        os << indent5 << cdbltype << " one_over_2q = " << WriterInfo::NamedConstant("one_half") << " * one_over_q;  // gets multiplied in VRR\n";
+
+    if(hasbravrr)
+    {
+        os << indent5 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
+        os << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
+        os << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
+        os << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
     }
+
+    if(hasketvrr)
+    {
+        os << indent5 << cdbltype << " a_over_q =  alpha * one_over_q;     // a/q from MEST\n";
+        os << indent5 << cdbltype << " aoq_PQ_x = a_over_p * PQ_x;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_y = a_over_p * PQ_y;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_z = a_over_p * PQ_z;\n"; 
+    }
+
 
     if(haset)
     {
         os << indent5 << "// for electron transfer\n";
-        os << indent5 << cdbltype << " one_over_q = " << WriterInfo::NamedConstant("const_1") << " / Q_alpha;\n";
-        os << indent5 << cdbltype << " one_over_2q = " << WriterInfo::NamedConstant("one_half") << " * one_over_q;\n";
         os << indent5 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << "\n";
 
