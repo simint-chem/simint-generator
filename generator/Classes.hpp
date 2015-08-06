@@ -386,7 +386,8 @@ struct VRRStep
 };
 
 
-
+typedef std::set<std::string> StringSet;
+typedef std::set<int> IntSet;
 
 typedef std::set<QAM> QAMSet;
 typedef std::set<DAM> DAMSet;
@@ -398,10 +399,6 @@ typedef std::set<Doublet> DoubletSet;
 typedef std::set<Gaussian> GaussianSet;
 
 typedef std::vector<ETStep> ETStepList;
-
-typedef std::vector<VRRStep> VRRStepList;
-typedef std::map<QAM, VRRStepList> VRRMap;
-typedef std::map<QAM, int> VRRMReq;
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;

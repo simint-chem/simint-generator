@@ -5,54 +5,96 @@
 
 using namespace std;
 
-VRRMap VRR_Algorithm_Base::GetVRRMap(void) const
+QAM VRR_Algorithm_Base::TargetAM(void) const
 {
-    return vrrmap_;
+    return targetam_;
 }
 
-int VRR_Algorithm_Base::GetMaxFm(void) const
+QAMSet VRR_Algorithm_Base::GetAllAM(void) const
 {
-    return vrrmreq_.at({0, 0, 0, 0});
+    return allam_; 
 }
 
-VRRMReq VRR_Algorithm_Base::GetVRRMReq(void) const
+int VRR_Algorithm_Base::GetVRR_MReq(QAM am) const
 {
-    return vrrmreq_;
+    return vrrmreq_.at(am);
 }
 
-std::map<QAM, std::set<std::string>> VRR_Algorithm_Base::GetVarReq(void) const
+VRR_StepList VRR_Algorithm_Base::GetVRR_Steps(QAM am) const
 {
-    return varreq_;
-}
-
-std::map<QAM, QAMSet> VRR_Algorithm_Base::GetQAMReq(void) const
-{
-    return qamreq_;
+    return vrrmap_.at(am);
 }
 
 
-std::set<std::string> VRR_Algorithm_Base::GetAllVarReq(void) const
+QAMSet VRR_Algorithm_Base::Get_AMReq(QAM am) const
 {
-    std::set<std::string> str;
+    return qamreq_.at(am);
+}
+
+
+IntSet VRR_Algorithm_Base::GetIntReq_2p(QAM am) const
+{
+    if(qamint_2p_.count(am) == 0)
+        return IntSet();
+    else
+        return qamint_2p_.at(am);
+}
+
+
+IntSet VRR_Algorithm_Base::GetIntReq_2q(QAM am) const
+{
+    if(qamint_2q_.count(am) == 0)
+        return IntSet();
+    else
+        return qamint_2q_.at(am);
+}
+
+
+IntSet VRR_Algorithm_Base::GetIntReq_2pq(QAM am) const
+{
+    if(qamint_2pq_.count(am) == 0)
+        return IntSet();
+    else
+        return qamint_2pq_.at(am);
+}
+
+IntSet VRR_Algorithm_Base::GetAllInt_2p(void) const
+{
+    IntSet iset;
+    for(const auto & it : qamint_2p_)
+        iset.insert(it.second.begin(), it.second.end());
+    return iset;
+}
+
+IntSet VRR_Algorithm_Base::GetAllInt_2q(void) const
+{
+    IntSet iset;
+    for(const auto & it : qamint_2q_)
+        iset.insert(it.second.begin(), it.second.end());
+    return iset;
+}
+
+IntSet VRR_Algorithm_Base::GetAllInt_2pq(void) const
+{
+    IntSet iset;
+    for(const auto & it : qamint_2pq_)
+        iset.insert(it.second.begin(), it.second.end());
+    return iset;
+}
+
+
+StringSet VRR_Algorithm_Base::GetVarReq(QAM am) const
+{
+    return varreq_.at(am);
+}
+
+
+StringSet VRR_Algorithm_Base::GetAllVarReq(void) const
+{
+    StringSet sset;
     for(const auto & it : varreq_)
-        str.insert(it.second.begin(), it.second.end());
-    return str;
-}
-
-
-std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2p(void) const
-{
-    return qamint_2p_;
-}
-
-std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2q(void) const
-{
-    return qamint_2q_;
-}
-
-std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2pq(void) const
-{
-    return qamint_2pq_;
+        sset.insert(it.second.begin(), it.second.end());
+    return sset;
 }
 
 
@@ -61,6 +103,8 @@ int VRR_Algorithm_Base::GetMaxInt(void) const
 {
     return maxint_;
 }
+
+
 
 void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
 {
@@ -82,11 +126,15 @@ void VRR_Algorithm_Base::Create(const QAM & q)
 
 void VRR_Algorithm_Base::Create(const QuartetSet & q)
 {
+    // store the target AM
+    // hopefully, they are all the same QAM...
+    targetam_ = q.begin()->amlist();
+
     // holds the requirements for each am
     // so store what we initially want
     PrintQuartetSet(q, "Initial VRR");
 
-    VRRMap newmap;
+    VRR_StepMap newmap;
 
     // solved quartets
     QuartetSet solvedquartets;
@@ -169,13 +217,18 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
         targets = newtargets;
     } 
 
+    // save the solved quartets
+    for(const auto & it : solvedquartets)
+        allam_.insert(it.amlist());
+    allam_.insert({0,0,0,0});
+
 
     // remove all steps where the target m value > 0
     // This is called from within a loop over m
     // so it is handled by index math
     for(auto & it : newmap)
     {
-        VRRStepList vs = it.second;
+        VRR_StepList vs = it.second;
         for(auto & it2 : vs)
         {
             if(it2.target.m == 0)
@@ -183,8 +236,9 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
         } 
     }
 
+
     // and empty step list for s s s s
-    vrrmap_[{0,0,0,0}] = VRRStepList();
+    vrrmap_[{0,0,0,0}] = VRR_StepList();
 
 
 

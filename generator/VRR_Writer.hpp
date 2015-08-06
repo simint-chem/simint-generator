@@ -5,14 +5,12 @@
 #include <utility>
 
 #include "generator/Classes.hpp"
-
-
-class VRR_Algorithm_Base;
+#include "generator/VRR_Algorithm_Base.hpp"
 
 class VRR_Writer
 {   
     public:
-        VRR_Writer(const VRR_Algorithm_Base & vrr_algo_);
+        VRR_Writer(const VRR_Algorithm_Base & vrr_algo);
 
         void WriteVRR(std::ostream & os) const;
 
@@ -24,22 +22,13 @@ class VRR_Writer
         void WriteVRRHeaderFile(std::ostream & os) const;
 
     private:
-        VRRMap vrrmap_;
-        int maxFm_;
-        VRRMReq vrrmreq_;
-
-        std::map<QAM, QAMSet> qamreq_; // quartets required for a particular QAM
-        std::map<QAM, std::set<std::string>> varreq_; // other variables required for a particular QAM
-        std::set<std::string> allvarreq_;
-        std::map<QAM, std::set<int>> qamint_2p_, qamint_2q_, qamint_2pq_;
-
-        int maxint_;
+        const VRR_Algorithm_Base & vrr_algo_;
 
         void WriteVRRInline_(std::ostream & os) const;
         void WriteVRRExternal_(std::ostream & os) const;
 
         void WriteVRRSteps_(std::ostream & os) const;
-        void WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & vs, const std::string & num_n) const;
+        void WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList & vs, const std::string & num_n) const;
 };
 
 #endif

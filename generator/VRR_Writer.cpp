@@ -6,19 +6,8 @@
 
 
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
+    : vrr_algo_(vrr_algo)
 { 
-    vrrmap_ = vrr_algo.GetVRRMap();
-    maxFm_ = vrr_algo.GetMaxFm();
-    vrrmreq_ = vrr_algo.GetVRRMReq();
-
-    qamreq_ = vrr_algo.GetQAMReq();
-    varreq_ = vrr_algo.GetVarReq();
-    allvarreq_ = vrr_algo.GetAllVarReq();
-
-    maxint_ = vrr_algo.GetMaxInt();
-    qamint_2p_ = vrr_algo.GetIntReq_2p();
-    qamint_2q_ = vrr_algo.GetIntReq_2q();
-    qamint_2pq_ = vrr_algo.GetIntReq_2pq();
 }
 
 
@@ -26,7 +15,7 @@ void VRR_Writer::AddConstants(void) const
 {
     if(WriterInfo::GetOption(OPTION_INLINEVRR) > 0)
     {
-        for(int i = 1; i <= maxint_; i++)
+        for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
             WriterInfo::AddIntConstant(i);
     }
 }
@@ -36,15 +25,16 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
     os << indent5 << "// with m as the slowest index\n";
-    for(const auto & it : vrrmap_)
-    {
-        QAM qam = it.first;
 
+    QAMSet allam = vrr_algo_.GetAllAM();
+
+    for(const auto & qam : allam)
+    {
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
         os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(qam)
-           << "[" << (vrrmreq_.at(qam)+1) << " * " << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
-        //os << "\n";
+           << "[" << (vrr_algo_.GetVRR_MReq(qam)+1) << " * " 
+           << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
 
     os << "\n\n";
@@ -53,9 +43,10 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 
 void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
-    for(const auto & it : vrrmap_)
+    QAMSet allam = vrr_algo_.GetAllAM();
+
+    for(const auto & qam : allam)
     {
-        QAM qam = it.first;
         if(WriterInfo::IsContArray(qam))
             os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
                << " = " << WriterInfo::ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
@@ -65,7 +56,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 }
 
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & vs, const std::string & num_n) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList & vs, const std::string & num_n) const
 {
     os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
@@ -81,7 +72,6 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & 
     {
         // Get the stepping
         XYZStep step = it.xyz;
-        int istep = XYZStepToIdx(step);
 
         std::stringstream primname, srcname[8];
         primname << WriterInfo::PrimVarName(qam) << "[n * " << NCART(qam) << " + " << it.target.idx() << "]";
@@ -106,46 +96,36 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & 
 
         if(it.type == DoubletType::BRA)
         {
-            int vrr_i = it.target.bra.left.ijk[istep]-1;
-            int vrr_j = it.target.bra.right.ijk[istep];
-            int vrr_k = it.target.ket.left.ijk[istep];
-            int vrr_l = it.target.ket.right.ijk[istep];
-
             os << indent6 << primname.str() << " = P_PA_" << step << " * " << srcname[0].str();
 
             if(it.src[1])
                 os << " - aop_PQ_" << step << " * " << srcname[1].str(); 
             if(it.src[2] && it.src[3])
-                os << " + vrr_const_" << vrr_i << "_over_2p * (" << srcname[2].str() << " - a_over_p * " << srcname[3].str() << ")"; 
+                os << " + vrr_const_" << it.ijkl[0] << "_over_2p * (" << srcname[2].str() << " - a_over_p * " << srcname[3].str() << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + vrr_const_" << vrr_j << "_over_2p * (" << srcname[4].str() << " - a_over_p * " << srcname[5].str() << ")"; 
+                os << " + vrr_const_" << it.ijkl[1] << "_over_2p * (" << srcname[4].str() << " - a_over_p * " << srcname[5].str() << ")"; 
             if(it.src[6])
-                os << " + vrr_const_" << vrr_k << "_over_2pq * " << srcname[6].str();
+                os << " + vrr_const_" << it.ijkl[2] << "_over_2pq * " << srcname[6].str();
             if(it.src[7])
-                os << " + vrr_const_" << vrr_l << "_over_2pq * " << srcname[7].str();
+                os << " + vrr_const_" << it.ijkl[3] << "_over_2pq * " << srcname[7].str();
             os << ";\n";
 
         }
         else
         {
-            int vrr_i = it.target.bra.left.ijk[istep];
-            int vrr_j = it.target.bra.right.ijk[istep];
-            int vrr_k = it.target.ket.left.ijk[istep]-1;
-            int vrr_l = it.target.ket.right.ijk[istep];
-
             os << indent6 << primname.str() << " = Q_PA_" << step << " * " << srcname[0].str();
 
             // is this really supposed to be + aoq_PQ and not - ? That's how it's writtein in MEST
             if(it.src[1])
                 os << " + aoq_PQ_" << step << " * " << srcname[1].str(); 
             if(it.src[2] && it.src[3])
-                os << " + vrr_const_" << vrr_k << "_over_2q * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
+                os << " + vrr_const_" << it.ijkl[2] << "_over_2q * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + vrr_const_" << vrr_l << "_over_2q * (" << srcname[4].str() << " - a_over_q * " << srcname[5].str() << ")"; 
+                os << " + vrr_const_" << it.ijkl[3] << "_over_2q * (" << srcname[4].str() << " - a_over_q * " << srcname[5].str() << ")"; 
             if(it.src[6])
-                os << " + vrr_const_" << vrr_i << "_over_2pq * " << srcname[6].str();
+                os << " + vrr_const_" << it.ijkl[0] << "_over_2pq * " << srcname[6].str();
             if(it.src[7])
-                os << " + vrr_const_" << vrr_j << "_one_over_2pq * " << srcname[7].str();
+                os << " + vrr_const_" << it.ijkl[1] << "_one_over_2pq * " << srcname[7].str();
             os << ";\n";
         }
         
@@ -169,30 +149,23 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
         os << "\n";
 
         // constants
-        std::set<int> all_2p, all_2q, all_2pq;
-        
-        for(const auto & it : qamint_2p_)
-            all_2p.insert(it.second.begin(), it.second.end());
-        for(const auto & it : qamint_2q_)
-            all_2q.insert(it.second.begin(), it.second.end());
-        for(const auto & it : qamint_2pq_)
-            all_2pq.insert(it.second.begin(), it.second.end());
-
-        for(const auto & it : all_2p)
+        for(const auto & it : vrr_algo_.GetAllInt_2p())
         {
             if(it == 1)
                 os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
             else
                 os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n"; 
         }
-        for(const auto & it : all_2q)
+
+        for(const auto & it : vrr_algo_.GetAllInt_2q())
         {
             if(it == 1)
                 os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
             else
                 os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n"; 
         }
-        for(const auto & it : all_2pq)
+
+        for(const auto & it : vrr_algo_.GetAllInt_2pq())
         {
             if(it == 1)
                 os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
@@ -202,12 +175,12 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
 
         // iterate over increasing am
-        for(const auto & it : vrrmap_)
+        for(const auto & qam : vrr_algo_.GetAllAM())
         {
             // Write out the steps
-            QAM qam = it.first;
             if(qam != QAM{0,0,0,0})
-                WriteVRRSteps_(os, qam, it.second, std::to_string(vrrmreq_.at(qam)+1));
+                WriteVRRSteps_(os, qam, vrr_algo_.GetVRR_Steps(qam), 
+                               std::to_string(vrr_algo_.GetVRR_MReq(qam)+1));
 
             os << "\n\n";
         }
@@ -234,31 +207,29 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
     // final target
     os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
-    for(const auto & it : qamreq_.at(am))
+    for(const auto & it : vrr_algo_.Get_AMReq(am))
         os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
     
-    for(const auto & it : varreq_.at(am))
+    for(const auto & it : vrr_algo_.GetVarReq(am))
         os << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
+
     os << indent3 << "const int num_n)\n";
 
     os << "{\n";
 
     os << "    int n = 0;\n";
 
-    if(qamint_2p_.count(am))
-        for(const auto & it : qamint_2p_.at(am))
-            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+    for(const auto & it : vrr_algo_.GetIntReq_2p(am))
+        os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
 
-    if(qamint_2q_.count(am))
-        for(const auto & it : qamint_2q_.at(am))
-            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+    for(const auto & it : vrr_algo_.GetIntReq_2q(am))
+        os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
 
-    if(qamint_2pq_.count(am))
-        for(const auto & it : qamint_2pq_.at(am))
-            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
+    for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
+        os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
 
     // Write out the steps
-    WriteVRRSteps_(os, am, vrrmap_.at(am), "num_n");
+    WriteVRRSteps_(os, am, vrr_algo_.GetVRR_Steps(am), "num_n");
 
     os << "\n";
     os << "}\n";

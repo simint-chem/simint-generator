@@ -3,44 +3,74 @@
 
 #include "generator/Classes.hpp"
 
+typedef std::vector<VRRStep> VRR_StepList;
+
+// Maps an AM quartet to the steps needed to create it
+typedef std::map<QAM, VRR_StepList> VRR_StepMap;
+
+// Gives the maximum m value for a given quartet
+typedef std::map<QAM, int> VRR_MReqMap;
+
+// Which AM are required for a given target AM
+typedef std::map<QAM, QAMSet> VRR_AMReqMap;
+
+// Maps integer constant requirements for a target AM
+typedef std::map<QAM, IntSet> VRR_IntReqMap;
+
+// Maps factors/variables (as strings) for a target AM
+typedef std::map<QAM, StringSet> VRR_VarReqMap;
+
 class VRR_Algorithm_Base
 {
     public:
         void Create(const QuartetSet & q);
         void Create(const QAM & q);
 
-        VRRMap GetVRRMap(void) const;
-        int GetMaxFm(void) const;
-        VRRMReq GetVRRMReq(void) const;
-        std::map<QAM, QAMSet> GetQAMReq(void) const;
-        std::map<QAM, std::set<int>> GetIntReq_2p(void) const; 
-        std::map<QAM, std::set<int>> GetIntReq_2q(void) const; 
-        std::map<QAM, std::set<int>> GetIntReq_2pq(void) const; 
+        QAM TargetAM(void) const;
+        QAMSet GetAllAM(void) const;
 
-        std::map<QAM, std::set<std::string>> GetVarReq(void) const;
-        std::set<std::string> GetAllVarReq(void) const;
+        int GetMaxFm(void) const;
+
+        VRR_StepList GetVRR_Steps(QAM am) const;
+        int GetVRR_MReq(QAM am) const;
+        QAMSet Get_AMReq(QAM am) const;
+        IntSet GetIntReq_2p(QAM am) const; 
+        IntSet GetIntReq_2q(QAM am) const; 
+        IntSet GetIntReq_2pq(QAM am) const; 
+
+        IntSet GetAllInt_2p(void) const;
+        IntSet GetAllInt_2q(void) const;
+        IntSet GetAllInt_2pq(void) const;
+
+        StringSet GetVarReq(QAM am) const;
+        StringSet GetAllVarReq(void) const;
 
         int GetMaxInt(void) const;
 
         virtual ~VRR_Algorithm_Base() = default; 
 
     private:
-        // VRRMap maps a AM quartet to its steps
-        VRRMap vrrmap_;
+        // VRR_StepMap maps a AM quartet to its steps
+        VRR_StepMap vrrmap_;
 
         // Maximum m value needed for a quartet
-        VRRMReq vrrmreq_;
+        VRR_MReqMap vrrmreq_;
 
         // QAM required for a given QAM
-        std::map<QAM, QAMSet> qamreq_;
+        VRR_AMReqMap qamreq_;
 
         // Factors, etc, required for a given QAM
-        std::map<QAM, std::set<std::string>> varreq_;
-        std::map<QAM, std::set<int>> qamint_2p_, qamint_2q_, qamint_2pq_;
+        //  qamint_2p_ = constants multiplied by 1/2p
+        //  qamint_2q_ = constants multiplied by 1/2q
+        //  qamint_2pq_ = constants multiplied by 1/2(p+q)
+        VRR_VarReqMap varreq_;
+        VRR_IntReqMap qamint_2p_, qamint_2q_, qamint_2pq_;
 
         // max int constant needed
         int maxint_;
 
+        QAMSet allam_;
+        QAM targetam_;
 
         void PruneQuartets_(QuartetSet & q) const;
         virtual VRRStep VRRStep_(const Quartet & q) = 0;
