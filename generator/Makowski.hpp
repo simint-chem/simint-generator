@@ -82,7 +82,7 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 vs.src[6].m++;
                 vs.src[7].bra.right.ijk[idx]--;
                 vs.src[7].m++;
-                
+
                 return vs;
             }
             else
@@ -118,7 +118,7 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 vs.src[6].m++;
                 vs.src[7].ket.right.ijk[idx]--;
                 vs.src[7].m++;
-                
+
                 return vs;
             }
         }

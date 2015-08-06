@@ -11,77 +11,24 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
     maxFm_ = vrr_algo.GetMaxFm();
     vrrmreq_ = vrr_algo.GetVRRMReq();
 
-    // determine the constant integers
-    // needed
+    qamreq_ = vrr_algo.GetQAMReq();
+    varreq_ = vrr_algo.GetVarReq();
+    allvarreq_ = vrr_algo.GetAllVarReq();
 
-    for(const auto & it : vrrmap_)
-    {
-        const VRRStepList & it2 = it.second;
-
-
-        for(const auto & its : it2)
-        {
-            int istep = XYZStepToIdx(its.xyz);
-            if(its.type == DoubletType::BRA)
-            {
-                if(its.src[2] || its.src[3])
-                    vrr_bra_i_.insert(its.target.bra.left.ijk[istep]-1);
-                if(its.src[4] || its.src[5])
-                    vrr_bra_j_.insert(its.target.bra.right.ijk[istep]);
-                if(its.src[6])
-                    vrr_bra_k_.insert(its.target.ket.left.ijk[istep]);
-                if(its.src[7])
-                    vrr_bra_l_.insert(its.target.ket.right.ijk[istep]);
-            }
-            else
-            {
-                if(its.src[2] || its.src[3])
-                    vrr_ket_k_.insert(its.target.bra.left.ijk[istep]-1);
-                if(its.src[4] || its.src[5])
-                    vrr_ket_l_.insert(its.target.bra.right.ijk[istep]);
-                if(its.src[6])
-                    vrr_ket_i_.insert(its.target.ket.left.ijk[istep]);
-                if(its.src[7])
-                    vrr_ket_j_.insert(its.target.ket.right.ijk[istep]);
-            }
-        }
-    }
-
-    // these factors get multiplied by 1 / 2(p+q)
-    vrr_2pq_.insert(vrr_bra_k_.begin(), vrr_bra_k_.end());
-    vrr_2pq_.insert(vrr_bra_l_.begin(), vrr_bra_l_.end());
-    vrr_2pq_.insert(vrr_ket_i_.begin(), vrr_ket_i_.end());
-    vrr_2pq_.insert(vrr_ket_j_.begin(), vrr_ket_j_.end());
+    maxint_ = vrr_algo.GetMaxInt();
 }
 
 
 void VRR_Writer::WriteIncludes(std::ostream & os) const
 {
-    if(WriterInfo::GetOption(OPTION_INLINEVRR) == 0)
-        os << "#include \"eri/vrr.gen/vrr.h\"\n";
 }
 
 
 
 void VRR_Writer::AddConstants(void) const
 {
-    for(const auto & it : vrr_bra_i_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_bra_j_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_bra_k_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_bra_l_)
-        WriterInfo::AddIntConstant(it);
-
-    for(const auto & it : vrr_ket_i_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_ket_j_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_ket_k_)
-        WriterInfo::AddIntConstant(it);
-    for(const auto & it : vrr_ket_l_)
-        WriterInfo::AddIntConstant(it);
+    for(int i = 1; i <= maxint_; i++)
+        WriterInfo::AddIntConstant(i);
 }
 
 

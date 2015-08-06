@@ -20,6 +20,30 @@ VRRMReq VRR_Algorithm_Base::GetVRRMReq(void) const
     return vrrmreq_;
 }
 
+std::map<QAM, std::set<std::string>> VRR_Algorithm_Base::GetVarReq(void) const
+{
+    return varreq_;
+}
+
+std::map<QAM, QAMSet> VRR_Algorithm_Base::GetQAMReq(void) const
+{
+    return qamreq_;
+}
+
+
+std::set<std::string> VRR_Algorithm_Base::GetAllVarReq(void) const
+{
+    std::set<std::string> str;
+    for(const auto & it : varreq_)
+        str.insert(it.second.begin(), it.second.end());
+    return str;
+}
+
+
+int VRR_Algorithm_Base::GetMaxInt(void) const
+{
+    return maxint_;
+}
 
 void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
 {
@@ -50,7 +74,9 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
     QuartetSet targets = q;
     PruneQuartets_(targets);
 
+
     // add max m for initial targets
+    // (should be 0)
     for(const auto & it : q)
     {
         QAM qam = it.amlist();
@@ -63,15 +89,41 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
     {
         QuartetSet newtargets;
 
-        for(auto it = targets.rbegin(); it != targets.rend(); ++it)
+        for(const auto & it : targets)
         {
-            VRRStep vs = VRRStep_(*it);
-            QAM qam = it->amlist();
+            VRRStep vs = VRRStep_(it);
+            QAM qam = it.amlist();
 
-            newmap[qam].push_back(vs);
+            // set the max m value
+            if((vrrmreq_.count(qam) == 0) || (it.m > vrrmreq_.at(qam)))
+                vrrmreq_[qam] = it.m;
 
-            if((vrrmreq_.count(qam) == 0) || (it->m > vrrmreq_.at(qam)))
-                vrrmreq_[qam] = it->m;
+            // fill in the ijkl members
+            int istep = XYZStepToIdx(vs.xyz);
+            vs.ijkl = {0, 0, 0, 0};
+            if(vs.type == DoubletType::BRA)
+            {
+                if(vs.src[2] || vs.src[3])
+                    vs.ijkl[0] = it.bra.left.ijk[istep]-1;
+                if(vs.src[4] || vs.src[5])
+                    vs.ijkl[1] = it.bra.right.ijk[istep];
+                if(vs.src[6])
+                    vs.ijkl[2] = it.ket.left.ijk[istep];
+                if(vs.src[7])
+                    vs.ijkl[3] = it.ket.right.ijk[istep];
+            }
+            else
+            {
+                if(vs.src[2] || vs.src[3])
+                    vs.ijkl[0] = it.bra.left.ijk[istep];
+                if(vs.src[4] || vs.src[5])
+                    vs.ijkl[1] = it.bra.right.ijk[istep];
+                if(vs.src[6])
+                    vs.ijkl[2] = it.ket.left.ijk[istep]-1;
+                if(vs.src[7])
+                    vs.ijkl[3] = it.ket.right.ijk[istep];
+            }
+             
             
             // add new targets and m values 
             for(const auto & it2 : vs.src)
@@ -87,7 +139,8 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
                 }
             }
 
-            solvedquartets.insert(*it);
+            newmap[qam].push_back(vs);
+            solvedquartets.insert(it);
         }
 
         PruneQuartets_(newtargets);
@@ -111,6 +164,87 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
 
     // and empty step list for s s s s
     vrrmap_[{0,0,0,0}] = VRRStepList();
+
+
+
+    // determine requirements for all QAM
+    // and the maximum integer constant
+    maxint_ = 0;
+    for(const auto & it : vrrmap_) // for all QAM
+    {
+        QAM qam = it.first;
+
+        for(const auto & its : it.second)  // for all steps for this QAM
+        {
+            for(const auto & it3 : its.src)
+            {
+                if(it3)
+                    qamreq_[qam].insert(it3.amlist());
+            }
+
+            std::string sstep = XYZStepToStr(its.xyz);
+
+            maxint_ = std::max(its.ijkl[0], maxint_);
+            maxint_ = std::max(its.ijkl[1], maxint_);
+            maxint_ = std::max(its.ijkl[2], maxint_);
+            maxint_ = std::max(its.ijkl[3], maxint_);
+
+            if(its.type == DoubletType::BRA)
+            {
+                if(its.src[0])
+                    varreq_[qam].insert(std::string("P_PA_") + sstep);
+
+                if(its.src[1])
+                    varreq_[qam].insert(std::string("aop_PQ_") + sstep);
+
+                if(its.src[2] || its.src[3])
+                {
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[0]) + "_over_2p");
+                    varreq_[qam].insert(std::string("a_over_p"));
+                }
+
+                if(its.src[4] || its.src[5])
+                {
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[1]) + "_over_2p");
+                    varreq_[qam].insert(std::string("a_over_p"));
+                }
+
+                if(its.src[6])
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[2]) + "_over_2pq");
+
+                if(its.src[7])
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[3]) + "_over_2pq");
+            }
+            else
+            {
+                if(its.src[0])
+                    varreq_[qam].insert(std::string("Q_PA_") + sstep);
+
+                if(its.src[1])
+                    varreq_[qam].insert(std::string("aoq_PQ_") + sstep);
+
+                if(its.src[2] || its.src[3])
+                {
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[2]) + "_over_2q");
+                    varreq_[qam].insert(std::string("a_over_q"));
+                }
+
+                if(its.src[4] || its.src[5])
+                {
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[3]) + "_over_2q");
+                    varreq_[qam].insert(std::string("a_over_p"));
+                }
+
+                if(its.src[6])
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[0]) + "_over_2pq");
+
+                if(its.src[7])
+                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[1]) + "_over_2pq");
+            }
+        }
+    }
+
+
 
 }
 

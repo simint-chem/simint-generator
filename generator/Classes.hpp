@@ -32,15 +32,20 @@ enum class XYZStep
     STEP_Z
 };
 
+inline std::string XYZStepToStr(XYZStep xyz)
+{
+    if(xyz == XYZStep::STEP_X)
+        return "x";
+    else if(xyz == XYZStep::STEP_Y)
+        return "y";
+    else
+        return "z";
+    
+}
 
 inline std::ostream & operator<<(std::ostream & os, const XYZStep xyz)
 {
-    if(xyz == XYZStep::STEP_X)
-        os << "x";
-    else if(xyz == XYZStep::STEP_Y)
-        os << "y";
-    else if(xyz == XYZStep::STEP_Z)
-        os << "z";
+    os << XYZStepToStr(xyz);
     return os;
 }
 
@@ -63,6 +68,7 @@ inline int XYZStepToIdx(XYZStep s)
     else //(s == XYZStep::STEP_Z)
         return 2;
 }
+
 
 
 
@@ -362,6 +368,7 @@ struct VRRStep
     Quartet target;
     std::array<Quartet, 8> src;    
     XYZStep xyz;
+    std::array<int, 4> ijkl;
 
     std::string str(void) const
     {
@@ -370,6 +377,7 @@ struct VRRStep
 
     bool operator==(const VRRStep & rhs) const
     {
+        // no need to compare ijkl - it's just to help
         return (target == rhs.target &&
                 src == rhs.src &&
                 xyz == rhs.xyz &&

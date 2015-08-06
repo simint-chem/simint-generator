@@ -11,6 +11,12 @@ class VRR_Algorithm_Base
         VRRMap GetVRRMap(void) const;
         int GetMaxFm(void) const;
         VRRMReq GetVRRMReq(void) const;
+        std::map<QAM, QAMSet> GetQAMReq(void) const;
+
+        std::map<QAM, std::set<std::string>> GetVarReq(void) const;
+        std::set<std::string> GetAllVarReq(void) const;
+
+        int GetMaxInt(void) const;
 
         virtual ~VRR_Algorithm_Base() = default; 
 
@@ -21,7 +27,15 @@ class VRR_Algorithm_Base
         // Maximum m value needed for a quartet
         VRRMReq vrrmreq_;
 
-        QuartetSet top_;
+        // QAM required for a given QAM
+        std::map<QAM, QAMSet> qamreq_;
+
+        // Factors, etc, required for a given QAM
+        std::map<QAM, std::set<std::string>> varreq_;
+
+        // max int constant needed
+        int maxint_;
+
 
         void PruneQuartets_(QuartetSet & q) const;
         virtual VRRStep VRRStep_(const Quartet & q) = 0;
