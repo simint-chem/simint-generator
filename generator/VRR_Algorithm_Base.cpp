@@ -40,6 +40,23 @@ std::set<std::string> VRR_Algorithm_Base::GetAllVarReq(void) const
 }
 
 
+std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2p(void) const
+{
+    return qamint_2p_;
+}
+
+std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2q(void) const
+{
+    return qamint_2q_;
+}
+
+std::map<QAM, std::set<int>> VRR_Algorithm_Base::GetIntReq_2pq(void) const
+{
+    return qamint_2pq_;
+}
+
+
+
 int VRR_Algorithm_Base::GetMaxInt(void) const
 {
     return maxint_;
@@ -58,6 +75,10 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
+void VRR_Algorithm_Base::Create(const QAM & q)
+{
+    Create(GenerateInitialQuartetTargets(q));
+}
 
 void VRR_Algorithm_Base::Create(const QuartetSet & q)
 {
@@ -199,21 +220,29 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
 
                 if(its.src[2] || its.src[3])
                 {
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[0]) + "_over_2p");
-                    varreq_[qam].insert(std::string("a_over_p"));
+                    varreq_[qam].insert("one_over_2p");
+                    varreq_[qam].insert("a_over_p");
+                    qamint_2p_[qam].insert(its.ijkl[0]);
                 }
 
                 if(its.src[4] || its.src[5])
                 {
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[1]) + "_over_2p");
-                    varreq_[qam].insert(std::string("a_over_p"));
+                    varreq_[qam].insert("one_over_2p");
+                    varreq_[qam].insert("a_over_p");
+                    qamint_2p_[qam].insert(its.ijkl[1]);
                 }
 
                 if(its.src[6])
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[2]) + "_over_2pq");
+                {
+                    varreq_[qam].insert("one_over_2pq");
+                    qamint_2pq_[qam].insert(its.ijkl[2]);
+                }
 
                 if(its.src[7])
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[3]) + "_over_2pq");
+                {
+                    varreq_[qam].insert("one_over_2pq");
+                    qamint_2pq_[qam].insert(its.ijkl[3]);
+                }
             }
             else
             {
@@ -225,21 +254,29 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
 
                 if(its.src[2] || its.src[3])
                 {
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[2]) + "_over_2q");
-                    varreq_[qam].insert(std::string("a_over_q"));
+                    varreq_[qam].insert("one_over_2q");
+                    varreq_[qam].insert("a_over_q");
+                    qamint_2q_[qam].insert(its.ijkl[2]);
                 }
 
                 if(its.src[4] || its.src[5])
                 {
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[3]) + "_over_2q");
-                    varreq_[qam].insert(std::string("a_over_p"));
+                    varreq_[qam].insert("one_over_2q");
+                    varreq_[qam].insert("a_over_p");
+                    qamint_2q_[qam].insert(its.ijkl[3]);
                 }
 
                 if(its.src[6])
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[0]) + "_over_2pq");
+                {
+                    varreq_[qam].insert("one_over_2pq");
+                    qamint_2pq_[qam].insert(its.ijkl[0]);
+                }
 
                 if(its.src[7])
-                    varreq_[qam].insert(std::string("vrr_") + std::to_string(its.ijkl[1]) + "_over_2pq");
+                {
+                    varreq_[qam].insert("one_over_2pq");
+                    qamint_2pq_[qam].insert(its.ijkl[1]);
+                }
             }
         }
     }

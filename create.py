@@ -75,6 +75,7 @@ skeldir = os.path.join(topdir, "skel")
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
 hrr_gen = os.path.join(args.g, "hrr_generator")
+vrr_gen = os.path.join(args.g, "vrr_generator")
 
 if not os.path.isdir(args.d):
   print("The directory \"{}\" does not exist or is not accessible".format(args.d))
@@ -85,6 +86,10 @@ if not os.path.isfile(eri_gen):
   quit(1)
 
 if not os.path.isfile(hrr_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
+  quit(1)
+
+if not os.path.isfile(vrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
   quit(1)
 
@@ -134,7 +139,6 @@ shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
 
 ####################################################
 # Generate the external HRR source
-# TODO - could probably be moved to a python script
 ####################################################
 logfile = os.path.join(outdir_erigen, "hrr.log")
 
@@ -164,6 +168,42 @@ if ret != 0:
   print("Subprocess returned {} - aborting".format(ret))
   print("*********************************")
   print("\n")
+
+
+
+
+####################################################
+# Generate the external VRR source
+####################################################
+logfile = os.path.join(outdir_erigen, "vrr.log")
+
+cmdline = [vrr_gen]
+cmdline.extend(["-c", str(args.c)])
+cmdline.extend(["-o", outdir_erigen])
+cmdline.extend(["-L", str(args.l*4)])
+if args.i:
+    cmdline.append("-i")
+if args.S:
+    cmdline.append("-S")
+
+print("Creating VRR sources in {}".format(outdir_erigen))
+print("     Logfile: {}".format(logfile))
+print()
+print("Command line:")
+print(' '.join(cmdline))
+print()
+
+with open(logfile, 'w') as lf:
+  ret = subprocess.call(cmdline, stdout=lf)
+
+if ret != 0:
+  print("\n")
+  print("*********************************")
+  print("When generating vrr sources")
+  print("Subprocess returned {} - aborting".format(ret))
+  print("*********************************")
+  print("\n")
+
 
 
 

@@ -49,9 +49,9 @@ set_target_properties(eri_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_
 set_target_properties(eri_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
 
-#add_executable(vrr_generator vrr_generator.cpp $<TARGET_OBJECTS:generator_common>)
-#set_target_properties(vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-#set_target_properties(vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+add_executable(vrr_generator vrr_generator.cpp $<TARGET_OBJECTS:generator_common>)
+set_target_properties(vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
+set_target_properties(vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
 add_executable(hrr_generator hrr_generator.cpp $<TARGET_OBJECTS:generator_common>)
 set_target_properties(hrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")

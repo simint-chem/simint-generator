@@ -33,6 +33,7 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool haset = WriterInfo::HasET();
     bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
     bool hasoneover2q = (haset || (hasketvrr && (am[2] + am[3]) > 1));
+    bool hasoneover2pq = hasketvrr;
 
 
     // load this once here
@@ -284,6 +285,8 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent5 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied in VRR\n";
     if(hasoneover2q)    
         os << indent5 << cdbltype << " one_over_2q = " << WriterInfo::NamedConstant("one_half") << " * one_over_q;  // gets multiplied in VRR\n";
+    if(hasoneover2pq)
+        os << indent5 << cdbltype << " one_over_2pq = " << WriterInfo::NamedConstant("one_half") << " * one_over_PQalpha_sum;\n";
 
     if(hasbravrr)
     {

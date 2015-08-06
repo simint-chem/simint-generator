@@ -16,13 +16,19 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
     allvarreq_ = vrr_algo.GetAllVarReq();
 
     maxint_ = vrr_algo.GetMaxInt();
+    qamint_2p_ = vrr_algo.GetIntReq_2p();
+    qamint_2q_ = vrr_algo.GetIntReq_2q();
+    qamint_2pq_ = vrr_algo.GetIntReq_2pq();
 }
 
 
 void VRR_Writer::AddConstants(void) const
 {
-    for(int i = 1; i <= maxint_; i++)
-        WriterInfo::AddIntConstant(i);
+    if(WriterInfo::GetOption(OPTION_INLINEVRR) > 0)
+    {
+        for(int i = 1; i <= maxint_; i++)
+            WriterInfo::AddIntConstant(i);
+    }
 }
 
 
@@ -110,13 +116,13 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & 
             if(it.src[1])
                 os << " - aop_PQ_" << step << " * " << srcname[1].str(); 
             if(it.src[2] && it.src[3])
-                os << " + const_" << vrr_i << " * one_over_2p * (" << srcname[2].str() << " - a_over_p * " << srcname[3].str() << ")"; 
+                os << " + vrr_const_" << vrr_i << "_over_2p * (" << srcname[2].str() << " - a_over_p * " << srcname[3].str() << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + const_" << vrr_j << " * one_over_2p * (" << srcname[4].str() << " - a_over_p * " << srcname[5].str() << ")"; 
+                os << " + vrr_const_" << vrr_j << "_over_2p * (" << srcname[4].str() << " - a_over_p * " << srcname[5].str() << ")"; 
             if(it.src[6])
-                os << " + const_" << vrr_k << " * one_over_2pq * " << srcname[6].str();
+                os << " + vrr_const_" << vrr_k << "_over_2pq * " << srcname[6].str();
             if(it.src[7])
-                os << " + const_" << vrr_l << " * one_over_2pq * " << srcname[7].str();
+                os << " + vrr_const_" << vrr_l << "_over_2pq * " << srcname[7].str();
             os << ";\n";
 
         }
@@ -133,13 +139,13 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRRStepList & 
             if(it.src[1])
                 os << " + aoq_PQ_" << step << " * " << srcname[1].str(); 
             if(it.src[2] && it.src[3])
-                os << " + const_" << vrr_k << " * one_over_2q * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
+                os << " + vrr_const_" << vrr_k << "_over_2q * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + const_" << vrr_l << " * one_over_2q * (" << srcname[4].str() << " - a_over_q * " << srcname[5].str() << ")"; 
+                os << " + vrr_const_" << vrr_l << "_over_2q * (" << srcname[4].str() << " - a_over_q * " << srcname[5].str() << ")"; 
             if(it.src[6])
-                os << " + const_" << vrr_i << " * one_over_2pq * " << srcname[6].str();
+                os << " + vrr_const_" << vrr_i << "_over_2pq * " << srcname[6].str();
             if(it.src[7])
-                os << " + const_" << vrr_j << " * one_over_2pq * " << srcname[7].str();
+                os << " + vrr_const_" << vrr_j << "_one_over_2pq * " << srcname[7].str();
             os << ";\n";
         }
         
@@ -162,6 +168,39 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
         os << indent5 << "//////////////////////////////////////////////\n";
         os << "\n";
 
+        // constants
+        std::set<int> all_2p, all_2q, all_2pq;
+        
+        for(const auto & it : qamint_2p_)
+            all_2p.insert(it.second.begin(), it.second.end());
+        for(const auto & it : qamint_2q_)
+            all_2q.insert(it.second.begin(), it.second.end());
+        for(const auto & it : qamint_2pq_)
+            all_2pq.insert(it.second.begin(), it.second.end());
+
+        for(const auto & it : all_2p)
+        {
+            if(it == 1)
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
+            else
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n"; 
+        }
+        for(const auto & it : all_2q)
+        {
+            if(it == 1)
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
+            else
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n"; 
+        }
+        for(const auto & it : all_2pq)
+        {
+            if(it == 1)
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
+            else
+                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::IntConstant(it) << " * one_over_2pq;\n"; 
+        }
+
+
         // iterate over increasing am
         for(const auto & it : vrrmap_)
         {
@@ -181,62 +220,49 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
 void VRR_Writer::WriteVRRFile(std::ostream & os) const
 {
-/*
+    QAM am = WriterInfo::FinalAM();
+
     os << "//////////////////////////////////////////////\n";
-    os << "// VRR functions\n";
+    os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
     os << "//////////////////////////////////////////////\n";
+
+    // we only do the final
+    //if(!WriterInfo::Scalar())
+    //    os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
+    os << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    // final target
+    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+
+    for(const auto & it : qamreq_.at(am))
+        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+    
+    for(const auto & it : varreq_.at(am))
+        os << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
+    os << indent3 << "const int num_n)\n";
+
+    os << "{\n";
+
+    os << "    int n = 0;\n";
+
+    if(qamint_2p_.count(am))
+        for(const auto & it : qamint_2p_.at(am))
+            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+
+    if(qamint_2q_.count(am))
+        for(const auto & it : qamint_2q_.at(am))
+            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+
+    if(qamint_2pq_.count(am))
+        for(const auto & it : qamint_2pq_.at(am))
+            os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
+
+    // Write out the steps
+    WriteVRRSteps_(os, am, vrrmap_.at(am), "num_n");
+
     os << "\n";
-    os << "#include \"vectorization/vectorization.h\"\n";
-    os << "\n";
-
-    // iterate over increasing am
-    for(const auto & it3 : vrramreq_)
-    {
-        int am = it3.first;
-        QAM qam{am, 0, 0, 0};
-        QAM qam1{am-1, 0, 0, 0};
-        QAM qam2{am-2, 0, 0, 0};
-
-        // don't do zero - no VRR!
-        if(am == 0)
-            continue;
-
-        // greq is what is actually required from this am
-        const GaussianSet & greq = it3.second;
-
-
-        os << "\n\n\n";
-        os << "// VRR to obtain " << WriterInfo::PrimVarName(qam) << "\n";
-
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
-
-        os << "void VRR_" << amchar[am] << "(const int num_n,\n";
-        os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
-        os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent3 << "const double a_over_p,";
-        if(am > 1)
-            os << " const double one_over_2p,";
-        os << "\n"; 
-        os << indent3 << "double * const restrict " << WriterInfo::PrimVarName(qam) << ",\n";
-        os << indent3 << "double const * const restrict " << WriterInfo::PrimVarName(qam1);
-        if(am > 1)
-        {
-            os << ",\n";
-            os << indent3 << "double const * const restrict " << WriterInfo::PrimVarName(qam2);
-        }
-        
-        os << ")\n";
-        os << "{\n";
-
-        os << "    int n = 0;\n";
-
-        // Write out the steps
-        WriteVRRSteps_(os, greq, "num_n");
-
-        os << "}\n";
-    }
-*/
+    os << "}\n";
+    os << "\n\n";
 }
 
 
@@ -244,52 +270,6 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
 void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
 {
-/*
-    os << "#ifndef VRR__H\n";
-    os << "#define VRR__H\n";
-    os << "\n";
-    os << "//////////////////////////////////////////////\n";
-    os << "// VRR functions\n";
-    os << "//////////////////////////////////////////////\n";
-    os << "\n";
-    os << "#include \"vectorization/vectorization.h\"\n";
-    os << "\n";
-
-    // iterate over increasing am
-    for(const auto & it3 : vrramreq_)
-    {
-        int am = it3.first;
-        QAM qam{am, 0, 0, 0};
-        QAM qam1{am-1, 0, 0, 0};
-        QAM qam2{am-2, 0, 0, 0};
-
-        // don't do zero - no VRR!
-        if(am == 0)
-            continue;
-
-        os << "\n\n\n";
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
-        os << "void VRR_" << amchar[am] << "(const int num_n,\n";
-        os << indent3 << "const double P_PA_x, const double P_PA_y, const double P_PA_z,\n";
-        os << indent3 << "const double aop_PQ_x, const double aop_PQ_y, const double aop_PQ_z,\n";
-        os << indent3 << "const double a_over_p,";
-        if(am > 1)
-            os << " const double one_over_2p,";
-        os << "\n"; 
-        os << indent3 << "double * const restrict " << WriterInfo::PrimVarName(qam) << ",\n";
-        os << indent3 << "double const * const restrict " << WriterInfo::PrimVarName(qam1);
-        if(am > 1)
-        {
-            os << ",\n";
-            os << indent3 << "double const * const restrict " << WriterInfo::PrimVarName(qam2);
-        }
-        
-        os << ");\n";
-    }
-
-    os << "#endif\n";
-*/  
 }
 
 

@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #include "eri/gen/hrr.h"
+#include "eri/gen/vrr.h"
 
 #ifdef __INTEL_COMPILER
     #pragma warning(pop)

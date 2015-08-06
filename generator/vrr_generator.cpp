@@ -34,11 +34,12 @@ int main(int argc, char ** argv)
             maxL = GetIArg(i, argc, argv);
         else if(argstr == "-o")
             fpath = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-        {
-            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-c")
             cpuinfofile = GetNextArg(i, argc, argv);
-        }
+        else if(argstr == "-i")
+            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-S")
+            options[OPTION_SCALAR] = 1;
         else
         {
             std::cout << "\n\n";
@@ -61,12 +62,16 @@ int main(int argc, char ** argv)
         return 2;
     }
 
+    if(cpuinfofile == "")
+    {
+        std::cout << "\nCPU info file required\n\n";
+        return 2;
+    }
+
     if(fpath.back() != '/')
         fpath += '/';
 
 
-    // The algorithm to use 
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
     // different source and header files
     std::string srcpath = fpath + "vrr.c";
@@ -89,30 +94,46 @@ int main(int argc, char ** argv)
         return 2; 
     }
 
+    // start the header file
+    ofh << "#ifndef VRR__H\n";
+    ofh << "#define VRR__H\n";
+    ofh << "\n";
+    ofh << "#include \"eri/eri.h\"\n";
+    ofh << "\n";
+
+    // init once here to get the includes
+    WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuinfofile);
+    WriterInfo::WriteIncludes(ofh);
+
+    // output to source file
+    of << "#include \"eri/eri.h\"\n";
 
     // we want all gaussians up to the maximum L value
-    GaussianMap vreq;
-    for(int i = 0; i <= maxL; i++)
-        vreq[i] = AllGaussiansForAM(i);
+    for(i = 1; i <= maxL; i++)
+    {
+        // The algorithm to use 
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
-    // Create the mapping
-    vrralgo->CreateAllMaps(vreq);
+        QAM am{i, 0, 0, 0};
+        WriterInfo::Init(options, am, cpuinfofile);
 
-    // Create the writer and base writer
-    WriterInfo::Init(options, "", {0, 0, 0, 0});  // the amlist parameter doesn't matter much here
+        // Create the mapping
+        vrralgo->Create(am);
 
-    // read in cpuflags if needed
-    if(options[OPTION_INTRINSICS] != 0)
-        WriterInfo::ReadCPUFlags(cpuinfofile); 
+        VRR_Writer vrr_writer(*vrralgo);
 
-    VRR_Writer vrr_writer(*vrralgo);
-
-    // write to the output file
-    vrr_writer.WriteVRRFile(of);
-    vrr_writer.WriteVRRHeaderFile(ofh);
-    cout << "Done!\n";
+        // write to the output file
+        vrr_writer.WriteVRRFile(of);
+        vrr_writer.WriteVRRHeaderFile(ofh);
+        cout << "Done!\n";
 
     }
+
+    ofh << "\n";
+    ofh << "#endif\n\n";
+    
+
+    } // close try block
     catch(std::exception & ex)
     {
         cout << "\n\n";

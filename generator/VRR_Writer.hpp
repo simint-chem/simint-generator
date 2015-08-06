@@ -31,6 +31,7 @@ class VRR_Writer
         std::map<QAM, QAMSet> qamreq_; // quartets required for a particular QAM
         std::map<QAM, std::set<std::string>> varreq_; // other variables required for a particular QAM
         std::set<std::string> allvarreq_;
+        std::map<QAM, std::set<int>> qamint_2p_, qamint_2q_, qamint_2pq_;
 
         int maxint_;
 
