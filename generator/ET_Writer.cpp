@@ -42,12 +42,6 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 
 
 
-void ET_Writer::WriteIncludes(std::ostream & os) const
-{
-}
-
-
-
 void ET_Writer::AddConstants(void) const
 {
     for(const auto & it : et_i_)

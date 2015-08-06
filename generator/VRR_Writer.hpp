@@ -16,7 +16,6 @@ class VRR_Writer
 
         void WriteVRR(std::ostream & os) const;
 
-        void WriteIncludes(std::ostream & os) const;
         void AddConstants(void) const;
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclarePrimPointers(std::ostream & os) const;

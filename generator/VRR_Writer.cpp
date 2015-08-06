@@ -19,12 +19,6 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
 }
 
 
-void VRR_Writer::WriteIncludes(std::ostream & os) const
-{
-}
-
-
-
 void VRR_Writer::AddConstants(void) const
 {
     for(int i = 1; i <= maxint_; i++)

@@ -15,11 +15,6 @@ HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo)
 
 
 
-void HRR_Writer::WriteIncludes(std::ostream & os) const
-{
-}
-
-
 
 void HRR_Writer::AddConstants(void) const
 {

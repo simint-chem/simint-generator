@@ -61,8 +61,6 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
 
     bg.WriteIncludes(os);
-    vrr_writer.WriteIncludes(os);
-    hrr_writer.WriteIncludes(os);
 
     os << "\n\n";
     os << funcline;
