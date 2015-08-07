@@ -401,11 +401,6 @@ typedef std::set<Gaussian> GaussianSet;
 typedef std::vector<ETStep> ETStepList;
 
 
-typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
-typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
-
-
-typedef std::pair<DAMSet, DAMSet> HRRBraKetAMSet;
 
 
 

@@ -3,6 +3,12 @@
 
 #include "generator/Classes.hpp"
 
+
+typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
+typedef std::pair<HRRDoubletStepList, HRRDoubletStepList> HRRBraKetStepList;
+typedef std::pair<DAMSet, DAMSet> HRRBraKetAMSet;
+
+
 class HRR_Algorithm_Base
 {
     public:
