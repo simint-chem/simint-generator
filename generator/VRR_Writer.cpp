@@ -241,54 +241,63 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
 
 void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
 {
+    QAM am = WriterInfo::FinalAM();
+
+    os << "//////////////////////////////////////////////\n";
+    os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
+    os << "//////////////////////////////////////////////\n";
+
+    // we only do the final
+    //if(!WriterInfo::Scalar())
+    //    os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
+    os << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    // final target
+    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+
+    for(const auto & it : vrr_algo_.Get_AMReq(am))
+        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+    
+    for(const auto & it : vrr_algo_.GetVarReq(am))
+        os << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
+
+    os << indent3 << "const int num_n);\n\n";
+
 }
 
 
 
 void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
 {
-/*
-    os << "\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << indent6 << "// Primitive integrals: Vertical recurrance\n";
-    os << indent6 << "//////////////////////////////////////////////\n";
-    os << "\n";
-
-    // iterate over increasing am
-    for(const auto & it3 : vrramreq_)
+    if(WriterInfo::HasVRR())
     {
-        int am = it3.first;
-        QAM qam{am, 0, 0, 0};
-        QAM qam1{am-1, 0, 0, 0};
-        QAM qam2{am-2, 0, 0, 0};
+        os << "\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << indent5 << "// Primitive integrals: Vertical recurrance\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << "\n";
 
-        // don't do zero - that is handled by the boys function stuff
-        if(am == 0)
-            continue;
-
-        // greq is what is actually required from this am
-        //const GaussianSet & greq = it3.second;
-
-        // call the function
-        os << indent6 << "VRR_" << amchar[am] << "(" << (WriterInfo::L()-am+1) << ",\n";
-        os << indent7 << "P_PA_x, P_PA_y, P_PA_z, aop_PQ_x, aop_PQ_y, aop_PQ_z,\n";
-        os << indent7 << "a_over_p,";
-        if(am > 1)
-            os << "one_over_2p, ";
-        os << "\n"; 
-
-        os << indent7 << WriterInfo::PrimVarName(qam) << ",\n";
-        os << indent7 << WriterInfo::PrimVarName(qam1);
-        if(am > 1)
+        // iterate over increasing am
+        for(const auto & am : vrr_algo_.GetAllAM())
         {
-            os << ",\n";
-            os << indent7 << WriterInfo::PrimVarName(qam2);
+            if(am != QAM{0,0,0,0})
+            {
+                os << indent5 << "VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+                os << indent7 << WriterInfo::PrimVarName(am) << ",\n";
+
+                for(const auto & it : vrr_algo_.Get_AMReq(am))
+                    os << indent7 << WriterInfo::PrimVarName(it) << ",\n";
+                
+                for(const auto & it : vrr_algo_.GetVarReq(am))
+                    os << indent7 << it << ",\n";
+
+                os << indent7 << (vrr_algo_.GetVRR_MReq(am)+1) << ");\n";
+                os << "\n";
+            }
         }
 
-        os << ");\n";
-
+        os << "\n\n";
     }
-*/
 }
 
 
