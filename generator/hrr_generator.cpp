@@ -145,12 +145,11 @@ int main(int argc, char ** argv)
         QAM am{i, j, i, j};
         WriterInfo::Init(options, am, cpuinfofile);
 
-        hrralgo->Create_DoubletStepLists(am);
+        hrralgo->Create(am);
         HRR_Writer hrr_writer(*hrralgo);
 
         // write to the output file (appending)
-        hrr_writer.WriteHRRFile(ofb, ofk);
-        hrr_writer.WriteHRRHeaderFile(ofh);
+        hrr_writer.WriteHRRFile(ofb, ofk, ofh);
     }
 
     ofh << "#endif\n";

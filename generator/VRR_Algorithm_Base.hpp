@@ -24,7 +24,7 @@ class VRR_Algorithm_Base
 {
     public:
         void Create(const QuartetSet & q);
-        void Create(const QAM & q);
+        void Create(QAM q);
 
         QAM TargetAM(void) const;
         QAMSet GetAllAM(void) const;

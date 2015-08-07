@@ -18,8 +18,7 @@ class VRR_Writer
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclarePrimPointers(std::ostream & os) const;
 
-        void WriteVRRFile(std::ostream & os) const;
-        void WriteVRRHeaderFile(std::ostream & os) const;
+        void WriteVRRFile(std::ostream & os, std::ostream & osh) const;
 
     private:
         const VRR_Algorithm_Base & vrr_algo_;

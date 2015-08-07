@@ -19,26 +19,27 @@ void HRR_Writer::AddConstants(void) const
 
 
 
-void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket, const std::string & ketstr) const
+void HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+                                const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
     os << indent4 << "{\n";
 
-    for(const auto & hit : hrr_algo_.DoubletStepLists().first)
+    for(const auto & it : steps)
     {
-        os << std::string(20, ' ') << "// " << hit << "\n";
+        os << std::string(20, ' ') << "// " << it << "\n";
     
-        const char * xyztype = "AB_";
+        const char * xyztype = "hAB_";
 
         std::stringstream ss;
         os << std::string(20, ' ');
 
-        os << HRRBraStepVar_(hit.target, ncart_ket, ketstr, true);
+        os << HRRBraStepVar_(it.target, ncart_ket, ketstr);
 
         os << " = ";
-        os << HRRBraStepVar_(hit.src[0], ncart_ket, ketstr, false);
-        os << " + ( " << xyztype << hit.xyz << " * ";
-        os << HRRBraStepVar_(hit.src[1], ncart_ket, ketstr, false);
+        os << HRRBraStepVar_(it.src[0], ncart_ket, ketstr);
+        os << " + ( " << xyztype << it.xyz << " * ";
+        os << HRRBraStepVar_(it.src[1], ncart_ket, ketstr);
         os << " );";
         os << "\n\n";
     }
@@ -49,24 +50,25 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket
 
 
 
-void HRR_Writer::WriteKetSteps_(std::ostream & os, const std::string & ncart_bra, const std::string & brastr) const
+void HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+                                const std::string & ncart_bra, const std::string & brastr) const
 {
         os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << indent4 << "{\n"; 
-        for(const auto & hit : hrr_algo_.DoubletStepLists().second)
+        for(const auto & it : steps)
         {
-            os << std::string(20, ' ') << "// " << hit << "\n";
+            os << std::string(20, ' ') << "// " << it << "\n";
 
-            const char * xyztype = "CD_";
+            const char * xyztype = "hCD_";
 
             os << std::string(20, ' ');
     
-            os << HRRKetStepVar_(hit.target, ncart_bra, brastr, true);
+            os << HRRKetStepVar_(it.target, brastr);
 
             os << " = ";
-            os << HRRKetStepVar_(hit.src[0], ncart_bra, brastr, false);
-            os << " + ( " << xyztype << hit.xyz << " * ";
-            os << HRRKetStepVar_(hit.src[1], ncart_bra, brastr, false);
+            os << HRRKetStepVar_(it.src[0], brastr);
+            os << " + ( " << xyztype << it.xyz << " * ";
+            os << HRRKetStepVar_(it.src[1], brastr);
             os << " );";
             os << "\n\n";
         }
@@ -77,67 +79,25 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const std::string & ncart_bra
 
 
 std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
-                                       const std::string & ketstr, bool istarget) const
+                                       const std::string & ketstr) const
 {
     std::stringstream ss;
 
-    QAM finalam = WriterInfo::FinalAM();
-
-    // is final doublet?
-    bool isfinald = (d.left.am() == finalam[0] && d.right.am() == finalam[1]);
-
-    // is top level bra? (ie result from VRR/ET)
-    bool istop = ( d.right.am() == 0);
-
-    // actually the final quartet?
-    bool isfinalq = isfinald && !WriterInfo::HasKetHRR();
-
     std::string arrname = WriterInfo::ArrVarName(d.left.am(), d.right.am(), ketstr);
-
-    if(istop || isfinalq || isfinald)
-        ss << "HRR_" << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "B_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2] << "_" << ketstr;
-    }
+    ss << "HRR_" << arrname << "[" << d.idx() << " * " << ncart_ket << " + iket]";
 
     return ss.str();
 }
 
 
 
-std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & ncart_bra,
-                                       const std::string & brastr, bool istarget) const
+std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & brastr) const
 {
     std::stringstream ss;
 
-    QAM finalam = WriterInfo::FinalAM();
-
-    // is final doublet? This would be the final quartet also
-    bool isfinal = (d.left.am() == finalam[2] && d.right.am() == finalam[3]);
-
-    // is from VRR or ET
-    // Since this is run last, the bra part is ( finalam[0] finalam[1] |
-    // so if that is ( X s | and this is | X s ) it is from VRR/ET
-    bool istop = ( d.right.am() == 0 && finalam[1] == 0 );
-
-    // is top level ket? (ie result from bra, but not VRR, etc)
-    bool istopbra = ( !istop && d.right.am() == 0 );
-
     std::string arrname = WriterInfo::ArrVarName(brastr, d.left.am(), d.right.am());
+    ss << "HRR_" << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
 
-    if(istopbra || istop || isfinal)
-        ss << "HRR_" << arrname << "[ibra * " << d.ncart() << " + " << d.idx() << "]"; 
-    else
-    {
-        if(istarget)
-            ss << "const double ";
-        ss << "K_" << brastr << "_" << d.left.ijk[0]  << "_" << d.left.ijk[1]  << "_" << d.left.ijk[2] << "_"
-                   << d.right.ijk[0] << "_" << d.right.ijk[1] << "_" << d.right.ijk[2];
-    }
     return ss.str();
 }
 
@@ -166,7 +126,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
-        for(const auto & it : hrr_algo_.TopQAM())
+        for(const auto & it : hrr_algo_.TopAM())
             os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
@@ -178,40 +138,33 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         if(WriterInfo::HasBraHRR())
         {
             os << "\n";
-            os << indent4 << "const double AB_x = AB_x[abcd];\n";
-            os << indent4 << "const double AB_y = AB_y[abcd];\n";
-            os << indent4 << "const double AB_z = AB_z[abcd];\n";
+            os << indent4 << "const double hAB_x = AB_x[abcd];\n";
+            os << indent4 << "const double hAB_y = AB_y[abcd];\n";
+            os << indent4 << "const double hAB_z = AB_z[abcd];\n";
             os << "\n";
-
-            // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
-            // but skip the final AM. we store directly there
-            for(const auto & it : hrr_algo_.TopBraKetAM().second)
-            {
-                QAM qam{finalbra[0], finalbra[1], it[0], 0};
-                if(!WriterInfo::IsFinalAM(qam))
-                {
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(qam)
-                       << "[" << NCART(finalbra[0], finalbra[1], it[0]) << "];\n";
-                }
-            }
 
             os << "\n";
 
-            for(const auto & it : hrr_algo_.TopBraKetAM().second)
+            for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
+            for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
-                // it.first is the AM for the ket part
-                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
+                os << indent4 << "// form " << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << "\n";
+
+                // allocate temporary if needed
+                QAM am = {itb[0], itb[1], itk[0], itk[1]};
+                if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
+                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
                 // ncart_ket in string form
                 std::stringstream ss;
-                ss << NCART(it[0]);
+                ss << NCART(itk[0], itk[1]);
     
                 // the ket part in string form
                 std::stringstream ssket;
-                ssket << amchar[it[0]] << "_s";
+                ssket << amchar[itk[0]] << "_" << amchar[itk[1]];
         
                 // actually write out the steps now
-                WriteBraSteps_(os, ss.str(), ssket.str());
+                WriteBraSteps_(os, hrr_algo_.GetBraSteps(itb), ss.str(), ssket.str());
             }
         }
 
@@ -221,22 +174,30 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         if(WriterInfo::HasKetHRR())
         {
             os << "\n";
-            os << indent4 << "const double CD_x = CD_x[abcd];\n";
-            os << indent4 << "const double CD_y = CD_y[abcd];\n";
-            os << indent4 << "const double CD_z = CD_z[abcd];\n";
+            os << indent4 << "const double hCD_x = CD_x[abcd];\n";
+            os << indent4 << "const double hCD_y = CD_y[abcd];\n";
+            os << indent4 << "const double hCD_z = CD_z[abcd];\n";
             os << "\n";
 
-            // ncart_bra in string form
-            std::stringstream ss;
-            ss << NCART(finalbra); 
+            for(const auto & itk : hrr_algo_.GetKetAMOrder())
+            {
+                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << "\n";
 
-            // the bra part in string form
-            std::stringstream ssbra;
-            ssbra << amchar[finalbra[0]] << "_" << amchar[finalbra[1]];
+                // allocate temporary if needed
+                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
+                if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
+                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
-            WriteKetSteps_(os, ss.str(), ssbra.str());
+                // ncart_bra in string form
+                std::stringstream ss;
+                ss << NCART(finalbra); 
 
-    
+                // the bra part in string form
+                std::stringstream ssbra;
+                ssbra << amchar[finalbra[0]] << "_" << amchar[finalbra[1]];
+
+                WriteKetSteps_(os, hrr_algo_.GetKetSteps(itk), ss.str(), ssbra.str());
+            }
         }
 
         os << "\n";
@@ -263,6 +224,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         os << "\n";
 
+
         if(!WriterInfo::Scalar())
             os << indent3 << "#pragma omp simd linear(real_abcd)\n";
         os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
@@ -270,46 +232,47 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
-        for(const auto & it : hrr_algo_.TopQAM())
+        for(const auto & it : hrr_algo_.TopAM())
             os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
         os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         os << "\n";
 
+
+
         if(WriterInfo::HasBraHRR())
         {
-            // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
-            // but skip the final AM. we store directly there
-            for(const auto & it : hrr_algo_.TopBraKetAM().second)
-            {
-                QAM qam{finalbra[0], finalbra[1], it[0], 0};
-                if(!WriterInfo::IsFinalAM(qam))
-                {
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(qam)
-                       << "[" << NCART(finalbra[0], finalbra[1], it[0]) << "];\n";
-                }
-            }
+            os << "\n";
+            os << indent4 << "const double hAB_x = AB_x[abcd];\n";
+            os << indent4 << "const double hAB_y = AB_y[abcd];\n";
+            os << indent4 << "const double hAB_z = AB_z[abcd];\n";
             os << "\n";
 
-            for(const auto & it : hrr_algo_.TopBraKetAM().second)
+            os << "\n";
+
+            for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
+            for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
-                // it.first is the AM for the ket part
+                os << indent4 << "// form " << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << "\n";
 
-                // ncart_ket in string form
-                // ( should be |X s) )
-                std::stringstream ss;
-                ss << NCART(it[0]);
-    
+                // allocate temporary if needed
+                QAM am = {itb[0], itb[1], itk[0], itk[1]};
+                if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
+                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
-                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
-                os << indent4 << "HRR_BRA_" << amchar[finalbra[0]] << "_" << amchar[finalbra[1]] << "(\n";
-                for(const auto & it2 : hrr_algo_.TopBraKetAM().first)
-                   os << indent5 << "HRR_" << WriterInfo::ArrVarName({it2[0], it2[1], it[0], it[1]}) << ",\n";
+                // call function
+                os << indent4 << "HRR_BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << "(\n";
 
-                os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], it[1]}) << ",\n";
-                os << indent5 << "AB_x[abcd], AB_y[abcd], AB_z[abcd], " << ss.str() << ");\n";
-                os << "\n";
+                // pointer to result buffer
+                os << indent5 << "HRR_" << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << ",\n";
+
+                // pointer to requirements
+                for(const auto & it : hrr_algo_.GetBraAMReq(itb))
+                    os << indent5 << "HRR_" << WriterInfo::ArrVarName({it[0], it[1], itk[0], itk[1]}) << ",\n";
+
+                os << indent5 << "hAB_x, hAB_y, hAB_z, " << NCART(itk[0], itk[1]) << ");\n"; 
+                os << "\n\n";
             }
         }
 
@@ -318,30 +281,45 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         if(WriterInfo::HasKetHRR())
         {
-            // ncart_bra in string form
-            std::stringstream ss;
-            ss << NCART(finalbra);
+            os << "\n";
+            os << indent4 << "const double hCD_x = CD_x[abcd];\n";
+            os << indent4 << "const double hCD_y = CD_y[abcd];\n";
+            os << indent4 << "const double hCD_z = CD_z[abcd];\n";
+            os << "\n";
 
-            os << indent4 << "// form " << WriterInfo::ArrVarName(finalam) << "\n";
-            os << indent4 << "HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
-            for(const auto & it2 : hrr_algo_.TopBraKetAM().second)
-               os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it2[0], it2[1]}) << ",\n";
+            for(const auto & itk : hrr_algo_.GetKetAMOrder())
+            {
+                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << "\n";
 
-            os << indent5 << "HRR_" << WriterInfo::ArrVarName(finalam) << ",\n";
-            os << indent5 << "CD_x[abcd], CD_y[abcd], CD_z[abcd], " << ss.str() << ");\n";
+                // allocate temporary if needed
+                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
+                if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
+                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
+
+                os << indent4 << "HRR_KET_";
+                os << amchar[itk[0]] << "_" << amchar[itk[1]] << "(\n";
+
+                // pointer to result buffer
+                os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << ",\n";
+
+                // pointer to requirements
+                for(const auto & it : hrr_algo_.GetKetAMReq(itk))
+                    os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], it[1]}) << ",\n";
+
+                os << indent5 << "hCD_x, hCD_y, hCD_z, " << NCART(finalbra) << ");\n";
+                os << "\n\n";
+
+            }
         }
 
         os << "\n";
-
         os << indent3 << "}  // close HRR loop\n";
 
     }
 
     os << "\n";
     os << "\n";
-
 }
-
 
 
 
@@ -355,132 +333,115 @@ void HRR_Writer::WriteHRR(std::ostream & os) const
 
 
 
-void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
+void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const
 {
     QAM finalam = WriterInfo::FinalAM();
+    DAM braam = {finalam[0], finalam[1]};
+    DAM ketam = {finalam[2], finalam[3]};
 
+    // only do final
+    HRRDoubletStepList brasteps = hrr_algo_.GetBraSteps(braam);
+    HRRDoubletStepList ketsteps = hrr_algo_.GetKetSteps(ketam);
 
-    if(hrr_algo_.DoubletStepLists().first.size() > 0)
+    if(brasteps.size() > 0)
     {
         ofb << "//////////////////////////////////////////////\n";
-        ofb << "// BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofb << "// Steps: " << hrr_algo_.DoubletStepLists().first.size() << "\n";
+        ofb << "// BRA: ( " << amchar[braam[0]] << " " << amchar[braam[1]] << " |\n";
+        ofb << "// Steps: " << brasteps.size() << "\n";
         ofb << "//////////////////////////////////////////////\n";
         ofb << "\n";
 
-        // it.first is the AM for the ket part
         if(!WriterInfo::Scalar())
             ofb << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
         ofb << "void HRR_BRA_";
-        ofb << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
-
-        // pointers to buffers (top bras)
-        for(const auto & it : hrr_algo_.TopBraKetAM().first)
-            ofb << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
+        ofb << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
 
         // pointer to result buffer
         ofb << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
 
-        ofb << indent5 << "const double AB_x, const double AB_y, const double AB_z, const int ncart_ket)\n";
+        // pointer to requirements
+        for(const auto & it : hrr_algo_.GetBraAMReq(braam))
+            ofb << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
+
+        ofb << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket)\n";
 
         ofb << "{\n";
         ofb << indent1 << "int iket;\n";
         ofb << "\n";
 
-        WriteBraSteps_(ofb, "ncart_ket", "X_X"); 
+        WriteBraSteps_(ofb, brasteps, "ncart_ket", "X_X"); 
 
         ofb << "\n";
         ofb << "}\n";
         ofb << "\n";
         ofb << "\n";
+
+
+        // header
+        if(!WriterInfo::Scalar())
+            ofh << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
+        ofh << "void HRR_BRA_";
+        ofh << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
+
+        // pointer to result buffer
+        ofh << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
+
+        // pointer to requirements
+        for(const auto & it : hrr_algo_.GetBraAMReq(braam))
+            ofh << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
+
+        ofh << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket);\n";
+
     }
 
-    if(hrr_algo_.DoubletStepLists().second.size() > 0)
+    if(ketsteps.size() > 0)
     {
         ofk << "//////////////////////////////////////////////\n";
-        ofk << "// KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofk << "// Steps: " << hrr_algo_.DoubletStepLists().second.size() << "\n";
+        ofk << "// KET: ( " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " |\n";
+        ofk << "// Steps: " << ketsteps.size() << "\n";
         ofk << "//////////////////////////////////////////////\n";
         ofk << "\n";
 
         if(!WriterInfo::Scalar())
             ofk << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
         ofk << "void HRR_KET_";
-        ofk << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
-
-        // pointers to buffers (top bras)
-        for(const auto & it : hrr_algo_.TopBraKetAM().second)
-            ofk << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1])  << ",\n";
+        ofk << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
 
         // pointer to result buffer
         ofk << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
 
-        ofk << indent5 << "const double CD_x, const double CD_y, const double CD_z, const int ncart_bra)\n";
+        // pointer to requirements
+        for(const auto & it : hrr_algo_.GetKetAMReq(ketam))
+            ofk << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
+
+        ofk << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra)\n";
         ofk << "{\n";
         ofk << indent1 << "int ibra;\n";
         ofk << "\n";
 
-        WriteKetSteps_(ofk, "ncart_bra", "X_X"); 
+        WriteKetSteps_(ofk, ketsteps, "ncart_bra", "X_X"); 
 
         ofk << "\n";
         ofk << "}\n";
         ofk << "\n";
         ofk << "\n";
+
+
+        // header
+        if(!WriterInfo::Scalar())
+            ofh << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
+        ofh << "void HRR_KET_";
+        ofh << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
+
+        // pointer to result buffer
+        ofh << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
+
+        // pointer to requirements
+        for(const auto & it : hrr_algo_.GetKetAMReq(ketam))
+            ofh << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
+
+        ofh << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra);\n";
     }
 }
 
-
-
-void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
-{
-    QAM finalam = WriterInfo::FinalAM();
-
-    if(hrr_algo_.DoubletStepLists().first.size() > 0)
-    {
-        os << indent1 << "//////////////////////////////////////////////\n";
-        os << indent1 << "// BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        os << indent1 << "// Steps: " << hrr_algo_.DoubletStepLists().first.size() << "\n";
-        os << indent1 << "//////////////////////////////////////////////\n";
-
-        // it.first is the AM for the ket part
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
-
-        os << "void HRR_BRA_";
-        os << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
-
-        // pointers to buffers (top bras)
-        for(const auto & it : hrr_algo_.TopBraKetAM().first)
-            os << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
-
-        // pointer to result buffer
-        os << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
-
-        os << indent5 << "const double AB_x, const double AB_y, const double AB_z, const int ncart_ket);\n\n\n";
-
-    }
-
-    if(hrr_algo_.DoubletStepLists().second.size() > 0)
-    {
-        os << indent1 << "//////////////////////////////////////////////\n";
-        os << indent1 << "// KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        os << indent1 << "// Steps: " << hrr_algo_.DoubletStepLists().second.size() << "\n";
-        os << indent1 << "//////////////////////////////////////////////\n";
-
-        if(!WriterInfo::Scalar())
-            os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
-
-        os << "void HRR_KET_";
-        os << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
-
-        // pointers to buffers (top bras)
-        for(const auto & it : hrr_algo_.TopBraKetAM().second)
-            os << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1])  << ",\n";
-
-        // pointer to result buffer
-        os << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
-
-        os << indent5 << "const double CD_x, const double CD_y, const double CD_z, const int ncart_bra);\n\n\n";
-    }
-}
 

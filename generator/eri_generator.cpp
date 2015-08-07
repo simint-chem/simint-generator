@@ -146,12 +146,17 @@ int main(int argc, char ** argv)
 
     // Working backwards, I need:
     // 1.) HRR Steps
-    hrralgo->Create_DoubletStepLists(amlist);
+    hrralgo->Create(amlist);
     HRR_Writer hrr_writer(*hrralgo);
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit = hrralgo->TopQuartets();
+    QuartetSet etinit;
+    for(const auto & it : hrralgo->TopAM())
+    {
+        QuartetSet tmp = GenerateInitialQuartetTargets(it);
+        etinit.insert(tmp.begin(), tmp.end());
+    }
     etalgo->Create_ETStepList(etinit);
     ET_Writer et_writer(*etalgo);
 
@@ -161,7 +166,7 @@ int main(int argc, char ** argv)
     VRR_Writer vrr_writer(*vrralgo);
 
     // set the contracted quartets
-    WriterInfo::SetContQ(hrralgo->TopQAM());
+    WriterInfo::SetContQ(hrralgo->TopAM());
 
     // print out some info
     std::cout << "MEMORY (per shell quartet): " << WriterInfo::MemoryReq() << "\n";

@@ -123,8 +123,7 @@ int main(int argc, char ** argv)
         VRR_Writer vrr_writer(*vrralgo);
 
         // write to the output file
-        vrr_writer.WriteVRRFile(of);
-        vrr_writer.WriteVRRHeaderFile(ofh);
+        vrr_writer.WriteVRRFile(of, ofh);
         cout << "Done!\n";
 
     }

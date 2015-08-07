@@ -22,6 +22,33 @@ void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned)
     d = dnew; 
 }
 
+void HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type)
+{
+    if(type == DoubletType::BRA)
+    {
+        if(allbraam_.count(am) == 0)
+            return;
+    }
+    else
+    {
+        if(allketam_.count(am) == 0)
+            return;
+    }
+
+    // get requirements
+    DAMSet dam;
+    if(type == DoubletType::BRA)
+        dam = GetBraAMReq(am);
+    else
+        dam = GetKetAMReq(am);
+
+    for(const auto & it : dam)
+        AMOrder_AddWithDependencies_(order, it, type);
+
+    order.push_back(am);
+}
+
+
 
 void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
                                          const DoubletSet & inittargets,
@@ -67,15 +94,17 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
 
 
 
-void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
+void HRR_Algorithm_Base::Create(QAM am)
 {
+    finalam_ = am;
+
     // First, we need a list of doublet steps for the bra
 
     // holds all the 'solved' doublets
     DoubletSet solvedbras;
 
     // generate initial targets
-    DoubletSet initbras = GenerateInitialDoubletTargets({amlist[0],amlist[1]}, DoubletType::BRA);
+    DoubletSet initbras = GenerateInitialDoubletTargets({am[0],am[1]}, DoubletType::BRA);
     PrintDoubletSet(initbras, "Initial Targets");
 
     // Initial bra targets
@@ -84,8 +113,22 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     PrintDoubletSet(targets, "Initial bra targets");
 
     // Solve the bra part
-    HRRDoubletLoop_(brasteps_, targets, solvedbras, bratop_);
-    std::reverse(brasteps_.begin(), brasteps_.end());
+    HRRDoubletStepList brasteps;
+    HRRDoubletLoop_(brasteps, targets, solvedbras, bratop_);
+    std::reverse(brasteps.begin(), brasteps.end());
+
+    // store in map by AM
+    // and store requirements
+    for(const auto & it : brasteps)
+    {
+        brasteps_[it.target.amlist()].push_back(it);
+        for(const auto & it2 : it.src)
+        {
+            if(it2)
+                brareq_[it.target.amlist()].insert(it2.amlist());
+        }
+    }
+
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
@@ -98,7 +141,7 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     // now do kets
     // we only need the bras from the original targets
     DoubletSet solvedkets;
-    DoubletSet initkets = GenerateInitialDoubletTargets({amlist[2],amlist[3]}, DoubletType::KET);
+    DoubletSet initkets = GenerateInitialDoubletTargets({am[2],am[3]}, DoubletType::KET);
     targets = initkets;
     PruneDoublets_(targets, kettop_);
 
@@ -106,8 +149,19 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
-    HRRDoubletLoop_(ketsteps_, targets, solvedkets, kettop_);
-    std::reverse(ketsteps_.begin(), ketsteps_.end());
+    HRRDoubletStepList ketsteps;
+    HRRDoubletLoop_(ketsteps, targets, solvedkets, kettop_);
+    std::reverse(ketsteps.begin(), ketsteps.end());
+
+    // store in map by AM
+    // and store requirements
+    for(const auto & it : ketsteps)
+    {
+        ketsteps_[it.target.amlist()].push_back(it);
+        for(const auto & it2 : it.src)
+            ketreq_[it.target.amlist()].insert(it2.amlist());
+    }
+    
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
@@ -133,32 +187,82 @@ void HRR_Algorithm_Base::Create_DoubletStepLists(QAM amlist)
     for(const auto & it : topquartets_)
         topqam_.insert(it.amlist());
 
+
+    // solved info
+    for(const auto & it : solvedbras)
+        allbraam_.insert(it.amlist());
+    for(const auto & it : solvedkets)
+        allketam_.insert(it.amlist());
+
+
+    // Put am in the order of calculation
+    AMOrder_AddWithDependencies_(braamorder_, {am[0], am[1]}, DoubletType::BRA);
+    AMOrder_AddWithDependencies_(ketamorder_, {am[2], am[3]}, DoubletType::KET);
+
     PrintDoubletSet(bratop_, "HRR top level bras");
     PrintDoubletSet(kettop_, "HRR top level kets");
     PrintQuartetSet(topquartets_, "HRR top quartets");
 }
 
-std::pair<DAMSet, DAMSet> HRR_Algorithm_Base::TopBraKetAM(void) const
+
+DAMSet HRR_Algorithm_Base::TopBraAM(void) const
 {
-    return {bratopam_, kettopam_};
+    return bratopam_;
 }
 
-std::pair<DoubletSet, DoubletSet> HRR_Algorithm_Base::TopBraKet(void) const
+DAMSet HRR_Algorithm_Base::TopKetAM(void) const
 {
-    return {bratop_, kettop_};
+    return kettopam_;
 }
 
-QAMSet HRR_Algorithm_Base::TopQAM(void) const
+DoubletSet HRR_Algorithm_Base::TopBraDoublets(void) const
 {
-    return topqam_;
+    return bratop_;
 }
 
-QuartetSet HRR_Algorithm_Base::TopQuartets(void) const
+DoubletSet HRR_Algorithm_Base::TopKetDoublets(void) const
 {
-    return topquartets_;
+    return kettop_;
 }
 
-HRRBraKetStepList HRR_Algorithm_Base::DoubletStepLists(void) const
+QAMSet HRR_Algorithm_Base::TopAM(void) const
 {
-    return {brasteps_, ketsteps_};
+    QAMSet qs;
+    for(const auto & it1 : TopBraAM())
+    for(const auto & it2 : TopKetAM())
+        qs.insert({it1[0], it1[1], it2[0], it2[1]});
+    return qs;
 }
+
+DAMSet HRR_Algorithm_Base::GetBraAMReq(DAM am) const
+{
+    return brareq_.at(am);
+}
+
+DAMSet HRR_Algorithm_Base::GetKetAMReq(DAM am) const
+{
+    return ketreq_.at(am);
+}
+
+
+HRRDoubletStepList HRR_Algorithm_Base::GetBraSteps(DAM am) const
+{
+    return brasteps_.at(am);
+}
+
+HRRDoubletStepList HRR_Algorithm_Base::GetKetSteps(DAM am) const
+{
+    return ketsteps_.at(am);
+}
+
+
+DAMList HRR_Algorithm_Base::GetBraAMOrder(void) const
+{
+    return braamorder_;
+}
+
+DAMList HRR_Algorithm_Base::GetKetAMOrder(void) const
+{
+    return ketamorder_;
+}
+

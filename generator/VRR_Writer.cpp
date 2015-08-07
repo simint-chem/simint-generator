@@ -191,7 +191,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
 
 
-void VRR_Writer::WriteVRRFile(std::ostream & os) const
+void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 {
     QAM am = WriterInfo::FinalAM();
 
@@ -234,37 +234,25 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
     os << "\n";
     os << "}\n";
     os << "\n\n";
-}
 
 
-
-
-void VRR_Writer::WriteVRRHeaderFile(std::ostream & os) const
-{
-    QAM am = WriterInfo::FinalAM();
-
-    os << "//////////////////////////////////////////////\n";
-    os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
-    os << "//////////////////////////////////////////////\n";
-
+    // header
     // we only do the final
     //if(!WriterInfo::Scalar())
     //    os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
-    os << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+    osh << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
-    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+    osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
     for(const auto & it : vrr_algo_.Get_AMReq(am))
-        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+        osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
-        os << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
+        osh << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
 
-    os << indent3 << "const int num_n);\n\n";
-
+    osh << indent3 << "const int num_n);\n\n";
 }
-
 
 
 void VRR_Writer::WriteVRRExternal_(std::ostream & os) const

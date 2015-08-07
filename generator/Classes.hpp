@@ -392,6 +392,9 @@ typedef std::set<int> IntSet;
 typedef std::set<QAM> QAMSet;
 typedef std::set<DAM> DAMSet;
 
+typedef std::vector<QAM> QAMList;
+typedef std::vector<DAM> DAMList;
+
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;
 

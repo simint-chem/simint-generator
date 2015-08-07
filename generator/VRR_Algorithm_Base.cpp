@@ -119,7 +119,7 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
-void VRR_Algorithm_Base::Create(const QAM & q)
+void VRR_Algorithm_Base::Create(QAM q)
 {
     Create(GenerateInitialQuartetTargets(q));
 }

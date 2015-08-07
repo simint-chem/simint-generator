@@ -145,7 +145,7 @@ logfile = os.path.join(outdir_erigen, "hrr.log")
 cmdline = [hrr_gen]
 cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l)])
+cmdline.extend(["-L", str(args.l*2)])
 if args.i:
     cmdline.append("-i")
 if args.S:
