@@ -21,11 +21,7 @@ class HRR_Writer
         void WriteHRRHeaderFile(std::ostream & os) const;
 
     private:
-        HRRBraKetStepList hrrsteps_;
-        std::pair<DoubletSet, DoubletSet>  brakettop_;
-        std::pair<DAMSet, DAMSet> brakettopam_;
-        QAMSet topquartetam_;
-        
+        const HRR_Algorithm_Base & hrr_algo_; 
 
         void WriteHRRInline_(std::ostream & os) const;
         void WriteHRRExternal_(std::ostream & os) const;

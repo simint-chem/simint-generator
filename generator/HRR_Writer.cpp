@@ -6,11 +6,8 @@
 
 
 HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo) 
+    : hrr_algo_(hrr_algo)
 {
-    brakettop_ = hrr_algo.TopBraKet();
-    brakettopam_ = hrr_algo.TopBraKetAM();
-    hrrsteps_ = hrr_algo.DoubletStepLists();
-    topquartetam_ = hrr_algo.TopQAM();
 }
 
 
@@ -27,7 +24,7 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const std::string & ncart_ket
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
     os << indent4 << "{\n";
 
-    for(const auto & hit : hrrsteps_.first)
+    for(const auto & hit : hrr_algo_.DoubletStepLists().first)
     {
         os << std::string(20, ' ') << "// " << hit << "\n";
     
@@ -56,7 +53,7 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const std::string & ncart_bra
 {
         os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
         os << indent4 << "{\n"; 
-        for(const auto & hit : hrrsteps_.second)
+        for(const auto & hit : hrr_algo_.DoubletStepLists().second)
         {
             os << std::string(20, ' ') << "// " << hit << "\n";
 
@@ -169,7 +166,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
-        for(const auto & it : topquartetam_)
+        for(const auto & it : hrr_algo_.TopQAM())
             os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
@@ -188,7 +185,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
             // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
             // but skip the final AM. we store directly there
-            for(const auto & it : brakettopam_.second)
+            for(const auto & it : hrr_algo_.TopBraKetAM().second)
             {
                 QAM qam{finalbra[0], finalbra[1], it[0], 0};
                 if(!WriterInfo::IsFinalAM(qam))
@@ -200,7 +197,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
             os << "\n";
 
-            for(const auto & it : brakettopam_.second)
+            for(const auto & it : hrr_algo_.TopBraKetAM().second)
             {
                 // it.first is the AM for the ket part
                 os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
@@ -273,7 +270,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
-        for(const auto & it : topquartetam_)
+        for(const auto & it : hrr_algo_.TopQAM())
             os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
@@ -284,7 +281,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         {
             // allocate HRR Temporaries. These are the top ket (left) AM, with the final bra
             // but skip the final AM. we store directly there
-            for(const auto & it : brakettopam_.second)
+            for(const auto & it : hrr_algo_.TopBraKetAM().second)
             {
                 QAM qam{finalbra[0], finalbra[1], it[0], 0};
                 if(!WriterInfo::IsFinalAM(qam))
@@ -295,7 +292,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
             }
             os << "\n";
 
-            for(const auto & it : brakettopam_.second)
+            for(const auto & it : hrr_algo_.TopBraKetAM().second)
             {
                 // it.first is the AM for the ket part
 
@@ -307,7 +304,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
                 os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], 0}) << "\n";
                 os << indent4 << "HRR_BRA_" << amchar[finalbra[0]] << "_" << amchar[finalbra[1]] << "(\n";
-                for(const auto & it2 : brakettopam_.first)
+                for(const auto & it2 : hrr_algo_.TopBraKetAM().first)
                    os << indent5 << "HRR_" << WriterInfo::ArrVarName({it2[0], it2[1], it[0], it[1]}) << ",\n";
 
                 os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], it[1]}) << ",\n";
@@ -327,7 +324,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
             os << indent4 << "// form " << WriterInfo::ArrVarName(finalam) << "\n";
             os << indent4 << "HRR_KET_" << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
-            for(const auto & it2 : brakettopam_.second)
+            for(const auto & it2 : hrr_algo_.TopBraKetAM().second)
                os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it2[0], it2[1]}) << ",\n";
 
             os << indent5 << "HRR_" << WriterInfo::ArrVarName(finalam) << ",\n";
@@ -363,11 +360,11 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
     QAM finalam = WriterInfo::FinalAM();
 
 
-    if(hrrsteps_.first.size() > 0)
+    if(hrr_algo_.DoubletStepLists().first.size() > 0)
     {
         ofb << "//////////////////////////////////////////////\n";
         ofb << "// BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofb << "// Steps: " << hrrsteps_.first.size() << "\n";
+        ofb << "// Steps: " << hrr_algo_.DoubletStepLists().first.size() << "\n";
         ofb << "//////////////////////////////////////////////\n";
         ofb << "\n";
 
@@ -378,7 +375,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
         ofb << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         // pointers to buffers (top bras)
-        for(const auto & it : brakettopam_.first)
+        for(const auto & it : hrr_algo_.TopBraKetAM().first)
             ofb << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
 
         // pointer to result buffer
@@ -398,11 +395,11 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
         ofb << "\n";
     }
 
-    if(hrrsteps_.second.size() > 0)
+    if(hrr_algo_.DoubletStepLists().second.size() > 0)
     {
         ofk << "//////////////////////////////////////////////\n";
         ofk << "// KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        ofk << "// Steps: " << hrrsteps_.second.size() << "\n";
+        ofk << "// Steps: " << hrr_algo_.DoubletStepLists().second.size() << "\n";
         ofk << "//////////////////////////////////////////////\n";
         ofk << "\n";
 
@@ -412,7 +409,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk) const
         ofk << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // pointers to buffers (top bras)
-        for(const auto & it : brakettopam_.second)
+        for(const auto & it : hrr_algo_.TopBraKetAM().second)
             ofk << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1])  << ",\n";
 
         // pointer to result buffer
@@ -438,11 +435,11 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
 {
     QAM finalam = WriterInfo::FinalAM();
 
-    if(hrrsteps_.first.size() > 0)
+    if(hrr_algo_.DoubletStepLists().first.size() > 0)
     {
         os << indent1 << "//////////////////////////////////////////////\n";
         os << indent1 << "// BRA: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        os << indent1 << "// Steps: " << hrrsteps_.first.size() << "\n";
+        os << indent1 << "// Steps: " << hrr_algo_.DoubletStepLists().first.size() << "\n";
         os << indent1 << "//////////////////////////////////////////////\n";
 
         // it.first is the AM for the ket part
@@ -453,7 +450,7 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << amchar[finalam[0]] << "_" << amchar[finalam[1]] << "(\n";
 
         // pointers to buffers (top bras)
-        for(const auto & it : brakettopam_.first)
+        for(const auto & it : hrr_algo_.TopBraKetAM().first)
             os << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
 
         // pointer to result buffer
@@ -463,11 +460,11 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
 
     }
 
-    if(hrrsteps_.second.size() > 0)
+    if(hrr_algo_.DoubletStepLists().second.size() > 0)
     {
         os << indent1 << "//////////////////////////////////////////////\n";
         os << indent1 << "// KET: ( " << amchar[finalam[0]] << " " << amchar[finalam[1]] << " |\n";
-        os << indent1 << "// Steps: " << hrrsteps_.second.size() << "\n";
+        os << indent1 << "// Steps: " << hrr_algo_.DoubletStepLists().second.size() << "\n";
         os << indent1 << "//////////////////////////////////////////////\n";
 
         if(!WriterInfo::Scalar())
@@ -477,7 +474,7 @@ void HRR_Writer::WriteHRRHeaderFile(std::ostream & os) const
         os << amchar[finalam[2]] << "_" << amchar[finalam[3]] << "(\n";
 
         // pointers to buffers (top bras)
-        for(const auto & it : brakettopam_.second)
+        for(const auto & it : hrr_algo_.TopBraKetAM().second)
             os << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1])  << ",\n";
 
         // pointer to result buffer
