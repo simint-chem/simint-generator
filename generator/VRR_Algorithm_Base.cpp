@@ -15,12 +15,12 @@ QAMSet VRR_Algorithm_Base::GetAllAM(void) const
     return allam_; 
 }
 
-int VRR_Algorithm_Base::GetVRR_MReq(QAM am) const
+int VRR_Algorithm_Base::GetMReq(QAM am) const
 {
     return vrrmreq_.at(am);
 }
 
-VRR_StepList VRR_Algorithm_Base::GetVRR_Steps(QAM am) const
+VRR_StepList VRR_Algorithm_Base::GetSteps(QAM am) const
 {
     return vrrmap_.at(am);
 }

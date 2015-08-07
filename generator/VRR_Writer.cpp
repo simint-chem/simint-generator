@@ -33,7 +33,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
         os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(qam)
-           << "[" << (vrr_algo_.GetVRR_MReq(qam)+1) << " * " 
+           << "[" << (vrr_algo_.GetMReq(qam)+1) << " * " 
            << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
 
@@ -179,8 +179,8 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
         {
             // Write out the steps
             if(qam != QAM{0,0,0,0})
-                WriteVRRSteps_(os, qam, vrr_algo_.GetVRR_Steps(qam), 
-                               std::to_string(vrr_algo_.GetVRR_MReq(qam)+1));
+                WriteVRRSteps_(os, qam, vrr_algo_.GetSteps(qam), 
+                               std::to_string(vrr_algo_.GetMReq(qam)+1));
 
             os << "\n\n";
         }
@@ -229,7 +229,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os) const
         os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
 
     // Write out the steps
-    WriteVRRSteps_(os, am, vrr_algo_.GetVRR_Steps(am), "num_n");
+    WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n");
 
     os << "\n";
     os << "}\n";
@@ -291,7 +291,7 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
                 for(const auto & it : vrr_algo_.GetVarReq(am))
                     os << indent7 << it << ",\n";
 
-                os << indent7 << (vrr_algo_.GetVRR_MReq(am)+1) << ");\n";
+                os << indent7 << (vrr_algo_.GetMReq(am)+1) << ");\n";
                 os << "\n";
             }
         }

@@ -31,8 +31,8 @@ class VRR_Algorithm_Base
 
         int GetMaxFm(void) const;
 
-        VRR_StepList GetVRR_Steps(QAM am) const;
-        int GetVRR_MReq(QAM am) const;
+        VRR_StepList GetSteps(QAM am) const;
+        int GetMReq(QAM am) const;
         QAMSet Get_AMReq(QAM am) const;
         IntSet GetIntReq_2p(QAM am) const; 
         IntSet GetIntReq_2q(QAM am) const; 
