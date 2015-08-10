@@ -22,7 +22,7 @@ void ET_Writer::AddConstants(void) const
 
 void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 {
-    QAMList allam = et_algo_.GetAMOrder();
+    QAMSet allam = et_algo_.GetAllAM();
  
     if(allam.size())
     {
@@ -39,7 +39,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 
 void ET_Writer::DeclarePrimPointers(std::ostream & os) const
 {
-    QAMList allam = et_algo_.GetAMOrder();
+    QAMSet allam = et_algo_.GetAllAM();
  
     if(allam.size())
     {

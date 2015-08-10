@@ -22,6 +22,7 @@ class ET_Algorithm_Base
         ETStepList GetSteps(QAM am) const;
 
         QAMList GetAMOrder(void) const;
+        QAMSet GetAllAM(void) const;
         QAMSet GetAMReq(QAM am) const;
         QuartetSet TopQuartets(void) const;
         QAMSet TopAM(void) const;
@@ -36,7 +37,7 @@ class ET_Algorithm_Base
         ET_AMReqMap etreq_;
         QAMList amorder_;
 
-        QAMSet allqam_;
+        QAMSet allam_;
 
         ET_IntReqMap intreq_;
         IntSet allintreq_;
@@ -52,7 +53,7 @@ class ET_Algorithm_Base
 
         static void PruneQuartets_(QuartetSet & qs, QuartetSet & pruned);
 
-        void AMOrder_AddWithDependencies_(std::vector<QAM> & amorder, QAM am);
+        void AMOrder_AddWithDependencies_(std::vector<QAM> & amorder, QAM am) const;
 
 };
 

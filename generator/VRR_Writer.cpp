@@ -26,9 +26,8 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
     os << indent5 << "// with m as the slowest index\n";
 
-    QAMSet allam = vrr_algo_.GetAllAM();
 
-    for(const auto & qam : allam)
+    for(const auto & qam : vrr_algo_.GetAllAM()) 
     {
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
@@ -43,9 +42,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 
 void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
-    QAMSet allam = vrr_algo_.GetAllAM();
-
-    for(const auto & qam : allam)
+    for(const auto & qam : vrr_algo_.GetAllAM()) 
     {
         if(WriterInfo::IsContArray(qam))
             os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
@@ -175,7 +172,7 @@ void VRR_Writer::WriteVRRInline_(std::ostream & os) const
 
 
         // iterate over increasing am
-        for(const auto & qam : vrr_algo_.GetAllAM())
+        for(const auto & qam : vrr_algo_.GetAMOrder())
         {
             // Write out the steps
             if(qam != QAM{0,0,0,0})
@@ -207,7 +204,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
     // final target
     os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
-    for(const auto & it : vrr_algo_.Get_AMReq(am))
+    for(const auto & it : vrr_algo_.GetAMReq(am))
         os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
@@ -245,7 +242,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
     // final target
     osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
-    for(const auto & it : vrr_algo_.Get_AMReq(am))
+    for(const auto & it : vrr_algo_.GetAMReq(am))
         osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
@@ -266,14 +263,14 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
         os << "\n";
 
         // iterate over increasing am
-        for(const auto & am : vrr_algo_.GetAllAM())
+        for(const auto & am : vrr_algo_.GetAMOrder())
         {
             if(am != QAM{0,0,0,0})
             {
                 os << indent5 << "VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
                 os << indent7 << WriterInfo::PrimVarName(am) << ",\n";
 
-                for(const auto & it : vrr_algo_.Get_AMReq(am))
+                for(const auto & it : vrr_algo_.GetAMReq(am))
                     os << indent7 << WriterInfo::PrimVarName(it) << ",\n";
                 
                 for(const auto & it : vrr_algo_.GetVarReq(am))

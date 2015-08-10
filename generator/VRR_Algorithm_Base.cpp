@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "generator/Helpers.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
@@ -10,9 +11,14 @@ QAM VRR_Algorithm_Base::TargetAM(void) const
     return targetam_;
 }
 
+QAMList VRR_Algorithm_Base::GetAMOrder(void) const
+{
+    return amorder_; 
+}
+
 QAMSet VRR_Algorithm_Base::GetAllAM(void) const
 {
-    return allam_; 
+    return allam_;
 }
 
 int VRR_Algorithm_Base::GetMReq(QAM am) const
@@ -26,7 +32,7 @@ VRR_StepList VRR_Algorithm_Base::GetSteps(QAM am) const
 }
 
 
-QAMSet VRR_Algorithm_Base::Get_AMReq(QAM am) const
+QAMSet VRR_Algorithm_Base::GetAMReq(QAM am) const
 {
     return qamreq_.at(am);
 }
@@ -119,10 +125,33 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
+
+void VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
+{
+    // skip if it was already done somewhere
+    if(std::find(order.begin(), order.end(), am) != order.end())
+        return;
+
+    // skip if it's not done by ET
+    if(allam_.count(am) == 0 || am == QAM{0,0,0,0})
+        return;
+
+    // get requirements
+    QAMSet req = GetAMReq(am);
+
+    for(const auto & it : req)
+        AMOrder_AddWithDependencies_(order, it);
+
+    order.push_back(am);
+}
+
+
 void VRR_Algorithm_Base::Create(QAM q)
 {
     Create(GenerateInitialQuartetTargets(q));
 }
+
+
 
 void VRR_Algorithm_Base::Create(const QuartetSet & q)
 {
@@ -336,6 +365,9 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
     }
 
 
+    // order the AM
+    for(const auto & it : q) 
+        AMOrder_AddWithDependencies_(amorder_, it.amlist());
 
 }
 

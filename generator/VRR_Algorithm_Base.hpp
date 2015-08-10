@@ -27,13 +27,14 @@ class VRR_Algorithm_Base
         void Create(QAM q);
 
         QAM TargetAM(void) const;
+        QAMList GetAMOrder(void) const;
         QAMSet GetAllAM(void) const;
 
         int GetMaxFm(void) const;
 
         VRR_StepList GetSteps(QAM am) const;
         int GetMReq(QAM am) const;
-        QAMSet Get_AMReq(QAM am) const;
+        QAMSet GetAMReq(QAM am) const;
         IntSet GetIntReq_2p(QAM am) const; 
         IntSet GetIntReq_2q(QAM am) const; 
         IntSet GetIntReq_2pq(QAM am) const; 
@@ -59,6 +60,8 @@ class VRR_Algorithm_Base
         // QAM required for a given QAM
         VRR_AMReqMap qamreq_;
 
+        QAMList amorder_;
+
         // Factors, etc, required for a given QAM
         //  qamint_2p_ = constants multiplied by 1/2p
         //  qamint_2q_ = constants multiplied by 1/2q
@@ -73,6 +76,8 @@ class VRR_Algorithm_Base
         QAM targetam_;
 
         void PruneQuartets_(QuartetSet & q) const;
+        void AMOrder_AddWithDependencies_(QAMList & order, QAM am) const;
+
         virtual VRRStep VRRStep_(const Quartet & q) = 0;
 };
 

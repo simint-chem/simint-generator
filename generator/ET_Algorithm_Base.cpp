@@ -24,14 +24,14 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
 }
 
 
-void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am)
+void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
 {
     // skip if it was already done somewhere
     if(std::find(order.begin(), order.end(), am) != order.end()) 
         return;
 
     // skip if it's not done by ET
-    if(allqam_.count(am) == 0)
+    if(allam_.count(am) == 0)
         return;
 
     // get requirements
@@ -160,7 +160,7 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
 
     // store all solved qam
     for(const auto & it : solvedquartets)
-        allqam_.insert(it.amlist());
+        allam_.insert(it.amlist());
 
 
     // determine the proper order to do these in
@@ -179,6 +179,11 @@ ETStepList ET_Algorithm_Base::GetSteps(QAM am) const
 QAMList ET_Algorithm_Base::GetAMOrder(void) const
 {
     return amorder_;
+}
+
+QAMSet ET_Algorithm_Base::GetAllAM(void) const
+{
+    return allam_;
 }
 
 QAMSet ET_Algorithm_Base::GetAMReq(QAM am) const

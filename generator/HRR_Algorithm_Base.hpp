@@ -57,7 +57,7 @@ class HRR_Algorithm_Base
 
         static void PruneDoublets_(DoubletSet & d, DoubletSet & pruned);
 
-        void AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type);
+        void AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type) const;
  
 };
 
