@@ -151,13 +151,7 @@ int main(int argc, char ** argv)
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    QuartetSet etinit;
-    for(const auto & it : hrralgo->TopAM())
-    {
-        QuartetSet tmp = GenerateInitialQuartetTargets(it);
-        etinit.insert(tmp.begin(), tmp.end());
-    }
-    etalgo->Create_ETStepList(etinit);
+    etalgo->Create(hrralgo->TopAM());
     ET_Writer et_writer(*etalgo);
 
     // 3.) VRR Steps

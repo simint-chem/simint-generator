@@ -3,19 +3,43 @@
 
 #include "generator/Classes.hpp"
 
+typedef std::vector<ETStep> ETStepList;
+
+typedef std::map<QAM, ETStepList> ET_StepMap;
+
+// Which AM are required for a given target AM
+typedef std::map<QAM, QAMSet> ET_AMReqMap;
+
+// Maps integer constant requirements for a target AM
+typedef std::map<QAM, IntSet> ET_IntReqMap;
+
 class ET_Algorithm_Base
 {
     public:
-        virtual void Create_ETStepList(const QuartetSet & inittargets);
+        void Create(const QAMSet & inittargets);
 
-        ETStepList ETSteps(void) const;
-        QAMSet TopQAM(void) const;
+        ETStepList GetSteps(QAM am) const;
+
+        QAMList GetAMOrder(void) const;
+        QAMSet GetAMReq(QAM am) const;
         QuartetSet TopQuartets(void) const;
+        QAMSet TopAM(void) const;
+
+        IntSet GetIntReq(QAM am) const;
+        IntSet GetAllInt(void) const;
 
         virtual ~ET_Algorithm_Base() = default;
 
     private:
-        ETStepList etsteps_;
+        ET_StepMap etsteps_;
+        ET_AMReqMap etreq_;
+        QAMList amorder_;
+
+        QAMSet allqam_;
+
+        ET_IntReqMap intreq_;
+        IntSet allintreq_;
+
         QuartetSet ettop_;
         QAMSet ettopam_;
 
@@ -25,8 +49,9 @@ class ET_Algorithm_Base
                                 const QuartetSet & inittargets,
                                 QuartetSet & solvedquartets, QuartetSet & pruned);
 
-        void ETAddWithDependencies_(std::vector<QAM> & amorder, QAM am);
         static void PruneQuartets_(QuartetSet & qs, QuartetSet & pruned);
+
+        void AMOrder_AddWithDependencies_(std::vector<QAM> & amorder, QAM am);
 
 };
 

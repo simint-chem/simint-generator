@@ -24,6 +24,11 @@ void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned)
 
 void HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type)
 {
+    // skip if already done
+    if(std::find(order.begin(), order.end(), am) != order.end())
+        return;
+
+    // skip if it's not done by HRR
     if(type == DoubletType::BRA)
     {
         if(allbraam_.count(am) == 0)

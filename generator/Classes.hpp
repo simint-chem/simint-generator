@@ -401,7 +401,6 @@ typedef std::set<Doublet> DoubletSet;
 
 typedef std::set<Gaussian> GaussianSet;
 
-typedef std::vector<ETStep> ETStepList;
 
 
 

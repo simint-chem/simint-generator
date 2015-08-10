@@ -22,10 +22,7 @@ class ET_Writer
         void WriteETFile(std::ostream & os, std::ostream & osh) const;
 
     private:
-        ETStepList etsl_;
-        QAMSet etint_;
-
-        std::set<int> et_i_; // gets multiplied by one_over_2q
+        const ET_Algorithm_Base & et_algo_;
 
         static std::string ETStepString_(const ETStep & et);
         static std::string ETStepVar_(const Quartet & q);
