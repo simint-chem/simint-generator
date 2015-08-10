@@ -16,7 +16,8 @@ typedef std::map<QAM, IntSet> ET_IntReqMap;
 class ET_Algorithm_Base
 {
     public:
-        void Create(const QAMSet & inittargets);
+        void Create(const QuartetSet & inittargets);
+        void Create(QAM am);
 
         ETStepList GetSteps(QAM am) const;
 

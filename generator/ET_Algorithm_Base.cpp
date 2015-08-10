@@ -93,19 +93,19 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
 }
 
 
+void ET_Algorithm_Base::Create(QAM am)
+{
+    Create(GenerateInitialQuartetTargets(am));
+}
 
-void ET_Algorithm_Base::Create(const QAMSet & inittargets)
+
+void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
 {
     // holds all the 'solved' quartets
     QuartetSet solvedquartets;
 
     // generate initial targets
-    QuartetSet targets;
-    for(const auto & it : inittargets)
-    {
-        QuartetSet tmp = GenerateInitialQuartetTargets(it);
-        targets.insert(tmp.begin(), tmp.end());
-    }
+    QuartetSet targets = inittargets;
 
     PruneQuartets_(targets, ettop_);
     PrintQuartetSet(targets, "Initial ET Targets");
@@ -164,8 +164,8 @@ void ET_Algorithm_Base::Create(const QAMSet & inittargets)
 
 
     // determine the proper order to do these in
-    for(const auto & qam : inittargets)
-        AMOrder_AddWithDependencies_(amorder_, qam); 
+    for(const auto & q : inittargets)
+        AMOrder_AddWithDependencies_(amorder_, q.amlist()); 
 
     PrintQuartetSet(ettop_, "Top level ET");
 }

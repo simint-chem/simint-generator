@@ -16,6 +16,7 @@ class HRR_Algorithm_Base
         DAMSet TopBraAM(void) const;
         DAMSet TopKetAM(void) const;
         QAMSet TopAM(void) const;
+        QuartetSet TopQuartets(void) const;
 
         DAMList GetBraAMOrder(void) const;
         DAMList GetKetAMOrder(void) const;

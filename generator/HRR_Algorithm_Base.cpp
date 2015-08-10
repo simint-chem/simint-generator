@@ -239,6 +239,11 @@ QAMSet HRR_Algorithm_Base::TopAM(void) const
     return qs;
 }
 
+QuartetSet HRR_Algorithm_Base::TopQuartets(void) const
+{
+    return topquartets_;
+}
+
 DAMSet HRR_Algorithm_Base::GetBraAMReq(DAM am) const
 {
     return brareq_.at(am);

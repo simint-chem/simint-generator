@@ -151,7 +151,7 @@ int main(int argc, char ** argv)
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    etalgo->Create(hrralgo->TopAM());
+    etalgo->Create(hrralgo->TopQuartets());
     ET_Writer et_writer(*etalgo);
 
     // 3.) VRR Steps
