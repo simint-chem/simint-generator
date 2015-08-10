@@ -213,15 +213,14 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             else
             {
                 if(vs.src[2] || vs.src[3])
-                    vs.ijkl[0] = it.bra.left.ijk[istep];
-                if(vs.src[4] || vs.src[5])
-                    vs.ijkl[1] = it.bra.right.ijk[istep];
-                if(vs.src[6])
                     vs.ijkl[2] = it.ket.left.ijk[istep]-1;
-                if(vs.src[7])
+                if(vs.src[4] || vs.src[5])
                     vs.ijkl[3] = it.ket.right.ijk[istep];
+                if(vs.src[6])
+                    vs.ijkl[0] = it.bra.left.ijk[istep];
+                if(vs.src[7])
+                    vs.ijkl[1] = it.bra.right.ijk[istep];
             }
-             
             
             // add new targets and m values 
             for(const auto & it2 : vs.src)

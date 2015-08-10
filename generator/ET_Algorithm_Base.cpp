@@ -10,11 +10,10 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
 {
     QuartetSet qsnew;
 
-    // by this point, only kets of the form | X 0 ) should be here
-    // so prune | s s )
+    // Prune anything from VRR
     for(auto & it : qs)
     {
-        if(it && it.ket.left.am() != 0)
+        if(it && it.ket.left.am() != 0 && it.bra.left.am() != 0)
             qsnew.insert(it);
         else if(it)
             pruned.insert(it);
@@ -30,12 +29,19 @@ void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) co
     if(std::find(order.begin(), order.end(), am) != order.end()) 
         return;
 
+    std::cout << "Adding " << am[0] << am[1] << am[2] << am[3] << "\n";
+
     // skip if it's not done by ET
     if(allam_.count(am) == 0)
         return;
 
+    std::cout << "here\n";
+
     // get requirements
     QAMSet req = GetAMReq(am);
+
+    for(const auto & it : req)
+        std::cout << "DepAdding " << it[0] << it[1] << it[2] << it[3] << "\n";
 
     for(const auto & it : req)
         AMOrder_AddWithDependencies_(order, it);
@@ -81,6 +87,9 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
         }
 
         cout << "Generated " << newtargets.size() << " new targets\n";
+        //cout << "Before pruning: " << newtargets.size() << " new targets\n";
+        //for(const auto & it : newtargets)
+        //    cout << "    " << it << "\n";
 
         PruneQuartets_(newtargets, pruned);
 
@@ -144,14 +153,40 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
         }
 
         int stepidx = XYZStepToIdx(it.xyz);
-        int ival = it.target.bra.left.ijk[stepidx];
-        int kval = (it.target.ket.left.ijk[stepidx]-1);
+        int ival, kval;
 
-        // ok to add duplicates. They are stored as a map
-        if(ival > 0)
-            intreq_[qam].insert(ival);
-        if(kval > 0)
-            intreq_[qam].insert(kval);
+        if(it.direction == DoubletType::KET)
+        {
+            ival = it.target.bra.left.ijk[stepidx];
+            kval = (it.target.ket.left.ijk[stepidx]-1);
+
+            if(ival > 0)
+            {
+                intreq_[qam].insert(ival);
+                allintreq_q_.insert(ival);
+            }
+            if(kval > 0)
+            {
+                intreq_[qam].insert(kval);
+                allintreq_q_.insert(kval);
+            }
+        }
+        else
+        {
+            ival = it.target.ket.left.ijk[stepidx];
+            kval = (it.target.bra.left.ijk[stepidx]-1);
+
+            if(ival > 0)
+            {
+                intreq_[qam].insert(ival);
+                allintreq_p_.insert(ival);
+            }
+            if(kval > 0)
+            {
+                intreq_[qam].insert(kval);
+                allintreq_p_.insert(kval);
+            }
+        }
     }
 
     // store all intreq
@@ -214,4 +249,12 @@ IntSet ET_Algorithm_Base::GetAllInt(void) const
     return allintreq_;
 }
 
+IntSet ET_Algorithm_Base::GetAllInt_p(void) const
+{
+    return allintreq_p_;
+}
 
+IntSet ET_Algorithm_Base::GetAllInt_q(void) const
+{
+    return allintreq_q_;
+}

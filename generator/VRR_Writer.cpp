@@ -220,7 +220,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
         os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
 
     for(const auto & it : vrr_algo_.GetIntReq_2q(am))
-        os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+        os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
 
     for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
         os << indent1 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 

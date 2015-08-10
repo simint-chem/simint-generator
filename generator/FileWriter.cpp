@@ -309,13 +309,20 @@ static void WriteFile_NotFlat(std::ostream & os,
     {
         os << indent5 << "// for electron transfer\n";
         os << indent5 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
+        os << indent5 << cdbltype << " q_over_p = Q_alpha * one_over_p;\n";
         os << "\n";
 
-        os << indent5 << cdbltype << " etfac[3] = {\n";
+        os << indent5 << cdbltype << " etfac_k[3] = {\n";
         os << indent6 << "-(P_bAB_x + " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ") * one_over_q,\n";
         os << indent6 << "-(P_bAB_y + " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ") * one_over_q,\n";
         os << indent6 << "-(P_bAB_z + " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ") * one_over_q,\n";
         os << indent6 << "};\n";
+        os << indent5 << cdbltype << " etfac_b[3] = {\n";
+        os << indent6 << "-(P_bAB_x + " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ") * one_over_p,\n";
+        os << indent6 << "-(P_bAB_y + " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ") * one_over_p,\n";
+        os << indent6 << "-(P_bAB_z + " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ") * one_over_p,\n";
+        os << indent6 << "};\n";
+
     }
 
     os << "\n";

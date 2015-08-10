@@ -109,10 +109,10 @@ int main(int argc, char ** argv)
     of << "#include \"eri/eri.h\"\n";
 
     // we want all gaussians up to the maximum L value
-    for(i = 0; i <= maxL; i++)
+    for(i = 1; i <= maxL; i++)
     for(int j = 1; j <= maxL; j++)
     {
-        if(i == 0 && j == 0)
+        if(i == 0 || j == 0)
             continue;
 
         // The algorithm to use 

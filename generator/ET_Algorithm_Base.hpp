@@ -29,6 +29,8 @@ class ET_Algorithm_Base
 
         IntSet GetIntReq(QAM am) const;
         IntSet GetAllInt(void) const;
+        IntSet GetAllInt_p(void) const;
+        IntSet GetAllInt_q(void) const;
 
         virtual ~ET_Algorithm_Base() = default;
 
@@ -40,7 +42,7 @@ class ET_Algorithm_Base
         QAMSet allam_;
 
         ET_IntReqMap intreq_;
-        IntSet allintreq_;
+        IntSet allintreq_, allintreq_p_, allintreq_q_;
 
         QuartetSet ettop_;
         QAMSet ettopam_;

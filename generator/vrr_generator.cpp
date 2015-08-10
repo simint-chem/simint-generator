@@ -127,6 +127,24 @@ int main(int argc, char ** argv)
         cout << "Done!\n";
 
     }
+    for(i = 1; i <= maxL; i++)
+    {
+        // The algorithm to use 
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
+
+        QAM am{0, 0, i, 0};
+        WriterInfo::Init(options, am, cpuinfofile);
+
+        // Create the mapping
+        vrralgo->Create(am);
+
+        VRR_Writer vrr_writer(*vrralgo);
+
+        // write to the output file
+        vrr_writer.WriteVRRFile(of, ofh);
+        cout << "Done!\n";
+
+    }
 
     ofh << "\n";
     ofh << "#endif\n\n";
