@@ -49,6 +49,7 @@ parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags file")
 
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
+parser.add_argument("-ee", required=False, type=int, default=1000, help="External ET for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
@@ -75,6 +76,7 @@ skeldir = os.path.join(topdir, "skel")
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
 hrr_gen = os.path.join(args.g, "hrr_generator")
+et_gen = os.path.join(args.g, "et_generator")
 vrr_gen = os.path.join(args.g, "vrr_generator")
 
 if not os.path.isdir(args.d):
@@ -89,8 +91,12 @@ if not os.path.isfile(hrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
   quit(1)
 
+if not os.path.isfile(et_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(et_gen))
+  quit(1)
+
 if not os.path.isfile(vrr_gen):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
+  print("The file \"{}\" does not exist or is not a (binary) file".format(vrr_gen))
   quit(1)
 
 if not os.path.isfile(args.c):
@@ -165,6 +171,40 @@ if ret != 0:
   print("\n")
   print("*********************************")
   print("When generating hrr sources")
+  print("Subprocess returned {} - aborting".format(ret))
+  print("*********************************")
+  print("\n")
+
+
+
+####################################################
+# Generate the external ET source
+####################################################
+logfile = os.path.join(outdir_erigen, "et.log")
+
+cmdline = [et_gen]
+cmdline.extend(["-c", str(args.c)])
+cmdline.extend(["-o", outdir_erigen])
+cmdline.extend(["-L", str(args.l*4)])
+if args.i:
+    cmdline.append("-i")
+if args.S:
+    cmdline.append("-S")
+
+print("Creating ET sources in {}".format(outdir_erigen))
+print("     Logfile: {}".format(logfile))
+print()
+print("Command line:")
+print(' '.join(cmdline))
+print()
+
+with open(logfile, 'w') as lf:
+  ret = subprocess.call(cmdline, stdout=lf)
+
+if ret != 0:
+  print("\n")
+  print("*********************************")
+  print("When generating et sources")
   print("Subprocess returned {} - aborting".format(ret))
   print("*********************************")
   print("\n")
@@ -268,11 +308,20 @@ for q in valid:
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
 
+
   if sum(q) >= args.ve:
     vrrtype = "External"
   else:
     vrrtype = "Inline";
   print("         VRR: {}".format(vrrtype))
+
+
+  if sum(q) >= args.ee:
+    ettype = "External"
+  else:
+    ettype = "Inline";
+  print("          ET: {}".format(ettype))
+
 
   if sum(q) >= args.he:
     hrrtype = "External"
@@ -292,6 +341,8 @@ for q in valid:
 
     if vrrtype == "External":
         cmdline.append("-ve")
+    if ettype == "External":
+        cmdline.append("-ee")
     if hrrtype == "External":
         cmdline.append("-he")
 

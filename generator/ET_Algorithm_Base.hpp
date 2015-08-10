@@ -48,8 +48,8 @@ class ET_Algorithm_Base
         virtual ETStep ETStep_(const Quartet & target) = 0;
 
         virtual void ETStepLoop_(ETStepList & etsl,
-                                const QuartetSet & inittargets,
-                                QuartetSet & solvedquartets, QuartetSet & pruned);
+                                 const QuartetSet & inittargets,
+                                 QuartetSet & solvedquartets, QuartetSet & pruned);
 
         static void PruneQuartets_(QuartetSet & qs, QuartetSet & pruned);
 

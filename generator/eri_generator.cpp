@@ -37,6 +37,8 @@ int main(int argc, char ** argv)
         std::string argstr(GetNextArg(i, argc, argv));
         if(argstr == "-ve")
             options[OPTION_INLINEVRR] = 0;
+        else if(argstr == "-ee")
+            options[OPTION_INLINEET] = 0;
         else if(argstr == "-he")
             options[OPTION_INLINEHRR] = 0;
         else if(argstr == "-s")

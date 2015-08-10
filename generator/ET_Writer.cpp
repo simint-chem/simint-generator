@@ -14,8 +14,11 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 
 void ET_Writer::AddConstants(void) const
 {
-    for(const auto & it : et_algo_.GetAllInt())
-        WriterInfo::AddIntConstant(it);
+    if(WriterInfo::GetOption(OPTION_INLINEET) > 0)
+    {
+        for(const auto & it : et_algo_.GetAllInt())
+            WriterInfo::AddIntConstant(it);
+    }
 }
 
 
@@ -84,6 +87,7 @@ void ET_Writer::WriteETInline_(std::ostream & os) const
             else
                 os << indent5 << WriterInfo::ConstDoubleType() << " et_const_1 = one_over_2q;\n";
         }
+
         os << "\n\n";
 
         // loop over the stpes in order
@@ -104,11 +108,86 @@ void ET_Writer::WriteETInline_(std::ostream & os) const
 
 void ET_Writer::WriteETExternal_(std::ostream & os) const
 {
+    if(WriterInfo::HasET())
+    {
+        os << "\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << indent5 << "// Primitive integrals: Electron transfer\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << "\n";
+
+        // loop over the stpes in order
+        for(const auto & am : et_algo_.GetAMOrder())
+        {
+            os << indent5 << "ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n"; 
+            os << indent6 << WriterInfo::PrimVarName(am) << ",\n";
+
+            for(const auto & it : et_algo_.GetAMReq(am))
+                os << indent6 << WriterInfo::PrimVarName(it) << ",\n";
+            os << indent5 << "etfac, one_over_2q, p_over_q);\n\n";
+        }
+    }
 }
 
 
 void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 {
+    QAM am = WriterInfo::FinalAM();
+
+    os << "//////////////////////////////////////////////\n";
+    os << "// ET: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
+    os << "//////////////////////////////////////////////\n";
+
+
+    os << "void ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+
+    for(const auto & it : et_algo_.GetAMReq(am))
+        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+
+    os << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac, "
+        << WriterInfo::ConstDoubleType() << " one_over_2q, "
+        << WriterInfo::ConstDoubleType() << " p_over_q)\n";
+
+    os << "{\n";
+    os << indent2 << "// Precompute (integer) * 1/2q\n";
+
+    for(const auto & it : et_algo_.GetIntReq(am))
+    {
+        if(it != 1)
+            os << indent2 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2q;\n";
+        else
+            os << indent2 << WriterInfo::ConstDoubleType() << " et_const_1 = one_over_2q;\n";
+    }
+
+    os << "\n\n";
+
+    ETStepList etsl = et_algo_.GetSteps(am);
+
+    for(const auto & it : etsl)
+    {
+        os << indent2 << "// " << it << "\n";
+        os << ETStepString_(it);
+        os << "\n";
+    }
+
+    os << "}\n\n\n";
+
+
+    // add to header
+    osh << "void ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+
+    for(const auto & it : et_algo_.GetAMReq(am))
+        osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+
+    osh << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac, "
+        << WriterInfo::ConstDoubleType() << " one_over_2q, "
+        << WriterInfo::ConstDoubleType() << " p_over_q);\n";
+
+    osh << "\n";
 }
 
 

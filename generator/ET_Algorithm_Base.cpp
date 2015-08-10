@@ -203,7 +203,10 @@ QAMSet ET_Algorithm_Base::TopAM(void) const
 
 IntSet ET_Algorithm_Base::GetIntReq(QAM am) const
 {
-    return intreq_.at(am);
+    if(intreq_.count(am))
+        return intreq_.at(am);
+    else
+        return IntSet();
 }
 
 IntSet ET_Algorithm_Base::GetAllInt(void) const
