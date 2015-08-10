@@ -86,7 +86,17 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
 }
 
 
-void ET_Writer::WriteETInline(std::ostream & os) const
+void ET_Writer::WriteET(std::ostream & os) const
+{
+    if(WriterInfo::GetOption(OPTION_INLINEHRR) > 0)
+        WriteETInline_(os);
+    else
+        WriteETExternal_(os);
+}
+
+
+
+void ET_Writer::WriteETInline_(std::ostream & os) const
 {
     if(et_i_.size())
     {
@@ -108,14 +118,48 @@ void ET_Writer::WriteETInline(std::ostream & os) const
         for(const auto & it : etsl_)
         {
             os << indent5 << "// " << it << "\n";
-            os << ETStepString(it);
+            os << ETStepString_(it);
             os << "\n";
         }
     }
 }
 
 
-std::string ET_Writer::ETStepVar(const Quartet & q)
+void ET_Writer::WriteETExternal_(std::ostream & os) const
+{
+    if(et_i_.size())
+    {
+        os << "\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << indent5 << "// Primitive integrals: Electron transfer\n";
+        os << indent5 << "//////////////////////////////////////////////\n";
+        os << "\n";
+
+        os << indent5 << "// Precompute (integer) * 1/2q\n";
+        for(const auto & it : et_i_)
+        {
+            if(it != 1)
+                os << indent5 << WriterInfo::ConstDoubleType() << " et_const_" << it << " = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n";
+            else
+                os << indent5 << WriterInfo::ConstDoubleType() << " et_const_1 = one_over_2q;\n";
+        }
+
+        for(const auto & it : etsl_)
+        {
+            os << indent5 << "// " << it << "\n";
+            os << ETStepString_(it);
+            os << "\n";
+        }
+    }
+}
+
+
+void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
+{
+}
+
+
+std::string ET_Writer::ETStepVar_(const Quartet & q)
 {
     std::stringstream ss; 
     ss << WriterInfo::PrimVarName(q.amlist()) << "[" << q.idx() << "]";
@@ -124,7 +168,7 @@ std::string ET_Writer::ETStepVar(const Quartet & q)
 
 
 
-std::string ET_Writer::ETStepString(const ETStep & et)
+std::string ET_Writer::ETStepString_(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
     int ival = et.target.bra.left.ijk[stepidx];
@@ -143,30 +187,30 @@ std::string ET_Writer::ETStepString(const ETStep & et)
 
     if(WriterInfo::HasFMA())
     {
-        ss << indent5 << ETStepVar(et.target) << " = " << etfac.str() << " * " << ETStepVar(et.src[0]) << ";\n";
+        ss << indent5 << ETStepVar_(et.target) << " = " << etfac.str() << " * " << ETStepVar_(et.src[0]) << ";\n";
         if(et.src[1].bra.left && et.src[1].ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar(et.src[1]), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar_(et.src[1]), ETStepVar_(et.target)) << ";\n";
         if(et.src[2].bra.left && et.src[2].ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar(et.src[2]), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar_(et.src[2]), ETStepVar_(et.target)) << ";\n";
         if(et.src[3].bra.left && et.src[3].ket.left)
-            ss << indent5 << ETStepVar(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar(et.src[3]), ETStepVar(et.target)) << ";\n";
+            ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd("-p_over_q", ETStepVar_(et.src[3]), ETStepVar_(et.target)) << ";\n";
 
     }
     else
     {
-        ss << indent5 << ETStepVar(et.target);
+        ss << indent5 << ETStepVar_(et.target);
 
 
         ss << " = ";
 
-        ss << etfac.str() << " * " << ETStepVar(et.src[0]);
+        ss << etfac.str() << " * " << ETStepVar_(et.src[0]);
 
         if(et.src[1].bra.left && et.src[1].ket.left)
-            ss << " + " << etconst_i.str() << " * " << ETStepVar(et.src[1]);
+            ss << " + " << etconst_i.str() << " * " << ETStepVar_(et.src[1]);
         if(et.src[2].bra.left && et.src[2].ket.left)
-            ss << " + " << etconst_k.str() << " * " << ETStepVar(et.src[2]);
+            ss << " + " << etconst_k.str() << " * " << ETStepVar_(et.src[2]);
         if(et.src[3].bra.left && et.src[3].ket.left)
-            ss << " - p_over_q * " << ETStepVar(et.src[3]);
+            ss << " - p_over_q * " << ETStepVar_(et.src[3]);
         ss << ";\n";
     }
 

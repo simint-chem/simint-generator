@@ -160,6 +160,7 @@ OptionsMap DefaultOptions(void)
     OptionsMap options;
     options[OPTION_STACKMEM] = 0;
     options[OPTION_INLINEVRR] = 1;
+    options[OPTION_INLINEET] = 1;
     options[OPTION_INLINEHRR] = 1;
     options[OPTION_INTRINSICS] = 0;
     options[OPTION_SCALAR] = 0;

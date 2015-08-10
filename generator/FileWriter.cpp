@@ -333,7 +333,7 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     vrr_writer.WriteVRR(os);
 
-    et_writer.WriteETInline(os);
+    et_writer.WriteET(os);
 
     WriterInfo::WriteAccumulation(os);
 
