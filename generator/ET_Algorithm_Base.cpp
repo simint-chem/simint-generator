@@ -264,12 +264,12 @@ IntSet ET_Algorithm_Base::GetAllInt_q(void) const
 
 bool ET_Algorithm_Base::HasBraET(void) const
 {
-    return (direction_ == DoubletType::BRA);
+    return (direction_ == DoubletType::BRA && allam_.size() > 0);
 }
 
 
 bool ET_Algorithm_Base::HasKetET(void) const
 {
-    return (direction_ == DoubletType::KET);
+    return (direction_ == DoubletType::KET && allam_.size() > 0);
 }
 

@@ -34,12 +34,13 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool hasbraet = et_writer.HasBraET(); 
     bool hasketet = et_writer.HasKetET(); 
 
-    bool hasoneoverp = true;
-    bool hasoneoverq = true;
-    bool hasoneover2p = true; 
-    bool hasoneover2q = true;
+    bool hasoneoverp = (hasbravrr || hasbraet);
+    bool hasoneoverq = (hasketvrr || hasketet);
+    bool hasoneover2p = (hasbraet || (hasbravrr && WriterInfo::L() > 1)); 
+    bool hasoneover2q = (hasketet || (hasketvrr && WriterInfo::L() > 1)); 
     bool hasoneover2pq = false;
 
+    std::cout << "has: " << hasbravrr << " " << hasketvrr << " " << hasbraet << " " << hasketet << "\n";
 
     // load this once here
     std::string dbltype = WriterInfo::DoubleType();

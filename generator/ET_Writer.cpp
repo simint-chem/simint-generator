@@ -147,9 +147,19 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
                 os << indent6 << WriterInfo::PrimVarName(it) << ",\n";
 
             if(et_algo_.GetDirection() == DoubletType::KET)
-               os << indent5 << "etfac_k, one_over_2q, p_over_q);\n\n";
+            {
+                os << indent5 << "etfac_k, p_over_q";
+                if( (am[0] + am[1] + am[2] + am[3]) > 1 )
+                    os << ", one_over_2q";
+                os << ");\n\n";
+            }
             else
-               os << indent5 << "etfac_b, one_over_2p, q_over_p);\n\n";
+            {
+                os << indent5 << "etfac_b, q_over_p";
+                if( (am[0] + am[1] + am[2] + am[3]) > 1 )
+                    os << ", one_over_2p";
+                os << ");\n\n";
+            }
         }
     }
 }
@@ -164,22 +174,32 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
     os << "// ET: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
     os << "//////////////////////////////////////////////\n";
 
-
-    os << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+    std::stringstream prototype;
+    prototype << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
     for(const auto & it : et_algo_.GetAMReq(am))
-        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
 
     if(et_algo_.GetDirection() == DoubletType::KET)
-        os << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
-           << WriterInfo::ConstDoubleType() << " one_over_2q, "
-           << WriterInfo::ConstDoubleType() << " p_over_q)\n";
+    {
+        prototype << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
+           << WriterInfo::ConstDoubleType() << " p_over_q";
+        if( (am[0] + am[1] + am[2] + am[3]) > 1 )
+            prototype << ", " << WriterInfo::ConstDoubleType() << " one_over_2q";
+        prototype << ")\n";
+    }
     else
-        os << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_b, "
-           << WriterInfo::ConstDoubleType() << " one_over_2p, "
-           << WriterInfo::ConstDoubleType() << " q_over_p)\n";
+    {
+        prototype << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_b, "
+           << WriterInfo::ConstDoubleType() << " q_over_p";
+        if( (am[0] + am[1] + am[2] + am[3]) > 1 )
+            prototype << ", " << WriterInfo::ConstDoubleType() << " one_over_2p";
+        prototype << ")";
+    }
 
+
+    os << prototype.str() << "\n";
     os << "{\n";
     os << indent2 << "// Precompute (integer) * 1/2{pq}\n";
 
@@ -210,22 +230,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 
     // add to header
 
-    osh << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-    osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
-
-    for(const auto & it : et_algo_.GetAMReq(am))
-        osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
-
-    if(et_algo_.GetDirection() == DoubletType::KET)
-        osh << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
-            << WriterInfo::ConstDoubleType() << " one_over_2q, "
-            << WriterInfo::ConstDoubleType() << " p_over_q);\n";
-    else
-        osh << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_b, "
-            << WriterInfo::ConstDoubleType() << " one_over_2p, "
-            << WriterInfo::ConstDoubleType() << " q_over_p);\n";
-
-    osh << "\n";
+    osh << prototype.str() << ";\n\n";
 }
 
 
