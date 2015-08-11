@@ -6,17 +6,22 @@
 
 using namespace std;
 
-void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
+void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) const
 {
     QuartetSet qsnew;
 
     // Prune anything from VRR
     for(auto & it : qs)
     {
-        if(it && it.bra.left.am() != 0 && it.ket.left.am() != 0)
-            qsnew.insert(it);
-        else if(it)
-            pruned.insert(it);
+        if(it)
+        {
+            if(direction_ == DoubletType::KET && it.ket.left.am() != 0)
+                qsnew.insert(it);
+            else if(direction_ == DoubletType::BRA && it.bra.left.am() != 0)
+                qsnew.insert(it);
+            else
+                pruned.insert(it);
+        }
     }
 
     qs = qsnew; 
@@ -95,14 +100,16 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
 }
 
 
-void ET_Algorithm_Base::Create(QAM am)
+void ET_Algorithm_Base::Create(QAM am, DoubletType direction)
 {
-    Create(GenerateInitialQuartetTargets(am));
+    Create(GenerateInitialQuartetTargets(am), direction);
 }
 
 
-void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
+void ET_Algorithm_Base::Create(const QuartetSet & inittargets, DoubletType direction)
 {
+    direction_ = direction;
+
     // holds all the 'solved' quartets
     QuartetSet solvedquartets;
 
@@ -145,7 +152,7 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
         int stepidx = XYZStepToIdx(it.xyz);
         int ival, kval;
 
-        if(it.direction == DoubletType::KET)
+        if(direction_ == DoubletType::KET)
         {
             ival = it.target.bra.left.ijk[stepidx];
             kval = (it.target.ket.left.ijk[stepidx]-1);
@@ -234,9 +241,9 @@ IntSet ET_Algorithm_Base::GetIntReq(QAM am) const
         return IntSet();
 }
 
-DoubletType ET_Algorithm_Base::GetDirection(QAM am) const
+DoubletType ET_Algorithm_Base::GetDirection(void) const
 {
-    return etsteps_.at(am)[0].direction;
+    return direction_;
 }
 
 IntSet ET_Algorithm_Base::GetAllInt(void) const
@@ -257,28 +264,12 @@ IntSet ET_Algorithm_Base::GetAllInt_q(void) const
 
 bool ET_Algorithm_Base::HasBraET(void) const
 {
-    for(const auto & it : etsteps_)
-    {
-        for(const auto & it2 : it.second)
-        {
-            if(it2.direction == DoubletType::BRA)
-                return true;
-        }
-    } 
-    return false;
+    return (direction_ == DoubletType::BRA);
 }
 
 
 bool ET_Algorithm_Base::HasKetET(void) const
 {
-    for(const auto & it : etsteps_)
-    {
-        for(const auto & it2 : it.second)
-        {
-            if(it2.direction == DoubletType::KET)
-                return true;
-        }
-    } 
-    return false;
+    return (direction_ == DoubletType::KET);
 }
 

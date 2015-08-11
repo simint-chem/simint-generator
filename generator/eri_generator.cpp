@@ -153,7 +153,11 @@ int main(int argc, char ** argv)
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    etalgo->Create(hrralgo->TopQuartets());
+    DoubletType dir = DoubletType::KET;
+    if((amlist[2]+amlist[3]) > (amlist[0]+amlist[1]))
+        dir = DoubletType::BRA;
+
+    etalgo->Create(hrralgo->TopQuartets(), dir);
     ET_Writer et_writer(*etalgo);
 
     // 3.) VRR Steps

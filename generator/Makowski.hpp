@@ -134,7 +134,7 @@ class Makowski_ET : public ET_Algorithm_Base
             if(target.am() == 0)
                 throw std::runtime_error("Cannot ET step to an s doublet!");
 
-            if(target.bra.am() >= target.ket.am())
+            if(GetDirection() == DoubletType::KET)
             {
                 // idx is the xyz index
                 ExpList ijk = target.ket.left.ijk;
@@ -186,9 +186,8 @@ class Makowski_ET : public ET_Algorithm_Base
                             target.bra.left.ijk[idx],
                             target.ket.left.ijk[idx]-1,
                           }},
-                          xyzstep,
-                          'q',
-                          DoubletType::KET};
+                          xyzstep
+                         };
 
                 return et;
             }
@@ -244,9 +243,8 @@ class Makowski_ET : public ET_Algorithm_Base
                             target.bra.left.ijk[idx]-1,
                             target.ket.left.ijk[idx],
                           }},
-                          xyzstep,
-                          'p',
-                          DoubletType::BRA};
+                          xyzstep
+                         };
 
                 return et;
             }

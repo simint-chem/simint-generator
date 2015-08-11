@@ -74,18 +74,10 @@ int main(int argc, char ** argv)
 
 
     // different source and header files
-    std::string srcpath = fpath + "et.c";
     std::string headpath = fpath + "et.h";
     
-    cout << "Generating source file " << srcpath << "\n";
     cout << "Generating header file " << headpath << "\n";
 
-    std::ofstream of(srcpath);
-    if(!of.is_open())
-    {
-        std::cout << "Cannot open file: " << srcpath << "\n";
-        return 2; 
-    }
 
     std::ofstream ofh(headpath);
     if(!ofh.is_open())
@@ -105,14 +97,29 @@ int main(int argc, char ** argv)
     WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuinfofile);
     WriterInfo::WriteIncludes(ofh);
 
-    // output to source file
-    of << "#include \"eri/eri.h\"\n";
 
     // we want all gaussians up to the maximum L value
+    // First, bra -> ket
     for(i = 0; i <= maxL; i++)
-    for(int j = 0; j <= maxL; j++)
+    for(int j = 1; j <= maxL; j++)
     {
-        if(i == 0 || j == 0)
+        std::stringstream ss;
+        ss << fpath << "et_ket_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+
+        std::string srcpath = ss.str();
+        cout << "Generating source file " << srcpath << "\n";
+        std::ofstream of(srcpath);
+
+        if(!of.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath << "\n";
+            return 2; 
+        }
+
+        // output to source file
+        of << "#include \"eri/eri.h\"\n";
+
+        if(j == 0)
             continue;
 
         // The algorithm to use 
@@ -121,16 +128,51 @@ int main(int argc, char ** argv)
         QAM am{i, 0, j, 0};
         WriterInfo::Init(options, am, cpuinfofile);
 
-        // Create the mapping
-        etalgo->Create(am);
+        etalgo->Create(am, DoubletType::KET);
+        ET_Writer et_writer(*etalgo);
+        et_writer.WriteETFile(of, ofh);
+        cout << "Done!\n";
 
+    }
+
+
+    // Now, ket->bra
+    for(i = 1; i <= maxL; i++)
+    for(int j = 0; j <= maxL; j++)
+    {
+        std::stringstream ss;
+        ss << fpath << "et_bra_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+
+        std::string srcpath = ss.str();
+        cout << "Generating source file " << srcpath << "\n";
+        std::ofstream of(srcpath);
+
+        if(!of.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath << "\n";
+            return 2; 
+        }
+
+        // output to source file
+        of << "#include \"eri/eri.h\"\n";
+
+        if(i == 0)
+            continue;
+
+        // The algorithm to use 
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
+
+        QAM am{i, 0, j, 0};
+        WriterInfo::Init(options, am, cpuinfofile);
+        etalgo->Create(am, DoubletType::BRA);
         ET_Writer et_writer(*etalgo);
 
         // write to the output file
         et_writer.WriteETFile(of, ofh);
         cout << "Done!\n";
-
     }
+
+
 
     ofh << "\n";
     ofh << "#endif\n\n";

@@ -129,6 +129,8 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
 {
     if(WriterInfo::HasET())
     {
+        std::string braket = (et_algo_.GetDirection() == DoubletType::KET) ? "KET" : "BRA";
+
         os << "\n";
         os << indent5 << "//////////////////////////////////////////////\n";
         os << indent5 << "// Primitive integrals: Electron transfer\n";
@@ -138,13 +140,13 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
         // loop over the steps in order
         for(const auto & am : et_algo_.GetAMOrder())
         {
-            os << indent5 << "ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n"; 
+            os << indent5 << "ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n"; 
             os << indent6 << WriterInfo::PrimVarName(am) << ",\n";
 
             for(const auto & it : et_algo_.GetAMReq(am))
                 os << indent6 << WriterInfo::PrimVarName(it) << ",\n";
 
-            if(et_algo_.GetDirection(am) == DoubletType::KET)
+            if(et_algo_.GetDirection() == DoubletType::KET)
                os << indent5 << "etfac_k, one_over_2q, p_over_q);\n\n";
             else
                os << indent5 << "etfac_b, one_over_2p, q_over_p);\n\n";
@@ -156,20 +158,20 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
 void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 {
     QAM am = WriterInfo::FinalAM();
+    std::string braket = (et_algo_.GetDirection() == DoubletType::KET) ? "KET" : "BRA";
 
     os << "//////////////////////////////////////////////\n";
     os << "// ET: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
     os << "//////////////////////////////////////////////\n";
 
 
-    os << "void ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-
+    os << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
     os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
     for(const auto & it : et_algo_.GetAMReq(am))
         os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
 
-    if(et_algo_.GetDirection(am) == DoubletType::KET)
+    if(et_algo_.GetDirection() == DoubletType::KET)
         os << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
            << WriterInfo::ConstDoubleType() << " one_over_2q, "
            << WriterInfo::ConstDoubleType() << " p_over_q)\n";
@@ -183,7 +185,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 
     for(const auto & it : et_algo_.GetIntReq(am))
     {
-        DoubletType dir = et_algo_.GetDirection(am);
+        DoubletType dir = et_algo_.GetDirection();
         char pq = (dir == DoubletType::KET) ? 'q' : 'p';
 
         if(it != 1)
@@ -207,14 +209,14 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 
 
     // add to header
-    osh << "void ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
+    osh << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
     osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
     for(const auto & it : et_algo_.GetAMReq(am))
         osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
 
-    if(et_algo_.GetDirection(am) == DoubletType::KET)
+    if(et_algo_.GetDirection() == DoubletType::KET)
         osh << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
             << WriterInfo::ConstDoubleType() << " one_over_2q, "
             << WriterInfo::ConstDoubleType() << " p_over_q);\n";
@@ -227,7 +229,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 }
 
 
-std::string ET_Writer::ETStepVar_(const Quartet & q)
+std::string ET_Writer::ETStepVar_(const Quartet & q) const
 {
     std::stringstream ss; 
     ss << WriterInfo::PrimVarName(q.amlist()) << "[" << q.idx() << "]";
@@ -236,23 +238,26 @@ std::string ET_Writer::ETStepVar_(const Quartet & q)
 
 
 
-std::string ET_Writer::ETStepString_(const ETStep & et)
+std::string ET_Writer::ETStepString_(const ETStep & et) const
 {
     int stepidx = XYZStepToIdx(et.xyz);
 
+    DoubletType direction = et_algo_.GetDirection();
+
     // for output
-    char kb = (et.direction == DoubletType::KET) ? 'k' : 'b';
+    char kb = (direction == DoubletType::KET) ? 'k' : 'b';
+    char pq = (direction == DoubletType::KET) ? 'q' : 'p';
 
     std::stringstream etconst_i, etconst_k;
     std::stringstream ss;
 
-    etconst_i << "et_const_" << et.pq << "_" << et.ik[0];
-    etconst_k << "et_const_" << et.pq << "_" << et.ik[1];
+    etconst_i << "et_const_" << pq << "_" << et.ik[0];
+    etconst_k << "et_const_" << pq << "_" << et.ik[1];
 
     std::stringstream etfac, aoverb;
     etfac << "etfac_" << kb << "[" << stepidx << "]";
 
-    std::string poverq = (et.direction == DoubletType::KET) ? "-p_over_q" : "-q_over_p";
+    std::string poverq = (direction == DoubletType::KET) ? "-p_over_q" : "-q_over_p";
     
 
     if(WriterInfo::HasFMA())

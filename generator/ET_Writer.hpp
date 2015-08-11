@@ -27,8 +27,8 @@ class ET_Writer
     private:
         const ET_Algorithm_Base & et_algo_;
 
-        static std::string ETStepString_(const ETStep & et);
-        static std::string ETStepVar_(const Quartet & q);
+        std::string ETStepString_(const ETStep & et) const;
+        std::string ETStepVar_(const Quartet & q) const;
 
         void WriteETInline_(std::ostream & os) const;
         void WriteETExternal_(std::ostream & os) const;

@@ -16,8 +16,8 @@ typedef std::map<QAM, IntSet> ET_IntReqMap;
 class ET_Algorithm_Base
 {
     public:
-        void Create(const QuartetSet & inittargets);
-        void Create(QAM am);
+        void Create(const QuartetSet & inittargets, DoubletType direction);
+        void Create(QAM am, DoubletType direction);
 
         ETStepList GetSteps(QAM am) const;
 
@@ -32,7 +32,7 @@ class ET_Algorithm_Base
         IntSet GetAllInt_p(void) const;
         IntSet GetAllInt_q(void) const;
 
-        DoubletType GetDirection(QAM am) const;
+        DoubletType GetDirection(void) const;
 
         bool HasBraET(void) const;
         bool HasKetET(void) const;
@@ -40,6 +40,8 @@ class ET_Algorithm_Base
         virtual ~ET_Algorithm_Base() = default;
 
     private:
+        DoubletType direction_;
+
         ET_StepMap etsteps_;
         ET_AMReqMap etreq_;
         QAMList amorder_;
@@ -58,7 +60,7 @@ class ET_Algorithm_Base
                                  const QuartetSet & inittargets,
                                  QuartetSet & solvedquartets, QuartetSet & pruned);
 
-        static void PruneQuartets_(QuartetSet & qs, QuartetSet & pruned);
+        void PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) const;
 
         void AMOrder_AddWithDependencies_(std::vector<QAM> & amorder, QAM am) const;
 

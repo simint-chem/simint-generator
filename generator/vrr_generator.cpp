@@ -72,20 +72,10 @@ int main(int argc, char ** argv)
         fpath += '/';
 
 
-
     // different source and header files
-    std::string srcpath = fpath + "vrr.c";
     std::string headpath = fpath + "vrr.h";
     
-    cout << "Generating source file " << srcpath << "\n";
     cout << "Generating header file " << headpath << "\n";
-
-    std::ofstream of(srcpath);
-    if(!of.is_open())
-    {
-        std::cout << "Cannot open file: " << srcpath << "\n";
-        return 2; 
-    }
 
     std::ofstream ofh(headpath);
     if(!ofh.is_open())
@@ -105,12 +95,26 @@ int main(int argc, char ** argv)
     WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuinfofile);
     WriterInfo::WriteIncludes(ofh);
 
-    // output to source file
-    of << "#include \"eri/eri.h\"\n";
 
     // we want all gaussians up to the maximum L value
     for(i = 1; i <= maxL; i++)
     {
+        std::stringstream ss;
+        ss << fpath << "vrr_" << amchar[i] << "_s_s_s.c";
+
+        std::string srcpath = ss.str();
+        cout << "Generating source file " << srcpath << "\n";
+
+        std::ofstream of(srcpath);
+        if(!of.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath << "\n";
+            return 2; 
+        }
+
+        // output to source file
+        of << "#include \"eri/eri.h\"\n";
+
         // The algorithm to use 
         std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
@@ -127,8 +131,25 @@ int main(int argc, char ** argv)
         cout << "Done!\n";
 
     }
+
     for(i = 1; i <= maxL; i++)
     {
+        std::stringstream ss;
+        ss << fpath << "vrr_s_s_" << amchar[i] << "_s.c";
+
+        std::string srcpath = ss.str();
+        cout << "Generating source file " << srcpath << "\n";
+
+        std::ofstream of(srcpath);
+        if(!of.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath << "\n";
+            return 2; 
+        }
+
+        // output to source file
+        of << "#include \"eri/eri.h\"\n";
+
         // The algorithm to use 
         std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
 
