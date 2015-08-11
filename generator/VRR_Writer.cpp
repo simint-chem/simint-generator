@@ -205,22 +205,24 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
     os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
     os << "//////////////////////////////////////////////\n";
 
-    // we only do the final
-    //if(!WriterInfo::Scalar())
-    //    os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
-    os << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    std::stringstream prototype;
+    prototype << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
-    os << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
 
     for(const auto & it : vrr_algo_.GetAMReq(am))
-        os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
-        os << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
+        prototype << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
 
-    os << indent3 << "const int num_n)\n";
+    prototype << indent3 << "const int num_n)";
 
+
+
+    os << prototype.str() << "\n";
     os << "{\n";
 
     os << "    int n = 0;\n";
@@ -243,21 +245,7 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 
 
     // header
-    // we only do the final
-    //if(!WriterInfo::Scalar())
-    //    os << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(num_n)\n";
-    osh << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-
-    // final target
-    osh << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
-
-    for(const auto & it : vrr_algo_.GetAMReq(am))
-        osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
-    
-    for(const auto & it : vrr_algo_.GetVarReq(am))
-        osh << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
-
-    osh << indent3 << "const int num_n);\n\n";
+    osh << prototype.str() << ";\n";
 }
 
 

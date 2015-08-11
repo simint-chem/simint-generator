@@ -351,20 +351,25 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
         ofb << "//////////////////////////////////////////////\n";
         ofb << "\n";
 
+        std::stringstream prototype;
+
         if(!WriterInfo::Scalar())
-            ofb << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
-        ofb << "void HRR_BRA_";
-        ofb << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
+            prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
+        prototype << "void HRR_BRA_";
+        prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
 
         // pointer to result buffer
-        ofb << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
+        prototype << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
 
         // pointer to requirements
         for(const auto & it : hrr_algo_.GetBraAMReq(braam))
-            ofb << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
+            prototype << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
 
-        ofb << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket)\n";
+        prototype << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket)";
 
+
+
+        ofb << prototype.str() << "\n";
         ofb << "{\n";
         ofb << indent1 << "int iket;\n";
         ofb << "\n";
@@ -378,19 +383,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
 
         // header
-        if(!WriterInfo::Scalar())
-            ofh << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
-        ofh << "void HRR_BRA_";
-        ofh << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
-
-        // pointer to result buffer
-        ofh << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
-
-        // pointer to requirements
-        for(const auto & it : hrr_algo_.GetBraAMReq(braam))
-            ofh << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
-
-        ofh << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket);\n";
+        ofh << prototype.str() << ";\n";
 
     }
 
@@ -402,19 +395,25 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
         ofk << "//////////////////////////////////////////////\n";
         ofk << "\n";
 
+        std::stringstream prototype;
+
         if(!WriterInfo::Scalar())
-            ofk << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
-        ofk << "void HRR_KET_";
-        ofk << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
+            prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
+        prototype << "void HRR_KET_";
+        prototype << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
 
         // pointer to result buffer
-        ofk << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
+        prototype << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
 
         // pointer to requirements
         for(const auto & it : hrr_algo_.GetKetAMReq(ketam))
-            ofk << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
+            prototype << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
 
-        ofk << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra)\n";
+        prototype << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra)\n";
+
+
+
+        ofk << prototype.str() << "\n";
         ofk << "{\n";
         ofk << indent1 << "int ibra;\n";
         ofk << "\n";
@@ -428,19 +427,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
 
         // header
-        if(!WriterInfo::Scalar())
-            ofh << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
-        ofh << "void HRR_KET_";
-        ofh << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
-
-        // pointer to result buffer
-        ofh << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
-
-        // pointer to requirements
-        for(const auto & it : hrr_algo_.GetKetAMReq(ketam))
-            ofh << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
-
-        ofh << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra);\n";
+        ofh << prototype.str() << ";\n";
     }
 }
 
