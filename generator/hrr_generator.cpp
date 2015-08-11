@@ -76,27 +76,10 @@ int main(int argc, char ** argv)
 
 
     // different source and header files
-    std::string srcpath_bra = fpath + "hrr_bra.c";
-    std::string srcpath_ket = fpath + "hrr_ket.c";
     std::string headpath = fpath + "hrr.h";
     
-    cout << "Generating bra source file " << srcpath_bra << "\n";
-    cout << "Generating ket source file " << srcpath_ket << "\n";
     cout << "Generating header file " << headpath << "\n";
 
-    std::ofstream ofb(srcpath_bra);
-    if(!ofb.is_open())
-    {
-        std::cout << "Cannot open file: " << srcpath_bra << "\n";
-        return 2; 
-    }
-
-    std::ofstream ofk(srcpath_ket);
-    if(!ofk.is_open())
-    {
-        std::cout << "Cannot open file: " << srcpath_ket << "\n";
-        return 2; 
-    }
 
     std::ofstream ofh(headpath);
     if(!ofh.is_open())
@@ -113,31 +96,52 @@ int main(int argc, char ** argv)
     ofh << "#include \"vectorization/vectorization.h\"\n";
     ofh << "\n\n";
 
-    // include files for sources
-    ofb << "\n";
-    ofb << "#include \"eri/eri.h\"\n";
-    ofb << "\n\n";
-
-    ofk << "\n";
-    ofk << "#include \"eri/eri.h\"\n";
-    ofk << "\n\n";
-
-
-    // disable this diagnostic (for now)
-    ofb << "#ifdef __INTEL_COMPILER\n";
-    ofb << "    #pragma warning(disable:2620)\n";
-    ofb << "#endif\n";
-    ofb << "\n\n";
-
-    ofk << "#ifdef __INTEL_COMPILER\n";
-    ofk << "    #pragma warning(disable:2620)\n";
-    ofk << "#endif\n";
-    ofk << "\n\n";
 
     // we want all doublets up to L
     for(i = 1; i <= maxL; i++)
     for(int j = 1; j <= i; j++)
     {
+        std::stringstream ssb, ssk;
+        ssb << fpath << "hrr_bra_" << amchar[i] << "_" << amchar[j] << ".c";
+        ssk << fpath << "hrr_ket_" << amchar[i] << "_" << amchar[j] << ".c";
+
+        std::string srcpath_bra = ssb.str();
+        std::string srcpath_ket = ssk.str();
+
+        std::ofstream ofb(srcpath_bra);
+        if(!ofb.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath_bra << "\n";
+            return 2; 
+        }
+
+        std::ofstream ofk(srcpath_ket);
+        if(!ofk.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath_ket << "\n";
+            return 2; 
+        }
+
+        // include files for sources
+        ofb << "\n";
+        ofb << "#include \"eri/eri.h\"\n";
+        ofb << "\n\n";
+
+        ofk << "\n";
+        ofk << "#include \"eri/eri.h\"\n";
+        ofk << "\n\n";
+
+        // disable this diagnostic (for now)
+        ofb << "#ifdef __INTEL_COMPILER\n";
+        ofb << "    #pragma warning(disable:2620)\n";
+        ofb << "#endif\n";
+        ofb << "\n\n";
+
+        ofk << "#ifdef __INTEL_COMPILER\n";
+        ofk << "    #pragma warning(disable:2620)\n";
+        ofk << "#endif\n";
+        ofk << "\n\n";
+
         // The algorithm to use
         std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
 
