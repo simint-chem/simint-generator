@@ -134,8 +134,7 @@ class Makowski_ET : public ET_Algorithm_Base
             if(target.am() == 0)
                 throw std::runtime_error("Cannot ET step to an s doublet!");
 
-            //if(target.bra.am() >= target.ket.am())
-            if(true)
+            if(target.bra.am() >= target.ket.am())
             {
                 // idx is the xyz index
                 ExpList ijk = target.ket.left.ijk;

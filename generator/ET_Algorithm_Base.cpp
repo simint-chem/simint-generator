@@ -29,19 +29,12 @@ void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) co
     if(std::find(order.begin(), order.end(), am) != order.end()) 
         return;
 
-    std::cout << "Adding " << am[0] << am[1] << am[2] << am[3] << "\n";
-
     // skip if it's not done by ET
     if(allam_.count(am) == 0)
         return;
 
-    std::cout << "here\n";
-
     // get requirements
     QAMSet req = GetAMReq(am);
-
-    for(const auto & it : req)
-        std::cout << "DepAdding " << it[0] << it[1] << it[2] << it[3] << "\n";
 
     for(const auto & it : req)
         AMOrder_AddWithDependencies_(order, it);

@@ -296,9 +296,9 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     if(hasketvrr)
     {
-        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_x", "Q.PA_x[j]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_y", "Q.PA_y[j]") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_z", "Q.PA_z[j]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_x", "Q.PA_x", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_y", "Q.PA_y", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_z", "Q.PA_z", "j") << ";\n";
     }
 
     if(hasbravrr)
@@ -320,9 +320,9 @@ static void WriteFile_NotFlat(std::ostream & os,
 
     if(hasketet || hasbraet)
     {
-        os << indent5 << cdbltype << " Q_bAB_x = " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ";\n";
-        os << indent5 << cdbltype << " Q_bAB_y = " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ";\n";
-        os << indent5 << cdbltype << " Q_bAB_z = " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_bAB_x", "Q.bAB_x", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_bAB_y", "Q.bAB_y", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_bAB_z", "Q.bAB_z", "j") << ";\n";
     }
 
     if(hasketet)
