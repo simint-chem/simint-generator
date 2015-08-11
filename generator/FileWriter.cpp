@@ -13,11 +13,11 @@
 #include "generator/Ncart.hpp"
 
 
-static void WriteFile_NotFlat(std::ostream & os,
-                              const BoysGen & bg,
-                              const VRR_Writer & vrr_writer,
-                              const ET_Writer & et_writer,
-                              const HRR_Writer & hrr_writer)
+void WriteFile(std::ostream & os,
+               const BoysGen & bg,
+               const VRR_Writer & vrr_writer,
+               const ET_Writer & et_writer,
+               const HRR_Writer & hrr_writer)
 {
     const QAM am = WriterInfo::FinalAM();
     int ncart = NCART(am);
@@ -409,28 +409,5 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << indent1 << "return P.nshell12 * Q.nshell12;\n";
     os << "}\n";
     os << "\n";
-}
-
-
-
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
-// MAIN ENTRY POINT
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
-void WriteFile(std::ostream & os,
-               const BoysGen & bg,
-               const VRR_Writer & vrr_writer,
-               const ET_Writer & et_writer,
-               const HRR_Writer & hrr_writer)
-{
-
-
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
-    // Create the function
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
-    WriteFile_NotFlat(os, bg, vrr_writer, et_writer, hrr_writer);
 }
 
