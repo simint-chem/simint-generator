@@ -10,6 +10,15 @@ VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
 { 
 }
 
+bool VRR_Writer::HasBraVRR(void) const
+{
+    return vrr_algo_.HasBraVRR();
+}
+
+bool VRR_Writer::HasKetVRR(void) const
+{
+    return vrr_algo_.HasKetVRR();
+}
 
 void VRR_Writer::AddConstants(void) const
 {

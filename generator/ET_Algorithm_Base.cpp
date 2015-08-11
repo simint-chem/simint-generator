@@ -13,7 +13,7 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
     // Prune anything from VRR
     for(auto & it : qs)
     {
-        if(it && it.ket.left.am() != 0 && it.bra.left.am() != 0)
+        if(it && it.bra.left.am() != 0 && it.ket.left.am() != 0)
             qsnew.insert(it);
         else if(it)
             pruned.insert(it);
@@ -86,7 +86,7 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
             solvedquartets.insert(*it);
         }
 
-        cout << "Generated " << newtargets.size() << " new targets\n";
+        //cout << "Generated " << newtargets.size() << " new targets\n";
         //cout << "Before pruning: " << newtargets.size() << " new targets\n";
         //for(const auto & it : newtargets)
         //    cout << "    " << it << "\n";
@@ -123,9 +123,6 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets)
     ETStepList etstep;
     ETStepLoop_(etstep, targets, solvedquartets, ettop_);
 
-    // reverse the steps
-    // (now done in ETStepLoop_)
-    //std::reverse(etsteps.begin(), etsteps.end());
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
@@ -244,6 +241,11 @@ IntSet ET_Algorithm_Base::GetIntReq(QAM am) const
         return IntSet();
 }
 
+DoubletType ET_Algorithm_Base::GetDirection(QAM am) const
+{
+    return etsteps_.at(am)[0].direction;
+}
+
 IntSet ET_Algorithm_Base::GetAllInt(void) const
 {
     return allintreq_;
@@ -258,3 +260,32 @@ IntSet ET_Algorithm_Base::GetAllInt_q(void) const
 {
     return allintreq_q_;
 }
+        
+
+bool ET_Algorithm_Base::HasBraET(void) const
+{
+    for(const auto & it : etsteps_)
+    {
+        for(const auto & it2 : it.second)
+        {
+            if(it2.direction == DoubletType::BRA)
+                return true;
+        }
+    } 
+    return false;
+}
+
+
+bool ET_Algorithm_Base::HasKetET(void) const
+{
+    for(const auto & it : etsteps_)
+    {
+        for(const auto & it2 : it.second)
+        {
+            if(it2.direction == DoubletType::KET)
+                return true;
+        }
+    } 
+    return false;
+}
+

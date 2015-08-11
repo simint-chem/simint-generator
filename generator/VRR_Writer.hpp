@@ -20,6 +20,9 @@ class VRR_Writer
 
         void WriteVRRFile(std::ostream & os, std::ostream & osh) const;
 
+        bool HasBraVRR(void) const;
+        bool HasKetVRR(void) const;
+
     private:
         const VRR_Algorithm_Base & vrr_algo_;
 

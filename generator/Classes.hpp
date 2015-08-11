@@ -328,7 +328,9 @@ struct ETStep
 {
     Quartet target;
     std::array<Quartet, 4> src;
+    std::array<int, 2> ik;
     XYZStep xyz;
+    char pq;
     DoubletType direction;
 
     std::string str(void) const
@@ -350,7 +352,9 @@ struct ETStep
         return (target == rhs.target &&
                 src == rhs.src &&
                 xyz == rhs.xyz &&
-                direction == rhs.direction);
+                direction == rhs.direction &&
+                ik == rhs.ik &&
+                pq == rhs.pq);
     }
 };
 

@@ -139,7 +139,6 @@ int main(int argc, char ** argv)
 
 
                 // For debugging
-                // For debugging
                 int m = 0;
                 for(int m1 = 0; m1 < nshell1; m1++)
                 for(int m2 = 0; m2 < nshell2; m2++)

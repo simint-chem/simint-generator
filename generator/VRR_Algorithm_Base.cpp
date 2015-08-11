@@ -125,6 +125,33 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
+bool VRR_Algorithm_Base::HasBraVRR(void) const
+{
+    for(const auto & it : vrrmap_)
+    {
+        for(const auto & it2 : it.second)
+        {
+            if(it2.type == DoubletType::BRA)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool VRR_Algorithm_Base::HasKetVRR(void) const
+{
+    for(const auto & it : vrrmap_)
+    {
+        for(const auto & it2 : it.second)
+        {
+            if(it2.type == DoubletType::KET)
+                return true;
+        }
+    }
+
+    return false;
+}
 
 void VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
 {

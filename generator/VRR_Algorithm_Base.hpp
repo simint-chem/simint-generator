@@ -46,6 +46,9 @@ class VRR_Algorithm_Base
         StringSet GetVarReq(QAM am) const;
         StringSet GetAllVarReq(void) const;
 
+        bool HasBraVRR(void) const;
+        bool HasKetVRR(void) const;
+
         int GetMaxInt(void) const;
 
         virtual ~VRR_Algorithm_Base() = default; 

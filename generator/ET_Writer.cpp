@@ -11,6 +11,17 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 }
 
 
+bool ET_Writer::HasBraET(void) const
+{
+    return et_algo_.HasBraET();
+}
+
+
+bool ET_Writer::HasKetET(void) const
+{
+    return et_algo_.HasKetET();
+}
+
 
 void ET_Writer::AddConstants(void) const
 {
@@ -87,6 +98,7 @@ void ET_Writer::WriteETInline_(std::ostream & os) const
             else
                 os << indent5 << WriterInfo::ConstDoubleType() << " et_const_p_" << "1 = one_over_2p;\n";
         }
+
         for(const auto & it : et_algo_.GetAllInt_q())
         {
             if(it != 1)
@@ -123,7 +135,7 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
         os << indent5 << "//////////////////////////////////////////////\n";
         os << "\n";
 
-        // loop over the stpes in order
+        // loop over the steps in order
         for(const auto & am : et_algo_.GetAMOrder())
         {
             os << indent5 << "ET_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n"; 
@@ -132,7 +144,7 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
             for(const auto & it : et_algo_.GetAMReq(am))
                 os << indent6 << WriterInfo::PrimVarName(it) << ",\n";
 
-            if(am[0] >= am[1])
+            if(et_algo_.GetDirection(am) == DoubletType::KET)
                os << indent5 << "etfac_k, one_over_2q, p_over_q);\n\n";
             else
                os << indent5 << "etfac_b, one_over_2p, q_over_p);\n\n";
@@ -157,7 +169,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
     for(const auto & it : et_algo_.GetAMReq(am))
         os << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
 
-    if(am[0] >= am[2])
+    if(et_algo_.GetDirection(am) == DoubletType::KET)
         os << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
            << WriterInfo::ConstDoubleType() << " one_over_2q, "
            << WriterInfo::ConstDoubleType() << " p_over_q)\n";
@@ -169,9 +181,11 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
     os << "{\n";
     os << indent2 << "// Precompute (integer) * 1/2{pq}\n";
 
-    char pq = (am[0] >= am[2]) ? 'q' : 'p';
     for(const auto & it : et_algo_.GetIntReq(am))
     {
+        DoubletType dir = et_algo_.GetDirection(am);
+        char pq = (dir == DoubletType::KET) ? 'q' : 'p';
+
         if(it != 1)
             os << indent2 << WriterInfo::ConstDoubleType() << " et_const_" << pq << "_" << it << " = " << WriterInfo::DoubleSet1(std::to_string(it)) << " * one_over_2" << pq << ";\n";
         else
@@ -200,7 +214,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
     for(const auto & it : et_algo_.GetAMReq(am))
         osh << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
 
-    if(am[0] >= am[2])
+    if(et_algo_.GetDirection(am) == DoubletType::KET)
         osh << indent3 << WriterInfo::DoubleType() << " const * const restrict etfac_k, "
             << WriterInfo::ConstDoubleType() << " one_over_2q, "
             << WriterInfo::ConstDoubleType() << " p_over_q);\n";
@@ -225,34 +239,30 @@ std::string ET_Writer::ETStepVar_(const Quartet & q)
 std::string ET_Writer::ETStepString_(const ETStep & et)
 {
     int stepidx = XYZStepToIdx(et.xyz);
-    int ival = et.target.bra.left.ijk[stepidx];
-    int kval = (et.target.ket.left.ijk[stepidx]-1);
 
     // for output
-    const QAM am = et.target.amlist();
-    char pq = (am[0] >= am[2]) ? 'q' : 'p';
-    char kb = (am[0] >= am[2]) ? 'k' : 'b';
-
-    std::stringstream ss;
+    char kb = (et.direction == DoubletType::KET) ? 'k' : 'b';
 
     std::stringstream etconst_i, etconst_k;
-    etconst_i << "et_const_" << pq << "_" << ival;
-    etconst_k << "et_const_" << pq << "_" << kval;
+    std::stringstream ss;
+
+    etconst_i << "et_const_" << et.pq << "_" << et.ik[0];
+    etconst_k << "et_const_" << et.pq << "_" << et.ik[1];
 
     std::stringstream etfac, aoverb;
     etfac << "etfac_" << kb << "[" << stepidx << "]";
 
-    std::string poverq = (am[0] >= am[2]) ? "-p_over_q" : "-q_over_p";
+    std::string poverq = (et.direction == DoubletType::KET) ? "-p_over_q" : "-q_over_p";
     
 
     if(WriterInfo::HasFMA())
     {
         ss << indent5 << ETStepVar_(et.target) << " = " << etfac.str() << " * " << ETStepVar_(et.src[0]) << ";\n";
-        if(et.src[1].bra.left && et.src[1].ket.left)
+        if(et.src[1])
             ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd(etconst_i.str(), ETStepVar_(et.src[1]), ETStepVar_(et.target)) << ";\n";
-        if(et.src[2].bra.left && et.src[2].ket.left)
+        if(et.src[2])
             ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd(etconst_k.str(), ETStepVar_(et.src[2]), ETStepVar_(et.target)) << ";\n";
-        if(et.src[3].bra.left && et.src[3].ket.left)
+        if(et.src[3])
             ss << indent5 << ETStepVar_(et.target) << " = " << WriterInfo::FMAdd(poverq, ETStepVar_(et.src[3]), ETStepVar_(et.target)) << ";\n";
 
     }
@@ -260,16 +270,15 @@ std::string ET_Writer::ETStepString_(const ETStep & et)
     {
         ss << indent5 << ETStepVar_(et.target);
 
-
         ss << " = ";
 
         ss << etfac.str() << " * " << ETStepVar_(et.src[0]);
 
-        if(et.src[1].bra.left && et.src[1].ket.left)
+        if(et.src[1])
             ss << " + " << etconst_i.str() << " * " << ETStepVar_(et.src[1]);
-        if(et.src[2].bra.left && et.src[2].ket.left)
+        if(et.src[2])
             ss << " + " << etconst_k.str() << " * " << ETStepVar_(et.src[2]);
-        if(et.src[3].bra.left && et.src[3].ket.left)
+        if(et.src[3])
             ss << " " << poverq << " * " << ETStepVar_(et.src[3]);
         ss << ";\n";
     }

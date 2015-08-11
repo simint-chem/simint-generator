@@ -32,6 +32,11 @@ class ET_Algorithm_Base
         IntSet GetAllInt_p(void) const;
         IntSet GetAllInt_q(void) const;
 
+        DoubletType GetDirection(QAM am) const;
+
+        bool HasBraET(void) const;
+        bool HasKetET(void) const;
+
         virtual ~ET_Algorithm_Base() = default;
 
     private:

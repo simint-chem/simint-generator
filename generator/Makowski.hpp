@@ -134,7 +134,8 @@ class Makowski_ET : public ET_Algorithm_Base
             if(target.am() == 0)
                 throw std::runtime_error("Cannot ET step to an s doublet!");
 
-            if(target.bra.am() >= target.ket.am())
+            //if(target.bra.am() >= target.ket.am())
+            if(true)
             {
                 // idx is the xyz index
                 ExpList ijk = target.ket.left.ijk;
@@ -182,7 +183,14 @@ class Makowski_ET : public ET_Algorithm_Base
                             {src3d_bra, src3d_ket, 0},
                             {src4d_bra, src4d_ket, 0}
                           }},
-                          xyzstep, DoubletType::KET};
+                          {{
+                            target.bra.left.ijk[idx],
+                            target.ket.left.ijk[idx]-1,
+                          }},
+                          xyzstep,
+                          'q',
+                          DoubletType::KET};
+
                 return et;
             }
             else
@@ -194,33 +202,33 @@ class Makowski_ET : public ET_Algorithm_Base
                 auto it = std::find(target.bra.left.ijk.rbegin(), target.bra.left.ijk.rend(), *v); 
                 int idx = 2 - std::distance(target.bra.left.ijk.rbegin(), it);  // remember we are working with reverse iterators
 
-                Gaussian src1g_1(target.ket.left);
-                Gaussian src1g_2(target.bra.left.StepDown(idx, 1));
+                Gaussian src1g_1(target.bra.left.StepDown(idx, 1));
+                Gaussian src1g_2(target.ket.left);
 
-                Gaussian src2g_1(target.ket.left.StepDown(idx, 1));
-                Gaussian src2g_2(target.bra.left.StepDown(idx, 1));
+                Gaussian src2g_1(target.bra.left.StepDown(idx, 2));
+                Gaussian src2g_2(target.ket.left.StepDown(idx, 0));
 
-                Gaussian src3g_1(target.ket.left);
-                Gaussian src3g_2(target.bra.left.StepDown(idx, 2));
+                Gaussian src3g_1(target.bra.left.StepDown(idx, 1));
+                Gaussian src3g_2(target.ket.left.StepDown(idx, 1));
 
-                Gaussian src4g_1(target.ket.left.StepUp(idx, 1));
-                Gaussian src4g_2(target.bra.left.StepDown(idx, 1));
+                Gaussian src4g_1(target.bra.left.StepDown(idx, 1));
+                Gaussian src4g_2(target.ket.left.StepUp(idx, 1));
                 
 
                 // create new doublets
                 Gaussian s{0,0,0};
 
-                Doublet src1d_bra{DoubletType::BRA, src1g_2, s};
-                Doublet src1d_ket{DoubletType::KET, src1g_1, s};
+                Doublet src1d_bra{DoubletType::BRA, src1g_1, s};
+                Doublet src1d_ket{DoubletType::KET, src1g_2, s};
 
-                Doublet src2d_bra{DoubletType::BRA, src2g_2, s};
-                Doublet src2d_ket{DoubletType::KET, src2g_1, s};
+                Doublet src2d_bra{DoubletType::BRA, src2g_1, s};
+                Doublet src2d_ket{DoubletType::KET, src2g_2, s};
 
-                Doublet src3d_bra{DoubletType::BRA, src3g_2, s};
-                Doublet src3d_ket{DoubletType::KET, src3g_1, s};
+                Doublet src3d_bra{DoubletType::BRA, src3g_1, s};
+                Doublet src3d_ket{DoubletType::KET, src3g_2, s};
 
-                Doublet src4d_bra{DoubletType::BRA, src4g_2, s};
-                Doublet src4d_ket{DoubletType::KET, src4g_1, s};
+                Doublet src4d_bra{DoubletType::BRA, src4g_1, s};
+                Doublet src4d_ket{DoubletType::KET, src4g_2, s};
 
 
                 XYZStep xyzstep = IdxToXYZStep(idx);
@@ -233,7 +241,14 @@ class Makowski_ET : public ET_Algorithm_Base
                             {src3d_bra, src3d_ket, 0},
                             {src4d_bra, src4d_ket, 0}
                           }},
-                          xyzstep, DoubletType::BRA};
+                          {{
+                            target.bra.left.ijk[idx]-1,
+                            target.ket.left.ijk[idx],
+                          }},
+                          xyzstep,
+                          'p',
+                          DoubletType::BRA};
+
                 return et;
             }
         }

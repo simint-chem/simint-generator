@@ -28,12 +28,17 @@ static void WriteFile_NotFlat(std::ostream & os,
     bool haskethrr = WriterInfo::HasKetHRR();
     bool inline_hrr = (hashrr && WriterInfo::GetOption(OPTION_INLINEHRR) != 0);
 
-    bool hasbravrr = WriterInfo::HasBraVRR();
-    bool hasketvrr = WriterInfo::HasKetVRR();
-    bool haset = WriterInfo::HasET();
-    bool hasoneover2p = ((am[0] + am[1] + am[2] + am[3]) > 1);
-    bool hasoneover2q = (haset || (hasketvrr && (am[2] + am[3]) > 1));
-    bool hasoneover2pq = hasketvrr;
+    bool hasbravrr = vrr_writer.HasBraVRR();
+    bool hasketvrr = vrr_writer.HasKetVRR();
+
+    bool hasbraet = et_writer.HasBraET(); 
+    bool hasketet = et_writer.HasKetET(); 
+
+    bool hasoneoverp = true;
+    bool hasoneoverq = true;
+    bool hasoneover2p = true; 
+    bool hasoneover2q = true;
+    bool hasoneover2pq = false;
 
 
     // load this once here
@@ -140,10 +145,8 @@ static void WriteFile_NotFlat(std::ostream & os,
         WriterInfo::DeclareContwork(os);
 
     // need these factors sometimes
-    if(hasoneover2p || haset)
+    if(hasoneover2p || hasoneover2q || hasoneover2pq)
         WriterInfo::AddNamedConstant("one_half", "0.5");
-    if(haset)
-        WriterInfo::AddNamedConstant("const_1", "1.0");
 
     bg.AddConstants();
     et_writer.AddConstants();
@@ -240,7 +243,7 @@ static void WriteFile_NotFlat(std::ostream & os,
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
     }
 
-    if(haset)
+    if(hasketet)
     {
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_bAB_x", "P.bAB_x[i]") << ";\n";
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_bAB_y", "P.bAB_y[i]") << ";\n";
@@ -276,17 +279,27 @@ static void WriteFile_NotFlat(std::ostream & os,
     os << "\n";
     os << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
-    if(hasbravrr)
+    if(hasoneoverp)
         os << indent5 << cdbltype << " one_over_p = " << WriterInfo::NamedConstant("const_1") << " / P_alpha;\n";
-    if(hasketvrr || haset)
+
+    if(hasoneoverq)
         os << indent5 << cdbltype << " one_over_q = " << WriterInfo::NamedConstant("const_1") << " / Q_alpha;\n";
 
     if(hasoneover2p)    
         os << indent5 << cdbltype << " one_over_2p = " << WriterInfo::NamedConstant("one_half") << " * one_over_p;  // gets multiplied in VRR\n";
+
     if(hasoneover2q)    
         os << indent5 << cdbltype << " one_over_2q = " << WriterInfo::NamedConstant("one_half") << " * one_over_q;  // gets multiplied in VRR\n";
+
     if(hasoneover2pq)
         os << indent5 << cdbltype << " one_over_2pq = " << WriterInfo::NamedConstant("one_half") << " * one_over_PQalpha_sum;\n";
+
+    if(hasketvrr)
+    {
+        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_x", "Q.PA_x[j]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_y", "Q.PA_y[j]") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleSet1("Q_PA_z", "Q.PA_z[j]") << ";\n";
+    }
 
     if(hasbravrr)
     {
@@ -299,30 +312,41 @@ static void WriteFile_NotFlat(std::ostream & os,
     if(hasketvrr)
     {
         os << indent5 << cdbltype << " a_over_q =  alpha * one_over_q;     // a/q from MEST\n";
-        os << indent5 << cdbltype << " aoq_PQ_x = a_over_p * PQ_x;\n"; 
-        os << indent5 << cdbltype << " aoq_PQ_y = a_over_p * PQ_y;\n"; 
-        os << indent5 << cdbltype << " aoq_PQ_z = a_over_p * PQ_z;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_x = a_over_q * PQ_x;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_y = a_over_q * PQ_y;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_z = a_over_q * PQ_z;\n"; 
+
     }
 
-
-    if(haset)
+    if(hasketet || hasbraet)
     {
-        os << indent5 << "// for electron transfer\n";
-        os << indent5 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
-        os << indent5 << cdbltype << " q_over_p = Q_alpha * one_over_p;\n";
+        os << indent5 << cdbltype << " Q_bAB_x = " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ";\n";
+        os << indent5 << cdbltype << " Q_bAB_y = " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ";\n";
+        os << indent5 << cdbltype << " Q_bAB_z = " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ";\n";
+    }
+
+    if(hasketet)
+    {
         os << "\n";
-
+        os << indent5 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
         os << indent5 << cdbltype << " etfac_k[3] = {\n";
-        os << indent6 << "-(P_bAB_x + " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ") * one_over_q,\n";
-        os << indent6 << "-(P_bAB_y + " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ") * one_over_q,\n";
-        os << indent6 << "-(P_bAB_z + " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ") * one_over_q,\n";
+        os << indent6 << "-(P_bAB_x + Q_bAB_x) * one_over_q,\n";
+        os << indent6 << "-(P_bAB_y + Q_bAB_y) * one_over_q,\n";
+        os << indent6 << "-(P_bAB_z + Q_bAB_z) * one_over_q,\n";
         os << indent6 << "};\n";
-        os << indent5 << cdbltype << " etfac_b[3] = {\n";
-        os << indent6 << "-(P_bAB_x + " << WriterInfo::DoubleLoad("Q.bAB_x", "j") << ") * one_over_p,\n";
-        os << indent6 << "-(P_bAB_y + " << WriterInfo::DoubleLoad("Q.bAB_y", "j") << ") * one_over_p,\n";
-        os << indent6 << "-(P_bAB_z + " << WriterInfo::DoubleLoad("Q.bAB_z", "j") << ") * one_over_p,\n";
-        os << indent6 << "};\n";
+        os << "\n";
+    }
 
+    if(hasbraet)
+    {
+        os << "\n";
+        os << indent5 << cdbltype << " q_over_p = Q_alpha * one_over_p;\n";
+        os << indent5 << cdbltype << " etfac_b[3] = {\n";
+        os << indent6 << "-(P_bAB_x + Q_bAB_x) * one_over_p,\n";
+        os << indent6 << "-(P_bAB_y + Q_bAB_y) * one_over_p,\n";
+        os << indent6 << "-(P_bAB_z + Q_bAB_z) * one_over_p,\n";
+        os << indent6 << "};\n";
+        os << "\n";
     }
 
     os << "\n";
