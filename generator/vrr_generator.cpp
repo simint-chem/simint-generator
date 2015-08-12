@@ -116,7 +116,7 @@ int main(int argc, char ** argv)
         of << "#include \"eri/eri.h\"\n";
 
         // The algorithm to use 
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
 
         QAM am{i, 0, 0, 0};
         WriterInfo::Init(options, am, cpuinfofile);
@@ -151,7 +151,7 @@ int main(int argc, char ** argv)
         of << "#include \"eri/eri.h\"\n";
 
         // The algorithm to use 
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
 
         QAM am{0, 0, i, 0};
         WriterInfo::Init(options, am, cpuinfofile);

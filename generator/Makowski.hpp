@@ -10,6 +10,12 @@
 
 class Makowski_HRR : public HRR_Algorithm_Base
 {
+    public:
+        Makowski_HRR(const OptionsMap & options)
+            : HRR_Algorithm_Base(options)
+        { }
+
+
     private:
         virtual HRRDoubletStep DoubletStep_(const Doublet & target)
         {
@@ -43,9 +49,17 @@ class Makowski_HRR : public HRR_Algorithm_Base
         }
 };
 
+
+
 class Makowski_VRR : public VRR_Algorithm_Base
 {
-    protected:
+    public:
+        Makowski_VRR(const OptionsMap & options)
+            : VRR_Algorithm_Base(options)
+        { }
+
+
+    private:
         virtual VRRStep VRRStep_(const Quartet & q)
         {
             // if there is a ket part, we do that
@@ -125,10 +139,16 @@ class Makowski_VRR : public VRR_Algorithm_Base
 };
 
 
+
 class Makowski_ET : public ET_Algorithm_Base
 {
-    private:
+    public:
+        Makowski_ET(const OptionsMap & options)
+            : ET_Algorithm_Base(options)
+        { }
 
+
+    private:
         virtual ETStep ETStep_(const Quartet & target)
         {
             if(target.am() == 0)

@@ -2,6 +2,7 @@
 #define HRR_ALGORITHM_BASE_HPP
 
 #include "generator/Classes.hpp"
+#include "generator/Options.hpp"
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
@@ -11,6 +12,8 @@ typedef std::map<DAM, DAMSet> HRR_AMReqMap;
 class HRR_Algorithm_Base
 {
     public:
+        HRR_Algorithm_Base(const OptionsMap & options);
+
         void Create(QAM am);
         
         DAMSet TopBraAM(void) const;
@@ -31,7 +34,13 @@ class HRR_Algorithm_Base
 
         virtual ~HRR_Algorithm_Base() = default;
 
+    protected:
+       int GetOption(int opt) const; 
+
     private:
+        // Options
+        OptionsMap options_;
+
         QAM finalam_;
 
         DAMSet allbraam_, allketam_;

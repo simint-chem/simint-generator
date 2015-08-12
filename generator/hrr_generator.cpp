@@ -143,7 +143,7 @@ int main(int argc, char ** argv)
         ofk << "\n\n";
 
         // The algorithm to use
-        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
+        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
 
         // we can create functions for both bras/kets in the same loop iteration
         QAM am{i, j, i, j};

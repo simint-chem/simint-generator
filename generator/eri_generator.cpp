@@ -139,9 +139,9 @@ int main(int argc, char ** argv)
     }
 
     // algorithms used
-    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR);
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR);
-    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
+    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
     // Base writer information
     WriterInfo::Init(options, amlist, cpuinfofile);

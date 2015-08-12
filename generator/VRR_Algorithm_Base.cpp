@@ -6,6 +6,16 @@
 
 using namespace std;
 
+VRR_Algorithm_Base::VRR_Algorithm_Base(const OptionsMap & options)
+    : options_(options)
+{
+}
+
+int VRR_Algorithm_Base::GetOption(int opt) const
+{
+    return options_.at(opt);
+}
+
 QAM VRR_Algorithm_Base::TargetAM(void) const
 {
     return targetam_;

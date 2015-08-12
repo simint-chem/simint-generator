@@ -6,6 +6,15 @@
 
 using namespace std;
 
+HRR_Algorithm_Base::HRR_Algorithm_Base(const OptionsMap & options)
+    : options_(options)
+{
+}
+
+int HRR_Algorithm_Base::GetOption(int opt) const
+{
+    return options_.at(opt);
+}
 
 void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned)
 {

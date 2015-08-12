@@ -2,6 +2,7 @@
 #define ET_ALGORITHMBASE_HPP
 
 #include "generator/Classes.hpp"
+#include "generator/Options.hpp"
 
 typedef std::vector<ETStep> ETStepList;
 
@@ -13,9 +14,12 @@ typedef std::map<QAM, QAMSet> ET_AMReqMap;
 // Maps integer constant requirements for a target AM
 typedef std::map<QAM, IntSet> ET_IntReqMap;
 
+
 class ET_Algorithm_Base
 {
     public:
+        ET_Algorithm_Base(const OptionsMap & options);
+
         void Create(const QuartetSet & inittargets, DoubletType direction);
         void Create(QAM am, DoubletType direction);
 
@@ -39,7 +43,13 @@ class ET_Algorithm_Base
 
         virtual ~ET_Algorithm_Base() = default;
 
+    protected:
+       int GetOption(int opt) const; 
+
     private:
+        // Options
+        OptionsMap options_;
+
         DoubletType direction_;
 
         ET_StepMap etsteps_;

@@ -123,7 +123,7 @@ int main(int argc, char ** argv)
             continue;
 
         // The algorithm to use 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
         QAM am{i, 0, j, 0};
         WriterInfo::Init(options, am, cpuinfofile);
@@ -160,7 +160,7 @@ int main(int argc, char ** argv)
             continue;
 
         // The algorithm to use 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET);
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
         QAM am{i, 0, j, 0};
         WriterInfo::Init(options, am, cpuinfofile);

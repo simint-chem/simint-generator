@@ -6,6 +6,17 @@
 
 using namespace std;
 
+ET_Algorithm_Base::ET_Algorithm_Base(const OptionsMap & options)
+    : options_(options)
+{
+}
+
+
+int ET_Algorithm_Base::GetOption(int opt) const
+{
+    return options_.at(opt);
+}
+
 void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) const
 {
     QuartetSet qsnew;
