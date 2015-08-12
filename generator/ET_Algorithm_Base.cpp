@@ -21,17 +21,36 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) con
 {
     QuartetSet qsnew;
 
-    // Prune anything from VRR
-    for(auto & it : qs)
+    // if we want ( s s | X s ) to be formed via VRR instead of ET, and
+    // then use ET in reverse, prune ( s s | X s)
+    if(GetOption(OPTION_NOSINGLEET) > 0)
     {
-        if(it)
+        for(auto & it : qs)
         {
-            if(direction_ == DoubletType::KET && it.ket.left.am() != 0)
-                qsnew.insert(it);
-            else if(direction_ == DoubletType::BRA && it.bra.left.am() != 0)
-                qsnew.insert(it);
-            else
-                pruned.insert(it);
+            if(it)
+            {
+                if(it.ket.left.am() != 0 && it.bra.left.am() != 0)
+                    qsnew.insert(it);
+                else
+                    pruned.insert(it);
+            }
+        }
+        
+    }
+    else
+    {
+        // Prune anything from VRR
+        for(auto & it : qs)
+        {
+            if(it)
+            {
+                if(direction_ == DoubletType::KET && it.ket.left.am() != 0)
+                    qsnew.insert(it);
+                else if(direction_ == DoubletType::BRA && it.bra.left.am() != 0)
+                    qsnew.insert(it);
+                else
+                    pruned.insert(it);
+            }
         }
     }
 

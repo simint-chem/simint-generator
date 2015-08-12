@@ -97,6 +97,10 @@ int main(int argc, char ** argv)
     WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuinfofile);
     WriterInfo::WriteIncludes(ofh);
 
+    // disable no single et
+    // so they are available for all
+    options[OPTION_NOSINGLEET] = 0;
+
 
     // we want all gaussians up to the maximum L value
     // First, bra -> ket
