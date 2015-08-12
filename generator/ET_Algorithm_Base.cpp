@@ -37,6 +37,11 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) con
         }
         
     }
+    else if(GetOption(OPTION_NOET) > 0)
+    {
+        // prune everything. We aren't doing ET
+        pruned.insert(qs.begin(), qs.end());
+    }
     else
     {
         // Prune anything from VRR

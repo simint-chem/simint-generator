@@ -38,9 +38,8 @@ void WriteFile(std::ostream & os,
     bool hasoneoverq = (hasketvrr || hasketet);
     bool hasoneover2p = (hasbraet || (hasbravrr && WriterInfo::L() > 1)); 
     bool hasoneover2q = (hasketet || (hasketvrr && WriterInfo::L() > 1)); 
-    bool hasoneover2pq = false;
+    bool hasoneover2pq = WriterInfo::GetOption(OPTION_NOET);
 
-    std::cout << "has: " << hasbravrr << " " << hasketvrr << " " << hasbraet << " " << hasketet << "\n";
 
     // load this once here
     std::string dbltype = WriterInfo::DoubleType();

@@ -167,6 +167,46 @@ int main(int argc, char ** argv)
 
     }
 
+    if(options[OPTION_NOET] > 0)
+    {
+        // we have to generate ( X s | X s ) VRR relations
+        for(i = 1; i <= maxL; i++)
+        for(int j = 1; j <= maxL; j++)
+        {
+            std::stringstream ss;
+            ss << fpath << "vrr_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+
+            std::string srcpath = ss.str();
+            cout << "Generating source file " << srcpath << "\n";
+
+            std::ofstream of(srcpath);
+            if(!of.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath << "\n";
+                return 2; 
+            }
+
+            // output to source file
+            of << "#include \"eri/eri.h\"\n";
+
+            // The algorithm to use 
+            std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+
+            QAM am{i, 0, j, 0};
+            WriterInfo::Init(options, am, cpuinfofile);
+
+            // Create the mapping
+            vrralgo->Create(am);
+
+            VRR_Writer vrr_writer(*vrralgo);
+
+            // write to the output file
+            vrr_writer.WriteVRRFile(of, ofh);
+            cout << "Done!\n";
+
+        }
+    }
+
     ofh << "\n";
     ofh << "#endif\n\n";
     

@@ -89,12 +89,16 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 vs.src[3].m++;
 
                 vs.src[4].ket.right.ijk[idx]--;
+                vs.src[4].ket.left.ijk[idx]--;
                 vs.src[5].ket.right.ijk[idx]--;
+                vs.src[5].ket.left.ijk[idx]--;
                 vs.src[5].m++;
 
                 vs.src[6].bra.left.ijk[idx]--;
+                vs.src[6].ket.left.ijk[idx]--;
                 vs.src[6].m++;
                 vs.src[7].bra.right.ijk[idx]--;
+                vs.src[7].ket.left.ijk[idx]--;
                 vs.src[7].m++;
 
                 return vs;
@@ -125,12 +129,16 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 vs.src[3].m++;
 
                 vs.src[4].bra.right.ijk[idx]--;
+                vs.src[4].bra.left.ijk[idx]--;
                 vs.src[5].bra.right.ijk[idx]--;
+                vs.src[5].bra.left.ijk[idx]--;
                 vs.src[5].m++;
 
                 vs.src[6].ket.left.ijk[idx]--;
+                vs.src[6].bra.left.ijk[idx]--;
                 vs.src[6].m++;
                 vs.src[7].ket.right.ijk[idx]--;
+                vs.src[7].bra.left.ijk[idx]--;
                 vs.src[7].m++;
 
                 return vs;

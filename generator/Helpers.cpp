@@ -166,5 +166,6 @@ OptionsMap DefaultOptions(void)
     options[OPTION_SCALAR] = 0;
 
     options[OPTION_NOSINGLEET] = 0;
+    options[OPTION_NOET] = 1;
     return options;
 }

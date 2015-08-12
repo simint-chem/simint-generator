@@ -50,6 +50,8 @@ int main(int argc, char ** argv)
         } 
     }
 
+
+
     if(fpath == "")
     {
         std::cout << "\noutput path (-o) required\n\n";
@@ -102,80 +104,85 @@ int main(int argc, char ** argv)
     options[OPTION_NOSINGLEET] = 0;
 
 
-    // we want all gaussians up to the maximum L value
-    // First, bra -> ket
-    for(i = 0; i <= maxL; i++)
-    for(int j = 1; j <= maxL; j++)
+    if(options[OPTION_NOET] > 0)
+        std::cout << "\nNot generating ET. I was told not to...\n";
+    else
     {
-        std::stringstream ss;
-        ss << fpath << "et_ket_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
 
-        std::string srcpath = ss.str();
-        cout << "Generating source file " << srcpath << "\n";
-        std::ofstream of(srcpath);
-
-        if(!of.is_open())
+        // we want all gaussians up to the maximum L value
+        // First, bra -> ket
+        for(i = 0; i <= maxL; i++)
+        for(int j = 1; j <= maxL; j++)
         {
-            std::cout << "Cannot open file: " << srcpath << "\n";
-            return 2; 
+            std::stringstream ss;
+            ss << fpath << "et_ket_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+
+            std::string srcpath = ss.str();
+            cout << "Generating source file " << srcpath << "\n";
+            std::ofstream of(srcpath);
+
+            if(!of.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath << "\n";
+                return 2; 
+            }
+
+            // output to source file
+            of << "#include \"eri/eri.h\"\n";
+
+            if(j == 0)
+                continue;
+
+            // The algorithm to use 
+            std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+
+            QAM am{i, 0, j, 0};
+            WriterInfo::Init(options, am, cpuinfofile);
+
+            etalgo->Create(am, DoubletType::KET);
+            ET_Writer et_writer(*etalgo);
+            et_writer.WriteETFile(of, ofh);
+            cout << "Done!\n";
+
         }
 
-        // output to source file
-        of << "#include \"eri/eri.h\"\n";
 
-        if(j == 0)
-            continue;
-
-        // The algorithm to use 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-
-        QAM am{i, 0, j, 0};
-        WriterInfo::Init(options, am, cpuinfofile);
-
-        etalgo->Create(am, DoubletType::KET);
-        ET_Writer et_writer(*etalgo);
-        et_writer.WriteETFile(of, ofh);
-        cout << "Done!\n";
-
-    }
-
-
-    // Now, ket->bra
-    for(i = 1; i <= maxL; i++)
-    for(int j = 0; j <= maxL; j++)
-    {
-        std::stringstream ss;
-        ss << fpath << "et_bra_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
-
-        std::string srcpath = ss.str();
-        cout << "Generating source file " << srcpath << "\n";
-        std::ofstream of(srcpath);
-
-        if(!of.is_open())
+        // Now, ket->bra
+        for(i = 1; i <= maxL; i++)
+        for(int j = 0; j <= maxL; j++)
         {
-            std::cout << "Cannot open file: " << srcpath << "\n";
-            return 2; 
+            std::stringstream ss;
+            ss << fpath << "et_bra_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+
+            std::string srcpath = ss.str();
+            cout << "Generating source file " << srcpath << "\n";
+            std::ofstream of(srcpath);
+
+            if(!of.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath << "\n";
+                return 2; 
+            }
+
+            // output to source file
+            of << "#include \"eri/eri.h\"\n";
+
+            if(i == 0)
+                continue;
+
+            // The algorithm to use 
+            std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+
+            QAM am{i, 0, j, 0};
+            WriterInfo::Init(options, am, cpuinfofile);
+            etalgo->Create(am, DoubletType::BRA);
+            ET_Writer et_writer(*etalgo);
+
+            // write to the output file
+            et_writer.WriteETFile(of, ofh);
+            cout << "Done!\n";
         }
-
-        // output to source file
-        of << "#include \"eri/eri.h\"\n";
-
-        if(i == 0)
-            continue;
-
-        // The algorithm to use 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-
-        QAM am{i, 0, j, 0};
-        WriterInfo::Init(options, am, cpuinfofile);
-        etalgo->Create(am, DoubletType::BRA);
-        ET_Writer et_writer(*etalgo);
-
-        // write to the output file
-        et_writer.WriteETFile(of, ofh);
-        cout << "Done!\n";
     }
-
 
 
     ofh << "\n";

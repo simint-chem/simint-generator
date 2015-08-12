@@ -15,4 +15,5 @@ typedef std::map<int, int> OptionsMap;
 #define OPTION_SCALAR     6
 
 #define OPTION_NOSINGLEET 7
+#define OPTION_NOET       8
 #endif
