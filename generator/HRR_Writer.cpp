@@ -383,7 +383,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
 
         // header
-        ofh << prototype.str() << ";\n";
+        ofh << prototype.str() << ";\n\n";
 
     }
 

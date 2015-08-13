@@ -149,7 +149,7 @@ int main(int argc, char ** argv)
         }
 
         // output to source file
-        of << "#include \"eri/eri.h\"\n";
+        of << "#include \"eri/eri.h\"\n\n\n";
 
         // The algorithm to use 
         std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));

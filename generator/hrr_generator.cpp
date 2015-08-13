@@ -122,8 +122,7 @@ int main(int argc, char ** argv)
 
         // include files for sources
         ofb << "\n";
-        ofb << "#include \"eri/eri.h\"\n";
-        ofb << "\n\n";
+        ofb << "#include \"eri/eri.h\"\n\n\n";
 
         ofk << "\n";
         ofk << "#include \"eri/eri.h\"\n";

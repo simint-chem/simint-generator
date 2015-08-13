@@ -90,8 +90,7 @@ int main(int argc, char ** argv)
     ofh << "#ifndef ET__H\n";
     ofh << "#define ET__H\n";
     ofh << "\n";
-    ofh << "#include \"eri/eri.h\"\n";
-    ofh << "\n";
+    ofh << "#include \"eri/eri.h\"\n\n\n";
 
     // init once here to get the includes
     WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuinfofile);
