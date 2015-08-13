@@ -198,6 +198,9 @@ int main(int argc, char ** argv)
         for(int k = 0; k <= maxam; k++)
         for(int l = 0; l <= maxam; l++)
         {
+            if(!ValidQuartet(i,j,k,l))
+                continue;
+
             std::pair<double, double> err        = errmap.at({i,k,k,l});
             std::pair<double, double> err_erd    = errmap_erd.at({i,k,k,l});
             std::pair<double, double> err_libint = errmap_libint.at({i,k,k,l});
