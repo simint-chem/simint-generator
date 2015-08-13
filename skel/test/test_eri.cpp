@@ -8,6 +8,18 @@
 #include "test/Libint2.hpp"
 #include "vectorization/vectorization.h"
 
+typedef std::array<int, 4> QAM;
+
+
+static void UpdateMap(std::map<QAM, std::pair<double, double>> & m, std::pair<double, double> p, QAM am)
+{
+    std::pair<double, double> val = m.at(am);
+    val.first = std::max(val.first, p.first);
+    val.second = std::max(val.second, p.second);
+    m[am] = val;
+}
+
+
 int main(int argc, char ** argv)
 {
     // set up the function pointers
@@ -63,6 +75,19 @@ int main(int argc, char ** argv)
                                                          "Me", "erd", "libint", 
                                                          "Me", "erd", "libint");
 
+    std::map<QAM, std::pair<double, double>> errmap, errmap_erd, errmap_libint;
+
+    for(int i = 0; i <= maxam; i++)
+    for(int j = 0; j <= maxam; j++)
+    for(int k = 0; k <= maxam; k++)
+    for(int l = 0; l <= maxam; l++)
+    {
+        errmap[{i,j,k,l}] = {0,0};
+        errmap_erd[{i,j,k,l}] = {0,0};
+        errmap_libint[{i,j,k,l}] = {0,0};
+    }
+
+        
 
     // loop over all quartets, choosing only valid ones
     for(int i = 0; i <= maxam; i++)
@@ -132,10 +157,10 @@ int main(int argc, char ** argv)
                 std::pair<double, double> err           = CalcError(res,         res_valeev,  arrlen);
                 std::pair<double, double> err_erd       = CalcError(res_liberd,  res_valeev,  arrlen);
                 std::pair<double, double> err_libint    = CalcError(res_libint,  res_valeev,  arrlen);
+                UpdateMap(errmap, err, {i,j,k,l});
+                UpdateMap(errmap_erd, err_erd, {i,j,k,l});
+                UpdateMap(errmap_libint, err_libint, {i,j,k,l});
 
-                printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
-                                                              err.first,  err_erd.first,  err_libint.first,
-                                                              err.second, err_erd.second, err_libint.second);
 
 
                 // For debugging
@@ -169,6 +194,18 @@ int main(int argc, char ** argv)
 
             free_multishell_pair(P);
         }
+
+        for(int k = 0; k <= maxam; k++)
+        for(int l = 0; l <= maxam; l++)
+        {
+            std::pair<double, double> err        = errmap.at({i,k,k,l});
+            std::pair<double, double> err_erd    = errmap_erd.at({i,k,k,l});
+            std::pair<double, double> err_libint = errmap_libint.at({i,k,k,l});
+            printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
+                                                          err.first,  err_erd.first,  err_libint.first,
+                                                          err.second, err_erd.second, err_libint.second);
+        }
+
     }
 
     printf("\n");
