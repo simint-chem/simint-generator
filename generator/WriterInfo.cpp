@@ -287,7 +287,7 @@ bool HasVRR(void)
 
 bool HasET(void) 
 {
-    return (finalam_[2]+finalam_[3] > 0);
+    return (!GetOption(OPTION_NOET)) && (finalam_[2]+finalam_[3] > 0);
 }
 
 bool HasHRR(void) 

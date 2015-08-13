@@ -19,6 +19,7 @@ std::string GetNextArg(int & i, int argc, char ** argv)
     return argv[i++];
 }
 
+
 int GetIArg(int & i, int argc, char ** argv)
 {   
     std::string str = GetNextArg(i, argc, argv);
@@ -34,6 +35,29 @@ int GetIArg(int & i, int argc, char ** argv)
     }
 }
 
+
+std::string GetNextArg(size_t & i, const std::vector<std::string> & opt)
+{
+    if(i >= opt.size())
+        throw std::runtime_error("Error - no more arguments!");
+
+    return opt[i++];
+}
+
+
+int GetIArg(size_t & i, const std::vector<std::string> & opt)
+{
+    std::string str = GetNextArg(i, opt);
+    try {
+        return stoi(str);
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << "Cannot convert to int: " << str;
+        throw std::runtime_error(ss.str());
+    }
+}
 
 
 QuartetSet GenerateInitialQuartetTargets(QAM amlst)
@@ -169,3 +193,37 @@ OptionsMap DefaultOptions(void)
     options[OPTION_NOET] = 1;
     return options;
 }
+
+
+std::vector<std::string> ParseCommonOptions(OptionsMap & options, int argc, char ** argv)
+{
+    std::vector<std::string> ret;
+
+    int i = 1;
+    while(i < argc)
+    {
+        std::string argstr(GetNextArg(i, argc, argv));
+        if(argstr == "-et")
+            options[OPTION_NOET] = 0;
+        if(argstr == "-etvrr")
+            options[OPTION_NOSINGLEET] = 1;
+        if(argstr == "-ve")
+            options[OPTION_INLINEVRR] = 0;
+        else if(argstr == "-ee")
+            options[OPTION_INLINEET] = 0;
+        else if(argstr == "-he")
+            options[OPTION_INLINEHRR] = 0;
+        else if(argstr == "-s")
+            options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
+        else if(argstr == "-i")
+            options[OPTION_INTRINSICS] = 1;
+        else if(argstr == "-S")
+            options[OPTION_SCALAR] = 1;
+        else
+            ret.push_back(argstr);
+    }
+
+    return ret;
+}
+
+

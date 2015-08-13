@@ -26,20 +26,19 @@ int main(int argc, char ** argv)
     std::string cpuinfofile;
 
     // parse command line
-    int i = 1;
-    while(i < argc)
+    std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
+
+    // parse specific options
+    size_t iarg = 0;
+    while(iarg < otheropt.size())
     {
-        std::string argstr(GetNextArg(i, argc, argv));
+        std::string argstr(GetNextArg(iarg, otheropt));
         if(argstr == "-L")
-            maxL = GetIArg(i, argc, argv);
+            maxL = GetIArg(iarg, otheropt);
         else if(argstr == "-o")
-            fpath = GetNextArg(i, argc, argv);
+            fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
-            cpuinfofile = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-            options[OPTION_INTRINSICS] = 1;
-        else if(argstr == "-S")
-            options[OPTION_SCALAR] = 1;
+            cpuinfofile = GetNextArg(iarg, otheropt);
         else
         {
             std::cout << "\n\n";
@@ -49,6 +48,7 @@ int main(int argc, char ** argv)
             return 1; 
         } 
     }
+
 
     if(fpath == "")
     {
@@ -70,6 +70,7 @@ int main(int argc, char ** argv)
 
     if(fpath.back() != '/')
         fpath += '/';
+
 
 
     // different source and header files
@@ -97,7 +98,7 @@ int main(int argc, char ** argv)
 
 
     // we want all gaussians up to the maximum L value
-    for(i = 1; i <= maxL; i++)
+    for(int i = 1; i <= maxL; i++)
     {
         std::stringstream ss;
         ss << fpath << "vrr_" << amchar[i] << "_s_s_s.c";
@@ -132,7 +133,7 @@ int main(int argc, char ** argv)
 
     }
 
-    for(i = 1; i <= maxL; i++)
+    for(int i = 1; i <= maxL; i++)
     {
         std::stringstream ss;
         ss << fpath << "vrr_s_s_" << amchar[i] << "_s.c";
@@ -170,7 +171,7 @@ int main(int argc, char ** argv)
     if(options[OPTION_NOET] > 0)
     {
         // we have to generate ( X s | X s ) VRR relations
-        for(i = 1; i <= maxL; i++)
+        for(int i = 1; i <= maxL; i++)
         for(int j = 1; j <= maxL; j++)
         {
             std::stringstream ss;

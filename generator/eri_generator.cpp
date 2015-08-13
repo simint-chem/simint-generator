@@ -31,41 +31,29 @@ int main(int argc, char ** argv)
     bool amlistset = false;
 
     // parse command line
-    int i = 1;
-    while(i < argc)
+    std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
+
+    // parse specific options
+    size_t iarg = 0;
+    while(iarg < otheropt.size())
     {
-        std::string argstr(GetNextArg(i, argc, argv));
-        if(argstr == "-ve")
-            options[OPTION_INLINEVRR] = 0;
-        else if(argstr == "-ee")
-            options[OPTION_INLINEET] = 0;
-        else if(argstr == "-he")
-            options[OPTION_INLINEHRR] = 0;
-        else if(argstr == "-s")
-            options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
-        else if(argstr == "-d")
-            datdir = GetNextArg(i, argc, argv);
-
+        std::string argstr(GetNextArg(iarg, otheropt));
+        if(argstr == "-o")
+            fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
-            cpuinfofile = GetNextArg(i, argc, argv);
-
-        else if(argstr == "-i")
-            options[OPTION_INTRINSICS] = 1;
-        else if(argstr == "-S")
-            options[OPTION_SCALAR] = 1;
-
+            cpuinfofile = GetNextArg(iarg, otheropt);
+        else if(argstr == "-d")
+            datdir = GetNextArg(iarg, otheropt);
+        else if(argstr == "-b")
+            boystype = GetNextArg(iarg, otheropt);
         else if(argstr == "-q")
         {
-            amlist[0] = GetIArg(i, argc, argv);   
-            amlist[1] = GetIArg(i, argc, argv);   
-            amlist[2] = GetIArg(i, argc, argv);   
-            amlist[3] = GetIArg(i, argc, argv);   
+            amlist[0] = GetIArg(iarg, otheropt);   
+            amlist[1] = GetIArg(iarg, otheropt);   
+            amlist[2] = GetIArg(iarg, otheropt);   
+            amlist[3] = GetIArg(iarg, otheropt);   
             amlistset = true;
         }
-        else if(argstr == "-b")
-            boystype = GetNextArg(i, argc, argv);
-        else if(argstr == "-o")
-            fpath = GetNextArg(i, argc, argv);
         else
         {
             std::cout << "\n\n";
@@ -75,6 +63,7 @@ int main(int argc, char ** argv)
             return 1; 
         } 
     }
+
 
     // check for required options
     if(boystype == "")

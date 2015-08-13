@@ -48,9 +48,11 @@ parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags file")
 
+parser.add_argument("-et", required=False, action='store_true', help="Use electron transfer rather than second VRR")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-ee", required=False, type=int, default=1000, help="External ET for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
+parser.add_argument("-etvrr", required=False, action='store_true', help="Use VRR for ( s s | X s ) rather than ET")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
@@ -156,6 +158,10 @@ if args.i:
     cmdline.append("-i")
 if args.S:
     cmdline.append("-S")
+if args.et:
+    cmdline.append("-et")
+if args.etvrr:
+    cmdline.append("-etvrr")
 
 print("Creating HRR sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -174,6 +180,7 @@ if ret != 0:
   print("Subprocess returned {} - aborting".format(ret))
   print("*********************************")
   print("\n")
+  quit(1)
 
 
 
@@ -190,6 +197,10 @@ if args.i:
     cmdline.append("-i")
 if args.S:
     cmdline.append("-S")
+if args.et:
+    cmdline.append("-et")
+if args.etvrr:
+    cmdline.append("-etvrr")
 
 print("Creating ET sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -208,6 +219,7 @@ if ret != 0:
   print("Subprocess returned {} - aborting".format(ret))
   print("*********************************")
   print("\n")
+  quit(1)
 
 
 
@@ -217,6 +229,15 @@ if ret != 0:
 ####################################################
 logfile = os.path.join(outdir_erigen, "vrr.log")
 
+if args.et:
+  if args.etvrr:
+    maxL = args.l*2
+  else:
+    maxL = args.l*4
+else:
+  maxL = args.l*2
+
+
 cmdline = [vrr_gen]
 cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
@@ -225,6 +246,10 @@ if args.i:
     cmdline.append("-i")
 if args.S:
     cmdline.append("-S")
+if args.et:
+    cmdline.append("-et")
+if args.etvrr:
+    cmdline.append("-etvrr")
 
 print("Creating VRR sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -243,6 +268,7 @@ if ret != 0:
   print("Subprocess returned {} - aborting".format(ret))
   print("*********************************")
   print("\n")
+  quit(1)
 
 
 
@@ -350,6 +376,10 @@ for q in valid:
         cmdline.append("-i")
     if args.S:
         cmdline.append("-S")
+    if args.et:
+        cmdline.append("-et")
+    if args.etvrr:
+        cmdline.append("-etvrr")
 
     print()
     print("Command line:")

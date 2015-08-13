@@ -11,7 +11,6 @@
 
 using namespace std;
 
-
 int main(int argc, char ** argv)
 {
     try {
@@ -27,20 +26,19 @@ int main(int argc, char ** argv)
     std::string cpuinfofile;
 
     // parse command line
-    int i = 1;
-    while(i < argc)
+    std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
+
+    // parse specific options
+    size_t iarg = 0;
+    while(iarg < otheropt.size())
     {
-        std::string argstr(GetNextArg(i, argc, argv));
+        std::string argstr(GetNextArg(iarg, otheropt));
         if(argstr == "-L")
-            maxL = GetIArg(i, argc, argv);
+            maxL = GetIArg(iarg, otheropt);
         else if(argstr == "-o")
-            fpath = GetNextArg(i, argc, argv);
+            fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
-            cpuinfofile = GetNextArg(i, argc, argv);
-        else if(argstr == "-i")
-            options[OPTION_INTRINSICS] = 1;
-        else if(argstr == "-S")
-            options[OPTION_SCALAR] = 1;
+            cpuinfofile = GetNextArg(iarg, otheropt);
         else
         {
             std::cout << "\n\n";
@@ -50,6 +48,7 @@ int main(int argc, char ** argv)
             return 1; 
         } 
     }
+
 
     if(fpath == "")
     {
@@ -71,7 +70,6 @@ int main(int argc, char ** argv)
 
     if(fpath.back() != '/')
         fpath += '/';
-
 
 
 
@@ -98,7 +96,7 @@ int main(int argc, char ** argv)
 
 
     // we want all doublets up to L
-    for(i = 1; i <= maxL; i++)
+    for(int i = 1; i <= maxL; i++)
     for(int j = 1; j <= i; j++)
     {
         std::stringstream ssb, ssk;
