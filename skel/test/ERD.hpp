@@ -3,7 +3,7 @@
 
 #include "shell/shell.h"
 #include "test/common.hpp"
-#include "test/timer.hpp"
+#include "test/timer.h"
 
 typedef std::vector<gaussian_shell> GaussianVec;
 

@@ -8,7 +8,7 @@
 #include "boys/boys.h"
 #include "test/common.hpp"
 #include "test/ERD.hpp"
-#include "test/timer.hpp"
+#include "test/timer.h"
 
 #ifdef BENCHMARK_VALIDATE
 #include "test/valeev.hpp"

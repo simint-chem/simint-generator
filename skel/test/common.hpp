@@ -8,7 +8,7 @@
 #include <fstream>
     
 #include "shell/shell.h"
-#include "test/timer.hpp"
+#include "test/timer.h"
 
 #define MAXAM 2
 

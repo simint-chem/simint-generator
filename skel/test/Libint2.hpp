@@ -2,7 +2,7 @@
 #define TEST_LIBINT2_HPP
 
 #include "shell/shell.h"
-#include "test/timer.hpp"
+#include "test/timer.h"
 #include "test/libint2/libint2.h"
 
 class Libint2_ERI

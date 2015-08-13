@@ -1,10 +1,13 @@
 #include <string.h> // memset
 #include "test/libint2/libint2.h"
+#include "test/timer.h"
 #include "boys/boys_split.h"
+#include "vectorization/vectorization.h"
 #include "vectorization/vectorization.h"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
+
 
 // Disable intel warnings
 // 193 : zero used for undefined preprocessing identifier "LIBINT2_DEFINED__aB_s___0__s___1___TwoPRep_s___0__s___1___Ab__up_18
@@ -30,6 +33,7 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
 
     // timing
     unsigned long totaltime = 0;
+    TimerType ticks0, ticks1;
 
     int istart = 0;
     for(int a = 0, ab = 0; a < Q.nshell1; a++)
@@ -239,10 +243,10 @@ unsigned long long libint2_integrals(Libint_eri_t * erival,
     
             if(M)
             {
-                //CLOCK(ticks0);
+                CLOCK(ticks0);
                 LIBINT2_PREFIXED_NAME(libint2_build_eri)[Q.am1][Q.am2][P.am1][P.am2](erival);
-                //CLOCK(ticks1);
-                //totaltime += {ticks1 - ticks0, (ticks1 - ticks0)/(1.0e9*PROC_CYCLES_PER_SECOND)};
+                CLOCK(ticks1);
+                totaltime += ticks1 - ticks0;
 
                 // permute
                 int nn = 0;

@@ -6,7 +6,7 @@
 #include "eri/eri.h"
 #include "boys/boys.h"
 #include "test/common.hpp"
-#include "test/timer.hpp"
+#include "test/timer.h"
 
 
 #ifdef BENCHMARK_VALIDATE
