@@ -119,8 +119,8 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << "\n";
 
 
-        if(!WriterInfo::Scalar())
-            os << indent3 << "#pragma omp simd linear(real_abcd)\n";
+        //if(!WriterInfo::Scalar())
+        //    os << indent3 << "#pragma omp simd linear(real_abcd)\n";
         os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
         os << indent3 << "{\n";
 
@@ -225,8 +225,8 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         os << "\n";
 
 
-        if(!WriterInfo::Scalar())
-            os << indent3 << "#pragma omp simd linear(real_abcd)\n";
+        //if(!WriterInfo::Scalar())
+        //    os << indent3 << "#pragma omp simd linear(real_abcd)\n";
         os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
         os << indent3 << "{\n";
 
@@ -353,8 +353,8 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
         std::stringstream prototype;
 
-        if(!WriterInfo::Scalar())
-            prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
+        //if(!WriterInfo::Scalar())
+        //    prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
         prototype << "void HRR_BRA_";
         prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
 
@@ -397,8 +397,8 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
         std::stringstream prototype;
 
-        if(!WriterInfo::Scalar())
-            prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
+        //if(!WriterInfo::Scalar())
+        //    prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
         prototype << "void HRR_KET_";
         prototype << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
 
