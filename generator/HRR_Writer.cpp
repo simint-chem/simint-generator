@@ -148,10 +148,10 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
             for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
             for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
-                os << indent4 << "// form " << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << "\n";
+                QAM am = {itb[0], itb[1], itk[0], itk[1]};
+                os << indent4 << "// form " << WriterInfo::ArrVarName(am) << "\n";
 
                 // allocate temporary if needed
-                QAM am = {itb[0], itb[1], itk[0], itk[1]};
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
@@ -181,10 +181,10 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
             for(const auto & itk : hrr_algo_.GetKetAMOrder())
             {
-                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << "\n";
+                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
+                os << indent4 << "// form " << WriterInfo::ArrVarName(am) << "\n";
 
                 // allocate temporary if needed
-                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
@@ -254,10 +254,10 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
             for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
             for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
-                os << indent4 << "// form " << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << "\n";
+                QAM am = {itb[0], itb[1], itk[0], itk[1]};
+                os << indent4 << "// form " << WriterInfo::ArrVarName(am) << "\n";
 
                 // allocate temporary if needed
-                QAM am = {itb[0], itb[1], itk[0], itk[1]};
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
@@ -265,7 +265,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
                 os << indent4 << "HRR_BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << "(\n";
 
                 // pointer to result buffer
-                os << indent5 << "HRR_" << WriterInfo::ArrVarName({itb[0], itb[1], itk[0], itk[1]}) << ",\n";
+                os << indent5 << "HRR_" << WriterInfo::ArrVarName(am) << ",\n";
 
                 // pointer to requirements
                 for(const auto & it : hrr_algo_.GetBraAMReq(itb))
@@ -289,10 +289,10 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
             for(const auto & itk : hrr_algo_.GetKetAMOrder())
             {
-                os << indent4 << "// form " << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << "\n";
+                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
+                os << indent4 << "// form " << WriterInfo::ArrVarName(am) << "\n";
 
                 // allocate temporary if needed
-                QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
                     os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
 
@@ -300,7 +300,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
                 os << amchar[itk[0]] << "_" << amchar[itk[1]] << "(\n";
 
                 // pointer to result buffer
-                os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], itk[0], itk[1]}) << ",\n";
+                os << indent5 << "HRR_" << WriterInfo::ArrVarName(am) << ",\n";
 
                 // pointer to requirements
                 for(const auto & it : hrr_algo_.GetKetAMReq(itk))
