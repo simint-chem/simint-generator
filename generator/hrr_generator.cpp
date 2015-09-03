@@ -94,11 +94,25 @@ int main(int argc, char ** argv)
     ofh << "#include \"vectorization/vectorization.h\"\n";
     ofh << "\n\n";
 
-
+    std::vector<std::pair<int, int>> togen;
     // we want all doublets up to L
     for(int i = 1; i <= maxL; i++)
     for(int j = 1; j <= i; j++)
+        togen.push_back({i,j});
+
+
+    // we also need some more
+    for(int i = maxL+1; i < 2*maxL; i++)
+    for(int j = 1; j <= (2*maxL-i); j++)
+        togen.push_back({i,j});
+
+    
+
+    for(const auto & it : togen)
     {
+        int i = it.first;
+        int j = it.second;
+
         std::stringstream ssb, ssk;
         ssb << fpath << "hrr_bra_" << amchar[i] << "_" << amchar[j] << ".c";
         ssk << fpath << "hrr_ket_" << amchar[i] << "_" << amchar[j] << ".c";

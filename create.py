@@ -153,7 +153,7 @@ logfile = os.path.join(outdir_erigen, "hrr.log")
 cmdline = [hrr_gen]
 cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l*2)])
+cmdline.extend(["-L", str(args.l)])
 if args.i:
     cmdline.append("-i")
 if args.S:
@@ -241,7 +241,7 @@ else:
 cmdline = [vrr_gen]
 cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l*4)])
+cmdline.extend(["-L", str(maxL)])
 if args.i:
     cmdline.append("-i")
 if args.S:
