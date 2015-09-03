@@ -10,7 +10,7 @@
 #include "shell/shell.h"
 #include "test/timer.h"
 
-#define MAXAM 2
+#define MAXAM 3
 
 #define RND_ZERO 1.0e-15
 
