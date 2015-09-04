@@ -36,8 +36,8 @@ void WriteFile(std::ostream & os,
 
     bool hasoneoverp = (hasbravrr || hasbraet);
     bool hasoneoverq = (hasketvrr || hasketet);
-    bool hasoneover2p = (hasbraet || (hasbravrr && WriterInfo::L() > 1)); 
-    bool hasoneover2q = (hasketet || (hasketvrr && WriterInfo::L() > 1)); 
+    bool hasoneover2p = (hasbraet || (hasbravrr && (am[0]+am[1]) > 1)); 
+    bool hasoneover2q = (hasketet || (hasketvrr && (am[2]+am[3]) > 1)); 
     bool hasoneover2pq = WriterInfo::GetOption(OPTION_NOET) && 
                          (am[0] + am[1] > 0) && (am[2] + am[3] > 0);
 
