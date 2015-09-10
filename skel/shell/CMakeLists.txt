@@ -1,4 +1,4 @@
-add_library(simint_shell STATIC 
+add_library(simint_shell OBJECT 
                               shell.c
                               shell_constants.c
            )

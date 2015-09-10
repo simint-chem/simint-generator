@@ -69,3 +69,11 @@ add_subdirectory(shell)
 add_subdirectory(eri)
 add_subdirectory(test)
 
+
+
+# Create the main library
+add_library(simint STATIC
+                   $<TARGET_OBJECTS:simint_eri>
+                   $<TARGET_OBJECTS:simint_shell>
+                   $<TARGET_OBJECTS:simint_boys>
+           )

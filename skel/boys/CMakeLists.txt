@@ -1,4 +1,4 @@
-add_library(simint_boys STATIC 
+add_library(simint_boys OBJECT 
                                boys.c
                                boys_longfac.c
                                boys_chebygrid.c
