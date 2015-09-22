@@ -30,6 +30,18 @@ inline void Boys_F_split_simd(double * const restrict Farr, int n, double const 
     }
 }
 
+
+inline void Boys_F_split_single(double * const restrict Farr, int n, double const * const restrict xvec)
+{
+    for(int i = 0; i < SIMINT_SIMD_LEN; i++)
+    {
+        if(xvec[i] < BOYS_SHORTGRID_MAXX)
+            Farr[i] = Boys_F_taylor_single(n, xvec[i]);
+        else
+            Farr[i] = Boys_F_long_single(n, xvec[i]); 
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

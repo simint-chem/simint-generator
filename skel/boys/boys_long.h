@@ -37,6 +37,12 @@ inline void Boys_F_long_simd(double * restrict F, int n, double x)
 }
 
 
+inline double Boys_F_long_single(int n, double x)
+{
+    return boys_longfac[n] * sqrt(1.0/x);
+}
+
+
 #ifdef __cplusplus
 }
 #endif

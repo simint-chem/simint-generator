@@ -79,6 +79,35 @@ inline void Boys_F_taylor_simd(double * restrict F, int n, double x)
 }
 
 
+inline double Boys_F_taylor_single(int n, double x)
+{
+    const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+    const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
+    const double dx = xi-x;   // -delta x
+
+    double const * const restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
+
+    const double f0xi = gridpts[n];
+    const double f1xi = gridpts[n+1];
+    const double f2xi = gridpts[n+2];
+    const double f3xi = gridpts[n+3];
+    const double f4xi = gridpts[n+4];
+    const double f5xi = gridpts[n+5];
+    const double f6xi = gridpts[n+6];
+    const double f7xi = gridpts[n+7];
+
+    return f0xi
+           + dx * (                  f1xi
+           + dx * ( (1.0/2.0   )   * f2xi
+           + dx * ( (1.0/6.0   )   * f3xi
+           + dx * ( (1.0/24.0  )   * f4xi
+           + dx * ( (1.0/120.0 )   * f5xi
+           + dx * ( (1.0/720.0 )   * f6xi
+           + dx * ( (1.0/5040.0)   * f7xi
+           )))))));
+}
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -151,7 +151,7 @@ void BoysFO::AddConstants(void) const
     // for b0
     WriterInfo::AddIntConstant(1);
 
-    if(L < 3)
+    if(L < BOYS_FO_RECUR)
     {
         for(int m = 0; m <= L; m++)
         {
@@ -214,7 +214,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
     // just calculate them all if L is small
     // value of 3 found by testing
-    if(WriterInfo::L() < 3)
+    if(WriterInfo::L() < BOYS_FO_RECUR)
     {
         for(int m = 0; m <= WriterInfo::L(); m++)
             WriteBoysSingle_(os, m, true);
@@ -279,19 +279,81 @@ BoysFO::BoysFO(std::string dir)
 
 void BoysSplit::WriteBoys(std::ostream & os) const
 {
-    os << indent5 << "Boys_F_split_simd((double *)" << WriterInfo::PrimVarName({0,0,0,0}) << ", " 
-                  << WriterInfo::L() << ", (const double *)(&F_x));\n";
+    std::string primname = WriterInfo::PrimVarName({0,0,0,0});
 
-    os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+    if(WriterInfo::L() < BOYS_SPLIT_RECUR)
+    {
+        os << indent5 << "Boys_F_split_simd((double *)" << primname << ", " 
+                      << WriterInfo::L() << ", (const double *)(&F_x));\n";
+
+        os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
 
     for(int i = 0; i <= WriterInfo::L(); i++)
-        os << indent5 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= prefac;\n";
+        os << indent5 << primname << "[" << i << "] *= prefac;\n";
+    }
+    else
+    {
+        // calculate highest, and recurse down
+        os << indent5 << "Boys_F_split_single((double *)(" << primname << "+" << WriterInfo::L() << "), " << WriterInfo::L() << ", (const double *)(&F_x));\n";
+
+
+        // calculate the downward recursion factors
+        os << indent5 << WriterInfo::ConstDoubleType() << " x2 = " << WriterInfo::IntConstant(2) << " * F_x;\n";
+        os << indent5 << WriterInfo::ConstDoubleType() << " ex = " << WriterInfo::Exp("-F_x") << ";\n";
+
+        for(int m = WriterInfo::L()-1; m > 0; m--)
+        {
+            std::stringstream cname;
+            cname << "FO_RECUR_" << m;
+            os << indent5 << primname << "[" << m << "] = (x2 * " << primname << "[" << (m+1) << "] + ex) * " << WriterInfo::NamedConstant(cname.str()) << ";\n";
+        }
+
+        // do m = 0
+        os << indent5 << primname << "[0] = (x2 * " << primname << "[1] + ex);\n"; // times 1.0
+
+
+        // add prefac now
+        os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
+ 
+        os << "\n";
+        os << indent5 << "for(n = 0; n <= " << WriterInfo::L() << "; ++n)\n";
+        os << indent6 << primname << "[n] *= prefac;\n";
+        os << "\n";
+    }
+
 }
 
 std::vector<std::string> BoysSplit::Includes(void) const
 {
     std::vector<std::string> v{"boys/boys_split.h"};
     return v;
+}
+
+
+void BoysSplit::AddConstants(void) const
+{
+    const int L = WriterInfo::L();
+
+    // for b0
+    WriterInfo::AddIntConstant(1);
+
+    if(L >= BOYS_SPLIT_RECUR)
+    {
+        // add the factor of 2.0
+        WriterInfo::AddIntConstant(2);
+
+        // constants for the recursion
+        // skipping i = 0 since that is 1.0
+        for(int i = L-1; i > 0; i--)
+        {
+            std::stringstream cname, ssval;
+            cname << "FO_RECUR_" << i;
+            ssval.precision(18);
+            ssval << (1.0/(2.0*i+1.0));
+            WriterInfo::AddNamedConstant(cname.str(), ssval.str());
+        }        
+    }
+       
 }
 
 

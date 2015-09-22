@@ -6,6 +6,20 @@
 #include <map>
 
 
+/////////////////////////////////////////////////////////////
+// Where to switch from calculating all the boys parameters
+// to calculating only the highest and then using the
+// downard recurrance
+/////////////////////////////////////////////////////////////
+
+
+#define BOYS_FO_RECUR 3
+
+#define BOYS_SPLIT_RECUR 500 // effectively disabled
+
+
+
+
 
 class BoysGen
 {
@@ -20,6 +34,9 @@ class BoysGen
     protected:
         virtual std::vector<std::string> Includes(void) const;
 };
+
+
+
 
 class BoysFO : public BoysGen
 {
@@ -59,10 +76,14 @@ struct BoysSplit : public BoysGen
     public:
         // default constructors ok
         virtual void WriteBoys(std::ostream & os) const;
+        virtual void AddConstants(void) const;
 
     protected:
         virtual std::vector<std::string> Includes(void) const;
 };
+
+
+
 
 
 struct BoysVRef : public BoysGen
