@@ -127,10 +127,10 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
         for(const auto & it : hrr_algo_.TopAM())
-            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
+            os << indent4 << "double const * restrict " << WriterInfo::HRRVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
-        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
+        os << indent4 << "double * restrict " << WriterInfo::HRRVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         os << "\n";
 
 
@@ -153,7 +153,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
                 // allocate temporary if needed
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
+                    os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
                 // ncart_ket in string form
                 std::stringstream ss;
@@ -186,7 +186,7 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
                 // allocate temporary if needed
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
+                    os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
                 // ncart_bra in string form
                 std::stringstream ss;
@@ -233,10 +233,10 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         os << "\n";
         os << indent4 << "// set up HRR pointers\n";
         for(const auto & it : hrr_algo_.TopAM())
-            os << indent4 << "double const * restrict HRR_" << WriterInfo::ArrVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
+            os << indent4 << "double const * restrict " << WriterInfo::HRRVarName(it) << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
         // and also for the final integral
-        os << indent4 << "double * restrict HRR_" << WriterInfo::ArrVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
+        os << indent4 << "double * restrict " << WriterInfo::HRRVarName(finalam) << " = " << WriterInfo::ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
         os << "\n";
 
 
@@ -259,17 +259,17 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
                 // allocate temporary if needed
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
+                    os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
                 // call function
                 os << indent4 << "HRR_BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << "(\n";
 
                 // pointer to result buffer
-                os << indent5 << "HRR_" << WriterInfo::ArrVarName(am) << ",\n";
+                os << indent5 << "" << WriterInfo::HRRVarName(am) << ",\n";
 
                 // pointer to requirements
                 for(const auto & it : hrr_algo_.GetBraAMReq(itb))
-                    os << indent5 << "HRR_" << WriterInfo::ArrVarName({it[0], it[1], itk[0], itk[1]}) << ",\n";
+                    os << indent5 << "" << WriterInfo::HRRVarName({it[0], it[1], itk[0], itk[1]}) << ",\n";
 
                 os << indent5 << "hAB_x, hAB_y, hAB_z, " << NCART(itk[0], itk[1]) << ");\n"; 
                 os << "\n\n";
@@ -294,17 +294,17 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
                 // allocate temporary if needed
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
-                    os << indent4 << "double HRR_" << WriterInfo::ArrVarName(am) << "[" << NCART(am) << "];\n";
+                    os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
                 os << indent4 << "HRR_KET_";
                 os << amchar[itk[0]] << "_" << amchar[itk[1]] << "(\n";
 
                 // pointer to result buffer
-                os << indent5 << "HRR_" << WriterInfo::ArrVarName(am) << ",\n";
+                os << indent5 << "" << WriterInfo::HRRVarName(am) << ",\n";
 
                 // pointer to requirements
                 for(const auto & it : hrr_algo_.GetKetAMReq(itk))
-                    os << indent5 << "HRR_" << WriterInfo::ArrVarName({finalbra[0], finalbra[1], it[0], it[1]}) << ",\n";
+                    os << indent5 << "" << WriterInfo::HRRVarName({finalbra[0], finalbra[1], it[0], it[1]}) << ",\n";
 
                 os << indent5 << "hCD_x, hCD_y, hCD_z, " << NCART(finalbra) << ");\n";
                 os << "\n\n";
@@ -359,11 +359,11 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
         prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
 
         // pointer to result buffer
-        prototype << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName(finalam[0], finalam[1], "X_X") << ",\n";
+        prototype << indent5 << "double * const restrict " << WriterInfo::HRRVarName(finalam[0], finalam[1], "X_X") << ",\n";
 
         // pointer to requirements
         for(const auto & it : hrr_algo_.GetBraAMReq(braam))
-            prototype << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName(it[0], it[1], "X_X") << ",\n";
+            prototype << indent5 << "double const * const restrict " << WriterInfo::HRRVarName(it[0], it[1], "X_X") << ",\n";
 
         prototype << indent5 << "const double hAB_x, const double hAB_y, const double hAB_z, const int ncart_ket)";
 
@@ -403,11 +403,11 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
         prototype << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
 
         // pointer to result buffer
-        prototype << indent5 << "double * const restrict HRR_" << WriterInfo::ArrVarName("X_X", finalam[2], finalam[3]) << ",\n";
+        prototype << indent5 << "double * const restrict " << WriterInfo::HRRVarName("X_X", finalam[2], finalam[3]) << ",\n";
 
         // pointer to requirements
         for(const auto & it : hrr_algo_.GetKetAMReq(ketam))
-            prototype << indent5 << "double const * const restrict HRR_" << WriterInfo::ArrVarName("X_X", it[0], it[1]) << ",\n";
+            prototype << indent5 << "double const * const restrict " << WriterInfo::HRRVarName("X_X", it[0], it[1]) << ",\n";
 
         prototype << indent5 << "const double hCD_x, const double hCD_y, const double hCD_z, const int ncart_bra)\n";
 
