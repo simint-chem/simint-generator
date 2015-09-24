@@ -34,7 +34,6 @@ endmacro()
 # OPTIONS
 ###################
 set(TESTS_BENCHMARK_VALIDATE FALSE CACHE BOOL "Validate integrals in benchmarks")
-set(PROC_CYCLES_PER_SECOND "" CACHE STRING "Processor cycles per second (in GHz)")
 
 
 ###################
@@ -61,14 +60,6 @@ else()
   #list(APPEND TESTS_CXX_FLAGS "-Drestrict=__restrict__")
   message(FATAL_ERROR "Unsupported compiler (for now)")
 endif()
-
-
-if("${PROC_CYCLES_PER_SECOND}" STREQUAL "")
-  message(WARNING "Warning - set PROC_CYCLES_PER_SECOND for accurate timing in seconds (ticks should still be accurate)")
-  set(PROC_CYCLES_PER_SECOND "2.7")
-endif()
-
-list(APPEND TESTS_CXX_FLAGS "-DPROC_CYCLES_PER_SECOND=${PROC_CYCLES_PER_SECOND}")
 
 
 
