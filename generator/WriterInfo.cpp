@@ -26,11 +26,11 @@ namespace {
 namespace WriterInfo {
 
 void Init(const OptionsMap & options, const QAM & finalam,
-          const std::string & cpuinfofile)
+          const std::string & cpuflags)
 {
     options_ = options;
     finalam_ = finalam;
-    ReadCPUFlags(cpuinfofile);
+    ReadCPUFlags(cpuflags);
 }
 
 
@@ -306,18 +306,22 @@ bool HasKetHRR(void)
 }
 
 
-void ReadCPUFlags(const std::string & file)
+void ReadCPUFlags(const std::string & flags)
 {
     std::set<std::string> cpuflags_tmp;
 
-    std::ifstream cpufile(file.c_str());
-    if(!cpufile.is_open())
-        throw std::runtime_error(std::string("Error - cannot open cpu flags file: ") + file);
+    // separate by spaces rather than commas
+    std::string spacesep = flags;
+    for(auto & it : spacesep)
+        if(it == ',')
+            it = ' ';
 
-    while(cpufile)
+    std::stringstream ss(spacesep);
+
+    while(ss)
     {
         std::string s;
-        cpufile >> s;
+        ss >> s;
 
         // convert to lower case
         for(auto & it : s)

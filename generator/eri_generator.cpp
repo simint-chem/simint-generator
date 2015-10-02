@@ -24,7 +24,7 @@ int main(int argc, char ** argv)
     // other stuff
     std::string boystype;
     std::string fpath;
-    std::string cpuinfofile;
+    std::string cpuflags;
     std::string datdir;
     QAM amlist;
 
@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
         if(argstr == "-o")
             fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
-            cpuinfofile = GetNextArg(iarg, otheropt);
+            cpuflags = GetNextArg(iarg, otheropt);
         else if(argstr == "-d")
             datdir = GetNextArg(iarg, otheropt);
         else if(argstr == "-b")
@@ -90,9 +90,9 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(cpuinfofile == "")
+    if(cpuflags == "")
     {
-        std::cout << "\nCPU info file required\n\n";
+        std::cout << "\nCPU flags required\n\n";
         return 2;
     }
 
@@ -133,7 +133,7 @@ int main(int argc, char ** argv)
     std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
     // Base writer information
-    WriterInfo::Init(options, amlist, cpuinfofile);
+    WriterInfo::Init(options, amlist, cpuflags);
 
     // Working backwards, I need:
     // 1.) HRR Steps

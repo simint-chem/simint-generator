@@ -7,7 +7,7 @@
 namespace WriterInfo {
 
         void Init(const OptionsMap & options, const QAM & finalam,
-                  const std::string & cpuinfofile);
+                  const std::string & cpuflags);
 
         void ReadCPUFlags(const std::string & file);
 

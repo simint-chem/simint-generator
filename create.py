@@ -46,7 +46,7 @@ parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
-parser.add_argument("-c", type=str, required=True, default="",   help="CPUFlags file")
+parser.add_argument("-c", type=str, required=True, default="",   help="CPU Flags (comma separated)")
 
 parser.add_argument("-et", required=False, action='store_true', help="Use electron transfer rather than second VRR")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
@@ -99,10 +99,6 @@ if not os.path.isfile(et_gen):
 
 if not os.path.isfile(vrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(vrr_gen))
-  quit(1)
-
-if not os.path.isfile(args.c):
-  print("The file \"{}\" does not exist or is not a file".format(args.c))
   quit(1)
 
 if not args.b in validboys:

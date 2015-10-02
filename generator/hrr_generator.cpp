@@ -23,7 +23,7 @@ int main(int argc, char ** argv)
 
     // other stuff
     std::string fpath;
-    std::string cpuinfofile;
+    std::string cpuflags;
 
     // parse command line
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
         else if(argstr == "-o")
             fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
-            cpuinfofile = GetNextArg(iarg, otheropt);
+            cpuflags = GetNextArg(iarg, otheropt);
         else
         {
             std::cout << "\n\n";
@@ -62,9 +62,9 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(cpuinfofile == "")
+    if(cpuflags == "")
     {
-        std::cout << "\nCPU info file required\n\n";
+        std::cout << "\nCPU flags required\n\n";
         return 2;
     }
 
@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
 
         // we can create functions for both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
-        WriterInfo::Init(options, am, cpuinfofile);
+        WriterInfo::Init(options, am, cpuflags);
 
         hrralgo->Create(am);
         HRR_Writer hrr_writer(*hrralgo);
