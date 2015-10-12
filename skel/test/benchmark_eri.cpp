@@ -99,9 +99,14 @@ int main(int argc, char ** argv)
 
             gaussian_shell const * const C = &shellmap[k][0];
             gaussian_shell const * const D = &shellmap[l][0];
-            struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
 
-            TimerType time_total = 0;
+            TimerType time_pair_34_0 = 0;
+            TimerType time_pair_34_1 = 0;
+            CLOCK(time_pair_34_0);
+            struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
+            CLOCK(time_pair_34_1);
+
+            TimerType time_total = time_pair_34_1 - time_pair_34_0;
             size_t nprim_total = 0;
             size_t nshell1234_total = 0;
 
@@ -110,18 +115,24 @@ int main(int argc, char ** argv)
             for(size_t a = 0; a < shellmap[i].size(); a++)
             for(size_t b = 0; b < shellmap[j].size(); b++)
             {
-                const int nshell1 = 1; 
-                const int nshell2 = 1; 
+                const int nshell1 = 1;
+                const int nshell2 = 1;
+
                 const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
                 gaussian_shell const * const A = &shellmap[i][a];
                 gaussian_shell const * const B = &shellmap[j][b];
 
+                TimerType time_pair_12_0 = 0;
+                TimerType time_pair_12_1 = 0;
+                CLOCK(time_pair_12_0);
                 struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+                CLOCK(time_pair_12_1);
 
 
                 // actually calculate
                 time_total += Integral(P, Q, res_ints[ithread]);
+                time_total += time_pair_12_1 - time_pair_12_0;
 
 
 
