@@ -120,6 +120,9 @@ int main(int argc, char ** argv)
             size_t nprim_total = 0;
             size_t nshell1234_total = 0;
 
+            #ifdef BENCHMARK_VALIDATE
+            std::pair<double, double> err{0.0, 0.0};
+            #endif
 
             // do one shell pair at a time on the bra side
             for(size_t a = 0; a < shellmap_erd[i].size(); a++)
@@ -151,8 +154,9 @@ int main(int argc, char ** argv)
                                 &shellmap[k][0], nshell3,
                                 &shellmap[l][0], nshell4,
                                 res_ref, false);
-                std::pair<double, double> err = CalcError(res_ints[0], res_ref, arrlen);
-                printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+                std::pair<double, double> err2 = CalcError(res_ints[0], res_ref, arrlen);
+                err.first = std::max(err.first, err2.first);
+                err.second = std::max(err.second, err2.second);
                 #endif
 
                 nshell1234_total += nshell1234;
@@ -172,6 +176,10 @@ int main(int argc, char ** argv)
                                                                           nshell1234_total, nprim_total,
                                                                           time_total,
                                                                           (double)(time_total)/(double)(nprim_total));
+
+            #ifdef BENCHMARK_VALIDATE
+            printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);
+            #endif
         }
     }
 

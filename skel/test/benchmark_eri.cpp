@@ -110,6 +110,9 @@ int main(int argc, char ** argv)
             size_t nprim_total = 0;
             size_t nshell1234_total = 0;
 
+            #ifdef BENCHMARK_VALIDATE
+            std::pair<double, double> err{0.0, 0.0};
+            #endif
 
             // do one shell pair at a time on the bra side
             for(size_t a = 0; a < shellmap[i].size(); a++)
@@ -137,11 +140,12 @@ int main(int argc, char ** argv)
 
 
                 #ifdef BENCHMARK_VALIDATE
-                const int ncart1234 = NCART(i) * NCART(j) * NCART(j) * NCART(l);
+                const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
                 const int arrlen = nshell1234 * ncart1234;
                 ValeevIntegrals(A, nshell1, B, nshell2, C, nshell3, D, nshell4, res_ref, false);
-                std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
-                printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+                std::pair<double, double> err2 = CalcError(res_ints[ithread], res_ref, arrlen);
+                err.first = std::max(err.first, err2.first);
+                err.second = std::max(err.second, err2.second);
                 #endif
 
                 nshell1234_total += nshell1234;
@@ -152,12 +156,17 @@ int main(int argc, char ** argv)
 
             free_multishell_pair(Q);
 
+            
             printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           nshell1234_total, nprim_total,
                                                                           time_total,
                                                                           (double)(time_total)/(double)(nprim_total));
+
+            #ifdef BENCHMARK_VALIDATE
+            printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);
+            #endif
         }
     }
 

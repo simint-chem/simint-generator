@@ -98,30 +98,35 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i, j, k, l))
                 continue;
 
-            const int nshell3 = shellmap[k].size();
-            const int nshell4 = shellmap[l].size();
+            const int nshell1 = shellmap[i].size();
+            const int nshell2 = shellmap[j].size();
 
-            gaussian_shell const * const C = &shellmap[k][0];
-            gaussian_shell const * const D = &shellmap[l][0];
-            struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
+            gaussian_shell const * const A = &shellmap[i][0];
+            gaussian_shell const * const B = &shellmap[j][0];
+            struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
 
             TimerType time_total = 0;
             size_t nprim_total = 0;
             size_t nshell1234_total = 0;
 
+            #ifdef BENCHMARK_VALIDATE
+            std::pair<double, double> err{0.0, 0.0};
+            #endif
 
-            // do one shell pair at a time on the bra side
-            for(size_t a = 0; a < shellmap[i].size(); a++)
-            for(size_t b = 0; b < shellmap[j].size(); b++)
+            // do one shell pair at a time on the ket side
+            // THIS IS DIFFERENT THAN THE OTHERS (libint requires a+b <= c+d)
+            // The libint wrapper will permute for me
+            for(size_t c = 0; c < shellmap[k].size(); c++)
+            for(size_t d = 0; d < shellmap[l].size(); d++)
             {
-                const int nshell1 = 1; 
-                const int nshell2 = 1; 
+                const int nshell3 = 1; 
+                const int nshell4 = 1; 
                 const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
-                gaussian_shell const * const A = &shellmap[i][a];
-                gaussian_shell const * const B = &shellmap[j][b];
+                gaussian_shell const * const C = &shellmap[k][c];
+                gaussian_shell const * const D = &shellmap[l][d];
 
-                struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+                struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
 
 
                 // actually calculate
@@ -136,8 +141,9 @@ int main(int argc, char ** argv)
                                 C, nshell3,
                                 D, nshell4,
                                 res_ref, false);
-                std::pair<double, double> err = CalcError(res_ints[ithread], res_ref, arrlen);
-                printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+                std::pair<double, double> err2 = CalcError(res_ints[ithread], res_ref, arrlen);
+                err.first = std::max(err.first, err2.first);
+                err.second = std::max(err.second, err2.second);
                 #endif
                     
                 nshell1234_total += nshell1234;
@@ -149,10 +155,10 @@ int main(int argc, char ** argv)
                 for(int s = 0; s < nshell4; s++)
                     nprim_total += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
 
-                free_multishell_pair(P);
+                free_multishell_pair(Q);
             }
 
-            free_multishell_pair(Q);
+            free_multishell_pair(P);
 
             printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
                                                                           ithread,
@@ -160,6 +166,10 @@ int main(int argc, char ** argv)
                                                                           nshell1234_total, nprim_total,
                                                                           time_total,
                                                                           (double)(time_total)/(double)(nprim_total));
+
+            #ifdef BENCHMARK_VALIDATE
+            printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);
+            #endif
         }
     }
 
