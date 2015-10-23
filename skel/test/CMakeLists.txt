@@ -33,6 +33,7 @@ endmacro()
 # OPTIONS
 ###################
 set(TESTS_BENCHMARK_VALIDATE FALSE CACHE BOOL "Validate integrals in benchmarks")
+set(TESTS_LIBINT2_SIMD FALSE CACHE BOOL "Libint2 Compiled with SIMD support")
 
 
 ###################
@@ -42,6 +43,13 @@ list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 if(TESTS_BENCHMARK_VALIDATE)
   list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE")
+endif()
+
+if(TESTS_LIBINT2_SIMD)
+  list(APPEND TESTS_CXX_FLAGS "-DTESTS_LIBINT2_SIMD")
+  list(APPEND TESTS_LIBINT2_FILES "Libint2_simd.cpp")
+else()
+  list(APPEND TESTS_LIBINT2_FILES "Libint2_scalar.cpp")
 endif()
 
 
@@ -136,7 +144,7 @@ set_target_properties(test_erd PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLU
 set_target_properties(test_erd PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 # Libint2
-add_library(test_libint2 OBJECT Libint2.cpp)
+add_library(test_libint2 OBJECT ${TESTS_LIBINT2_FILES})
 set_target_properties(test_libint2 PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_libint2 PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 

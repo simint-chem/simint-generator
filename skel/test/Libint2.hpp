@@ -36,6 +36,23 @@ class Libint2_ERI
     private:
         std::vector<Libint_eri_t> erival_;
 
+        TimerType IntegralsScalar_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+
+        #ifdef TESTS_LIBINT2_SIMD
+        TimerType IntegralsSIMD_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+
+        size_t worksize_;
+        double *work_;
+        double *tmp_AB_x_, *tmp_AB_y_, *tmp_AB_z_;
+        double *tmp_CD_x_, *tmp_CD_y_, *tmp_CD_z_;
+        double *tmp_PA_x_, *tmp_PA_y_, *tmp_PA_z_;
+        double *tmp_QC_x_, *tmp_QC_y_, *tmp_QC_z_;
+        double *tmp_WP_x_, *tmp_WP_y_, *tmp_WP_z_;
+        double *tmp_WQ_x_, *tmp_WQ_y_, *tmp_WQ_z_;
+        double *tmp_oo2z_, *tmp_oo2e_, *tmp_oo2ze_, *tmp_roz_, *tmp_roe_;
+        double *tmp_vecF_;
+        #endif
+
 };
 
 #endif

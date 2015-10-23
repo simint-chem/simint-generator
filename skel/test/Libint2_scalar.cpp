@@ -14,6 +14,7 @@
 #endif
 
 
+
 Libint2_ERI::Libint2_ERI(int maxam, size_t maxnprim)
 {
     size_t size = maxnprim * maxnprim * maxnprim * maxnprim;
@@ -298,4 +299,5 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
 
     return totaltime;
 }
+
 
