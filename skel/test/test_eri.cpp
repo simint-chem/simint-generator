@@ -201,9 +201,9 @@ int main(int argc, char ** argv)
             if(!ValidQuartet(i,j,k,l))
                 continue;
 
-            std::pair<double, double> err        = errmap.at({i,k,k,l});
-            std::pair<double, double> err_erd    = errmap_erd.at({i,k,k,l});
-            std::pair<double, double> err_libint = errmap_libint.at({i,k,k,l});
+            std::pair<double, double> err        = errmap.at({i,j,k,l});
+            std::pair<double, double> err_erd    = errmap_erd.at({i,j,k,l});
+            std::pair<double, double> err_libint = errmap_libint.at({i,j,k,l});
             printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
                                                           err.first,  err_erd.first,  err_libint.first,
                                                           err.second, err_erd.second, err_libint.second);

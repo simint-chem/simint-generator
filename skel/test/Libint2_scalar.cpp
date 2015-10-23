@@ -1,4 +1,3 @@
-#include <cstring> // memset
 #include "constants.h"
 #include "test/Libint2.hpp"
 #include "boys/boys_split.h"
@@ -42,7 +41,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
     double F[M+1];
 
     size_t ncart1234 = NCART(P.am1) * NCART(P.am2) * NCART(Q.am1) * NCART(Q.am2);
-    memset(integrals, 0, P.nshell12 * Q.nshell12 * ncart1234);
+    std::fill(integrals, integrals + P.nshell12 * Q.nshell12 * ncart1234, 0.0);
 
     // timing
     TimerType totaltime = 0;
