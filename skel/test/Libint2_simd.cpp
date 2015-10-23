@@ -18,7 +18,7 @@
 #define LIBINT2_LOAD(x) LIBINT2_REALTYPE(*(x+3), *(x+2), *(x+1), *(x+0))
 
 
-
+static_assert(false, "THIS NEEDS TO BE UPDATED TO TAKE INTO ACCOUNT P,Q PERMUTATIONS. BENCHMARK_LIBINT2.CPP AS WELL (IE, NSHELL FOR P AND Q)")
 
 Libint2_ERI::Libint2_ERI(int maxam, size_t maxnprim)
 {

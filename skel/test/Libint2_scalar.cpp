@@ -35,8 +35,20 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
 {
     Libint_eri_t * erival = erival_.data();
 
-    // according to libint, l(c)+l(d) >= l(a) + l(b)
-    // so we switch P and Q, then permute
+    // permute?
+    // Libint requires Q.am >= P.am
+    struct multishell_pair * libint_P = &P;
+    struct multishell_pair * libint_Q = &Q;
+    
+    bool permutePQ = false;
+    if( (P.am1 + P.am2) > (Q.am1 + Q.am2) )
+    {
+        libint_P = &Q;
+        libint_Q = &P;
+        permutePQ = true;
+    }
+    
+
     const int M = P.am1 + P.am2 + Q.am1 + Q.am2;
     double F[M+1];
 
@@ -48,19 +60,19 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
     TimerType ticks0, ticks1;
 
     int istart = 0;
-    for(int a = 0, ab = 0; a < Q.nshell1; a++)
-    for(int b = 0;         b < Q.nshell2; b++, ab++)
+    for(int a = 0, ab = 0; a < libint_P->nshell1; a++)
+    for(int b = 0;         b < libint_P->nshell2; b++, ab++)
     {
-        int iend = istart + Q.nprim12[ab];
+        int iend = istart + libint_P->nprim12[ab];
 
         int jstart = 0;
 
-        for(int c = 0, cd = 0; c < P.nshell1; c++)
-        for(int d = 0;         d < P.nshell2; d++, cd++)
+        for(int c = 0, cd = 0; c < libint_Q->nshell1; c++)
+        for(int d = 0;         d < libint_Q->nshell2; d++, cd++)
         {
-            int jend = jstart + P.nprim12[cd];
+            int jend = jstart + libint_Q->nprim12[cd];
 
-            size_t nprim1234 = Q.nprim12[ab] * P.nprim12[cd];
+            size_t nprim1234 = libint_P->nprim12[ab] * libint_Q->nprim12[cd];
             erival[0].contrdepth = nprim1234;
             int nprim = 0;
 
@@ -68,40 +80,40 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
             for(int i = istart; i < iend; i++)
             for(int j = jstart; j < jend; j++)
             {
-                const double PQalpha_sum = P.alpha[j] + Q.alpha[i];
-                const double PQalpha_mul = P.alpha[j] * Q.alpha[i];
+                const double PQalpha_sum = libint_Q->alpha[j] + libint_P->alpha[i];
+                const double PQalpha_mul = libint_Q->alpha[j] * libint_P->alpha[i];
                 const double one_over_PQalpha_sum = 1.0 / PQalpha_sum;
-                const double one_over_Palpha = 1.0 / P.alpha[j];
-                const double one_over_Qalpha = 1.0 / Q.alpha[i];
+                const double one_over_Palpha = 1.0 / libint_Q->alpha[j];
+                const double one_over_Qalpha = 1.0 / libint_P->alpha[i];
 
-                erival[nprim].AB_x[0] = Q.AB_x[ab];
-                erival[nprim].AB_y[0] = Q.AB_y[ab];
-                erival[nprim].AB_z[0] = Q.AB_z[ab];
+                erival[nprim].AB_x[0] = libint_P->AB_x[ab];
+                erival[nprim].AB_y[0] = libint_P->AB_y[ab];
+                erival[nprim].AB_z[0] = libint_P->AB_z[ab];
 
-                erival[nprim].CD_x[0] = P.AB_x[cd];
-                erival[nprim].CD_y[0] = P.AB_y[cd];
-                erival[nprim].CD_z[0] = P.AB_z[cd];
+                erival[nprim].CD_x[0] = libint_Q->AB_x[cd];
+                erival[nprim].CD_y[0] = libint_Q->AB_y[cd];
+                erival[nprim].CD_z[0] = libint_Q->AB_z[cd];
 
-                erival[nprim].PA_x[0] = Q.PA_x[i];
-                erival[nprim].PA_y[0] = Q.PA_y[i];
-                erival[nprim].PA_z[0] = Q.PA_z[i];
+                erival[nprim].PA_x[0] = libint_P->PA_x[i];
+                erival[nprim].PA_y[0] = libint_P->PA_y[i];
+                erival[nprim].PA_z[0] = libint_P->PA_z[i];
 
-                erival[nprim].QC_x[0] = P.PA_x[j];
-                erival[nprim].QC_y[0] = P.PA_y[j];
-                erival[nprim].QC_z[0] = P.PA_z[j];
+                erival[nprim].QC_x[0] = libint_Q->PA_x[j];
+                erival[nprim].QC_y[0] = libint_Q->PA_y[j];
+                erival[nprim].QC_z[0] = libint_Q->PA_z[j];
 
                 double W[3];
-                W[0] = (P.alpha[j] * P.x[j] + Q.alpha[i] * Q.x[i]) * one_over_PQalpha_sum;
-                W[1] = (P.alpha[j] * P.y[j] + Q.alpha[i] * Q.y[i]) * one_over_PQalpha_sum;
-                W[2] = (P.alpha[j] * P.z[j] + Q.alpha[i] * Q.z[i]) * one_over_PQalpha_sum;
+                W[0] = (libint_Q->alpha[j] * libint_Q->x[j] + libint_P->alpha[i] * libint_P->x[i]) * one_over_PQalpha_sum;
+                W[1] = (libint_Q->alpha[j] * libint_Q->y[j] + libint_P->alpha[i] * libint_P->y[i]) * one_over_PQalpha_sum;
+                W[2] = (libint_Q->alpha[j] * libint_Q->z[j] + libint_P->alpha[i] * libint_P->z[i]) * one_over_PQalpha_sum;
                 
-                erival[nprim].WP_x[0] = W[0] - Q.x[i]; 
-                erival[nprim].WP_y[0] = W[1] - Q.y[i]; 
-                erival[nprim].WP_z[0] = W[2] - Q.z[i]; 
+                erival[nprim].WP_x[0] = W[0] - libint_P->x[i]; 
+                erival[nprim].WP_y[0] = W[1] - libint_P->y[i]; 
+                erival[nprim].WP_z[0] = W[2] - libint_P->z[i]; 
 
-                erival[nprim].WQ_x[0] = W[0] - P.x[j]; 
-                erival[nprim].WQ_y[0] = W[1] - P.y[j]; 
-                erival[nprim].WQ_z[0] = W[2] - P.z[j]; 
+                erival[nprim].WQ_x[0] = W[0] - libint_Q->x[j]; 
+                erival[nprim].WQ_y[0] = W[1] - libint_Q->y[j]; 
+                erival[nprim].WQ_z[0] = W[2] - libint_Q->z[j]; 
 
                 double rho = PQalpha_mul * one_over_PQalpha_sum;
                 erival[nprim].oo2z[0] = 0.5 * one_over_Qalpha; 
@@ -112,9 +124,9 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
                
 
                 double PQ2 = 0.0;
-                PQ2 += (P.x[j] - Q.x[i])*(P.x[j] - Q.x[i]);
-                PQ2 += (P.y[j] - Q.y[i])*(P.y[j] - Q.y[i]);
-                PQ2 += (P.z[j] - Q.z[i])*(P.z[j] - Q.z[i]);
+                PQ2 += (libint_Q->x[j] - libint_P->x[i])*(libint_Q->x[j] - libint_P->x[i]);
+                PQ2 += (libint_Q->y[j] - libint_P->y[i])*(libint_Q->y[j] - libint_P->y[i]);
+                PQ2 += (libint_Q->z[j] - libint_P->z[i])*(libint_Q->z[j] - libint_P->z[i]);
                 double T = rho * PQ2; 
 
 
@@ -122,7 +134,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
                 Boys_F_split(F, M, T); 
 
                 // temporarily disable so that it matches bit-for-bit my code
-                double scale = sqrt(one_over_PQalpha_sum) * P.prefac[j] * Q.prefac[i];
+                double scale = sqrt(one_over_PQalpha_sum) * libint_Q->prefac[j] * libint_P->prefac[i];
 
                 switch(M)
                 {
@@ -249,40 +261,41 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
             CLOCK(ticks1);
             totaltime += (ticks1 - ticks0);
 
-            double * intptr = integrals + ( cd * Q.nshell12 + ab ) * ncart1234;
+            double * intptr;
+            if(permutePQ)  // ab loops through Q, cd loops through P
+                intptr = integrals + ( cd * Q.nshell12 + ab ) * ncart1234;
+            else
+                intptr = integrals + ( ab * Q.nshell12 + cd ) * ncart1234;
     
             if(M)
             {
                 CLOCK(ticks0);
-                LIBINT2_PREFIXED_NAME(libint2_build_eri)[Q.am1][Q.am2][P.am1][P.am2](erival);
+                LIBINT2_PREFIXED_NAME(libint2_build_eri)[libint_P->am1][libint_P->am2][libint_Q->am1][libint_Q->am2](erival);
                 CLOCK(ticks1);
                 totaltime += (ticks1 - ticks0);
 
                 // permute
-                int nn = 0;
-                for(int n1 = 0; n1 < NCART(Q.am1); n1++)
-                for(int n2 = 0; n2 < NCART(Q.am2); n2++)
-                for(int n3 = 0; n3 < NCART(P.am1); n3++)
-                for(int n4 = 0; n4 < NCART(P.am2); n4++)
-                    intptr[ n3*NCART(P.am2)*NCART(Q.am1)*NCART(Q.am2)
-                           +n4*NCART(Q.am1)*NCART(Q.am2)
-                           +n1*NCART(Q.am2)
-                           +n2] = erival[0].targets[0][nn++];
+                if(permutePQ)
+                {
+                    int nn = 0;
+                    for(int n1 = 0; n1 < NCART(Q.am1); n1++)
+                    for(int n2 = 0; n2 < NCART(Q.am2); n2++)
+                    for(int n3 = 0; n3 < NCART(P.am1); n3++)
+                    for(int n4 = 0; n4 < NCART(P.am2); n4++)
+                        intptr[ n3*NCART(P.am2)*NCART(Q.am1)*NCART(Q.am2)
+                               +n4*NCART(Q.am1)*NCART(Q.am2)
+                               +n1*NCART(Q.am2)
+                               +n2] = erival[0].targets[0][nn++];
+                }
+                else
+                    std::copy(erival[0].targets[0], erival[0].targets[0] + ncart1234, intptr);
             }
             else
             {
                 intptr[0] = 0.0;
-                // sum in the same order as would happen in my code
                 #pragma novector
-                for(int i = 0; i < P.nprim12[cd]; ++i)
-                {
-                    #pragma novector
-                    for(int j = 0; j < Q.nprim12[ab]; ++j)
-                    {
-                        int idx = j * P.nprim12[cd] + i;
-                        intptr[0] += erival[idx].LIBINT_T_SS_EREP_SS(0)[0];
-                    }
-                }
+                for(int i = 0; i < P.nprim12[ab]*Q.nprim12[cd]; ++i)
+                    intptr[0] += erival[i].LIBINT_T_SS_EREP_SS(0)[0];
             }
 
             jstart = jend;

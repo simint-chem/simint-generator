@@ -16,11 +16,11 @@ def ValidQuartet(q):
   if q[2] < q[3]:
     return False
 
-  if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
-    return False
+  #if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
+  #  return False
 
-  if q[0] < q[2]:
-    return False 
+  #if q[0] < q[2]:
+  #  return False 
 
   return True
 

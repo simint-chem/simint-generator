@@ -81,7 +81,6 @@ int main(int argc, char ** argv)
         int ithread = omp_get_thread_num();
 
         #ifdef BENCHMARK_VALIDATE
-        // move the reader back to the beginning of the file
         printf("Run %d\n", n);
         #endif
 
@@ -138,7 +137,6 @@ int main(int argc, char ** argv)
                 time_total += time_pair_12_1 - time_pair_12_0;
 
 
-
                 #ifdef BENCHMARK_VALIDATE
                 const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
                 const int arrlen = nshell1234 * ncart1234;
@@ -156,7 +154,7 @@ int main(int argc, char ** argv)
 
             free_multishell_pair(Q);
 
-            
+
             printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
