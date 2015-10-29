@@ -16,16 +16,26 @@ int HRR_Algorithm_Base::GetOption(int opt) const
     return options_.at(opt);
 }
 
-void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned)
+void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRStepType steptype)
 {
     DoubletSet dnew;
 
     for(auto & it : d)
     {
-        if(it.right && it.right.am() != 0)
-            dnew.insert(it);
-        else if(it)
-            pruned.insert(it);
+        if(steptype == RRStepType::J || steptype == RRStepType::L)
+        {
+            if(it.right && it.right.am() != 0)
+                dnew.insert(it);
+            else if(it)
+                pruned.insert(it);
+        }
+        else
+        {
+            if(it.left && it.left.am() != 0)
+                dnew.insert(it);
+            else if(it)
+                pruned.insert(it);
+        }
     }
 
     d = dnew; 
@@ -96,7 +106,7 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
 
         //cout << "Generated " << newtargets.size() << " new targets\n";
 
-        PruneDoublets_(newtargets, pruned);
+        PruneDoublets_(newtargets, pruned, steptype);
 
         //cout << "After pruning: " << newtargets.size() << " new targets\n";
         //for(const auto & it : newtargets)
@@ -122,18 +132,17 @@ void HRR_Algorithm_Base::Create(QAM am)
     DoubletSet initbras = GenerateInitialDoubletTargets({am[0],am[1]}, DoubletType::BRA);
     PrintDoubletSet(initbras, "Initial Targets");
 
-    // Initial bra targets
-    DoubletSet targets = initbras;
-    PruneDoublets_(targets, bratop_);
-    PrintDoubletSet(targets, "Initial bra targets");
-
-    // Solve the bra part
     // What direction are we going?
     RRStepType steptype = RRStepType::J; // Moving I -> J
     if(am[0] < am[1])
         steptype = RRStepType::I;  // Moving J -> I
-        
 
+    // Initial bra targets
+    DoubletSet targets = initbras;
+    PruneDoublets_(targets, bratop_, steptype);
+    PrintDoubletSet(targets, "Initial bra targets");
+
+    // Solve the bra part
     HRRDoubletStepList brasteps;
     HRRDoubletLoop_(brasteps, targets, solvedbras, bratop_, steptype);
     std::reverse(brasteps.begin(), brasteps.end());
@@ -160,21 +169,21 @@ void HRR_Algorithm_Base::Create(QAM am)
     
 
     // now do kets
-    // we only need the bras from the original targets
-    DoubletSet solvedkets;
-    DoubletSet initkets = GenerateInitialDoubletTargets({am[2],am[3]}, DoubletType::KET);
-    targets = initkets;
-    PruneDoublets_(targets, kettop_);
-
-    cout << "\n\n";
-    PrintDoubletSet(targets, "Initial ket targets");
-
-    // Solve the ket part
     // What direction are we going?
     steptype = RRStepType::L;  // Moving K->L
     if(am[2] < am[3])
         steptype = RRStepType::K; // Moving L->K
 
+    // we only need the bras from the original targets
+    DoubletSet solvedkets;
+    DoubletSet initkets = GenerateInitialDoubletTargets({am[2],am[3]}, DoubletType::KET);
+    targets = initkets;
+    PruneDoublets_(targets, kettop_, steptype);
+
+    cout << "\n\n";
+    PrintDoubletSet(targets, "Initial ket targets");
+
+    // Solve the ket part
     HRRDoubletStepList ketsteps;
     HRRDoubletLoop_(ketsteps, targets, solvedkets, kettop_, steptype);
     std::reverse(ketsteps.begin(), ketsteps.end());
