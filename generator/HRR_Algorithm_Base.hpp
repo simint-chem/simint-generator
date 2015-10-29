@@ -57,12 +57,13 @@ class HRR_Algorithm_Base
 
         DAMList braamorder_, ketamorder_;
 
-        virtual HRRDoubletStep DoubletStep_(const Doublet & target) = 0;
+        virtual HRRDoubletStep DoubletStep_(const Doublet & target, RRStepType steptype) = 0;
 
         void HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
                              const DoubletSet & inittargets,
                              DoubletSet & solveddoublets,
-                             DoubletSet & pruned);
+                             DoubletSet & pruned,
+                             RRStepType steptype);
 
         static void PruneDoublets_(DoubletSet & d, DoubletSet & pruned);
 

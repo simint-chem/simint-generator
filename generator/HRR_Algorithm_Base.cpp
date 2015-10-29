@@ -67,7 +67,8 @@ void HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, D
 void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
                                          const DoubletSet & inittargets,
                                          DoubletSet & solveddoublets,
-                                         DoubletSet & pruned)
+                                         DoubletSet & pruned,
+                                         RRStepType steptype)
 {
     DoubletSet targets = inittargets;
 
@@ -82,7 +83,7 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
             if(solveddoublets.count(*it) > 0)
                 continue;
 
-            HRRDoubletStep hrr = this->DoubletStep_(*it);
+            HRRDoubletStep hrr = this->DoubletStep_(*it, steptype);
             hrrlist.push_back(hrr);
 
             if(solveddoublets.count(hrr.src[0]) == 0)
@@ -127,8 +128,14 @@ void HRR_Algorithm_Base::Create(QAM am)
     PrintDoubletSet(targets, "Initial bra targets");
 
     // Solve the bra part
+    // What direction are we going?
+    RRStepType steptype = RRStepType::J; // Moving I -> J
+    if(am[0] < am[1])
+        steptype = RRStepType::I;  // Moving J -> I
+        
+
     HRRDoubletStepList brasteps;
-    HRRDoubletLoop_(brasteps, targets, solvedbras, bratop_);
+    HRRDoubletLoop_(brasteps, targets, solvedbras, bratop_, steptype);
     std::reverse(brasteps.begin(), brasteps.end());
 
     // store in map by AM
@@ -163,8 +170,13 @@ void HRR_Algorithm_Base::Create(QAM am)
     PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
+    // What direction are we going?
+    steptype = RRStepType::L;  // Moving K->L
+    if(am[2] < am[3])
+        steptype = RRStepType::K; // Moving L->K
+
     HRRDoubletStepList ketsteps;
-    HRRDoubletLoop_(ketsteps, targets, solvedkets, kettop_);
+    HRRDoubletLoop_(ketsteps, targets, solvedkets, kettop_, steptype);
     std::reverse(ketsteps.begin(), ketsteps.end());
 
     // store in map by AM

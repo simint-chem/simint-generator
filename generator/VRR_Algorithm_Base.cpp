@@ -136,7 +136,7 @@ bool VRR_Algorithm_Base::HasBraVRR(void) const
     {
         for(const auto & it2 : it.second)
         {
-            if(it2.type == VRRStepType::I || it2.type == VRRStepType::J)
+            if(it2.type == RRStepType::I || it2.type == RRStepType::J)
                 return true;
         }
     }
@@ -150,7 +150,7 @@ bool VRR_Algorithm_Base::HasKetVRR(void) const
     {
         for(const auto & it2 : it.second)
         {
-            if(it2.type == VRRStepType::K || it2.type == VRRStepType::L)
+            if(it2.type == RRStepType::K || it2.type == RRStepType::L)
                 return true;
         }
     }
@@ -229,7 +229,7 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             // fill in the ijkl members
             int istep = XYZStepToIdx(vs.xyz);
             vs.ijkl = {0, 0, 0, 0};
-            if(vs.type == VRRStepType::I || vs.type == VRRStepType::J)
+            if(vs.type == RRStepType::I || vs.type == RRStepType::J)
             {
                 if(vs.src[2] || vs.src[3])
                     vs.ijkl[0] = it.bra.left.ijk[istep]-1;
@@ -323,7 +323,7 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             maxint_ = std::max(its.ijkl[2], maxint_);
             maxint_ = std::max(its.ijkl[3], maxint_);
 
-            if(its.type == VRRStepType::I || its.type == VRRStepType::J)
+            if(its.type == RRStepType::I || its.type == RRStepType::J)
             {
                 if(its.src[0])
                     varreq_[qam].insert(std::string("P_PA_") + sstep);

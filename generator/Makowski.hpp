@@ -17,32 +17,57 @@ class Makowski_HRR : public HRR_Algorithm_Base
 
 
     private:
-        virtual HRRDoubletStep DoubletStep_(const Doublet & target)
+        virtual HRRDoubletStep DoubletStep_(const Doublet & target, RRStepType steptype)
         {
             if(target.am() == 0)
                 throw std::runtime_error("Cannot HRR step to an s doublet!");
 
+            const Gaussian * t;
+            const Gaussian * t2;
+
+            if(steptype == RRStepType::I || steptype == RRStepType::K)  // Going J->I or L->K
+            {
+                t = &target.left;
+                t2 = &target.right;
+            }
+            else // Going I->J or K->L
+            {
+                t = &target.right;
+                t2 = &target.left;
+            }
+                
+
             // idx is the xyz index
-            ExpList ijk = target.right.ijk;
+            ExpList ijk = t->ijk;
             std::sort(ijk.begin(), ijk.end());
             auto v = std::find_if(ijk.begin(), ijk.end(), [](int i) { return i != 0; });
-            auto it = std::find(target.right.ijk.rbegin(), target.right.ijk.rend(), *v); 
-            int idx = 2 - std::distance(target.right.ijk.rbegin(), it);  // remember we are working with reverse iterators
+            auto it = std::find(t->ijk.rbegin(), t->ijk.rend(), *v); 
+            int idx = 2 - std::distance(t->ijk.rbegin(), it);  // remember we are working with reverse iterators
 
             // gaussian common to both src1 and src2
-            Gaussian common(target.right.StepDown(idx, 1));
+            Gaussian common(t->StepDown(idx, 1));
 
             // for src1
-            Gaussian src1g(target.left.StepUp(idx, 1));
+            Gaussian src1g(t2->StepUp(idx, 1));
 
             // create new doublets
-            Doublet src1d{target.type, src1g, common};
-            Doublet src2d{target.type, target.left, common};
+            Doublet src1d, src2d;
+            if(steptype == RRStepType::I || steptype == RRStepType::K)
+            {
+                src1d = Doublet{target.type, common, src1g};
+                src2d = Doublet{target.type, common, target.right};
+            }
+            else
+            {
+                src1d = Doublet{target.type, src1g, common};
+                src2d = Doublet{target.type, target.left, common};
+            }
            
             XYZStep xyzstep = IdxToXYZStep(idx);
 
             // Create the HRR doublet step
-            HRRDoubletStep hrr{target, 
+            HRRDoubletStep hrr{steptype,
+                               target, 
                                src1d, src2d,
                                xyzstep};
             return hrr;
@@ -71,12 +96,12 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 // which center?
                 if(q.ket.right.am() > 0)
                 {
-                    vs.type = VRRStepType::L;
+                    vs.type = RRStepType::L;
                     g = &q.ket.right;
                 }
                 else
                 {
-                    vs.type = VRRStepType::K;
+                    vs.type = RRStepType::K;
                     g = &q.ket.left;
                 }
 
@@ -124,12 +149,12 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 // which center?
                 if(q.bra.right.am() > 0)
                 {
-                    vs.type = VRRStepType::J;
+                    vs.type = RRStepType::J;
                     g = &q.bra.right;
                 }
                 else
                 {
-                    vs.type = VRRStepType::I;
+                    vs.type = RRStepType::I;
                     g = &q.bra.left;
                 }
 

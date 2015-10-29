@@ -105,7 +105,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
         std::string vrr_const2;
         std::string vrr_const3;
 
-        if(it.type == VRRStepType::I || it.type == VRRStepType::J)
+        if(it.type == RRStepType::I || it.type == RRStepType::J)
         {
             aoppq = std::string("aop_PQ_") + XYZStepToStr(step);
             vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2p";
@@ -126,10 +126,10 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
 
         if(WriterInfo::HasFMA())
         {
-            if(it.type == VRRStepType::I || it.type == VRRStepType::J)
+            if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
                 os << indent6 << primname.str() << " = ";
-                if(it.type == VRRStepType::I)
+                if(it.type == RRStepType::I)
                     os << "P_PA_" << step;
                 else
                     os << "P_PB_" << step;
@@ -152,7 +152,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
             {
                 os << indent6 << primname.str();
 
-                if(it.type == VRRStepType::K)
+                if(it.type == RRStepType::K)
                     os << " = Q_PA_" << step;
                 else
                     os << " = Q_PB_" << step;
@@ -173,11 +173,11 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
         }
         else
         {
-            if(it.type == VRRStepType::I || it.type == VRRStepType::J)
+            if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
                 os << indent6 << primname.str();
 
-                if(it.type == VRRStepType::I)
+                if(it.type == RRStepType::I)
                     os << " = P_PA_" << step;
                 else
                     os << " = P_PB_" << step;
@@ -201,7 +201,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
             {
                 os << indent6 << primname.str();
 
-                if(it.type == VRRStepType::K)
+                if(it.type == RRStepType::K)
                     os << " = Q_PA_" << step;
                 else
                     os << " = Q_PB_" << step;

@@ -30,6 +30,9 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & st
         os << std::string(20, ' ') << "// " << it << "\n";
     
         const char * xyztype = "hAB_";
+        const char * sign = " + ";
+        if(it.steptype == RRStepType::I) // moving from J->I
+            sign = " - ";
 
         std::stringstream ss;
         os << std::string(20, ' ');
@@ -38,7 +41,7 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & st
 
         os << " = ";
         os << HRRBraStepVar_(it.src[0], ncart_ket, ketstr);
-        os << " + ( " << xyztype << it.xyz << " * ";
+        os << sign << "( " << xyztype << it.xyz << " * ";
         os << HRRBraStepVar_(it.src[1], ncart_ket, ketstr);
         os << " );";
         os << "\n\n";
@@ -61,13 +64,17 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & st
 
             const char * xyztype = "hCD_";
 
+            const char * sign = " + ";
+            if(it.steptype == RRStepType::K) // Moving from L->K
+                sign = " - ";
+
             os << std::string(20, ' ');
     
             os << HRRKetStepVar_(it.target, brastr);
 
             os << " = ";
             os << HRRKetStepVar_(it.src[0], brastr);
-            os << " + ( " << xyztype << it.xyz << " * ";
+            os << sign << "( " << xyztype << it.xyz << " * ";
             os << HRRKetStepVar_(it.src[1], brastr);
             os << " );";
             os << "\n\n";
