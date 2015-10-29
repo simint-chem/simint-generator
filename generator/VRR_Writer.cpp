@@ -99,17 +99,42 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
 
         os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 
+        std::string aoppq;
+        std::string vrr_const0;
+        std::string vrr_const1;
+        std::string vrr_const2;
+        std::string vrr_const3;
+
+        if(it.type == VRRStepType::I || it.type == VRRStepType::J)
+        {
+            aoppq = std::string("aop_PQ_") + XYZStepToStr(step);
+            vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2p";
+            vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2p";
+            vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2pq";
+            vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2pq";
+        }
+        else
+        {
+            aoppq = std::string("aoq_PQ_") + XYZStepToStr(step);
+            vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2q";
+            vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2q";
+            vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2pq";
+            vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2pq";
+        }
+
+
+
         if(WriterInfo::HasFMA())
         {
-            if(it.type == DoubletType::BRA)
+            if(it.type == VRRStepType::I || it.type == VRRStepType::J)
             {
-                std::string aoppq = std::string("-aop_PQ_") + XYZStepToStr(step);
-                std::string vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2p";
-                std::string vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2p";
-                std::string vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2pq";
-                std::string vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2pq";
+                os << indent6 << primname.str() << " = ";
+                if(it.type == VRRStepType::I)
+                    os << "P_PA_" << step;
+                else
+                    os << "P_PB_" << step;
 
-                os << indent6 << primname.str() << " = P_PA_" << step << " * " << srcname[0].str() << ";\n";
+                os << " * " << srcname[0].str() << ";\n";
 
                 if(it.src[1])
                     os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(aoppq, srcname[1].str(), primname.str()) << ";\n"; 
@@ -125,16 +150,17 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
             }
             else
             {
-                std::string aoqpq = std::string("aoq_PQ_") + XYZStepToStr(step);
-                std::string vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2q";
-                std::string vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2q";
-                std::string vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2pq";
-                std::string vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2pq";
+                os << indent6 << primname.str();
 
-                os << indent6 << primname.str() << " = Q_PA_" << step << " * " << srcname[0].str() << ";\n";
+                if(it.type == VRRStepType::K)
+                    os << " = Q_PA_" << step;
+                else
+                    os << " = Q_PB_" << step;
+
+                os << " * " << srcname[0].str() << ";\n";
 
                 if(it.src[1])
-                    os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(aoqpq, srcname[1].str(), primname.str()) << ";\n"; 
+                    os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(aoppq, srcname[1].str(), primname.str()) << ";\n"; 
                 if(it.src[2] && it.src[3])
                     os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(vrr_const0, WriterInfo::FMAdd("-a_over_q", srcname[3].str(), srcname[2].str()), primname.str()) << ";\n"; 
                 if(it.src[4] && it.src[5])
@@ -147,15 +173,16 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
         }
         else
         {
-            if(it.type == DoubletType::BRA)
+            if(it.type == VRRStepType::I || it.type == VRRStepType::J)
             {
-                std::string aoppq = std::string("aop_PQ_") + XYZStepToStr(step);
-                std::string vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2p";
-                std::string vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2p";
-                std::string vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2pq";
-                std::string vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2pq";
+                os << indent6 << primname.str();
 
-                os << indent6 << primname.str() << " = P_PA_" << step << " * " << srcname[0].str();
+                if(it.type == VRRStepType::I)
+                    os << " = P_PA_" << step;
+                else
+                    os << " = P_PB_" << step;
+
+                os << " * " << srcname[0].str();
 
                 if(it.src[1])
                     os << " - " << aoppq << " * " << srcname[1].str(); 
@@ -172,17 +199,18 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList &
             }
             else
             {
-                std::string aoqpq = std::string("aoq_PQ_") + XYZStepToStr(step);
-                std::string vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2q";
-                std::string vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2q";
-                std::string vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2pq";
-                std::string vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2pq";
+                os << indent6 << primname.str();
 
-                os << indent6 << primname.str() << " = Q_PA_" << step << " * " << srcname[0].str();
+                if(it.type == VRRStepType::K)
+                    os << " = Q_PA_" << step;
+                else
+                    os << " = Q_PB_" << step;
+
+                os << " * " << srcname[0].str();
 
                 // is this really supposed to be + aoq_PQ and not - ? That's how it's writtein in MEST
                 if(it.src[1])
-                    os << " + " << aoqpq << " * " << srcname[1].str(); 
+                    os << " + " << aoppq << " * " << srcname[1].str(); 
                 if(it.src[2] && it.src[3])
                     os << " + " << vrr_const0 << " * (" << srcname[2].str() << " - a_over_q * " << srcname[3].str() << ")"; 
                 if(it.src[4] && it.src[5])

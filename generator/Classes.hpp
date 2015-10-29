@@ -25,6 +25,14 @@ enum class DoubletType
     KET
 };
 
+enum class VRRStepType
+{
+    I,
+    J,
+    K,
+    L
+};
+
 enum class XYZStep
 {
     STEP_X,
@@ -366,7 +374,7 @@ inline std::ostream & operator<<(std::ostream & os, const ETStep & et)
 
 struct VRRStep
 {
-    DoubletType type;
+    VRRStepType type;
     Quartet target;
     std::array<Quartet, 8> src;    
     XYZStep xyz;
