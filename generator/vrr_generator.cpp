@@ -191,20 +191,29 @@ int main(int argc, char ** argv)
     if(options[OPTION_NOET] > 0)
     {
         // we have to generate ( X s | X s ) VRR relations
+        // (and sXsX, and XssX, and sXXs)
         for(int i = 1; i <= maxL; i++)
         for(int j = 1; j <= maxL; j++)
         {
-            std::stringstream ss1, ss2;
+            std::stringstream ss1, ss2, ss3, ss4;
             ss1 << fpath << "vrr_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
             ss2 << fpath << "vrr_s_" << amchar[i] << "_s_" << amchar[j] << ".c";
+            ss3 << fpath << "vrr_" << amchar[i] << "_s_s_" << amchar[j] << ".c";
+            ss4 << fpath << "vrr_s_" << amchar[i] << "_" << amchar[j] << "_s.c";
 
             std::string srcpath1 = ss1.str();
             std::string srcpath2 = ss2.str();
+            std::string srcpath3 = ss3.str();
+            std::string srcpath4 = ss4.str();
             cout << "Generating source file " << srcpath1 << "\n";
             cout << "Generating source file " << srcpath2 << "\n";
+            cout << "Generating source file " << srcpath3 << "\n";
+            cout << "Generating source file " << srcpath4 << "\n";
 
             std::ofstream of1(srcpath1);
             std::ofstream of2(srcpath2);
+            std::ofstream of3(srcpath3);
+            std::ofstream of4(srcpath4);
 
             if(!of1.is_open())
             {
@@ -218,17 +227,38 @@ int main(int argc, char ** argv)
                 return 2; 
             }
 
+            if(!of3.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath3 << "\n";
+                return 2; 
+            }
+
+            if(!of4.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath4 << "\n";
+                return 2; 
+            }
+
+
             // output to source file
             of1 << "#include \"eri/eri.h\"\n";
             of2 << "#include \"eri/eri.h\"\n";
+            of3 << "#include \"eri/eri.h\"\n";
+            of4 << "#include \"eri/eri.h\"\n";
 
             // The algorithm to use 
             std::unique_ptr<VRR_Algorithm_Base> vrralgo1(new Makowski_VRR(options));
             std::unique_ptr<VRR_Algorithm_Base> vrralgo2(new Makowski_VRR(options));
+            std::unique_ptr<VRR_Algorithm_Base> vrralgo3(new Makowski_VRR(options));
+            std::unique_ptr<VRR_Algorithm_Base> vrralgo4(new Makowski_VRR(options));
 
             QAM am1{i, 0, j, 0};
             QAM am2{0, i, 0, j};
+            QAM am3{i, 0, 0, j};
+            QAM am4{0, i, j, 0};
 
+
+            // Create the mapping
             WriterInfo::Init(options, am1, cpuflags);
             vrralgo1->Create(am1);
             VRR_Writer vrr_writer1(*vrralgo1);
@@ -238,6 +268,16 @@ int main(int argc, char ** argv)
             vrralgo2->Create(am2);
             VRR_Writer vrr_writer2(*vrralgo2);
             vrr_writer2.WriteVRRFile(of2, ofh);
+
+            WriterInfo::Init(options, am3, cpuflags);
+            vrralgo3->Create(am3);
+            VRR_Writer vrr_writer3(*vrralgo3);
+            vrr_writer3.WriteVRRFile(of3, ofh);
+
+            WriterInfo::Init(options, am4, cpuflags);
+            vrralgo4->Create(am4);
+            VRR_Writer vrr_writer4(*vrralgo4);
+            vrr_writer4.WriteVRRFile(of4, ofh);
 
             cout << "Done!\n";
 

@@ -175,8 +175,8 @@ int main(int argc, char ** argv)
         int j = it.second;
 
         std::stringstream ssb, ssk;
-        ssb << fpath << "hrr_bra_I_" << amchar[i] << "_" << amchar[j] << ".c";
-        ssk << fpath << "hrr_ket_K_" << amchar[i] << "_" << amchar[j] << ".c";
+        ssb << fpath << "hrr_bra_I_" << amchar[j] << "_" << amchar[i] << ".c";
+        ssk << fpath << "hrr_ket_K_" << amchar[j] << "_" << amchar[i] << ".c";
 
         std::string srcpath_bra = ssb.str();
         std::string srcpath_ket = ssk.str();

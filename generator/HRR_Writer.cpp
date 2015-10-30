@@ -292,7 +292,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         if(WriterInfo::HasKetHRR())
         {
-            RRStepType ketsteptype = (finalam[1] > finalam[0] ? RRStepType::L : RRStepType::K);
+            RRStepType ketsteptype = (finalam[3] > finalam[2] ? RRStepType::L : RRStepType::K);
             const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
 
             os << "\n";
@@ -406,7 +406,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
     if(ketsteps.size() > 0)
     {
-        RRStepType ketsteptype = (finalam[1] > finalam[0] ? RRStepType::L : RRStepType::K);
+        RRStepType ketsteptype = (finalam[3] > finalam[2] ? RRStepType::L : RRStepType::K);
         const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
 
         ofk << "//////////////////////////////////////////////\n";
