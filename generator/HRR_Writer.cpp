@@ -222,8 +222,12 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
     QAM finalam = WriterInfo::FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
 
+
     if(WriterInfo::HasHRR())
     {
+        RRStepType brasteptype = (finalam[1] > finalam[0] ? RRStepType::J : RRStepType::I);
+        const char * steptypestr = (brasteptype == RRStepType::J ? "J" : "I");
+
         os << indent3 << "//////////////////////////////////////////////\n";
         os << indent3 << "// Contracted integrals: Horizontal recurrance\n";
         os << indent3 << "//////////////////////////////////////////////\n";
@@ -269,7 +273,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
                     os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
                 // call function
-                os << indent4 << "HRR_BRA_" << amchar[itb[0]] << "_" << amchar[itb[1]] << "(\n";
+                os << indent4 << "HRR_BRA_" << steptypestr << "_" << amchar[itb[0]] << "_" << amchar[itb[1]] << "(\n";
 
                 // pointer to result buffer
                 os << indent5 << "" << WriterInfo::HRRVarName(am) << ",\n";
@@ -288,6 +292,9 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         if(WriterInfo::HasKetHRR())
         {
+            RRStepType ketsteptype = (finalam[1] > finalam[0] ? RRStepType::L : RRStepType::K);
+            const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
+
             os << "\n";
             os << indent4 << "const double hCD_x = CD_x[abcd];\n";
             os << indent4 << "const double hCD_y = CD_y[abcd];\n";
@@ -303,7 +310,7 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
                 if(!WriterInfo::IsContArray(am) && !WriterInfo::IsFinalAM(am))
                     os << indent4 << "double " << WriterInfo::HRRVarName(am) << "[" << NCART(am) << "];\n";
 
-                os << indent4 << "HRR_KET_";
+                os << indent4 << "HRR_KET_" << steptypestr << "_";
                 os << amchar[itk[0]] << "_" << amchar[itk[1]] << "(\n";
 
                 // pointer to result buffer
@@ -352,6 +359,9 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
     if(brasteps.size() > 0)
     {
+        RRStepType brasteptype = (finalam[1] > finalam[0] ? RRStepType::J : RRStepType::I);
+        const char * steptypestr = (brasteptype == RRStepType::J ? "J" : "I");
+
         ofb << "//////////////////////////////////////////////\n";
         ofb << "// BRA: ( " << amchar[braam[0]] << " " << amchar[braam[1]] << " |\n";
         ofb << "// Steps: " << brasteps.size() << "\n";
@@ -362,7 +372,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
         //if(!WriterInfo::Scalar())
         //    prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_ket)\n";
-        prototype << "void HRR_BRA_";
+        prototype << "void HRR_BRA_" << steptypestr << "_";
         prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(\n";
 
         // pointer to result buffer
@@ -396,6 +406,9 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
     if(ketsteps.size() > 0)
     {
+        RRStepType ketsteptype = (finalam[1] > finalam[0] ? RRStepType::L : RRStepType::K);
+        const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
+
         ofk << "//////////////////////////////////////////////\n";
         ofk << "// KET: ( " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " |\n";
         ofk << "// Steps: " << ketsteps.size() << "\n";
@@ -406,7 +419,7 @@ void HRR_Writer::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostre
 
         //if(!WriterInfo::Scalar())
         //    prototype << "#pragma omp declare simd simdlen(SIMINT_SIMD_LEN) uniform(ncart_bra)\n";
-        prototype << "void HRR_KET_";
+        prototype << "void HRR_KET_" << steptypestr << "_";
         prototype << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(\n";
 
         // pointer to result buffer

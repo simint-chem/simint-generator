@@ -125,7 +125,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     const size_t dshell12_size = nshell12 * sizeof(double);
     const size_t ibatch_size = nbatch * sizeof(int);
 
-    const size_t memsize = dprim_size*11 + dshell12_size*3 + ishell12_size + ibatch_size;
+    const size_t memsize = dprim_size*14 + dshell12_size*3 + ishell12_size + ibatch_size;
     P->memsize = memsize;
 
     // allocate one large space
@@ -136,18 +136,21 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->PA_x       = mem +  3*dprim_size;
     P->PA_y       = mem +  4*dprim_size;
     P->PA_z       = mem +  5*dprim_size;
-    P->bAB_x      = mem +  6*dprim_size;
-    P->bAB_y      = mem +  7*dprim_size;
-    P->bAB_z      = mem +  8*dprim_size;
-    P->alpha      = mem +  9*dprim_size;
-    P->prefac     = mem + 10*dprim_size;
+    P->PB_x       = mem +  6*dprim_size;
+    P->PB_y       = mem +  7*dprim_size;
+    P->PB_z       = mem +  8*dprim_size;
+    P->bAB_x      = mem +  9*dprim_size;
+    P->bAB_y      = mem + 10*dprim_size;
+    P->bAB_z      = mem + 11*dprim_size;
+    P->alpha      = mem + 12*dprim_size;
+    P->prefac     = mem + 13*dprim_size;
 
     // below are unaligned
-    P->AB_x       = mem + 11*dprim_size;
-    P->AB_y       = mem + 11*dprim_size +   dshell12_size;
-    P->AB_z       = mem + 11*dprim_size + 2*dshell12_size;
-    P->nprim12    = mem + 11*dprim_size + 3*dshell12_size;
-    P->nbatchprim = mem + 11*dprim_size + 3*dshell12_size + ishell12_size;
+    P->AB_x       = mem + 14*dprim_size;
+    P->AB_y       = mem + 14*dprim_size +   dshell12_size;
+    P->AB_z       = mem + 14*dprim_size + 2*dshell12_size;
+    P->nprim12    = mem + 14*dprim_size + 3*dshell12_size;
+    P->nbatchprim = mem + 14*dprim_size + 3*dshell12_size + ishell12_size;
 }
 
 
@@ -232,6 +235,9 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                     P->PA_x[idx] = P->x[idx] - A[sa].x;
                     P->PA_y[idx] = P->y[idx] - A[sa].y;
                     P->PA_z[idx] = P->z[idx] - A[sa].z;
+                    P->PB_x[idx] = P->x[idx] - B[sa].x;
+                    P->PB_y[idx] = P->y[idx] - B[sa].y;
+                    P->PB_z[idx] = P->z[idx] - B[sa].z;
                     P->bAB_x[idx] = B[sb].alpha[j]*Xab_x;
                     P->bAB_y[idx] = B[sb].alpha[j]*Xab_y;
                     P->bAB_z[idx] = B[sb].alpha[j]*Xab_z;

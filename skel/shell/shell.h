@@ -46,6 +46,9 @@ struct multishell_pair
     double * PA_x;
     double * PA_y;
     double * PA_z;
+    double * PB_x;
+    double * PB_y;
+    double * PB_z;
     double * bAB_x;
     double * bAB_y;
     double * bAB_z;

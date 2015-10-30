@@ -108,14 +108,15 @@ int main(int argc, char ** argv)
 
     
 
+    // create left->right
     for(const auto & it : togen)
     {
         int i = it.first;
         int j = it.second;
 
         std::stringstream ssb, ssk;
-        ssb << fpath << "hrr_bra_" << amchar[i] << "_" << amchar[j] << ".c";
-        ssk << fpath << "hrr_ket_" << amchar[i] << "_" << amchar[j] << ".c";
+        ssb << fpath << "hrr_bra_J_" << amchar[i] << "_" << amchar[j] << ".c";
+        ssk << fpath << "hrr_ket_L_" << amchar[i] << "_" << amchar[j] << ".c";
 
         std::string srcpath_bra = ssb.str();
         std::string srcpath_ket = ssk.str();
@@ -158,6 +159,66 @@ int main(int argc, char ** argv)
 
         // we can create functions for both bras/kets in the same loop iteration
         QAM am{i, j, i, j};
+        WriterInfo::Init(options, am, cpuflags);
+
+        hrralgo->Create(am);
+        HRR_Writer hrr_writer(*hrralgo);
+
+        // write to the output file (appending)
+        hrr_writer.WriteHRRFile(ofb, ofk, ofh);
+    }
+
+    // create right -> left
+    for(const auto & it : togen)
+    {
+        int i = it.first;
+        int j = it.second;
+
+        std::stringstream ssb, ssk;
+        ssb << fpath << "hrr_bra_I_" << amchar[i] << "_" << amchar[j] << ".c";
+        ssk << fpath << "hrr_ket_K_" << amchar[i] << "_" << amchar[j] << ".c";
+
+        std::string srcpath_bra = ssb.str();
+        std::string srcpath_ket = ssk.str();
+
+        std::ofstream ofb(srcpath_bra);
+        if(!ofb.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath_bra << "\n";
+            return 2; 
+        }
+
+        std::ofstream ofk(srcpath_ket);
+        if(!ofk.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath_ket << "\n";
+            return 2; 
+        }
+
+        // include files for sources
+        ofb << "\n";
+        ofb << "#include \"eri/eri.h\"\n\n\n";
+
+        ofk << "\n";
+        ofk << "#include \"eri/eri.h\"\n";
+        ofk << "\n\n";
+
+        // disable this diagnostic (for now)
+        ofb << "#ifdef __INTEL_COMPILER\n";
+        ofb << "    #pragma warning(disable:2620)\n";
+        ofb << "#endif\n";
+        ofb << "\n\n";
+
+        ofk << "#ifdef __INTEL_COMPILER\n";
+        ofk << "    #pragma warning(disable:2620)\n";
+        ofk << "#endif\n";
+        ofk << "\n\n";
+
+        // The algorithm to use
+        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+
+        // we can create functions for both bras/kets in the same loop iteration
+        QAM am{j, i, j, i};
         WriterInfo::Init(options, am, cpuflags);
 
         hrralgo->Create(am);

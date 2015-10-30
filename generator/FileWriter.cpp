@@ -88,6 +88,9 @@ void WriteFile(std::ostream & os,
         os << indent1 << "ASSUME_ALIGN_DBL(P.PA_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.PA_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_z);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_z);\n";
@@ -100,6 +103,9 @@ void WriteFile(std::ostream & os,
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_z);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_x);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_y);\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_z);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_z);\n";
@@ -242,6 +248,9 @@ void WriteFile(std::ostream & os,
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
         os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
+        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_x", "P.PB_x[i]") << ";\n";
+        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_y", "P.PB_y[i]") << ";\n";
+        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_z", "P.PB_z[i]") << ";\n";
     }
 
     if(hasketet)
@@ -300,6 +309,9 @@ void WriteFile(std::ostream & os,
         os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_x", "Q.PA_x", "j") << ";\n";
         os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_y", "Q.PA_y", "j") << ";\n";
         os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_z", "Q.PA_z", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_x", "Q.PB_x", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_y", "Q.PB_y", "j") << ";\n";
+        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_z", "Q.PB_z", "j") << ";\n";
     }
 
     if(hasbravrr)

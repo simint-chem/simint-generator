@@ -100,70 +100,90 @@ int main(int argc, char ** argv)
     // we want all gaussians up to the maximum L value
     for(int i = 1; i <= maxL; i++)
     {
-        std::stringstream ss;
-        ss << fpath << "vrr_" << amchar[i] << "_s_s_s.c";
+        std::stringstream ss1, ss2, ss3, ss4;
+        ss1 << fpath << "vrr_" << amchar[i] << "_s_s_s.c";
+        ss2 << fpath << "vrr_s_" << amchar[i] << "_s_s.c";
+        ss3 << fpath << "vrr_s_s_" << amchar[i] << "_s.c";
+        ss4 << fpath << "vrr_s_s_s_" << amchar[i] << "_.c";
 
-        std::string srcpath = ss.str();
-        cout << "Generating source file " << srcpath << "\n";
+        std::string srcpath1 = ss1.str();
+        std::string srcpath2 = ss2.str();
+        std::string srcpath3 = ss3.str();
+        std::string srcpath4 = ss4.str();
+        cout << "Generating source file " << srcpath1 << "\n";
+        cout << "Generating source file " << srcpath2 << "\n";
+        cout << "Generating source file " << srcpath3 << "\n";
+        cout << "Generating source file " << srcpath4 << "\n";
 
-        std::ofstream of(srcpath);
-        if(!of.is_open())
+        std::ofstream of1(srcpath1);
+        std::ofstream of2(srcpath2);
+        std::ofstream of3(srcpath3);
+        std::ofstream of4(srcpath4);
+
+        if(!of1.is_open())
         {
-            std::cout << "Cannot open file: " << srcpath << "\n";
+            std::cout << "Cannot open file: " << srcpath1 << "\n";
             return 2; 
         }
 
-        // output to source file
-        of << "#include \"eri/eri.h\"\n";
-
-        // The algorithm to use 
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-
-        QAM am{i, 0, 0, 0};
-        WriterInfo::Init(options, am, cpuflags);
-
-        // Create the mapping
-        vrralgo->Create(am);
-
-        VRR_Writer vrr_writer(*vrralgo);
-
-        // write to the output file
-        vrr_writer.WriteVRRFile(of, ofh);
-        cout << "Done!\n";
-
-    }
-
-    for(int i = 1; i <= maxL; i++)
-    {
-        std::stringstream ss;
-        ss << fpath << "vrr_s_s_" << amchar[i] << "_s.c";
-
-        std::string srcpath = ss.str();
-        cout << "Generating source file " << srcpath << "\n";
-
-        std::ofstream of(srcpath);
-        if(!of.is_open())
+        if(!of2.is_open())
         {
-            std::cout << "Cannot open file: " << srcpath << "\n";
+            std::cout << "Cannot open file: " << srcpath2 << "\n";
             return 2; 
         }
 
+        if(!of3.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath3 << "\n";
+            return 2; 
+        }
+
+        if(!of4.is_open())
+        {
+            std::cout << "Cannot open file: " << srcpath4 << "\n";
+            return 2; 
+        }
+
+
         // output to source file
-        of << "#include \"eri/eri.h\"\n\n\n";
+        of1 << "#include \"eri/eri.h\"\n";
+        of2 << "#include \"eri/eri.h\"\n";
+        of3 << "#include \"eri/eri.h\"\n";
+        of4 << "#include \"eri/eri.h\"\n";
 
         // The algorithm to use 
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo1(new Makowski_VRR(options));
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo2(new Makowski_VRR(options));
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo3(new Makowski_VRR(options));
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo4(new Makowski_VRR(options));
 
-        QAM am{0, 0, i, 0};
-        WriterInfo::Init(options, am, cpuflags);
+        QAM am1{i, 0, 0, 0};
+        QAM am2{0, i, 0, 0};
+        QAM am3{0, 0, i, 0};
+        QAM am4{0, 0, 0, i};
+
 
         // Create the mapping
-        vrralgo->Create(am);
+        WriterInfo::Init(options, am1, cpuflags);
+        vrralgo1->Create(am1);
+        VRR_Writer vrr_writer1(*vrralgo1);
+        vrr_writer1.WriteVRRFile(of1, ofh);
 
-        VRR_Writer vrr_writer(*vrralgo);
+        WriterInfo::Init(options, am2, cpuflags);
+        vrralgo2->Create(am2);
+        VRR_Writer vrr_writer2(*vrralgo2);
+        vrr_writer2.WriteVRRFile(of2, ofh);
 
-        // write to the output file
-        vrr_writer.WriteVRRFile(of, ofh);
+        WriterInfo::Init(options, am3, cpuflags);
+        vrralgo3->Create(am3);
+        VRR_Writer vrr_writer3(*vrralgo3);
+        vrr_writer3.WriteVRRFile(of3, ofh);
+
+        WriterInfo::Init(options, am4, cpuflags);
+        vrralgo4->Create(am4);
+        VRR_Writer vrr_writer4(*vrralgo4);
+        vrr_writer4.WriteVRRFile(of4, ofh);
+
         cout << "Done!\n";
 
     }
@@ -174,35 +194,51 @@ int main(int argc, char ** argv)
         for(int i = 1; i <= maxL; i++)
         for(int j = 1; j <= maxL; j++)
         {
-            std::stringstream ss;
-            ss << fpath << "vrr_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+            std::stringstream ss1, ss2;
+            ss1 << fpath << "vrr_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+            ss2 << fpath << "vrr_s_" << amchar[i] << "_s_" << amchar[j] << ".c";
 
-            std::string srcpath = ss.str();
-            cout << "Generating source file " << srcpath << "\n";
+            std::string srcpath1 = ss1.str();
+            std::string srcpath2 = ss2.str();
+            cout << "Generating source file " << srcpath1 << "\n";
+            cout << "Generating source file " << srcpath2 << "\n";
 
-            std::ofstream of(srcpath);
-            if(!of.is_open())
+            std::ofstream of1(srcpath1);
+            std::ofstream of2(srcpath2);
+
+            if(!of1.is_open())
             {
-                std::cout << "Cannot open file: " << srcpath << "\n";
+                std::cout << "Cannot open file: " << srcpath1 << "\n";
+                return 2; 
+            }
+
+            if(!of2.is_open())
+            {
+                std::cout << "Cannot open file: " << srcpath2 << "\n";
                 return 2; 
             }
 
             // output to source file
-            of << "#include \"eri/eri.h\"\n";
+            of1 << "#include \"eri/eri.h\"\n";
+            of2 << "#include \"eri/eri.h\"\n";
 
             // The algorithm to use 
-            std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+            std::unique_ptr<VRR_Algorithm_Base> vrralgo1(new Makowski_VRR(options));
+            std::unique_ptr<VRR_Algorithm_Base> vrralgo2(new Makowski_VRR(options));
 
-            QAM am{i, 0, j, 0};
-            WriterInfo::Init(options, am, cpuflags);
+            QAM am1{i, 0, j, 0};
+            QAM am2{0, i, 0, j};
 
-            // Create the mapping
-            vrralgo->Create(am);
+            WriterInfo::Init(options, am1, cpuflags);
+            vrralgo1->Create(am1);
+            VRR_Writer vrr_writer1(*vrralgo1);
+            vrr_writer1.WriteVRRFile(of1, ofh);
 
-            VRR_Writer vrr_writer(*vrralgo);
+            WriterInfo::Init(options, am2, cpuflags);
+            vrralgo2->Create(am2);
+            VRR_Writer vrr_writer2(*vrralgo2);
+            vrr_writer2.WriteVRRFile(of2, ofh);
 
-            // write to the output file
-            vrr_writer.WriteVRRFile(of, ofh);
             cout << "Done!\n";
 
         }

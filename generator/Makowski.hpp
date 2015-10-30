@@ -114,30 +114,56 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 int idx = 2 - std::distance(g->ijk.rbegin(), vit);  // remember we are working with reverse iterators
 
 
-                // these are independent of the centers
                 vs.xyz = IdxToXYZStep(idx);
                 vs.target = q;
                 vs.src = {q, q, q, q, q, q, q, q};
-                vs.src[0].ket.left.ijk[idx]--;
-                vs.src[1].ket.left.ijk[idx]--;
-                vs.src[1].m++;
 
-                vs.src[2].ket.left.ijk[idx] -= 2;
-                vs.src[3].ket.left.ijk[idx] -= 2;
-                vs.src[3].m++;
+                if(vs.type == RRStepType::K)
+                {
+                    vs.src[0].ket.left.ijk[idx]--;
+                    vs.src[1].ket.left.ijk[idx]--;
+                    vs.src[1].m++;
 
-                vs.src[4].ket.right.ijk[idx]--;
-                vs.src[4].ket.left.ijk[idx]--;
-                vs.src[5].ket.right.ijk[idx]--;
-                vs.src[5].ket.left.ijk[idx]--;
-                vs.src[5].m++;
+                    vs.src[2].ket.left.ijk[idx] -= 2;
+                    vs.src[3].ket.left.ijk[idx] -= 2;
+                    vs.src[3].m++;
 
-                vs.src[6].bra.left.ijk[idx]--;
-                vs.src[6].ket.left.ijk[idx]--;
-                vs.src[6].m++;
-                vs.src[7].bra.right.ijk[idx]--;
-                vs.src[7].ket.left.ijk[idx]--;
-                vs.src[7].m++;
+                    vs.src[4].ket.right.ijk[idx]--;
+                    vs.src[4].ket.left.ijk[idx]--;
+                    vs.src[5].ket.right.ijk[idx]--;
+                    vs.src[5].ket.left.ijk[idx]--;
+                    vs.src[5].m++;
+
+                    vs.src[6].bra.left.ijk[idx]--;
+                    vs.src[6].ket.left.ijk[idx]--;
+                    vs.src[6].m++;
+                    vs.src[7].bra.right.ijk[idx]--;
+                    vs.src[7].ket.left.ijk[idx]--;
+                    vs.src[7].m++;
+                }
+                else
+                {
+                    vs.src[0].ket.right.ijk[idx]--;
+                    vs.src[1].ket.right.ijk[idx]--;
+                    vs.src[1].m++;
+
+                    vs.src[2].ket.left.ijk[idx]--;
+                    vs.src[2].ket.right.ijk[idx]--;
+                    vs.src[3].ket.left.ijk[idx]--;
+                    vs.src[3].ket.right.ijk[idx]--;
+                    vs.src[3].m++;
+
+                    vs.src[4].ket.right.ijk[idx] -= 2;
+                    vs.src[5].ket.right.ijk[idx] -= 2;
+                    vs.src[5].m++;
+
+                    vs.src[6].bra.left.ijk[idx]--;
+                    vs.src[6].ket.right.ijk[idx]--;
+                    vs.src[6].m++;
+                    vs.src[7].bra.right.ijk[idx]--;
+                    vs.src[7].ket.right.ijk[idx]--;
+                    vs.src[7].m++;
+                }
 
                 return vs;
             }
@@ -169,26 +195,53 @@ class Makowski_VRR : public VRR_Algorithm_Base
                 vs.xyz = IdxToXYZStep(idx);
                 vs.target = q;
                 vs.src = {q, q, q, q, q, q, q, q};
-                vs.src[0].bra.left.ijk[idx]--;
-                vs.src[1].bra.left.ijk[idx]--;
-                vs.src[1].m++;
 
-                vs.src[2].bra.left.ijk[idx] -= 2;
-                vs.src[3].bra.left.ijk[idx] -= 2;
-                vs.src[3].m++;
+                if(vs.type == RRStepType::I)
+                {
+                    vs.src[0].bra.left.ijk[idx]--;
+                    vs.src[1].bra.left.ijk[idx]--;
+                    vs.src[1].m++;
 
-                vs.src[4].bra.right.ijk[idx]--;
-                vs.src[4].bra.left.ijk[idx]--;
-                vs.src[5].bra.right.ijk[idx]--;
-                vs.src[5].bra.left.ijk[idx]--;
-                vs.src[5].m++;
+                    vs.src[2].bra.left.ijk[idx] -= 2;
+                    vs.src[3].bra.left.ijk[idx] -= 2;
+                    vs.src[3].m++;
 
-                vs.src[6].ket.left.ijk[idx]--;
-                vs.src[6].bra.left.ijk[idx]--;
-                vs.src[6].m++;
-                vs.src[7].ket.right.ijk[idx]--;
-                vs.src[7].bra.left.ijk[idx]--;
-                vs.src[7].m++;
+                    vs.src[4].bra.right.ijk[idx]--;
+                    vs.src[4].bra.left.ijk[idx]--;
+                    vs.src[5].bra.right.ijk[idx]--;
+                    vs.src[5].bra.left.ijk[idx]--;
+                    vs.src[5].m++;
+
+                    vs.src[6].ket.left.ijk[idx]--;
+                    vs.src[6].bra.left.ijk[idx]--;
+                    vs.src[6].m++;
+                    vs.src[7].ket.right.ijk[idx]--;
+                    vs.src[7].bra.left.ijk[idx]--;
+                    vs.src[7].m++;
+                }
+                else
+                {
+                    vs.src[0].bra.right.ijk[idx]--;
+                    vs.src[1].bra.right.ijk[idx]--;
+                    vs.src[1].m++;
+
+                    vs.src[2].bra.left.ijk[idx]--;
+                    vs.src[2].bra.right.ijk[idx]--;
+                    vs.src[3].bra.left.ijk[idx]--;
+                    vs.src[3].bra.right.ijk[idx]--;
+                    vs.src[3].m++;
+
+                    vs.src[4].bra.right.ijk[idx] -= 2;
+                    vs.src[5].bra.right.ijk[idx] -= 2;
+                    vs.src[5].m++;
+
+                    vs.src[6].ket.left.ijk[idx]--;
+                    vs.src[6].bra.right.ijk[idx]--;
+                    vs.src[6].m++;
+                    vs.src[7].ket.right.ijk[idx]--;
+                    vs.src[7].bra.right.ijk[idx]--;
+                    vs.src[7].m++;
+                }
 
                 return vs;
             }

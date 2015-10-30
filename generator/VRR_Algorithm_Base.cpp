@@ -229,7 +229,7 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             // fill in the ijkl members
             int istep = XYZStepToIdx(vs.xyz);
             vs.ijkl = {0, 0, 0, 0};
-            if(vs.type == RRStepType::I || vs.type == RRStepType::J)
+            if(vs.type == RRStepType::I)
             {
                 if(vs.src[2] || vs.src[3])
                     vs.ijkl[0] = it.bra.left.ijk[istep]-1;
@@ -240,12 +240,34 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
                 if(vs.src[7])
                     vs.ijkl[3] = it.ket.right.ijk[istep];
             }
-            else
+            else if(vs.type == RRStepType::J)
+            {
+                if(vs.src[2] || vs.src[3])
+                    vs.ijkl[0] = it.bra.left.ijk[istep];
+                if(vs.src[4] || vs.src[5])
+                    vs.ijkl[1] = it.bra.right.ijk[istep]-1;
+                if(vs.src[6])
+                    vs.ijkl[2] = it.ket.left.ijk[istep];
+                if(vs.src[7])
+                    vs.ijkl[3] = it.ket.right.ijk[istep];
+            }
+            else if(vs.type == RRStepType::K)
             {
                 if(vs.src[2] || vs.src[3])
                     vs.ijkl[2] = it.ket.left.ijk[istep]-1;
                 if(vs.src[4] || vs.src[5])
                     vs.ijkl[3] = it.ket.right.ijk[istep];
+                if(vs.src[6])
+                    vs.ijkl[0] = it.bra.left.ijk[istep];
+                if(vs.src[7])
+                    vs.ijkl[1] = it.bra.right.ijk[istep];
+            }
+            else
+            {
+                if(vs.src[2] || vs.src[3])
+                    vs.ijkl[2] = it.ket.left.ijk[istep];
+                if(vs.src[4] || vs.src[5])
+                    vs.ijkl[3] = it.ket.right.ijk[istep]-1;
                 if(vs.src[6])
                     vs.ijkl[0] = it.bra.left.ijk[istep];
                 if(vs.src[7])
@@ -326,7 +348,12 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             if(its.type == RRStepType::I || its.type == RRStepType::J)
             {
                 if(its.src[0])
-                    varreq_[qam].insert(std::string("P_PA_") + sstep);
+                {
+                    if(its.type == RRStepType::I)
+                        varreq_[qam].insert(std::string("P_PA_") + sstep);
+                    else
+                        varreq_[qam].insert(std::string("P_PB_") + sstep);
+                }
 
                 if(its.src[1])
                     varreq_[qam].insert(std::string("aop_PQ_") + sstep);
@@ -360,7 +387,13 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
             else
             {
                 if(its.src[0])
-                    varreq_[qam].insert(std::string("Q_PA_") + sstep);
+                {
+                    if(its.type == RRStepType::K)
+                        varreq_[qam].insert(std::string("Q_PA_") + sstep);
+                    else
+                        varreq_[qam].insert(std::string("Q_PB_") + sstep);
+
+                }
 
                 if(its.src[1])
                     varreq_[qam].insert(std::string("aoq_PQ_") + sstep);
@@ -375,7 +408,7 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
                 if(its.src[4] || its.src[5])
                 {
                     varreq_[qam].insert("one_over_2q");
-                    varreq_[qam].insert("a_over_p");
+                    varreq_[qam].insert("a_over_q");
                     qamint_2q_[qam].insert(its.ijkl[3]);
                 }
 

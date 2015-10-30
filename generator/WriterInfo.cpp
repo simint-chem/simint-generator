@@ -297,12 +297,12 @@ bool HasHRR(void)
 
 bool HasBraHRR(void) 
 {
-    return (finalam_[1] > 0);
+    return ( (finalam_[0] > 0) && (finalam_[1] > 0) );
 }
 
 bool HasKetHRR(void) 
 {
-    return (finalam_[3] > 0);
+    return ( (finalam_[2] > 0) && (finalam_[3] > 0) );
 }
 
 

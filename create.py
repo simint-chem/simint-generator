@@ -10,6 +10,7 @@ import shutil
 
 
 def ValidQuartet(q):
+  return True
   if q[0] < q[1]:
     return False
 
