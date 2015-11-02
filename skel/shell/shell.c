@@ -235,9 +235,9 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                     P->PA_x[idx] = P->x[idx] - A[sa].x;
                     P->PA_y[idx] = P->y[idx] - A[sa].y;
                     P->PA_z[idx] = P->z[idx] - A[sa].z;
-                    P->PB_x[idx] = P->x[idx] - B[sa].x;
-                    P->PB_y[idx] = P->y[idx] - B[sa].y;
-                    P->PB_z[idx] = P->z[idx] - B[sa].z;
+                    P->PB_x[idx] = P->x[idx] - B[sb].x;
+                    P->PB_y[idx] = P->y[idx] - B[sb].y;
+                    P->PB_z[idx] = P->z[idx] - B[sb].z;
                     P->bAB_x[idx] = B[sb].alpha[j]*Xab_x;
                     P->bAB_y[idx] = B[sb].alpha[j]*Xab_y;
                     P->bAB_z[idx] = B[sb].alpha[j]*Xab_z;
