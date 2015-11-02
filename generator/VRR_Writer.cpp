@@ -62,7 +62,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 }
 
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList & vs, const std::string & num_n) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
     os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 

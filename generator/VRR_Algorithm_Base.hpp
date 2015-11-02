@@ -4,10 +4,10 @@
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
 
-typedef std::vector<VRRStep> VRR_StepList;
+typedef std::set<VRRStep> VRR_StepSet;
 
 // Maps an AM quartet to the steps needed to create it
-typedef std::map<QAM, VRR_StepList> VRR_StepMap;
+typedef std::map<QAM, VRR_StepSet> VRR_StepMap;
 
 // Gives the maximum m value for a given quartet
 typedef std::map<QAM, int> VRR_MReqMap;
@@ -34,7 +34,7 @@ class VRR_Algorithm_Base
 
         int GetMaxFm(void) const;
 
-        VRR_StepList GetSteps(QAM am) const;
+        VRR_StepSet GetSteps(QAM am) const;
         int GetMReq(QAM am) const;
         QAMSet GetAMReq(QAM am) const;
         IntSet GetIntReq_2p(QAM am) const; 
@@ -67,7 +67,7 @@ class VRR_Algorithm_Base
 
         // Maximum/minimum m value needed for a quartet
         VRR_MReqMap vrrmreq_max_;
-        VRR_MReqMap vrrmreq_min_;
+        //VRR_MReqMap vrrmreq_min_;
 
         // QAM required for a given QAM
         VRR_AMReqMap qamreq_;

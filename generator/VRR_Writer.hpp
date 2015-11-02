@@ -30,7 +30,7 @@ class VRR_Writer
         void WriteVRRExternal_(std::ostream & os) const;
 
         void WriteVRRSteps_(std::ostream & os) const;
-        void WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepList & vs, const std::string & num_n) const;
+        void WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const;
 };
 
 #endif

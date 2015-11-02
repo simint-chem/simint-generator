@@ -322,6 +322,11 @@ struct HRRDoubletStep
                 src == rhs.src &&
                 xyz == rhs.xyz);
     }
+    
+    bool operator<(const HRRDoubletStep & rhs) const
+    {
+        return this->target < rhs.target;
+    }
 };
 
 
@@ -361,6 +366,11 @@ struct ETStep
                 xyz == rhs.xyz &&
                 ik == rhs.ik);
     }
+
+    bool operator<(const ETStep & rhs) const
+    {
+        return this->target < rhs.target;
+    }
 };
 
 
@@ -383,7 +393,15 @@ struct VRRStep
 
     std::string str(void) const
     {
-        return "TODO";
+        std::stringstream ss;
+        ss << target << " = ";
+        for(const auto & it  : src)
+        {
+            if(it)
+                ss << " + " << it;
+        }
+
+        return ss.str();
     }
 
     bool operator==(const VRRStep & rhs) const
@@ -394,7 +412,18 @@ struct VRRStep
                 xyz == rhs.xyz &&
                 type == rhs.type);
     }
+
+    bool operator<(const VRRStep & rhs) const
+    {
+        return this->target < rhs.target;
+    }
 };
+
+inline std::ostream & operator<<(std::ostream & os, const VRRStep & vrr)
+{
+    os << vrr.str();
+    return os;
+}
 
 
 typedef std::set<std::string> StringSet;

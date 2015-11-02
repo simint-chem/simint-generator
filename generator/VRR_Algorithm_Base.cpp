@@ -31,7 +31,7 @@ int VRR_Algorithm_Base::GetMReq(QAM am) const
     return vrrmreq_max_.at(am);
 }
 
-VRR_StepList VRR_Algorithm_Base::GetSteps(QAM am) const
+VRR_StepSet VRR_Algorithm_Base::GetSteps(QAM am) const
 {
     return vrrmap_.at(am);
 }
@@ -201,16 +201,6 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
     PruneQuartets_(targets);
 
 
-    // add max m for initial targets
-    // (should be 0)
-    for(const auto & it : q)
-    {
-        QAM qam = it.amlist();
-        if( (vrrmreq_max_.count(qam) == 0) || (it.m > vrrmreq_max_.at(qam)))
-            vrrmreq_max_[qam] = it.m;
-    }
-
-
     while(targets.size())
     {
         QuartetSet newtargets;
@@ -219,12 +209,6 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
         {
             VRRStep vs = VRRStep_(it);
             QAM qam = it.amlist();
-
-            // set the min/max m value
-            if((vrrmreq_max_.count(qam) == 0) || (it.m > vrrmreq_max_.at(qam)))
-                vrrmreq_max_[qam] = it.m;
-            if((vrrmreq_min_.count(qam) == 0) || (it.m < vrrmreq_min_.at(qam)))
-                vrrmreq_min_[qam] = it.m;
 
             // fill in the ijkl members
             int istep = XYZStepToIdx(vs.xyz);
@@ -274,21 +258,17 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
                     vs.ijkl[1] = it.bra.right.ijk[istep];
             }
             
-            // add new targets and m values 
+            // add new targets
             for(const auto & it2 : vs.src)
             {
                 if(it2)
                 {
                     if(solvedquartets.count(it2) == 0)
                         newtargets.insert(it2);
-
-                    QAM qam2 = it2.amlist();
-                    if( (vrrmreq_max_.count(qam2) == 0) || (it2.m > vrrmreq_max_.at(qam2)))
-                        vrrmreq_max_[qam2] = it2.m;
                 }
             }
 
-            newmap[qam].push_back(vs);
+            newmap[qam].insert(vs);
             solvedquartets.insert(it);
         }
 
@@ -302,26 +282,37 @@ void VRR_Algorithm_Base::Create(const QuartetSet & q)
         allam_.insert(it.amlist());
     allam_.insert({0,0,0,0});
 
+    // and we must do at least (s s | s s)^0
+    vrrmreq_max_[{0,0,0,0}] = 0;
 
-    // remove all steps where the target m value is
-    // the minimum.
-    // This is called from within a loop over m
-    // so it is handled by index math
+    // Handle the needed m values
+    // For now, add all to the zero m value
+    // but store the max m values needed
     for(auto & it : newmap)
     {
-        VRR_StepList vs = it.second;
-        for(auto & it2 : vs)
+        VRR_StepSet vs = it.second;
+
+        // notice it2 is a copy
+        for(auto it2 : vs)
         {
-            if(it2.target.m == vrrmreq_min_[it.first])
-                vrrmap_[it.first].push_back(it2);
+            int m = it2.target.m;
+
+            vrrmreq_max_[it2.target.amlist()] = std::max(m, vrrmreq_max_[it2.target.amlist()]);
+
+            it2.target.m = 0;
+            for(auto & mit : it2.src)
+            {
+                vrrmreq_max_[mit.amlist()] = std::max(mit.m, vrrmreq_max_[mit.amlist()]);
+                mit.m -= m;
+            }
+   
+            vrrmap_[it.first].insert(it2);
         } 
     }
 
 
     // and empty step list for s s s s
-    vrrmap_[{0,0,0,0}] = VRR_StepList();
-
-
+    vrrmap_[{0,0,0,0}] = VRR_StepSet();
 
     // determine requirements for all QAM
     // and the maximum integer constant
