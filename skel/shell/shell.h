@@ -38,6 +38,9 @@ struct multishell_pair
     double * AB_x;
     double * AB_y;
     double * AB_z;
+    double * mAB_x;
+    double * mAB_y;
+    double * mAB_z;
 
     // these are all of length nprim
     double * x;
@@ -49,9 +52,13 @@ struct multishell_pair
     double * PB_x;
     double * PB_y;
     double * PB_z;
+
+    /*
     double * bAB_x;
     double * bAB_y;
     double * bAB_z;
+    */
+
     double * alpha;
     double * prefac;
 };
@@ -77,6 +84,8 @@ struct multishell_pair
 create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                        int nb, struct gaussian_shell const * const restrict B);
 
+
+void multishell_pair_swap_AB(struct multishell_pair * const restrict P);
 
 #ifdef __cplusplus
 }
