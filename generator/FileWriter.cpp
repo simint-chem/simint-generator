@@ -91,9 +91,6 @@ void WriteFile(std::ostream & os,
         os << indent1 << "ASSUME_ALIGN_DBL(P.PB_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.PB_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.PB_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.bAB_z);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.alpha);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(P.prefac);\n";
         os << "\n";
@@ -106,9 +103,6 @@ void WriteFile(std::ostream & os,
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_x);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_y);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.bAB_z);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.alpha);\n";
         os << indent1 << "ASSUME_ALIGN_DBL(Q.prefac);\n";
 
