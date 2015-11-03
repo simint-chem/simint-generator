@@ -20,4 +20,6 @@ void WriteFile(std::ostream & os,
                const ET_Writer & et_writer,
                const HRR_Writer & hrr_writer);
 
+void WriteFile_Permute(std::ostream & os);
+
 #endif

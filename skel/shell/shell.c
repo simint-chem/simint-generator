@@ -125,7 +125,7 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     const size_t dshell12_size = nshell12 * sizeof(double);
     const size_t ibatch_size = nbatch * sizeof(int);
 
-    const size_t memsize = dprim_size*11 + dshell12_size*6 + ishell12_size + ibatch_size;
+    const size_t memsize = dprim_size*11 + dshell12_size*3 + ishell12_size + ibatch_size;
     P->memsize = memsize;
 
     // allocate one large space
@@ -146,11 +146,8 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     P->AB_x       = mem + 11*dprim_size;
     P->AB_y       = mem + 11*dprim_size +   dshell12_size;
     P->AB_z       = mem + 11*dprim_size + 2*dshell12_size;
-    P->mAB_x      = mem + 11*dprim_size + 3*dshell12_size;
-    P->mAB_y      = mem + 11*dprim_size + 4*dshell12_size;
-    P->mAB_z      = mem + 11*dprim_size + 5*dshell12_size;
-    P->nprim12    = mem + 11*dprim_size + 6*dshell12_size;
-    P->nbatchprim = mem + 11*dprim_size + 6*dshell12_size + ishell12_size;
+    P->nprim12    = mem + 11*dprim_size + 3*dshell12_size;
+    P->nbatchprim = mem + 11*dprim_size + 3*dshell12_size + ishell12_size;
 }
 
 
@@ -254,9 +251,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             P->AB_x[sasb] = Xab_x;
             P->AB_y[sasb] = Xab_y;
             P->AB_z[sasb] = Xab_z;
-            P->mAB_x[sasb] = -Xab_x;
-            P->mAB_y[sasb] = -Xab_y;
-            P->mAB_z[sasb] = -Xab_z;
 
             batchprim += P->nprim12[sasb]; 
 
@@ -293,10 +287,6 @@ create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
 void multishell_pair_swap_AB(struct multishell_pair * const restrict P)
 {
     double * tmp;
-    tmp = P->AB_x;   P->AB_x = P->mAB_x;   P->mAB_x = tmp;
-    tmp = P->AB_y;   P->AB_y = P->mAB_y;   P->mAB_y = tmp;
-    tmp = P->AB_z;   P->AB_z = P->mAB_z;   P->mAB_z = tmp;
-
     tmp = P->PA_x;   P->PA_x = P->PB_x;    P->PB_x = tmp;
     tmp = P->PA_y;   P->PA_y = P->PB_y;    P->PB_y = tmp;
     tmp = P->PA_z;   P->PA_z = P->PB_z;    P->PB_z = tmp;

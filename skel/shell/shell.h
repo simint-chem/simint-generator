@@ -38,9 +38,6 @@ struct multishell_pair
     double * AB_x;
     double * AB_y;
     double * AB_z;
-    double * mAB_x;
-    double * mAB_y;
-    double * mAB_z;
 
     // these are all of length nprim
     double * x;

@@ -12,6 +12,64 @@
 #include "generator/HRR_Writer.hpp"
 #include "generator/Ncart.hpp"
 
+void WriteFile_Permute(std::ostream & os)
+{
+    QAM am = WriterInfo::FinalAM();
+    QAM tocall = am;
+
+    bool swap_ab = false;
+    bool swap_cd = false;
+
+    // TODO - more thoroughly check?
+    if(am[0] == 0)
+    {
+        swap_ab = true;
+        std::swap(tocall[0], tocall[1]);
+    }
+    if(am[2] == 0)
+    {
+        swap_cd = true;
+        std::swap(tocall[2], tocall[3]);
+    }
+
+    std::stringstream ss;
+    ss << "int eri_"
+       << amchar[am[0]] << "_" << amchar[am[1]] << "_"
+       << amchar[am[2]] << "_" << amchar[am[3]] << "(";
+
+    std::string funcline = ss.str();
+    std::string indent(funcline.length(), ' ');
+
+    // start output to the file
+    os << "#include \"eri/eri.h\"\n";
+    os << "\n";
+
+    // rest of includes are not needed
+
+    os << "\n\n";
+    os << funcline;
+    os << "struct multishell_pair P,\n";
+    os << indent << "struct multishell_pair Q,\n";
+    os << indent << "double * const restrict " << WriterInfo::ArrVarName(am) << ")\n";
+    os << "{\n";
+    os << indent1 << "// Can be accomplished by swapping some variables\n";
+    os << indent1 << "// and calling another function\n";
+    os << "\n";
+    if(swap_ab)
+        os << indent1 << "multishell_pair_swap_AB(&P);\n";
+    if(swap_cd)
+        os << indent1 << "multishell_pair_swap_AB(&Q);\n";
+
+    os << indent1 << "return eri_" << amchar[tocall[0]] << "_" 
+                                   << amchar[tocall[1]] << "_" 
+                                   << amchar[tocall[2]] << "_" 
+                                   << amchar[tocall[3]] << "(P, Q, " << WriterInfo::ArrVarName(am) << ");\n"; 
+
+
+    os << "}\n";
+    os << "\n";
+}
+
 
 void WriteFile(std::ostream & os,
                const BoysGen & bg,

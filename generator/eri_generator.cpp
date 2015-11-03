@@ -112,56 +112,63 @@ int main(int argc, char ** argv)
     }
     
 
-    // Read in the boys map
-    std::unique_ptr<BoysGen> bg;
-
-    if(boystype == "FO")
-        bg = std::unique_ptr<BoysGen>(new BoysFO(datdir));
-    else if(boystype == "split")
-        bg = std::unique_ptr<BoysGen>(new BoysSplit());
-    else if(boystype == "vref")
-        bg = std::unique_ptr<BoysGen>(new BoysVRef());
-    else
-    {
-        std::cout << "Unknown boys type \"" << boystype << "\"\n";
-        return 3;
-    }
-
-    // algorithms used
-    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-
     // Base writer information
     WriterInfo::Init(options, amlist, cpuflags);
 
-    // Working backwards, I need:
-    // 1.) HRR Steps
-    hrralgo->Create(amlist);
-    HRR_Writer hrr_writer(*hrralgo);
 
-    // 2.) ET steps
-    //     with the HRR top level stuff as the initial targets
-    DoubletType dir = DoubletType::KET;
-    if((amlist[2]+amlist[3]) > (amlist[0]+amlist[1]))
-        dir = DoubletType::BRA;
+    // is this one a special permutation?
+    if( ( (amlist[0] == 0 && amlist[1] > 0)  && ( amlist[2] == 0 || amlist[3] == 0 ) ) ||
+        ( (amlist[2] == 0 && amlist[3] > 0)  && ( amlist[0] == 0 || amlist[1] == 0 ) ) )
+        WriteFile_Permute(of);
+    else
+    {
+        // Read in the boys map
+        std::unique_ptr<BoysGen> bg;
 
-    etalgo->Create(hrralgo->TopQuartets(), dir);
-    ET_Writer et_writer(*etalgo);
+        if(boystype == "FO")
+            bg = std::unique_ptr<BoysGen>(new BoysFO(datdir));
+        else if(boystype == "split")
+            bg = std::unique_ptr<BoysGen>(new BoysSplit());
+        else if(boystype == "vref")
+            bg = std::unique_ptr<BoysGen>(new BoysVRef());
+        else
+        {
+            std::cout << "Unknown boys type \"" << boystype << "\"\n";
+            return 3;
+        }
 
-    // 3.) VRR Steps
-    // requirements for vrr are the top level stuff from ET
-    vrralgo->Create(etalgo->TopQuartets());
-    VRR_Writer vrr_writer(*vrralgo);
+        // algorithms used
+        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
-    // set the contracted quartets
-    WriterInfo::SetContQ(hrralgo->TopAM());
+        // Working backwards, I need:
+        // 1.) HRR Steps
+        hrralgo->Create(amlist);
+        HRR_Writer hrr_writer(*hrralgo);
 
-    // print out some info
-    std::cout << "MEMORY (per shell quartet): " << WriterInfo::MemoryReq() << "\n";
+        // 2.) ET steps
+        //     with the HRR top level stuff as the initial targets
+        DoubletType dir = DoubletType::KET;
+        if((amlist[2]+amlist[3]) > (amlist[0]+amlist[1]))
+            dir = DoubletType::BRA;
 
-    WriteFile(of, *bg, vrr_writer, et_writer, hrr_writer);
+        etalgo->Create(hrralgo->TopQuartets(), dir);
+        ET_Writer et_writer(*etalgo);
 
+        // 3.) VRR Steps
+        // requirements for vrr are the top level stuff from ET
+        vrralgo->Create(etalgo->TopQuartets());
+        VRR_Writer vrr_writer(*vrralgo);
+
+        // set the contracted quartets
+        WriterInfo::SetContQ(hrralgo->TopAM());
+
+        // print out some info
+        std::cout << "MEMORY (per shell quartet): " << WriterInfo::MemoryReq() << "\n";
+
+        WriteFile(of, *bg, vrr_writer, et_writer, hrr_writer);
+    }
     }
     catch(std::exception & ex)
     {
