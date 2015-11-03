@@ -390,7 +390,9 @@ void WriteFile(std::ostream & os,
 
     if(hasbravrr)
     {
-        os << indent5 << cdbltype << " a_over_p =  alpha * one_over_p;     // a/p from MEST\n";
+        os << "\n";
+        os << indent5 << "// NOTE: Minus sign!\n";
+        os << indent5 << cdbltype << " a_over_p =  -alpha * one_over_p;     // a/p from MEST\n";
         os << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
         os << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
         os << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
@@ -398,10 +400,13 @@ void WriteFile(std::ostream & os,
 
     if(hasketvrr)
     {
-        os << indent5 << cdbltype << " a_over_q =  alpha * one_over_q;     // a/q from MEST\n";
-        os << indent5 << cdbltype << " aoq_PQ_x = a_over_q * PQ_x;\n"; 
-        os << indent5 << cdbltype << " aoq_PQ_y = a_over_q * PQ_y;\n"; 
-        os << indent5 << cdbltype << " aoq_PQ_z = a_over_q * PQ_z;\n"; 
+        os << "\n";
+        os << indent5 << "// NOTE: Minus sign\n";
+        os << indent5 << "// NOTE2: Plus sign taken care of on aoq_PQ_x!\n";
+        os << indent5 << cdbltype << " a_over_q =  -alpha * one_over_q;     // a/q from MEST\n";
+        os << indent5 << cdbltype << " aoq_PQ_x = -a_over_q * PQ_x;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_y = -a_over_q * PQ_y;\n"; 
+        os << indent5 << cdbltype << " aoq_PQ_z = -a_over_q * PQ_z;\n"; 
 
     }
 

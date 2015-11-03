@@ -106,25 +106,24 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
         std::string vrr_const3;
         std::string aover;
 
+        // Note - the signs on a_over_p, a_over_q, etc, are taken care of in FileWriter.cpp
         if(it.type == RRStepType::I || it.type == RRStepType::J)
         {
-            aoppq = std::string("(-aop_PQ_") + XYZStepToStr(step) + ")";
+            aoppq = std::string("aop_PQ_") + XYZStepToStr(step);
+            aover = "a_over_p";
             vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2p";
             vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2p";
             vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2pq";
             vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2pq";
-
-            aover = "-a_over_p";
         }
         else
         {
             aoppq = std::string("aoq_PQ_") + XYZStepToStr(step);
+            aover = "a_over_q";
             vrr_const0 = std::string("vrr_const_") + std::to_string(it.ijkl[2]) + "_over_2q";
             vrr_const1 = std::string("vrr_const_") + std::to_string(it.ijkl[3]) + "_over_2q";
             vrr_const2 = std::string("vrr_const_") + std::to_string(it.ijkl[0]) + "_over_2pq";
             vrr_const3 = std::string("vrr_const_") + std::to_string(it.ijkl[1]) + "_over_2pq";
-
-            aover = "-a_over_q";
         }
 
 
@@ -181,9 +180,9 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
             if(it.src[1])
                 os << " + " << aoppq << " * " << srcname[1].str(); 
             if(it.src[2] && it.src[3])
-                os << " + " << vrr_const0 << " * (" << srcname[2].str() << aover << " * " << srcname[3].str() << ")"; 
+                os << " + " << vrr_const0 << " * (" << srcname[2].str() << " + " << aover << " * " << srcname[3].str() << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + " << vrr_const1 << " * (" << srcname[4].str() << aover << " * " << srcname[5].str() << ")"; 
+                os << " + " << vrr_const1 << " * (" << srcname[4].str() << " + " << aover << " * " << srcname[5].str() << ")"; 
             if(it.src[6])
                 os << " + " << vrr_const2 << " * " << srcname[6].str();
             if(it.src[7])
