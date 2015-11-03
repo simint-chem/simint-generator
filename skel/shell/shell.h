@@ -82,8 +82,6 @@ create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
                        int nb, struct gaussian_shell const * const restrict B);
 
 
-void multishell_pair_swap_AB(struct multishell_pair * const restrict P);
-
 #ifdef __cplusplus
 }
 #endif

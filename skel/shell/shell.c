@@ -283,14 +283,3 @@ create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
     return P; 
 }
 
-
-void multishell_pair_swap_AB(struct multishell_pair * const restrict P)
-{
-    double * tmp;
-    tmp = P->PA_x;   P->PA_x = P->PB_x;    P->PB_x = tmp;
-    tmp = P->PA_y;   P->PA_y = P->PB_y;    P->PB_y = tmp;
-    tmp = P->PA_z;   P->PA_z = P->PB_z;    P->PB_z = tmp;
-}
-
-
-

@@ -54,11 +54,21 @@ void WriteFile_Permute(std::ostream & os)
     os << "{\n";
     os << indent1 << "// Can be accomplished by swapping some variables\n";
     os << indent1 << "// and calling another function\n";
+    os << indent1 << "// Note that the struct was passed by copy\n";
     os << "\n";
+    os << indent1 << "double * tmp;\n";
     if(swap_ab)
-        os << indent1 << "multishell_pair_swap_AB(&P);\n";
+    {
+        os << indent1 << "tmp = P.PA_x;   P.PA_x = P.PB_x;   P.PB_x = tmp;\n";
+        os << indent1 << "tmp = P.PA_y;   P.PA_y = P.PB_y;   P.PB_y = tmp;\n";
+        os << indent1 << "tmp = P.PA_z;   P.PA_z = P.PB_z;   P.PB_z = tmp;\n";
+    }
     if(swap_cd)
-        os << indent1 << "multishell_pair_swap_AB(&Q);\n";
+    {
+        os << indent1 << "tmp = Q.PA_x;   Q.PA_x = Q.PB_x;   Q.PB_x = tmp;\n";
+        os << indent1 << "tmp = Q.PA_y;   Q.PA_y = Q.PB_y;   Q.PB_y = tmp;\n";
+        os << indent1 << "tmp = Q.PA_z;   Q.PA_z = Q.PB_z;   Q.PB_z = tmp;\n";
+    }
 
     os << indent1 << "return eri_" << amchar[tocall[0]] << "_" 
                                    << amchar[tocall[1]] << "_" 
