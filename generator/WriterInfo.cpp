@@ -285,6 +285,26 @@ bool HasVRR(void)
     return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
 }
 
+bool HasVRR_I(void)
+{
+    return HasVRR() && finalam_[0] >= finalam_[1];
+}
+
+bool HasVRR_J(void)
+{
+    return HasVRR() && finalam_[1] > finalam_[0];
+}
+
+bool HasVRR_K(void)
+{
+    return HasVRR() && finalam_[2] >= finalam_[3];
+}
+
+bool HasVRR_L(void)
+{
+    return HasVRR() && finalam_[3] > finalam_[2];
+}
+
 bool HasET(void) 
 {
     return (!GetOption(OPTION_NOET)) && (finalam_[2]+finalam_[3] > 0);
@@ -300,11 +320,30 @@ bool HasBraHRR(void)
     return ( (finalam_[0] > 0) && (finalam_[1] > 0) );
 }
 
+bool HasBraHRR_I(void) // going from J -> I
+{
+    return HasBraHRR() && (finalam_[1] > finalam_[0]);
+}
+
+bool HasBraHRR_J(void) // going from I -> J
+{
+    return HasBraHRR() && (finalam_[0] >= finalam_[1]);
+}
+
 bool HasKetHRR(void) 
 {
     return ( (finalam_[2] > 0) && (finalam_[3] > 0) );
 }
 
+bool HasKetHRR_K(void) // going from L -> K
+{
+    return HasKetHRR() && (finalam_[3] > finalam_[2]); 
+}
+
+bool HasKetHRR_L(void) // going from K -> L 
+{
+    return HasKetHRR() && (finalam_[2] >= finalam_[3]); 
+}
 
 void ReadCPUFlags(const std::string & flags)
 {

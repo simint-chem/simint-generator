@@ -307,12 +307,18 @@ void WriteFile(std::ostream & os,
 
     if(hasbravrr)
     {
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_x", "P.PB_x[i]") << ";\n";
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_y", "P.PB_y[i]") << ";\n";
-        os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_z", "P.PB_z[i]") << ";\n";
+        if(WriterInfo::HasVRR_I())
+        {
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
+        }
+        else
+        {
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_x", "P.PB_x[i]") << ";\n";
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_y", "P.PB_y[i]") << ";\n";
+            os << indent4 << WriterInfo::NewConstDoubleSet1("P_PB_z", "P.PB_z[i]") << ";\n";
+        }
     }
 
     if(hasketet)
@@ -368,12 +374,18 @@ void WriteFile(std::ostream & os,
 
     if(hasketvrr)
     {
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_x", "Q.PA_x", "j") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_y", "Q.PA_y", "j") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_z", "Q.PA_z", "j") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_x", "Q.PB_x", "j") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_y", "Q.PB_y", "j") << ";\n";
-        os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_z", "Q.PB_z", "j") << ";\n";
+        if(WriterInfo::HasVRR_K())
+        {
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_x", "Q.PA_x", "j") << ";\n";
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_y", "Q.PA_y", "j") << ";\n";
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PA_z", "Q.PA_z", "j") << ";\n";
+        }
+        else
+        {
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_x", "Q.PB_x", "j") << ";\n";
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_y", "Q.PB_y", "j") << ";\n";
+            os << indent5 << WriterInfo::NewConstDoubleLoad("Q_PB_z", "Q.PB_z", "j") << ";\n";
+        }
     }
 
     if(hasbravrr)

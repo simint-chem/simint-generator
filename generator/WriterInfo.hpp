@@ -37,10 +37,20 @@ namespace WriterInfo {
         bool HasVRR(void);
         bool HasBraVRR(void);
         bool HasKetVRR(void);
+        bool HasVRR_I(void);
+        bool HasVRR_J(void);
+        bool HasVRR_K(void);
+        bool HasVRR_L(void);
+
         bool HasET(void);
+
         bool HasHRR(void);
         bool HasBraHRR(void);
+        bool HasBraHRR_I(void);
+        bool HasBraHRR_J(void);
         bool HasKetHRR(void);
+        bool HasKetHRR_K(void);
+        bool HasKetHRR_L(void);
 
         size_t MemoryReq(void);
 
