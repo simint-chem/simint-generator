@@ -140,6 +140,17 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 
                 os << " * " << srcname[0].str() << ";\n";
             }
+            else
+            {
+                os << indent6 << primname.str();
+
+                if(it.type == RRStepType::K)
+                    os << " = Q_PA_" << step;
+                else
+                    os << " = Q_PB_" << step;
+
+                os << " * " << srcname[0].str() << ";\n";
+            }
 
             if(it.src[1])
                 os << indent6 << primname.str() << " = " << WriterInfo::FMAdd(aoppq, srcname[1].str(), primname.str()) << ";\n"; 
