@@ -192,7 +192,9 @@ void WriteFile(std::ostream & os,
     os << indent1 << "int ab, cd, cdbatch, abcd;\n";
     os << indent1 << "int istart, jstart;\n";
 
-    os << indent1 << "int iprimcd, nprim_icd, np, icd;\n";
+
+    if(!WriterInfo::Scalar() && WriterInfo::Intrinsics())
+        os << indent1 << "int iprimcd, nprim_icd, np, icd;\n";
 
     if(hashrr)
         os << indent1 << "int real_abcd;\n";
@@ -253,45 +255,24 @@ void WriteFile(std::ostream & os,
 
     os << indent3 << "const int jend = jstart + Q.nbatchprim[cdbatch];\n";
 
+
     if(hashrr)
     {
         WriterInfo::ZeroContWork(os);
-
-        os << indent3 << "for(icd = 0; icd < nshellbatch; ++icd)\n";
-        os << indent3<< "{\n"; 
-
-
-        if(hasbrahrr)
-        {
-            os << indent4 << "AB_x[icd] = P.AB_x[ab];\n";
-            os << indent4 << "AB_y[icd] = P.AB_y[ab];\n";
-            os << indent4 << "AB_z[icd] = P.AB_z[ab];\n";
-            os << "\n";
-        }
-        if(haskethrr)
-        {
-            os << indent4 << "CD_x[icd] = Q.AB_x[cd+icd];\n";
-            os << indent4 << "CD_y[icd] = Q.AB_y[cd+icd];\n";
-            os << indent4 << "CD_z[icd] = Q.AB_z[cd+icd];\n";
-            os << "\n";
-        }
-        os << indent3<< "}\n"; 
+        os << indent3 << "abcd = 0;\n";
+        os << "\n";
     }
 
-
-    os << "\n";
-
- 
-
-    if(hashrr)
-        os << indent3 << "abcd = 0;\n";
     os << indent3 << "for(i = istart; i < iend; ++i)\n";
     os << indent3 << "{\n";
     os << "\n";
 
-    os << indent4 << "icd = 0;\n";
-    os << indent4 << "iprimcd = 0;\n";
-    os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
+    if(WriterInfo::Intrinsics() && !WriterInfo::Scalar())
+    {
+        os << indent4 << "icd = 0;\n";
+        os << indent4 << "iprimcd = 0;\n";
+        os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
+    }
 
     vrr_writer.DeclarePrimPointers(os);
     os << "\n";
@@ -334,7 +315,8 @@ void WriteFile(std::ostream & os,
     os << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
     os << indent4 << "{\n";
 
-    WriterInfo::WriteShellOffsets(os);
+    if(!WriterInfo::Scalar() && WriterInfo::Intrinsics())
+        WriterInfo::WriteShellOffsets(os);
 
     os << "\n";
 
@@ -468,7 +450,6 @@ void WriteFile(std::ostream & os,
     os << indent3 << "\n";
     os << indent3 << "//Advance to the next batch\n";
     os << indent3 << "jstart = SIMINT_SIMD_ROUND(jend);\n";
-    os << indent3 << "cd += nshellbatch;\n";
     if(!hashrr)
         os << indent3 << "abcd += nshellbatch;\n";
     os << indent3 << "\n";
@@ -478,6 +459,7 @@ void WriteFile(std::ostream & os,
 
     os << "\n";
 
+    os << indent3 << "cd += nshellbatch;\n";
 
     os << indent2 << "}   // close loop cdbatch\n";
 

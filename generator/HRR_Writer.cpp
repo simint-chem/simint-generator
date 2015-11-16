@@ -123,7 +123,15 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         os << indent3 << "//////////////////////////////////////////////\n";
         os << "\n";
 
-        os << "\n";
+        if(WriterInfo::HasBraHRR())
+        {
+            os << "\n";
+            os << indent4 << "const double hAB_x = P.AB_x[ab];\n";
+            os << indent4 << "const double hAB_y = P.AB_y[ab];\n";
+            os << indent4 << "const double hAB_z = P.AB_z[ab];\n";
+            os << "\n";
+            os << "\n";
+        }
 
 
         //if(!WriterInfo::Scalar())
@@ -144,14 +152,6 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
 
         if(WriterInfo::HasBraHRR())
         {
-            os << "\n";
-            os << indent4 << "const double hAB_x = AB_x[abcd];\n";
-            os << indent4 << "const double hAB_y = AB_y[abcd];\n";
-            os << indent4 << "const double hAB_z = AB_z[abcd];\n";
-            os << "\n";
-
-            os << "\n";
-
             for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
             for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
@@ -181,9 +181,9 @@ void HRR_Writer::WriteHRRInline_(std::ostream & os) const
         if(WriterInfo::HasKetHRR())
         {
             os << "\n";
-            os << indent4 << "const double hCD_x = CD_x[abcd];\n";
-            os << indent4 << "const double hCD_y = CD_y[abcd];\n";
-            os << indent4 << "const double hCD_z = CD_z[abcd];\n";
+            os << indent4 << "const double hCD_x = Q.AB_x[cd+abcd];\n";
+            os << indent4 << "const double hCD_y = Q.AB_y[cd+abcd];\n";
+            os << indent4 << "const double hCD_z = Q.AB_z[cd+abcd];\n";
             os << "\n";
 
             for(const auto & itk : hrr_algo_.GetKetAMOrder())
@@ -233,8 +233,14 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
         os << indent3 << "//////////////////////////////////////////////\n";
         os << "\n";
 
-        os << "\n";
-
+        if(WriterInfo::HasBraHRR())
+        {
+            os << "\n";
+            os << indent4 << "const double hAB_x = P.AB_x[ab];\n";
+            os << indent4 << "const double hAB_y = P.AB_y[ab];\n";
+            os << indent4 << "const double hAB_z = P.AB_z[ab];\n";
+            os << "\n";
+        }
 
         //if(!WriterInfo::Scalar())
         //    os << indent3 << "#pragma omp simd linear(real_abcd)\n";
@@ -254,14 +260,6 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
 
         if(WriterInfo::HasBraHRR())
         {
-            os << "\n";
-            os << indent4 << "const double hAB_x = AB_x[abcd];\n";
-            os << indent4 << "const double hAB_y = AB_y[abcd];\n";
-            os << indent4 << "const double hAB_z = AB_z[abcd];\n";
-            os << "\n";
-
-            os << "\n";
-
             for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
             for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
             {
@@ -296,9 +294,9 @@ void HRR_Writer::WriteHRRExternal_(std::ostream & os) const
             const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
 
             os << "\n";
-            os << indent4 << "const double hCD_x = CD_x[abcd];\n";
-            os << indent4 << "const double hCD_y = CD_y[abcd];\n";
-            os << indent4 << "const double hCD_z = CD_z[abcd];\n";
+            os << indent4 << "const double hCD_x = Q.AB_x[cd+abcd];\n";
+            os << indent4 << "const double hCD_y = Q.AB_y[cd+abcd];\n";
+            os << indent4 << "const double hCD_z = Q.AB_z[cd+abcd];\n";
             os << "\n";
 
             for(const auto & itk : hrr_algo_.GetKetAMOrder())

@@ -52,10 +52,12 @@ void SetContQ(const QAMSet & topquartets)
     }
 
     // add memory for AB_{xyz} and CD_{xyz}
+    /*
     if(HasBraHRR())
         nelements_ += 3;
     if(HasKetHRR())
         nelements_ += 3;
+    */
 
     memory_ = nelements_ * sizeof(double); 
 }
@@ -232,6 +234,7 @@ void DeclareContwork(std::ostream & os)
         os << "\n";
 
         // AB_ and CD_ arrays
+        /*
         if(HasBraHRR())
         {
             os << "    // Holds AB_{xyz} in a flattened fashion for later\n";
@@ -249,6 +252,7 @@ void DeclareContwork(std::ostream & os)
             os << "    double * const restrict CD_z = contwork + (SIMINT_NSHELL_SIMD * " << ptidx++ << ");\n";
             os << "\n";
         }
+        */
     }
 }
 
@@ -678,7 +682,7 @@ void WriteAccumulation(std::ostream & os)
     os << indent5 << "////////////////////////////////////\n";
     os << indent5 << "// Accumulate contracted integrals\n";
     os << indent5 << "////////////////////////////////////\n";
-    if(Intrinsics())
+    if(Intrinsics() && !Scalar())
     {
         os << indent5 << "if(hasoffset == 0)\n";
         os << indent5 << "{\n";

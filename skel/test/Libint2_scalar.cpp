@@ -76,7 +76,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
             erival[0].contrdepth = nprim1234;
             int nprim = 0;
 
-            CLOCK(ticks0);
+//            CLOCK(ticks0);
             for(int i = istart; i < iend; i++)
             for(int j = jstart; j < jend; j++)
             {
@@ -258,8 +258,8 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
 
                 nprim++;
             }
-            CLOCK(ticks1);
-            totaltime += (ticks1 - ticks0);
+//            CLOCK(ticks1);
+//            totaltime += (ticks1 - ticks0);
 
             double * intptr;
             if(permutePQ)  // ab loops through Q, cd loops through P
