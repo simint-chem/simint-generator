@@ -44,31 +44,19 @@ ERD_ERI::ERD_ERI(int na, struct gaussian_shell const * const restrict A,
 
     int npgto1 = 0;
     for(int i = 0; i < na; ++i)
-    {
-        if(npgto1 < A[i].nprim)
-            npgto1 = A[i].nprim;
-    }
+        npgto1 = MAX(npgto1, A[i].nprim);
 
     int npgto2 = 0;
     for(int i = 0; i < nb; ++i)
-    {
-        if(npgto2 < B[i].nprim)
-            npgto2 = B[i].nprim;
-    }
+        npgto2 = MAX(npgto2, B[i].nprim);
 
     int npgto3 = 0;
     for(int i = 0; i < nc; ++i)
-    {
-        if(npgto3 < C[i].nprim)
-            npgto3 = C[i].nprim;
-    }
+        npgto3 = MAX(npgto3, C[i].nprim);
 
     int npgto4 = 0;
     for(int i = 0; i < nd; ++i)
-    {
-        if(npgto4 < D[i].nprim)
-            npgto4 = D[i].nprim;
-    }
+        npgto4 = MAX(npgto4, D[i].nprim);
 
     // todo - general contraction?
     int ncgto1 = 1;
@@ -201,8 +189,8 @@ TimerType ERD_ERI::Compute_shell_(struct gaussian_shell const A,
     //printf("ERD: %d integrals computed\n", nbatch); 
     //printf("Offset: %d\n", buffer_offset-1); 
 
-        
-    memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
+    if(nbatch > 0)    
+        memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
 
     return ticks1 - ticks0;
 }

@@ -29,6 +29,12 @@ class Libint2_ERI
 
     public:
         Libint2_ERI(int maxam, size_t maxnprim);
+
+        Libint2_ERI(const Libint2_ERI & rhs) = delete;
+        Libint2_ERI(Libint2_ERI && rhs)      = default;
+        Libint2_ERI & operator=(const Libint2_ERI & rhs) = delete;
+        Libint2_ERI & operator=(Libint2_ERI && rhs)      = delete;
+
         ~Libint2_ERI();
 
         TimerType Integrals(struct multishell_pair P, struct multishell_pair Q, double * integrals);

@@ -245,9 +245,6 @@ void ValeevIntegrals(gaussian_shell const * const A, int nshell1,
 
     const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
-    #ifdef _OPENMP
-        #pragma omp parallel for
-    #endif
     for(int i = 0; i < nshell1; i++)
     {
         const int idxstart = i * n234;

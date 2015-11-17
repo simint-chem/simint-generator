@@ -23,6 +23,12 @@ class ERD_ERI
                 int am3, int nprim3, int ncgto3,
                 int am4, int nprim4, int ncgto4);
 
+        ERD_ERI(const ERD_ERI & rhs) = delete;
+        ERD_ERI(ERD_ERI && rhs)      = default;
+        ERD_ERI & operator=(const ERD_ERI & rhs) = delete;
+        ERD_ERI & operator=(ERD_ERI && rhs)      = delete;
+
+
         ~ERD_ERI(void); 
 
 

@@ -1,5 +1,7 @@
 #include <cstdio>
-#include <cmath>
+#include <memory>
+
+#include <omp.h>
 
 #include "boys/boys.h"
 #include "test/common.hpp"
@@ -52,19 +54,29 @@ int main(int argc, char ** argv)
     const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
+    // get the number of threads
+    int nthread = omp_get_max_threads();
+
+
     /* Storage of integrals */
-    double * res              = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_liberd          = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_libint          = (double *)ALLOC(maxsize * sizeof(double));
-    double * res_valeev          = (double *)ALLOC(maxsize * sizeof(double));
+    double * all_res                 = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_liberd          = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_libint          = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_valeev          = (double *)ALLOC(nthread * maxsize * sizeof(double));
 
     // initialize stuff
     Valeev_Init();
     Boys_Init();
     LIBINT2_PREFIXED_NAME(libint2_static_init)();
 
-    ERD_ERI erd(maxam, maxnprim, 1);
-    Libint2_ERI libint(maxam, maxnprim);
+    std::vector<std::unique_ptr<ERD_ERI>> erd;
+    std::vector<std::unique_ptr<Libint2_ERI>> libint;
+
+    for(int i = 0; i < nthread; i++)
+    {
+        erd.push_back(std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1)));
+        libint.push_back(std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim)));
+    }
              
              
     printf("\n");
@@ -94,9 +106,16 @@ int main(int argc, char ** argv)
     for(int j = 0; j <= maxam; j++)
     {
         // do one shell pair at a time on the bra side
+        #pragma omp parallel for
         for(size_t a = 0; a < shellmap[i].size(); a++)
         for(size_t b = 0; b < shellmap[j].size(); b++)
         {
+            int ithread = omp_get_thread_num();
+            double * res           = all_res + ithread * maxsize;
+            double * res_liberd    = all_res_liberd + ithread * maxsize;
+            double * res_libint    = all_res_libint + ithread * maxsize;
+            double * res_valeev    = all_res_valeev + ithread * maxsize;
+
             const int nshell1 = 1; 
             const int nshell2 = 1; 
     
@@ -138,13 +157,13 @@ int main(int argc, char ** argv)
                 /////////////////////////////////
                 // Calculate with liberd and libint2
                 /////////////////////////////////
-                erd.Integrals(&shellmap_erd[i][a], nshell1,
+                erd.at(ithread)->Integrals(&shellmap_erd[i][a], nshell1,
                               &shellmap_erd[j][b], nshell2,
                               &shellmap_erd[k][0], nshell3,
                               &shellmap_erd[l][0], nshell4,
                               res_liberd);
 
-                libint.Integrals(P, Q, res_libint);
+                //libint.at(ithread)->Integrals(P, Q, res_libint);
 
                 ////////////////////////////
                 // Calculate with my code
@@ -156,10 +175,14 @@ int main(int argc, char ** argv)
                 // Analyze
                 std::pair<double, double> err           = CalcError(res,         res_valeev,  arrlen);
                 std::pair<double, double> err_erd       = CalcError(res_liberd,  res_valeev,  arrlen);
-                std::pair<double, double> err_libint    = CalcError(res_libint,  res_valeev,  arrlen);
-                UpdateMap(errmap, err, {i,j,k,l});
-                UpdateMap(errmap_erd, err_erd, {i,j,k,l});
-                UpdateMap(errmap_libint, err_libint, {i,j,k,l});
+                //std::pair<double, double> err_libint    = CalcError(res_libint,  res_valeev,  arrlen);
+
+                #pragma omp critical
+                {
+                    UpdateMap(errmap, err, {i,j,k,l});
+                    UpdateMap(errmap_erd, err_erd, {i,j,k,l});
+                    //UpdateMap(errmap_libint, err_libint, {i,j,k,l});
+                }
 
 
 
@@ -178,12 +201,16 @@ int main(int argc, char ** argv)
                     double rdiff = fabs(diff / res_valeev[m]);
                     double ldiff = fabs(res_valeev[m] - res_libint[m]);
                     double lrdiff = fabs(ldiff / res_valeev[m]);
+                    double ediff = fabs(res_valeev[m] - res_liberd[m]);
+                    double erdiff = fabs(ediff / res_liberd[m]);
 
-                    if( (diff > 1e-14 && rdiff > 1e-8) || (ldiff > 1e-14 && lrdiff > 1e-8) )
-                        printf("%d %d %d %d : %d %d %d %d  %25.16e  %25.16e  %25.16e   %25.16e  %25.16e  %25.16e  %25.16e\n",
+                    //if( (diff > 1e-14 && rdiff > 1e-8) || (ldiff > 1e-14 && lrdiff > 1e-8) )
+                    if( (diff > 1e-14 && rdiff > 1e-8) || (ediff > 1e-14 && erdiff > 1e-8) )
+                        printf(" [%d/%d] %d %d %d %d : %d %d %d %d  %25.16e  %25.16e  %25.16e   %25.16e  %25.16e  %25.16e  %25.16e\n",
+                                                                                                  ithread, nthread,
                                                                                                   m1, m2, m3, m4, c1, c2, c3, c4,
-                                                                                                  res_valeev[m], res_libint[m], res[m], 
-                                                                                                  diff, rdiff, ldiff, lrdiff);
+                                                                                                  res_valeev[m], res_liberd[m], res[m], 
+                                                                                                  diff, rdiff, ediff, erdiff);
                 }
 
 
@@ -193,7 +220,8 @@ int main(int argc, char ** argv)
             }
 
             free_multishell_pair(P);
-        }
+
+        } // end threaded loop over shells
 
         for(int k = 0; k <= maxam; k++)
         for(int l = 0; l <= maxam; l++)
@@ -219,10 +247,10 @@ int main(int argc, char ** argv)
     Valeev_Finalize();
     Boys_Finalize();
 
-    FREE(res_valeev);
-    FREE(res_liberd);
-    FREE(res_libint);
-    FREE(res);
+    FREE(all_res_valeev);
+    FREE(all_res_liberd);
+    FREE(all_res_libint);
+    FREE(all_res);
 
     return 0;
 }
