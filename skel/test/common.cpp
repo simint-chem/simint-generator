@@ -46,10 +46,10 @@ bool ValidQuartet(std::array<int, 4> am)
         return false;
     if(am[2] < am[3])
         return false;
-    //if( (am[0] + am[1]) < (am[2] + am[3]) )
-    //    return false;
-    //if(am[0] < am[2])
-    //    return false;
+    if( (am[0] + am[1]) < (am[2] + am[3]) )
+        return false;
+    if(am[0] < am[2])
+        return false;
     return true;
 }
 
