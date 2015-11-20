@@ -37,7 +37,10 @@ class Libint2_ERI
 
         ~Libint2_ERI();
 
-        TimerType Integrals(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        std::pair<TimerType, TimerType>
+        Integrals(struct multishell_pair P,
+                  struct multishell_pair Q,
+                  double * integrals);
 
     private:
         std::vector<Libint_eri_t> erival_;

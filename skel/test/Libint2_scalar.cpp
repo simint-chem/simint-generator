@@ -29,9 +29,10 @@ Libint2_ERI::~Libint2_ERI()
 
 
 
-TimerType Libint2_ERI::Integrals(struct multishell_pair P,
-                                 struct multishell_pair Q,
-                                 double * integrals)
+std::pair<TimerType, TimerType>
+Libint2_ERI::Integrals(struct multishell_pair P,
+                       struct multishell_pair Q,
+                       double * integrals)
 {
     Libint_eri_t * erival = erival_.data();
 
@@ -56,7 +57,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
     std::fill(integrals, integrals + P.nshell12 * Q.nshell12 * ncart1234, 0.0);
 
     // timing
-    TimerType totaltime = 0;
+    std::pair<TimerType, TimerType> totaltime{0,0};
     TimerType ticks0, ticks1;
 
     int istart = 0;
@@ -76,7 +77,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
             erival[0].contrdepth = nprim1234;
             int nprim = 0;
 
-//            CLOCK(ticks0);
+            CLOCK(ticks0);
             for(int i = istart; i < iend; i++)
             for(int j = jstart; j < jend; j++)
             {
@@ -258,8 +259,8 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
 
                 nprim++;
             }
-//            CLOCK(ticks1);
-//            totaltime += (ticks1 - ticks0);
+            CLOCK(ticks1);
+            totaltime.first += (ticks1 - ticks0);
 
             double * intptr;
             if(permutePQ)  // ab loops through Q, cd loops through P
@@ -272,7 +273,7 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
                 CLOCK(ticks0);
                 LIBINT2_PREFIXED_NAME(libint2_build_eri)[libint_P->am1][libint_P->am2][libint_Q->am1][libint_Q->am2](erival);
                 CLOCK(ticks1);
-                totaltime += (ticks1 - ticks0);
+                totaltime.second += (ticks1 - ticks0);
 
                 // permute
                 if(permutePQ)
@@ -292,10 +293,12 @@ TimerType Libint2_ERI::Integrals(struct multishell_pair P,
             }
             else
             {
+                CLOCK(ticks0); 
                 intptr[0] = 0.0;
-                #pragma novector
                 for(int i = 0; i < P.nprim12[ab]*Q.nprim12[cd]; ++i)
                     intptr[0] += erival[i].LIBINT_T_SS_EREP_SS(0)[0];
+                CLOCK(ticks1);
+                totaltime.second += (ticks1 - ticks0);
             }
 
             jstart = jend;

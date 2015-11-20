@@ -283,8 +283,12 @@ void BoysSplit::WriteBoys(std::ostream & os) const
 
     if(WriterInfo::L() < BOYS_SPLIT_RECUR)
     {
-        os << indent5 << "Boys_F_split_simd((double *)" << primname << ", " 
-                      << WriterInfo::L() << ", (const double *)(&F_x));\n";
+        if(WriterInfo::Scalar())
+            os << indent5 << "Boys_F_split((double *)" << primname << ", " 
+                          << WriterInfo::L() << ", F_x);\n";
+        else
+            os << indent5 << "Boys_F_split_simd((double *)" << primname << ", " 
+                          << WriterInfo::L() << ", (const double *)(&F_x));\n";
 
         os << indent5 << WriterInfo::ConstDoubleType() << " prefac = " << WriterInfo::Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << WriterInfo::DoubleLoad("Q.prefac", "j") << ";\n";
 

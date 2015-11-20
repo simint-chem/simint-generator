@@ -836,6 +836,21 @@ void WriteShellOffsets(std::ostream & os)
 }
 
 
+void WriteShellOffsets_Scalar(std::ostream & os)
+{
+    os << indent5 << "// Move pointers if this is the end of a shell\n";
+    os << indent5 << "// Handle if the first element of the vector is a new shell\n";
+    os << indent5 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
+    os << indent5 << "{\n";
+    os << indent6 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
+    
+    for(const auto qam : contq_)
+        os << indent7 << WriterInfo::PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
+
+    os << indent5 << "}\n";
+    os << indent5 << "iprimcd++;\n";
+}
+
 
 
 } // close namespace WriterInfo

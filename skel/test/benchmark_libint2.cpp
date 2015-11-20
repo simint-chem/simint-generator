@@ -74,8 +74,8 @@ int main(int argc, char ** argv)
     #endif
 
     // Timing header
-    printf("%5s %13s %12s   %12s   %16s   %12s\n", "ID",
-                           "Quartet", "NCont", "NPrim", "Ticks", "Ticks/Prim");
+    printf("%5s %13s %12s   %12s   %16s   %16s   %12s\n", "ID",
+                           "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
 
     // loop ntest times
     #pragma omp parallel for num_threads(nthread)
@@ -94,7 +94,7 @@ int main(int argc, char ** argv)
         for(int k = 0; k <= maxam; k++)
         for(int l = 0; l <= maxam; l++)
         {
-            if(!ValidQuartet(i, j, k, l))
+            if(!ValidQuartet({i,j,k,l}))
                 continue;
 
             const int nshell3 = shellmap[k].size();
@@ -109,7 +109,11 @@ int main(int argc, char ** argv)
             struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
             CLOCK(time_pair_34_1);
 
-            TimerType time_total = time_pair_34_1 - time_pair_34_0;
+            std::pair<TimerType, TimerType> time_total{0,0};
+
+            // the second member contains all but the prep
+            time_total.second = time_pair_34_1 - time_pair_34_0;
+
             size_t nprim_total = 0;
             size_t nshell1234_total = 0;
 
@@ -134,11 +138,14 @@ int main(int argc, char ** argv)
                 CLOCK(time_pair_12_0);
                 struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
                 CLOCK(time_pair_12_1);
+                time_total.second += time_pair_12_1 - time_pair_12_0;
 
 
                 // actually calculate
-                time_total += eri->Integrals(P, Q, res_ints[ithread]);
-                time_total += time_pair_12_1 - time_pair_12_0;
+                std::pair<TimerType, TimerType> time_int = eri->Integrals(P, Q, res_ints[ithread]);
+                time_total.first += time_int.first;
+                time_total.second += time_int.second;
+
 
 
                 #ifdef BENCHMARK_VALIDATE
@@ -165,12 +172,12 @@ int main(int argc, char ** argv)
             free_multishell_pair(Q);
 
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           nshell1234_total, nprim_total,
-                                                                          time_total,
-                                                                          (double)(time_total)/(double)(nprim_total));
+                                                                          time_total.first, time_total.second,
+                                                                          (double)(time_total.first + time_total.second)/(double)(nprim_total));
 
             #ifdef BENCHMARK_VALIDATE
             printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);

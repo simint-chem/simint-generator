@@ -86,8 +86,8 @@ int main(int argc, char ** argv)
     #endif
 
     // Timing header
-    printf("%5s %13s %12s   %12s   %16s   %12s\n", "ID",
-                           "Quartet", "NCont", "NPrim", "Ticks", "Ticks/Prim");
+    printf("%5s %13s %12s   %12s   %16s   %16s   %12s\n", "ID",
+                           "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
 
     // loop ntest times
     #pragma omp parallel for num_threads(nthread)
@@ -107,6 +107,9 @@ int main(int argc, char ** argv)
         for(int k = 0; k <= maxam; k++)
         for(int l = 0; l <= maxam; l++)
         {
+            if(!ValidQuartet({i,j,k,l}))
+                continue;
+
             const int nshell3 = shellmap_erd[k].size();
             const int nshell4 = shellmap_erd[l].size();
 
@@ -167,11 +170,11 @@ int main(int argc, char ** argv)
 
             }
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %12.3f\n",
+            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                           ithread,
                                                                           i, j, k, l,
                                                                           nshell1234_total, nprim_total,
-                                                                          time_total,
+                                                                          0ull, time_total,
                                                                           (double)(time_total)/(double)(nprim_total));
 
             #ifdef BENCHMARK_VALIDATE

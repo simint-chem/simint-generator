@@ -191,10 +191,12 @@ void WriteFile(std::ostream & os,
     // full abcd in terms of all the shells
     os << indent1 << "int ab, cd, cdbatch, abcd;\n";
     os << indent1 << "int istart, jstart;\n";
+    os << indent1 << "int iprimcd, nprim_icd, icd;\n";
 
 
     if(!WriterInfo::Scalar() && WriterInfo::Intrinsics())
-        os << indent1 << "int iprimcd, nprim_icd, np, icd;\n";
+        os << indent1 << "int np;\n";
+    
 
     if(hashrr)
         os << indent1 << "int real_abcd;\n";
@@ -267,12 +269,9 @@ void WriteFile(std::ostream & os,
     os << indent3 << "{\n";
     os << "\n";
 
-    if(WriterInfo::Intrinsics() && !WriterInfo::Scalar())
-    {
-        os << indent4 << "icd = 0;\n";
-        os << indent4 << "iprimcd = 0;\n";
-        os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
-    }
+    os << indent4 << "icd = 0;\n";
+    os << indent4 << "iprimcd = 0;\n";
+    os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
 
     vrr_writer.DeclarePrimPointers(os);
     os << "\n";
@@ -317,6 +316,8 @@ void WriteFile(std::ostream & os,
 
     if(!WriterInfo::Scalar() && WriterInfo::Intrinsics())
         WriterInfo::WriteShellOffsets(os);
+    else
+        WriterInfo::WriteShellOffsets_Scalar(os);
 
     os << "\n";
 
