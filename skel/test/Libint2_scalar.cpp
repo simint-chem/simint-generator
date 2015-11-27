@@ -86,42 +86,46 @@ Libint2_ERI::Integrals(struct multishell_pair P,
                 const double one_over_PQalpha_sum = 1.0 / PQalpha_sum;
                 const double one_over_Palpha = 1.0 / libint_Q->alpha[j];
                 const double one_over_Qalpha = 1.0 / libint_P->alpha[i];
+                const double rho = PQalpha_mul * one_over_PQalpha_sum;
 
-                erival[nprim].AB_x[0] = libint_P->AB_x[ab];
-                erival[nprim].AB_y[0] = libint_P->AB_y[ab];
-                erival[nprim].AB_z[0] = libint_P->AB_z[ab];
+                if(M)
+                {
+                    erival[nprim].AB_x[0] = libint_P->AB_x[ab];
+                    erival[nprim].AB_y[0] = libint_P->AB_y[ab];
+                    erival[nprim].AB_z[0] = libint_P->AB_z[ab];
 
-                erival[nprim].CD_x[0] = libint_Q->AB_x[cd];
-                erival[nprim].CD_y[0] = libint_Q->AB_y[cd];
-                erival[nprim].CD_z[0] = libint_Q->AB_z[cd];
+                    erival[nprim].CD_x[0] = libint_Q->AB_x[cd];
+                    erival[nprim].CD_y[0] = libint_Q->AB_y[cd];
+                    erival[nprim].CD_z[0] = libint_Q->AB_z[cd];
 
-                erival[nprim].PA_x[0] = libint_P->PA_x[i];
-                erival[nprim].PA_y[0] = libint_P->PA_y[i];
-                erival[nprim].PA_z[0] = libint_P->PA_z[i];
+                    erival[nprim].PA_x[0] = libint_P->PA_x[i];
+                    erival[nprim].PA_y[0] = libint_P->PA_y[i];
+                    erival[nprim].PA_z[0] = libint_P->PA_z[i];
 
-                erival[nprim].QC_x[0] = libint_Q->PA_x[j];
-                erival[nprim].QC_y[0] = libint_Q->PA_y[j];
-                erival[nprim].QC_z[0] = libint_Q->PA_z[j];
+                    erival[nprim].QC_x[0] = libint_Q->PA_x[j];
+                    erival[nprim].QC_y[0] = libint_Q->PA_y[j];
+                    erival[nprim].QC_z[0] = libint_Q->PA_z[j];
 
-                double W[3];
-                W[0] = (libint_Q->alpha[j] * libint_Q->x[j] + libint_P->alpha[i] * libint_P->x[i]) * one_over_PQalpha_sum;
-                W[1] = (libint_Q->alpha[j] * libint_Q->y[j] + libint_P->alpha[i] * libint_P->y[i]) * one_over_PQalpha_sum;
-                W[2] = (libint_Q->alpha[j] * libint_Q->z[j] + libint_P->alpha[i] * libint_P->z[i]) * one_over_PQalpha_sum;
-                
-                erival[nprim].WP_x[0] = W[0] - libint_P->x[i]; 
-                erival[nprim].WP_y[0] = W[1] - libint_P->y[i]; 
-                erival[nprim].WP_z[0] = W[2] - libint_P->z[i]; 
+                    double W[3];
+                    W[0] = (libint_Q->alpha[j] * libint_Q->x[j] + libint_P->alpha[i] * libint_P->x[i]) * one_over_PQalpha_sum;
+                    W[1] = (libint_Q->alpha[j] * libint_Q->y[j] + libint_P->alpha[i] * libint_P->y[i]) * one_over_PQalpha_sum;
+                    W[2] = (libint_Q->alpha[j] * libint_Q->z[j] + libint_P->alpha[i] * libint_P->z[i]) * one_over_PQalpha_sum;
+                    
+                    erival[nprim].WP_x[0] = W[0] - libint_P->x[i]; 
+                    erival[nprim].WP_y[0] = W[1] - libint_P->y[i]; 
+                    erival[nprim].WP_z[0] = W[2] - libint_P->z[i]; 
 
-                erival[nprim].WQ_x[0] = W[0] - libint_Q->x[j]; 
-                erival[nprim].WQ_y[0] = W[1] - libint_Q->y[j]; 
-                erival[nprim].WQ_z[0] = W[2] - libint_Q->z[j]; 
+                    erival[nprim].WQ_x[0] = W[0] - libint_Q->x[j]; 
+                    erival[nprim].WQ_y[0] = W[1] - libint_Q->y[j]; 
+                    erival[nprim].WQ_z[0] = W[2] - libint_Q->z[j]; 
 
-                double rho = PQalpha_mul * one_over_PQalpha_sum;
-                erival[nprim].oo2z[0] = 0.5 * one_over_Qalpha; 
-                erival[nprim].oo2e[0] = 0.5 * one_over_Palpha; 
-                erival[nprim].oo2ze[0] = 0.5 * one_over_PQalpha_sum;
-                erival[nprim].roz[0] = rho * one_over_Qalpha; 
-                erival[nprim].roe[0] = rho * one_over_Palpha; 
+                    erival[nprim].oo2z[0] = 0.5 * one_over_Qalpha; 
+                    erival[nprim].oo2e[0] = 0.5 * one_over_Palpha; 
+                    erival[nprim].oo2ze[0] = 0.5 * one_over_PQalpha_sum;
+                    erival[nprim].roz[0] = rho * one_over_Qalpha; 
+                    erival[nprim].roe[0] = rho * one_over_Palpha; 
+                }
+
                
 
                 double PQ2 = 0.0;
@@ -134,8 +138,7 @@ Libint2_ERI::Integrals(struct multishell_pair P,
                 // calculate the boys function
                 Boys_F_split(F, M, T); 
 
-                // temporarily disable so that it matches bit-for-bit my code
-                double scale = sqrt(one_over_PQalpha_sum) * libint_Q->prefac[j] * libint_P->prefac[i];
+                const double scale = sqrt(one_over_PQalpha_sum) * libint_Q->prefac[j] * libint_P->prefac[i];
 
                 switch(M)
                 {
