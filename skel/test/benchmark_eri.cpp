@@ -67,7 +67,9 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     Valeev_Init();
-    double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
+    std::vector<double *> res_ref(nthread);
+    for(int i = 0; i < nthread; i++)
+        res_ref[i] = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
     // Timing header
@@ -75,11 +77,8 @@ int main(int argc, char ** argv)
                            "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
 
     // loop ntest times
-    #pragma omp parallel for num_threads(nthread)
     for(int n = 0; n < ntest; n++)
     {
-        int ithread = omp_get_thread_num();
-
         #ifdef BENCHMARK_VALIDATE
         printf("Run %d\n", n);
         #endif
@@ -114,56 +113,64 @@ int main(int argc, char ** argv)
             #endif
 
             // do one shell pair at a time on the bra side
+            #pragma omp parallel for num_threads(nthread)
             for(size_t a = 0; a < shellmap[i].size(); a++)
-            for(size_t b = 0; b < shellmap[j].size(); b++)
             {
-                const int nshell1 = 1;
-                const int nshell2 = 1;
+                int ithread = omp_get_thread_num();
 
-                const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+                for(size_t b = 0; b < shellmap[j].size(); b++)
+                {
+                    const int nshell1 = 1;
+                    const int nshell2 = 1;
 
-                gaussian_shell const * const A = &shellmap[i][a];
-                gaussian_shell const * const B = &shellmap[j][b];
+                    const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
-                TimerType time_pair_12_0 = 0;
-                TimerType time_pair_12_1 = 0;
-                CLOCK(time_pair_12_0);
-                struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
-                CLOCK(time_pair_12_1);
+                    gaussian_shell const * const A = &shellmap[i][a];
+                    gaussian_shell const * const B = &shellmap[j][b];
 
-
-                // actually calculate
-                time_total += Integral(P, Q, res_ints[ithread]);
-                time_total += time_pair_12_1 - time_pair_12_0;
+                    TimerType time_pair_12_0 = 0;
+                    TimerType time_pair_12_1 = 0;
+                    CLOCK(time_pair_12_0);
+                    struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+                    CLOCK(time_pair_12_1);
 
 
-                #ifdef BENCHMARK_VALIDATE
-                const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
-                const int arrlen = nshell1234 * ncart1234;
-                ValeevIntegrals(A, nshell1, B, nshell2, C, nshell3, D, nshell4, res_ref, false);
-                std::pair<double, double> err2 = CalcError(res_ints[ithread], res_ref, arrlen);
-                err.first = std::max(err.first, err2.first);
-                err.second = std::max(err.second, err2.second);
-                #endif
+                    // actually calculate
+                    time_total += Integral(P, Q, res_ints[ithread]);
+                    time_total += time_pair_12_1 - time_pair_12_0;
 
-                nshell1234_total += nshell1234;
-                nprim_total += (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
 
-                free_multishell_pair(P);
+                    #ifdef BENCHMARK_VALIDATE
+                    const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
+                    const int arrlen = nshell1234 * ncart1234;
+                    ValeevIntegrals(A, nshell1, B, nshell2, C, nshell3, D, nshell4, res_ref[ithread], false);
+                    std::pair<double, double> err2 = CalcError(res_ints[ithread], res_ref[ithread], arrlen);
+
+                    #pragma omp critical
+                    {
+                        err.first = std::max(err.first, err2.first);
+                        err.second = std::max(err.second, err2.second);
+                    }
+                    #endif
+
+                    nshell1234_total += nshell1234;
+                    nprim_total += (unsigned long)(P.nprim) * (unsigned long)(Q.nprim);
+
+                    free_multishell_pair(P);
+                }
             }
 
             free_multishell_pair(Q);
 
 
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
-                                                                          ithread,
+            printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                           i, j, k, l,
                                                                           nshell1234_total, nprim_total,
                                                                           0ull, time_total,
                                                                           (double)(time_total)/(double)(nprim_total));
 
             #ifdef BENCHMARK_VALIDATE
-            printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);
+            printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
             #endif
         }
     }
@@ -174,7 +181,8 @@ int main(int argc, char ** argv)
 
 
     #ifdef BENCHMARK_VALIDATE
-    FREE(res_ref);
+    for(int i = 0; i < nthread; i++)
+        FREE(res_ref[i]);
     #endif
     
     // Finalize stuff 
