@@ -113,7 +113,11 @@ int main(int argc, char ** argv)
             #endif
 
             // do one shell pair at a time on the bra side
-            #pragma omp parallel for num_threads(nthread)
+
+            TimerType time_total_0, time_total_1;
+            CLOCK(time_total_0);
+
+            #pragma omp parallel for schedule(dynamic) num_threads(nthread)
             for(size_t a = 0; a < shellmap[i].size(); a++)
             {
                 int ithread = omp_get_thread_num();
@@ -128,16 +132,11 @@ int main(int argc, char ** argv)
                     gaussian_shell const * const A = &shellmap[i][a];
                     gaussian_shell const * const B = &shellmap[j][b];
 
-                    TimerType time_pair_12_0 = 0;
-                    TimerType time_pair_12_1 = 0;
-                    CLOCK(time_pair_12_0);
                     struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
-                    CLOCK(time_pair_12_1);
 
 
                     // actually calculate
-                    time_total += Integral(P, Q, res_ints[ithread]);
-                    time_total += time_pair_12_1 - time_pair_12_0;
+                    Integral(P, Q, res_ints[ithread]);
 
 
                     #ifdef BENCHMARK_VALIDATE
@@ -159,6 +158,9 @@ int main(int argc, char ** argv)
                     free_multishell_pair(P);
                 }
             }
+
+            CLOCK(time_total_1);
+            time_total += (time_total_1 - time_total_0);
 
             free_multishell_pair(Q);
 
