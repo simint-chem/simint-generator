@@ -112,7 +112,6 @@ int main(int argc, char ** argv)
             std::pair<double, double> err{0.0, 0.0};
             #endif
 
-            // do one shell pair at a time on the bra side
 
             TimerType time_total_0, time_total_1;
             CLOCK(time_total_0);
@@ -127,13 +126,13 @@ int main(int argc, char ** argv)
                     const int nshell1 = 1;
                     const int nshell2 = 1;
 
-                    const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
                     gaussian_shell const * const A = &shellmap[i][a];
                     gaussian_shell const * const B = &shellmap[j][b];
 
-                    struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+                    struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B, 0);
 
+                    const size_t nshell1234 = P.nshell12 * Q.nshell12;
 
                     // actually calculate
                     Integral(P, Q, res_ints[ithread]);
