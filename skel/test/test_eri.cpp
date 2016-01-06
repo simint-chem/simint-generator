@@ -115,8 +115,6 @@ int main(int argc, char ** argv)
             continue;
 
 
-        bool same_cd = (k == l);
-
         const int nshell3 = shellmap[k].size();
         const int nshell4 = shellmap[l].size();
 
