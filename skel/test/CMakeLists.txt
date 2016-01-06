@@ -3,6 +3,7 @@ macro(ADDTESTS TNAME TFILES)
                  $<TARGET_OBJECTS:test_valeev>
                  $<TARGET_OBJECTS:test_erd>
                  $<TARGET_OBJECTS:test_libint2>
+                 $<TARGET_OBJECTS:test_simint>
                  $<TARGET_OBJECTS:test_common>)
 
   target_link_libraries(${TNAME} simint
@@ -132,6 +133,11 @@ string(REPLACE ";" " " TESTS_LINK_FLAGS "${TESTS_LINK_FLAGS}")
 add_library(test_common OBJECT common.cpp)
 set_target_properties(test_common PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
 set_target_properties(test_common PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
+
+# Add simint object files
+add_library(test_simint OBJECT simint.cpp)
+set_target_properties(test_simint PROPERTIES INCLUDE_DIRECTORIES "${TESTS_CXX_INCLUDES}")
+set_target_properties(test_simint PROPERTIES COMPILE_FLAGS ${TESTS_CXX_FLAGS})
 
 # Add valeev object files
 add_library(test_valeev OBJECT valeev.cpp)

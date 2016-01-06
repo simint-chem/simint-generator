@@ -15,9 +15,6 @@
 
 int main(int argc, char ** argv)
 {
-    // set up the function pointers
-    Init_Test();
-
     if(argc != 2)
     {
         printf("Give me 1 argument! I got %d\n", argc-1);
@@ -71,6 +68,7 @@ int main(int argc, char ** argv)
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
+    std::pair<TimerType, TimerType> time_total{0,0};
 
 
     for(int i = 0; i <= maxam; i++)
@@ -119,10 +117,10 @@ int main(int argc, char ** argv)
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals
             size_t nprim1234 = 0;
-            for(int p = 0; p < nshell1; p++)
-            for(int q = 0; q < nshell2; q++)
-            for(int r = 0; r < nshell3; r++)
-            for(int s = 0; s < nshell4; s++)
+            for(size_t p = 0; p < nshell1; p++)
+            for(size_t q = 0; q < nshell2; q++)
+            for(size_t r = 0; r < nshell3; r++)
+            for(size_t s = 0; s < nshell4; s++)
                 nprim1234 += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
 
             const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
@@ -152,12 +150,15 @@ int main(int argc, char ** argv)
         ncont1234_total += ncont1234_am;
         nprim1234_total += nprim1234_am;
         nshell1234_total += nshell1234_am;
+        time_total.first += 0;
+        time_total.second += time_am;
 
         printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                       i, j, k, l,
                                                                       nshell1234_am, nprim1234_am,
                                                                       0ull, time_am,
                                                                       (double)(time_am)/(double)(nprim1234_am));
+
 
         #ifdef BENCHMARK_VALIDATE
         printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
@@ -168,6 +169,7 @@ int main(int argc, char ** argv)
     printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
     printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
     printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
+    printf("Total ticks to calculate all:  %llu\n", time_total.first + time_total.second);
     printf("\n");
 
     FreeShellMap(shellmap_erd);

@@ -8,6 +8,7 @@
 #include "test/common.hpp"
 #include "test/valeev.hpp"
 #include "test/ERD.hpp"
+#include "test/simint.hpp"
 #include "test/Libint2.hpp"
 #include "vectorization/vectorization.h"
 
@@ -26,7 +27,7 @@ static void UpdateMap(std::map<QAM, std::pair<double, double>> & m, std::pair<do
 int main(int argc, char ** argv)
 {
     // set up the function pointers
-    Init_Test();
+    Simint_Init();
 
     // parse command line
     if(argc != 2)
@@ -175,7 +176,7 @@ int main(int argc, char ** argv)
             ////////////////////////////
             // Calculate with my code
             ////////////////////////////
-            Integral(P, Q, res);
+            Simint_Integral(P, Q, res);
 
 
             // Analyze

@@ -3,6 +3,7 @@
 #include "vectorization/vectorization.h"
 #include "eri/eri.h"
 #include "boys/boys.h"
+#include "test/simint.hpp"
 #include "test/common.hpp"
 #include "test/timer.h"
 
@@ -15,7 +16,7 @@
 int main(int argc, char ** argv)
 {
     // set up the function pointers
-    Init_Test();
+    Simint_Init();
 
     if(argc != 2)
     {
@@ -61,6 +62,7 @@ int main(int argc, char ** argv)
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
+    std::pair<TimerType, TimerType> time_total{0,0};
 
 
     for(int i = 0; i <= maxam; i++)
@@ -119,7 +121,7 @@ int main(int argc, char ** argv)
 
 
             // actually calculate
-            time_am += Integral(P, Q, res_ints);
+            time_am += Simint_Integral(P, Q, res_ints);
 
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals
@@ -155,6 +157,8 @@ int main(int argc, char ** argv)
         ncont1234_total += ncont1234_am;
         nprim1234_total += nprim1234_am;
         nshell1234_total += nshell1234_am;
+        time_total.first += 0;
+        time_total.second += time_am;
 
         printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                       i, j, k, l,
@@ -172,6 +176,7 @@ int main(int argc, char ** argv)
     printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
     printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
     printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
+    printf("Total ticks to calculate all:  %llu\n", time_total.first + time_total.second);
     printf("\n");
 
     FreeShellMap(shellmap);

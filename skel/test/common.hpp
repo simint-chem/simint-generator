@@ -19,9 +19,6 @@
 typedef std::vector<gaussian_shell> GaussianVec;
 typedef std::map<int, GaussianVec> ShellMap;
 
-// Function pointer typedefs
-typedef int (*erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
-typedef int (*eriflatfunc)(struct multishell_pair_flat const, struct multishell_pair_flat const, double * const restrict);
 
 
 // Some gaussian & quartet handling stuff
@@ -60,21 +57,6 @@ void Chop(double * const restrict calc, int ncalc);
 std::pair<double, double> CalcError(double const * const restrict calc, double const * const restrict ref, int ncalc);
 
 
-
-// Setting up function pointers and calculating integrals
-// using my code
-void Init_Test(void);
-
-int eri_notyetimplemented(struct multishell_pair const P,
-                          struct multishell_pair const Q,
-                          double * const restrict dummy);
-
-int eriflat_notyetimplemented(struct multishell_pair_flat const P,
-                              struct multishell_pair_flat const Q,
-                              double * const restrict dummy);
-
-
-TimerType Integral(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict integrals);
 
 
 #endif
