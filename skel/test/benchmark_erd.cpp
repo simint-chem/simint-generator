@@ -1,7 +1,4 @@
 #include <cstdio>
-#include <memory>
-
-#include <omp.h>
 
 #include "vectorization/vectorization.h"
 #include "eri/eri.h"
@@ -9,6 +6,7 @@
 #include "test/common.hpp"
 #include "test/ERD.hpp"
 #include "test/timer.h"
+
 
 #ifdef BENCHMARK_VALIDATE
 #include "test/valeev.hpp"
@@ -20,35 +18,20 @@ int main(int argc, char ** argv)
     // set up the function pointers
     Init_Test();
 
-    if(argc < 3 || argc > 4)
+    if(argc != 2)
     {
-        printf("Give me 2 or 3 arguments! I got %d\n", argc-1);
+        printf("Give me 1 argument! I got %d\n", argc-1);
         return 1;
     }
 
     // files to read
     std::string basfile(argv[1]);
 
-    // number of times to run
-    const int ntest = atoi(argv[2]);
-
-    // number of threads
-    int nthread = 1;
-
-    #ifdef BENCHMARK_VALIDATE
-    printf("Disabling threading since BENCHMARK_VALIDATE is set\n");
-    nthread = 1;
-    #endif
-
-
-    if(argc == 4)
-        nthread = atoi(argv[3]);
-
 
     // read in the shell info
     ShellMap shellmap_erd = ReadBasis(basfile);
 
-
+    // normalize
     #ifdef BENCHMARK_VALIDATE
     ShellMap shellmap = CopyShellMap(shellmap_erd);
     for(auto & it : shellmap)
@@ -56,7 +39,6 @@ int main(int argc, char ** argv)
     #endif
 
 
-    // normalize
     for(auto & it : shellmap_erd)
         normalize_gaussian_shells_erd(it.second.size(), it.second.data());
 
@@ -69,15 +51,11 @@ int main(int argc, char ** argv)
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
-    std::vector<double *> res_ints(nthread);
-    for(int i = 0; i < nthread; i++)
-        res_ints[i] = (double *)ALLOC(maxsize * sizeof(double));
+    double * res_ints = (double *)ALLOC(maxsize * sizeof(double)); 
 
 
     // initialize stuff
-    std::vector<std::unique_ptr<ERD_ERI>> alleri(nthread);
-    for(auto & it : alleri)
-        it = std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1));
+    ERD_ERI eri(maxam, maxnprim, 1);
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -86,106 +64,114 @@ int main(int argc, char ** argv)
     #endif
 
     // Timing header
-    printf("%5s %13s %12s   %12s   %16s   %16s   %12s\n", "ID",
+    printf("%13s %12s   %12s   %16s   %16s   %12s\n",
                            "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
 
-    // loop ntest times
-    #pragma omp parallel for num_threads(nthread)
-    for(int n = 0; n < ntest; n++)
+    // running totals
+    size_t ncont1234_total = 0;
+    size_t nprim1234_total = 0;
+    size_t nshell1234_total = 0;
+
+
+    for(int i = 0; i <= maxam; i++)
+    for(int j = 0; j <= maxam; j++)
+    for(int k = 0; k <= maxam; k++)
+    for(int l = 0; l <= maxam; l++)
     {
-        int ithread = omp_get_thread_num();
-        ERD_ERI * eri = alleri[ithread].get();
+        if(!ValidQuartet({i,j,k,l}))
+            continue;
+
+        // total amount of time for this AM quartet
+        TimerType time_am = 0;
+
+        const size_t nshell3 = shellmap_erd[k].size();
+        const size_t nshell4 = shellmap_erd[l].size();
+
+        gaussian_shell const * const C = &shellmap_erd[k][0];
+        gaussian_shell const * const D = &shellmap_erd[l][0];
+
 
         #ifdef BENCHMARK_VALIDATE
-        printf("\n");
-        printf("Run %d\n", n);
+        std::pair<double, double> err{0.0, 0.0};
         #endif
 
+        // running totals for this am
+        size_t nprim1234_am = 0;
+        size_t nshell1234_am = 0;
+        size_t ncont1234_am = 0;
 
-        for(int i = 0; i <= maxam; i++)
-        for(int j = 0; j <= maxam; j++)
-        for(int k = 0; k <= maxam; k++)
-        for(int l = 0; l <= maxam; l++)
+        // do one shell pair at a time on the bra side
+        for(size_t a = 0; a < shellmap_erd[i].size(); a++)
+        for(size_t b = 0; b < shellmap_erd[j].size(); b++)
         {
-            if(!ValidQuartet({i,j,k,l}))
-                continue;
+            const size_t nshell1 = 1;
+            const size_t nshell2 = 1;
 
-            const int nshell3 = shellmap_erd[k].size();
-            const int nshell4 = shellmap_erd[l].size();
-
-            gaussian_shell const * const C = &shellmap_erd[k][0];
-            gaussian_shell const * const D = &shellmap_erd[l][0];
-
-            TimerType time_total = 0;
-            size_t nprim_total = 0;
-            size_t nshell1234_total = 0;
-
-            #ifdef BENCHMARK_VALIDATE
-            std::pair<double, double> err{0.0, 0.0};
-            #endif
-
-            // do one shell pair at a time on the bra side
-            for(size_t a = 0; a < shellmap_erd[i].size(); a++)
-            for(size_t b = 0; b < shellmap_erd[j].size(); b++)
-            {
-                const int nshell1 = 1; 
-                const int nshell2 = 1; 
-                const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
-
-                gaussian_shell const * const A = &shellmap_erd[i][a];
-                gaussian_shell const * const B = &shellmap_erd[j][b];
+            gaussian_shell const * const A = &shellmap_erd[i][a];
+            gaussian_shell const * const B = &shellmap_erd[j][b];
 
 
 
-                // actually calculate
-                time_total += eri->Integrals(A, nshell1, B, nshell2,
-                                             C, nshell3, D, nshell4, res_ints[ithread]);
+            // actually calculate
+            time_am += eri.Integrals(A, nshell1, B, nshell2,
+                                     C, nshell3, D, nshell4, res_ints);
 
+            // acutal number of primitives and shells calculated
+            // TODO - replace with return values from Integrals
+            size_t nprim1234 = 0;
+            for(int p = 0; p < nshell1; p++)
+            for(int q = 0; q < nshell2; q++)
+            for(int r = 0; r < nshell3; r++)
+            for(int s = 0; s < nshell4; s++)
+                nprim1234 += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
 
-
-
-
-
-                #ifdef BENCHMARK_VALIDATE
-                const int ncart1234 = NCART(i) * NCART(j) * NCART(j) * NCART(l);
-                const int arrlen = nshell1234 * ncart1234;
-                ValeevIntegrals(&shellmap[i][a], nshell1,
-                                &shellmap[j][b], nshell2,
-                                &shellmap[k][0], nshell3,
-                                &shellmap[l][0], nshell4,
-                                res_ref, false);
-                std::pair<double, double> err2 = CalcError(res_ints[0], res_ref, arrlen);
-                err.first = std::max(err.first, err2.first);
-                err.second = std::max(err.second, err2.second);
-                #endif
-
-                nshell1234_total += nshell1234;
-
-                // calculate the number of primitives
-                for(int p = 0; p < nshell1; p++)
-                for(int q = 0; q < nshell2; q++)
-                for(int r = 0; r < nshell3; r++)
-                for(int s = 0; s < nshell4; s++)
-                    nprim_total += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
-
-            }
-
-            printf("[%3d] ( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
-                                                                          ithread,
-                                                                          i, j, k, l,
-                                                                          nshell1234_total, nprim_total,
-                                                                          0ull, time_total,
-                                                                          (double)(time_total)/(double)(nprim_total));
+            const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+            const size_t ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
+            const size_t ncont1234 = nshell1234 * ncart1234;
 
             #ifdef BENCHMARK_VALIDATE
-            printf("[%3d] ( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", ithread, i, j, k, l, err.first, err.second);
+            ValeevIntegrals(A, nshell1,
+                            B, nshell2,
+                            C, nshell3,
+                            D, nshell4,
+                            res_ref, false);
+            std::pair<double, double> err2 = CalcError(res_ints, res_ref, ncont1234);
+
+            err.first = std::max(err.first, err2.first);
+            err.second = std::max(err.second, err2.second);
             #endif
+
+
+            // add primitive and shell count to running totals for this am
+            ncont1234_am += ncont1234;
+            nprim1234_am += nprim1234;
+            nshell1234_am += nshell1234;
         }
+
+        // add primitive and shell count to overall running totals
+        ncont1234_total += ncont1234_am;
+        nprim1234_total += nprim1234_am;
+        nshell1234_total += nshell1234_am;
+
+        printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
+                                                                      i, j, k, l,
+                                                                      nshell1234_am, nprim1234_am,
+                                                                      0ull, time_am,
+                                                                      (double)(time_am)/(double)(nprim1234_am));
+
+        #ifdef BENCHMARK_VALIDATE
+        printf("( %d %d | %d %d ) MaxAbsErr: %10.3e   MaxRelErr: %10.3e\n", i, j, k, l, err.first, err.second);
+        #endif
     }
 
+    printf("\n");
+    printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
+    printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
+    printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
+    printf("\n");
+
     FreeShellMap(shellmap_erd);
-    for(int i = 0; i < nthread; i++)
-        FREE(res_ints[i]);
+    FREE(res_ints);
 
 
     #ifdef BENCHMARK_VALIDATE
@@ -193,5 +179,8 @@ int main(int argc, char ** argv)
     FREE(res_ref);
     #endif
    
+    // Finalize stuff 
+    // Nothing to finalize!
+
     return 0;
 }
