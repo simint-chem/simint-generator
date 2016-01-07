@@ -3,6 +3,7 @@
 #include "generator/VRR_Algorithm_Base.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/Ncart.hpp"
+#include "generator/Naming.hpp"
 
 
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
@@ -40,7 +41,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     {
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
-        os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(qam)
+        os << indent5 << WriterInfo::DoubleType() << " " << PrimVarName(qam)
            << "[" << (vrr_algo_.GetMReq(qam)+1) << " * " 
            << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
@@ -54,8 +55,8 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
     for(const auto & qam : vrr_algo_.GetAllAM()) 
     {
         if(WriterInfo::IsContArray(qam))
-            os << indent4 << "double * restrict " << WriterInfo::PrimPtrName(qam)
-               << " = " << WriterInfo::ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
+            os << indent4 << "double * restrict " << PrimPtrName(qam)
+               << " = " << ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
     }
 
     os << "\n\n";
@@ -64,7 +65,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 
 void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
-    os << indent5 << "// Forming " << WriterInfo::PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
+    os << indent5 << "// Forming " << PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
     os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
     os << indent5 << "{\n";
@@ -79,23 +80,23 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
         XYZStep step = it.xyz;
 
         std::stringstream primname, srcname[8];
-        primname << WriterInfo::PrimVarName(qam) << "[n * " << NCART(qam) << " + " << it.target.idx() << "]";
+        primname << PrimVarName(qam) << "[n * " << NCART(qam) << " + " << it.target.idx() << "]";
         if(it.src[0])
-            srcname[0] << WriterInfo::PrimVarName(it.src[0].amlist()) << "[n * " << it.src[0].ncart() << " + " << it.src[0].idx() << "]";
+            srcname[0] << PrimVarName(it.src[0].amlist()) << "[n * " << it.src[0].ncart() << " + " << it.src[0].idx() << "]";
         if(it.src[1])
-            srcname[1] << WriterInfo::PrimVarName(it.src[1].amlist()) << "[(n+1) * " << it.src[1].ncart() << " + " << it.src[1].idx() << "]";
+            srcname[1] << PrimVarName(it.src[1].amlist()) << "[(n+1) * " << it.src[1].ncart() << " + " << it.src[1].idx() << "]";
         if(it.src[2])
-            srcname[2] << WriterInfo::PrimVarName(it.src[2].amlist()) << "[n * " << it.src[2].ncart() << " + " << it.src[2].idx() << "]";
+            srcname[2] << PrimVarName(it.src[2].amlist()) << "[n * " << it.src[2].ncart() << " + " << it.src[2].idx() << "]";
         if(it.src[3])
-            srcname[3] << WriterInfo::PrimVarName(it.src[3].amlist()) << "[(n+1) * " << it.src[3].ncart() << " + " << it.src[3].idx() << "]";
+            srcname[3] << PrimVarName(it.src[3].amlist()) << "[(n+1) * " << it.src[3].ncart() << " + " << it.src[3].idx() << "]";
         if(it.src[4])
-            srcname[4] << WriterInfo::PrimVarName(it.src[4].amlist()) << "[n * " << it.src[4].ncart() << " + " << it.src[4].idx() << "]";
+            srcname[4] << PrimVarName(it.src[4].amlist()) << "[n * " << it.src[4].ncart() << " + " << it.src[4].idx() << "]";
         if(it.src[5])
-            srcname[5] << WriterInfo::PrimVarName(it.src[5].amlist()) << "[(n+1) * " << it.src[5].ncart() << " + " << it.src[5].idx() << "]";
+            srcname[5] << PrimVarName(it.src[5].amlist()) << "[(n+1) * " << it.src[5].ncart() << " + " << it.src[5].idx() << "]";
         if(it.src[6])
-            srcname[6] << WriterInfo::PrimVarName(it.src[6].amlist()) << "[(n+1) * " << it.src[6].ncart() << " + " << it.src[6].idx() << "]";
+            srcname[6] << PrimVarName(it.src[6].amlist()) << "[(n+1) * " << it.src[6].ncart() << " + " << it.src[6].idx() << "]";
         if(it.src[7])
-            srcname[7] << WriterInfo::PrimVarName(it.src[7].amlist()) << "[(n+1) * " << it.src[7].ncart() << " + " << it.src[7].idx() << "]";
+            srcname[7] << PrimVarName(it.src[7].amlist()) << "[(n+1) * " << it.src[7].ncart() << " + " << it.src[7].idx() << "]";
 
         os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 
@@ -275,10 +276,10 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
     prototype << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
-    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
 
     for(const auto & it : vrr_algo_.GetAMReq(am))
-        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
         prototype << indent3 << WriterInfo::ConstDoubleType() << " " << it << ",\n";
@@ -325,10 +326,10 @@ void VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
         os << indent1 << "VRR_" << amchar[tocall[0]] << "_" << amchar[tocall[1]] << "_" << amchar[tocall[2]] << "_" << amchar[tocall[3]]  << "(\n";
     
         // final target
-        os << indent3 << WriterInfo::PrimVarName(am) << ",\n";
+        os << indent3 << PrimVarName(am) << ",\n";
         
         for(const auto & it : vrr_algo_.GetAMReq(am))
-            os << indent3 << WriterInfo::PrimVarName(it) << ",\n";
+            os << indent3 << PrimVarName(it) << ",\n";
     
         for(const auto & it : vrr_algo_.GetVarReq(am))
             os << indent3 << it << ",\n";
@@ -361,10 +362,10 @@ void VRR_Writer::WriteVRRExternal_(std::ostream & os) const
             if(am != QAM{0,0,0,0})
             {
                 os << indent5 << "VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-                os << indent7 << WriterInfo::PrimVarName(am) << ",\n";
+                os << indent7 << PrimVarName(am) << ",\n";
 
                 for(const auto & it : vrr_algo_.GetAMReq(am))
-                    os << indent7 << WriterInfo::PrimVarName(it) << ",\n";
+                    os << indent7 << PrimVarName(it) << ",\n";
                 
                 for(const auto & it : vrr_algo_.GetVarReq(am))
                     os << indent7 << it << ",\n";

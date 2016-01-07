@@ -4,6 +4,7 @@
 #include "generator/Boys.hpp"
 #include "generator/WriterInfo.hpp"
 #include "generator/Helpers.hpp"
+#include "generator/Naming.hpp"
         
 ////////////////////////////////////
 // Base class
@@ -75,7 +76,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     const BoysFit & bf = bfmap_.at(m); 
 
     std::stringstream ssvar, sspow;
-    ssvar << WriterInfo::PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
+    ssvar << PrimVarName({0,0,0,0}) << "[" << bf.v << "]";
     sspow << bf.v << ".0+0.5";
 
 
@@ -206,7 +207,7 @@ void BoysFO::AddConstants(void) const
 
 void BoysFO::WriteBoys(std::ostream & os) const
 {
-    std::string primname = WriterInfo::PrimVarName({0,0,0,0});
+    std::string primname = PrimVarName({0,0,0,0});
 
     // if using FMA, we need to declare the numerator and denominator separately
     if(WriterInfo::HasFMA())
@@ -279,7 +280,7 @@ BoysFO::BoysFO(std::string dir)
 
 void BoysSplit::WriteBoys(std::ostream & os) const
 {
-    std::string primname = WriterInfo::PrimVarName({0,0,0,0});
+    std::string primname = PrimVarName({0,0,0,0});
 
     if(WriterInfo::L() < BOYS_SPLIT_RECUR)
     {
@@ -367,9 +368,9 @@ void BoysSplit::AddConstants(void) const
 
 void BoysVRef::WriteBoys(std::ostream & os) const
 {
-    os << indent5 << "Boys_F_VRef(" << WriterInfo::PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
+    os << indent5 << "Boys_F_VRef(" << PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
     for(int i = 0; i <= WriterInfo::L(); i++)
-        os << indent5 << WriterInfo::PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
+        os << indent5 << PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
 std::vector<std::string> BoysVRef::Includes(void) const

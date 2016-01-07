@@ -11,6 +11,7 @@
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
 #include "generator/Ncart.hpp"
+#include "generator/Naming.hpp"
 
 void WriteFile_Permute(std::ostream & os)
 {
@@ -50,7 +51,7 @@ void WriteFile_Permute(std::ostream & os)
     os << funcline;
     os << "struct multishell_pair P,\n";
     os << indent << "struct multishell_pair Q,\n";
-    os << indent << "double * const restrict " << WriterInfo::ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os << "{\n";
     os << indent1 << "// Can be accomplished by swapping some variables\n";
     os << indent1 << "// and calling another function\n";
@@ -73,7 +74,7 @@ void WriteFile_Permute(std::ostream & os)
     os << indent1 << "return eri_" << amchar[tocall[0]] << "_" 
                                    << amchar[tocall[1]] << "_" 
                                    << amchar[tocall[2]] << "_" 
-                                   << amchar[tocall[3]] << "(P, Q, " << WriterInfo::ArrVarName(am) << ");\n"; 
+                                   << amchar[tocall[3]] << "(P, Q, " << ArrVarName(am) << ");\n"; 
 
 
     os << "}\n";
@@ -141,7 +142,7 @@ void WriteFile(std::ostream & os,
     os << funcline;
     os << "struct multishell_pair const P,\n";
     os << indent << "struct multishell_pair const Q,\n";
-    os << indent << "double * const restrict " << WriterInfo::ArrVarName(am) << ")\n";
+    os << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os << "{\n";
     os << "\n";
 
@@ -175,7 +176,7 @@ void WriteFile(std::ostream & os,
         os << indent1 << "ASSUME_ALIGN_DBL(Q.prefac);\n";
 
         os << "\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(" << WriterInfo::ArrVarName(am) << ");\n";
+        os << indent1 << "ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
         os << "\n";
         os << "\n";
     }
@@ -183,7 +184,7 @@ void WriteFile(std::ostream & os,
     // if there is no HRR, integrals are accumulated from inside the primitive loop
     // into the final integral array, so it must be zeroed first
     if(!hashrr)
-        os << indent1 << "memset(" << WriterInfo::ArrVarName(am) << ", 0, P.nshell12 * Q.nshell12 * " << ncart << " * sizeof(double));\n";
+        os << indent1 << "memset(" << ArrVarName(am) << ", 0, P.nshell12 * Q.nshell12 * " << ncart << " * sizeof(double));\n";
     
     os << "\n";
 

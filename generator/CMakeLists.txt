@@ -25,12 +25,13 @@ endif()
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common OBJECT
+                         WriterInfo.cpp
+                         Naming.cpp
                          VRR_Algorithm_Base.cpp
                          ET_Algorithm_Base.cpp
                          HRR_Algorithm_Base.cpp
                          Helpers.cpp
                          Boys.cpp
-                         WriterInfo.cpp
                          VRR_Writer.cpp
                          ET_Writer.cpp
                          HRR_Writer.cpp

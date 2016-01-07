@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Classes for generating the Boys function
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef BOYS_HPP
 #define BOYS_HPP
 
@@ -19,8 +26,8 @@
 
 
 
-
-
+/*! \brief Base class for boys function generation
+ */
 class BoysGen
 {
     public:

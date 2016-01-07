@@ -3,6 +3,7 @@
 #include "generator/ET_Algorithm_Base.hpp"
 #include "generator/Helpers.hpp"
 #include "generator/Ncart.hpp"
+#include "generator/Naming.hpp"
 
 
 ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo) 
@@ -43,7 +44,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
         os << indent5 << "// Holds temporary integrals for electron transfer\n";
 
         for(const auto & it : allam)
-            os << indent5 << WriterInfo::DoubleType() << " " << WriterInfo::PrimVarName(it) << "[" << NCART(it[0], it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+            os << indent5 << WriterInfo::DoubleType() << " " << PrimVarName(it) << "[" << NCART(it[0], it[2]) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
 
         os << "\n\n";
 
@@ -60,8 +61,8 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
         for(const auto & it : allam)
         {
             if(WriterInfo::IsContArray(it))
-                os << indent4  << "double * restrict " << WriterInfo::PrimPtrName(it)
-                   << " = " << WriterInfo::ArrVarName(it) << " + abcd * " << NCART(it[0], it[2]) << ";\n";
+                os << indent4  << "double * restrict " << PrimPtrName(it)
+                   << " = " << ArrVarName(it) << " + abcd * " << NCART(it[0], it[2]) << ";\n";
         }
 
         os << "\n\n";
@@ -141,10 +142,10 @@ void ET_Writer::WriteETExternal_(std::ostream & os) const
         for(const auto & am : et_algo_.GetAMOrder())
         {
             os << indent5 << "ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n"; 
-            os << indent6 << WriterInfo::PrimVarName(am) << ",\n";
+            os << indent6 << PrimVarName(am) << ",\n";
 
             for(const auto & it : et_algo_.GetAMReq(am))
-                os << indent6 << WriterInfo::PrimVarName(it) << ",\n";
+                os << indent6 << PrimVarName(it) << ",\n";
 
             if(et_algo_.GetDirection() == DoubletType::KET)
             {
@@ -176,10 +177,10 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 
     std::stringstream prototype;
     prototype << "void ET_" << braket << "_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
-    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << WriterInfo::PrimVarName(am) << ",\n";
+    prototype << indent3 << WriterInfo::DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
 
     for(const auto & it : et_algo_.GetAMReq(am))
-        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << WriterInfo::PrimVarName(it) << ",\n";
+        prototype << indent3 << WriterInfo::ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
 
     if(et_algo_.GetDirection() == DoubletType::KET)
     {
@@ -237,7 +238,7 @@ void ET_Writer::WriteETFile(std::ostream & os, std::ostream & osh) const
 std::string ET_Writer::ETStepVar_(const Quartet & q) const
 {
     std::stringstream ss; 
-    ss << WriterInfo::PrimVarName(q.amlist()) << "[" << q.idx() << "]";
+    ss << PrimVarName(q.amlist()) << "[" << q.idx() << "]";
     return ss.str();
 }
 
