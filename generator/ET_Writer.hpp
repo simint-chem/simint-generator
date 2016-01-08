@@ -15,12 +15,13 @@ class ET_Writer
 
         void WriteET(std::ostream & os) const;
 
-        void AddConstants(void) const;
+        void AddConstants(ERIGeneratorInfo & info) const;
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclarePrimPointers(std::ostream & os) const;
 
         void WriteETFile(std::ostream & os, std::ostream & osh) const;
 
+        bool HasET(void) const;
         bool HasBraET(void) const;
         bool HasKetET(void) const;
 

@@ -6,33 +6,15 @@
 #include "generator/Helpers.hpp"
 #include "generator/Naming.hpp"
         
-////////////////////////////////////
-// Base class
-////////////////////////////////////
-std::vector<std::string> BoysGen::Includes(void) const
-{
-    return std::vector<std::string>();
-}
-
-
-void BoysGen::WriteIncludes(std::ostream & os) const
-{
-    auto boysinc = Includes();
-    for(const auto & it : boysinc)
-        os << "#include \"" << it << "\"\n";
-}
-
-
-
-void BoysGen::AddConstants(void) const
-{
-}
-
-
 
 ////////////////////////////////////
 // FO fitting
 ////////////////////////////////////
+void BoysFO::AddIncludes(ERIGeneratorInfo & info) const
+{
+    info.AddInclude("\"boys/boys_split.h\"");
+}
+
 BoysFO::BoysFit::BoysFit(const std::string & filepath)
 {
     std::ifstream f(filepath.c_str());
@@ -145,12 +127,14 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
 
 
 
-void BoysFO::AddConstants(void) const
+std::map<std::string, std::string> BoysFO::GetConstants(ERIGeneratorInfo & info) const
 {
     const int L = WriterInfo::L();
 
+    std::map<std::string, std::string> constants;
+
     // for b0
-    WriterInfo::AddIntConstant(1);
+    info.AddIntegerConstant(1);
 
     if(L < BOYS_FO_RECUR)
     {
@@ -158,49 +142,29 @@ void BoysFO::AddConstants(void) const
         {
             const BoysFit & bf = bfmap_.at(m);
             for(size_t i = 0; i < bf.a.size(); i++)
-            { 
-                std::stringstream cname;
-                cname << "FO_" << m << "_a_" << i;
-                WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
-            }        
+                info.AddNamedConstant(StringBuilder("FO_", m, "_a_", i), bf.a[i]);
             for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
-            { 
-                std::stringstream cname;
-                cname << "FO_" << m << "_b_" << i;
-                WriterInfo::AddNamedConstant(cname.str(), bf.b[i]);
-            }        
+                info.AddNamedConstant(StringBuilder("FO_", m, "_b_", i), bf.b[i]);
         }
 
     } 
     else
     {
         // add the factor of 2.0
-        WriterInfo::AddIntConstant(2);
+        info.AddIntegerConstant(2);
 
         const BoysFit & bf = bfmap_.at(L);
         for(size_t i = 0; i < bf.a.size(); i++)
-        { 
-            std::stringstream cname;
-            cname << "FO_" << L << "_a_" << i;
-            WriterInfo::AddNamedConstant(cname.str(), bf.a[i]);
-        }        
+            info.AddNamedConstant(StringBuilder("FO_", L, "_a_", i), bf.a[i]);
         for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
-        { 
-            std::stringstream cname;
-            cname << "FO_" << L << "_b_" << i;
-            WriterInfo::AddNamedConstant(cname.str(), bf.b[i]);
-        }        
+            info.AddNamedConstant(StringBuilder("FO_", L, "_b_", i), bf.b[i]);
+
 
         // constants for the recursion
         // skipping i = 0 since that is 1.0
         for(int i = L-1; i > 0; i--)
-        {
-            std::stringstream cname, ssval;
-            cname << "FO_RECUR_" << i;
-            ssval.precision(18);
-            ssval << (1.0/(2.0*i+1.0));
-            WriterInfo::AddNamedConstant(cname.str(), ssval.str());
-        }        
+            info.AddNamedConstant(StringBuilder("FO_RECUR_", i),
+                                  StringBuilder((1.0/(2.0*i+1.0)));
     }
        
 }
@@ -328,35 +292,29 @@ void BoysSplit::WriteBoys(std::ostream & os) const
 
 }
 
-std::vector<std::string> BoysSplit::Includes(void) const
+void BoysSplit::AddIncludes(ERIGeneratorInfo & info) const
 {
-    std::vector<std::string> v{"boys/boys_split.h"};
-    return v;
+    info.AddInclude("\"boys/boys_split.h\"");
 }
 
 
-void BoysSplit::AddConstants(void) const
+void BoysSplit::AddConstants(ERIGeneratorInfo & info) const
 {
     const int L = WriterInfo::L();
 
     // for b0
-    WriterInfo::AddIntConstant(1);
+    info::AddIntegerConstant(1);
 
     if(L >= BOYS_SPLIT_RECUR)
     {
         // add the factor of 2.0
-        WriterInfo::AddIntConstant(2);
+        info.AddIntegerConstant(2);
 
         // constants for the recursion
         // skipping i = 0 since that is 1.0
         for(int i = L-1; i > 0; i--)
-        {
-            std::stringstream cname, ssval;
-            cname << "FO_RECUR_" << i;
-            ssval.precision(18);
-            ssval << (1.0/(2.0*i+1.0));
-            WriterInfo::AddNamedConstant(cname.str(), ssval.str());
-        }        
+            info.AddNamedConstant(StringBuilder("FO_RECUR_", i),
+                                  StringBuilder((1.0/(2.0*i+1.0)));
     }
        
 }
@@ -365,7 +323,7 @@ void BoysSplit::AddConstants(void) const
 ////////////////////////////////////
 // Boys Valeev Reference
 ////////////////////////////////////
-
+/*
 void BoysVRef::WriteBoys(std::ostream & os) const
 {
     os << indent5 << "Boys_F_VRef(" << PrimVarName({0,0,0,0}) << ", " << WriterInfo::L() << ", F_x);\n";
@@ -373,9 +331,9 @@ void BoysVRef::WriteBoys(std::ostream & os) const
         os << indent5 << PrimVarName({0,0,0,0}) << "[" << i << "] *= allprefac;\n";
 }
 
-std::vector<std::string> BoysVRef::Includes(void) const
+std::set<std::string> BoysVRef::Includes(void) const
 {
     std::vector<std::string> v{"boys/boys_vref.h"};
     return v;
 }
-
+*/

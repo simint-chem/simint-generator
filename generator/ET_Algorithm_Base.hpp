@@ -38,6 +38,7 @@ class ET_Algorithm_Base
 
         DoubletType GetDirection(void) const;
 
+        bool HasET(void) const;
         bool HasBraET(void) const;
         bool HasKetET(void) const;
 

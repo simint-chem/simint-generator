@@ -299,6 +299,11 @@ IntSet ET_Algorithm_Base::GetAllInt_q(void) const
 
 bool ET_Algorithm_Base::HasBraET(void) const
 {
+    return HasBraET() || HasKetET();
+}
+
+bool ET_Algorithm_Base::HasBraET(void) const
+{
     return (direction_ == DoubletType::BRA && allam_.size() > 0);
 }
 

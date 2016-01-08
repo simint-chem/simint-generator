@@ -2,6 +2,7 @@
 #define GENERATORINFO_HPP
 
 #include "generator/Classes.hpp"
+#include "generator/VectorInfo.hpp"
 
 enum class Options
 {
@@ -26,13 +27,23 @@ typedef std::map<Options, int> OptionsMap;
 
 
 
-class GeneratorInfo
+class ERIGeneratorInfo
 {
 public:    
+    ERIGeneratorInfo(QAM finalam,
+                     Compiler compiler,
+                     const std::string & cpuflagsstr,
+                     const OptionsMap & options);
+
 
     QAM FinalAM(void) const
     {
         return finalam_;
+    }
+
+    int GetOption(Options opt) const
+    {
+        return options_.at(opt);
     }
 
     int L(void) const
@@ -147,6 +158,87 @@ public:
     }
 
 
+    //////////////////////
+    // Constants
+    //////////////////////
+    void AddNamedConstant(const std::string & name, const std::string & val)
+    {
+        constants_.emplace(name, val);
+    }
+
+    void AddIntegerConstant(const std::string & name, int i)
+    {
+        AddBanedCibstabt(name, StringBuilder("const_", i));
+    }
+
+    std::map<std::string, std::string> GetConstants(void) const
+    {
+        return constants_;
+    }
+
+
+    
+    //////////////////////////////////
+    // Memory for contracted quartets
+    //////////////////////////////////
+    void SetContQ(const QAMSet & q)
+    {
+        contq_ = q;
+        nelements_ = 0;
+        for(const auto & it : contq_)
+        {
+            if(it != finalam_)
+                nelements_ += NCART(it);
+        }
+
+        memory_ = nelements_ * sizeof(double);
+    }
+
+    QAMSet GetContQ(void) const
+    {
+        return contq_;
+    }
+
+    size_t ContMemoryReq(void) const
+    {
+        return memory_;
+    }
+    
+    bool IsContQ(const QAM & am) const
+    {
+        return contq_.count(am);
+    }
+
+    bool UseStack(void) const
+    {
+        return memory_ <= static_cast<size_t>(GetOption(Options::StackMem));
+    }
+
+    bool UseHeap(void) const
+    {
+        return !UseStack();
+    }
+
+
+    ////////////////////
+    // Include files
+    ////////////////////
+    void AddInclude(const std::string & inc)
+    {
+        includes_.insert(inc);
+    }
+
+    void AddIncludes(const std::set<std::string> & incs)
+    {
+        for(const auto & it : incs)
+            includes_.insert(it);
+    }
+
+    std::set(std::string) GetIncludes(void) const
+    {
+        return includes_;
+    }
+
 
 private:
     QAM finalam_;
@@ -159,6 +251,23 @@ private:
     std::unique_ptr<VectorInfo> vector_;
 
     static std::set<std::string> ConvertCPUFlags(std::string cpuflagsstr);
+
+    ////////////////////
+    // Include files
+    ////////////////////
+    std::set<std::string> includes_;
+
+    /////////////
+    // Constants
+    /////////////
+    std::map<std::string, std::string> constants_;
+
+    //////////////////////////////////
+    // Memory for contracted quartets
+    //////////////////////////////////
+    QAMSet contq_;
+    size_t memory_;
+    size_t nelements_;
 
 };
 

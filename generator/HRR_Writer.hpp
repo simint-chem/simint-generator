@@ -14,8 +14,12 @@ class HRR_Writer
 
         void WriteHRR(std::ostream & os) const;
 
-        void AddConstants(void) const;
+        void AddConstants(ERIGeneratorInfo & info) const;
         void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
+
+        bool HasHRR(void) const;
+        bool HasBraHRR(void) const;
+        bool HasKetHRR(void) const;
 
     private:
         const HRR_Algorithm_Base & hrr_algo_; 

@@ -32,6 +32,11 @@ class HRR_Algorithm_Base
         HRRDoubletStepList GetBraSteps(DAM am) const;
         HRRDoubletStepList GetKetSteps(DAM am) const;
 
+        bool HasHRR(void) const;
+        bool HasBraHRR(void) const;
+        bool HasKetHRR(void) const;
+
+
         virtual ~HRR_Algorithm_Base() = default;
 
     protected:

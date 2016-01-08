@@ -306,3 +306,18 @@ DAMList HRR_Algorithm_Base::GetKetAMOrder(void) const
     return ketamorder_;
 }
 
+bool HRR_Algorithm_Base::HasHRR(void) const
+{
+    return HasBraHRR() || HasKetHRR();
+}
+
+bool HRR_Algorithm_Base::HasBraHRR(void) const
+{
+    return brasteps_.size();
+}
+
+bool HRR_Algorithm_Base::HasKetHRR(void) const
+{
+    return ketsteps_.size();
+}
+

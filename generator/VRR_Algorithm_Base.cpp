@@ -130,6 +130,13 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
+
+bool VRR_Algorithm_Base::HasVRR(void) const
+{
+    return HasBraVRR() || HasKetVRR();
+}
+
+
 bool VRR_Algorithm_Base::HasBraVRR(void) const
 {
     for(const auto & it : vrrmap_)

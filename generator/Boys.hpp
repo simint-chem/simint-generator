@@ -33,13 +33,11 @@ class BoysGen
     public:
         virtual void WriteBoys(std::ostream & os) const = 0;
 
-        void WriteIncludes(std::ostream & os) const;
-        virtual void AddConstants(void) const;
+        virtual void AddIncludes(ERIGeneratorInfo & info) const = 0;
+
 
         virtual ~BoysGen() { };
 
-    protected:
-        virtual std::vector<std::string> Includes(void) const;
 };
 
 
@@ -51,7 +49,8 @@ class BoysFO : public BoysGen
         BoysFO(std::string dir); // read from directory
 
         virtual void WriteBoys(std::ostream & os) const;
-        virtual void AddConstants(void) const;
+
+        virtual void AddIncludes(ERIGeneratorInfo & info) const;
 
     private:
         struct BoysFit
@@ -83,25 +82,23 @@ struct BoysSplit : public BoysGen
     public:
         // default constructors ok
         virtual void WriteBoys(std::ostream & os) const;
-        virtual void AddConstants(void) const;
 
-    protected:
-        virtual std::vector<std::string> Includes(void) const;
+        virtual void AddIncludes(ERIGeneratorInfo & info) const;
 };
 
 
 
 
-
+/*
 struct BoysVRef : public BoysGen
 {
     public:
         // default constructors ok
         virtual void WriteBoys(std::ostream & os) const;
 
-    protected:
-        virtual std::vector<std::string> Includes(void) const;
-};
+        virtual void AddIncludes(ERIGeneratorInfo & info) const;
 
+};
+*/
 
 #endif

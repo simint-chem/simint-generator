@@ -1,5 +1,4 @@
-#include "generator/GeneratorInfo.hpp"
-#include "generator/VectorInfo.hpp"
+#include "generator/ERIGeneratorInfo.hpp"
 
 static char TransformPred(char c)
 {
@@ -10,7 +9,7 @@ static char TransformPred(char c)
 }
 
 
-std::set<std::string> GeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
+std::set<std::string> ERIGeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
 {
     std::set<std::string> cpuflags;
 
@@ -33,10 +32,10 @@ std::set<std::string> GeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
 }
 
 
-GeneratorInfo::GeneratorInfo(QAM finalam,
-                             Compiler compiler,
-                             const std::string & cpuflagsstr,
-                             const OptionsMap & options)
+ERIGeneratorInfo::ERIGeneratorInfo(QAM finalam,
+                                   Compiler compiler,
+                                   const std::string & cpuflagsstr,
+                                   const OptionsMap & options)
     : finalam_(finalam),
       compiler_(compiler),
       cpuflags_(ConvertCPUFlags(cpuflagsstr)),

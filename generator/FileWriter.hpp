@@ -15,6 +15,7 @@ class HRR_Writer;
 typedef std::array<int, 4> QAM;
 
 void WriteFile(std::ostream & os,
+               const QAM & am,
                const BoysGen & bg,
                const VRR_Writer & vrr_writer,
                const ET_Writer & et_writer,

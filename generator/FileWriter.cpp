@@ -13,6 +13,57 @@
 #include "generator/Ncart.hpp"
 #include "generator/Naming.hpp"
 
+
+void DeclareContwork(std::ostream & os, const ERIGeneratorInfo & info)
+{
+    if(info.ContMemoryReq() == 0)
+        return;
+
+    size_t contmem = info.ContMemoryReq();
+
+    os << indent1 << "//Workspace for contracted integrals\n";
+    if(info.UseHeap())
+        os << indent1 << "double * const constwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
+    else
+        os << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contmem << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
+
+    os << indent1 << "// partition workspace into shells\n";
+    size_t ptidx = 0;
+
+    for(const auto & it : info.GetContQ())
+    {
+        if(!info.IsFinalAM(it))
+        {
+            os << indent1 << "double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
+            ptidx += NCART(it);
+        }
+    }
+
+    os << "\n";
+
+}
+
+
+void ZeroContWork(std::ostream & os, const ERIGeneratorInfo & info)
+{
+    size_t contmem = info.ContMemoryReq();
+    if(contmem > 0)
+        os << indent3 << "memset(contwork, 0, SIMINT_NSHELL_SIMD * " << contmem << ");\n";
+    
+}
+
+
+void FreeContWork(std::ostream & os, const ERIGeneratorInfo & info)
+{
+    size_t contmem = info.ContMemoryReq();
+
+    if(contmem > 0 && info.UseHeap())
+    {
+        os << indent1 << "// Free contracted workspace\n";
+        os << indent1 << "FREE(contwork);\n\n";
+    }       
+}
+
 void WriteFile_Permute(std::ostream & os)
 {
     QAM am = WriterInfo::FinalAM();
@@ -83,23 +134,27 @@ void WriteFile_Permute(std::ostream & os)
 
 
 void WriteFile(std::ostream & os,
+               ERIGeneratorInfo & info,
                const BoysGen & bg,
                const VRR_Writer & vrr_writer,
                const ET_Writer & et_writer,
                const HRR_Writer & hrr_writer)
 {
-    const QAM am = WriterInfo::FinalAM();
-    int ncart = NCART(am);
+    const int ncart = NCART(am);
+
+    
+
 
     // some helper bools
-    bool hashrr = WriterInfo::HasHRR();
-    bool hasbrahrr = WriterInfo::HasBraHRR();
-    bool haskethrr = WriterInfo::HasKetHRR();
-    bool inline_hrr = (hashrr && WriterInfo::GetOption(OPTION_INLINEHRR) != 0);
+    bool hashrr = hrr_writer.HasHRR();
+    bool hasbrahrr = hrr_writer.HasBraHRR();
+    bool haskethrr = hrr_writer.HasKetHRR();
+    bool inline_hrr = (hashrr && WriterInfo::GetOption(Options::InlineHRR) != 0);
 
     bool hasbravrr = vrr_writer.HasBraVRR();
     bool hasketvrr = vrr_writer.HasKetVRR();
 
+    bool haset = et_writer.HasET();
     bool hasbraet = et_writer.HasBraET(); 
     bool hasketet = et_writer.HasKetET(); 
 
@@ -107,36 +162,58 @@ void WriteFile(std::ostream & os,
     bool hasoneoverq = (hasketvrr || hasketet);
     bool hasoneover2p = (hasbraet || (hasbravrr && (am[0]+am[1]) > 1)); 
     bool hasoneover2q = (hasketet || (hasketvrr && (am[2]+am[3]) > 1)); 
-    bool hasoneover2pq = WriterInfo::GetOption(OPTION_NOET) && 
+    bool hasoneover2pq = haset info::GetOption(Options::NoET) && 
                          (am[0] + am[1] > 0) && (am[2] + am[3] > 0);
 
 
     // load this once here
-    std::string dbltype = WriterInfo::DoubleType();
-    std::string cdbltype = WriterInfo::ConstDoubleType();
+    const VectorInfo & vinfo = info.GetVectorInfo();
+
+    std::string dbltype = vinfo::DoubleType();
+    std::string cdbltype = vinfo::ConstDoubleType();
 
     // we need a constant one for 1/x
-    WriterInfo::AddIntConstant(1);
+    info::AddIntegerConstant(1);
 
+    // add includes
+    info.AddInclude("<string.h>");
+    info.AddInclude("<math.h>");
+    info.AddInclude("\"eri/eri.h\"");
+    bg.AddIncludes(info);
+
+    // add constants
+    bg.AddConstants(info);
+    et_writer.AddConstants(info);
+    vrr_writer.AddConstants(info);
+    hrr_writer.AddConstants(info);
+
+    // need these factors sometimes
+    if(hasoneover2p || hasoneover2q || hasoneover2pq)
+        info.AddNamedConstant("one_half", "0.5");
+
+
+
+    ///////////////////////////////////////
+    // Beginning of file writing
+    ///////////////////////////////////////
+
+    // Write out all the includes
+    for(const auto & it : info.GetIncludes())
+        os << "#include " << it << "\n";
+
+
+    //////////////////////////////
+    // Function name & signature
+    //////////////////////////////
     std::stringstream ss;
     ss << "int eri_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(";
 
+
     std::string funcline = ss.str();
     std::string indent(funcline.length(), ' ');
 
-    // start output to the file
-    os << "#include <string.h>\n";
-    os << "#include <math.h>\n";
-    os << "\n";
-
-    os << "#include \"eri/eri.h\"\n";
-    os << "\n";
-    WriterInfo::WriteIncludes(os);
-    os << "\n";
-
-    bg.WriteIncludes(os);
 
     os << "\n\n";
     os << funcline;
@@ -146,65 +223,37 @@ void WriteFile(std::ostream & os,
     os << "{\n";
     os << "\n";
 
-    // if we are manually using intrinsics, we don't need these assume lines
-    // TODO: We won't need them for intrinsic calculations either, but HRR is still
-    //       auto vectorized
-    if(!WriterInfo::Scalar())
-    {
-        os << indent1 << "ASSUME_ALIGN_DBL(P.x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PA_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.PB_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.alpha);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(P.prefac);\n";
-        os << "\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PA_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_x);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_y);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.PB_z);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.alpha);\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(Q.prefac);\n";
 
-        os << "\n";
-        os << indent1 << "ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
-        os << "\n";
-        os << "\n";
-    }
+    ///////////////////////////////////
+    // NOW IN THE ACTUAL ERI FUNCTION
+    ///////////////////////////////////
 
-    // if there is no HRR, integrals are accumulated from inside the primitive loop
-    // into the final integral array, so it must be zeroed first
+    // If there is no HRR, integrals are accumulated from inside the primitive loop
+    // directly into the final integral array that was passed into this function, so it must be zeroed first
     if(!hashrr)
         os << indent1 << "memset(" << ArrVarName(am) << ", 0, P.nshell12 * Q.nshell12 * " << ncart << " * sizeof(double));\n";
-    
     os << "\n";
 
-    // abcd =  index within simd loop, real_abcd is the absolute
-    // full abcd in terms of all the shells
+
+    // abcd = index within simd loop, 
     os << indent1 << "int ab, cd, cdbatch, abcd;\n";
     os << indent1 << "int istart, jstart;\n";
     os << indent1 << "int iprimcd, nprim_icd, icd;\n";
+    os << indent1 << "int i, j, n;\n";
 
-
-    if(!WriterInfo::Scalar() && WriterInfo::Intrinsics())
-        os << indent1 << "int np;\n";
-    
-
+    // real_abcd is the absolute
+    // full abcd in terms of all the shells that we are doing
     if(hashrr)
         os << indent1 << "int real_abcd;\n";
 
-    os << indent1 << "int i, j;\n";
-    os << indent1 << "int n;\n";
 
+    // Needed for determining offsets
+    // But that's only if we are vectorizing
+    if(Vectorized())
+        os << indent1 << "int np;\n";
+    
+
+    // Needed only if we are doing inline HRR
     if(inline_hrr)
     {
         if(hasbrahrr)
@@ -215,17 +264,13 @@ void WriteFile(std::ostream & os,
 
     os << "\n";
 
+    // Declare the temporary space 
     if(hashrr)
-        WriterInfo::DeclareContwork(os);
+        DeclareContwork(os);
 
-    // need these factors sometimes
-    if(hasoneover2p || hasoneover2q || hasoneover2pq)
-        WriterInfo::AddNamedConstant("one_half", "0.5");
 
-    bg.AddConstants();
-    et_writer.AddConstants();
-    vrr_writer.AddConstants();
-    hrr_writer.AddConstants();
+
+    // Write out all the constants 
     WriterInfo::WriteConstants(os);
 
     
@@ -485,4 +530,7 @@ void WriteFile(std::ostream & os,
     os << "}\n";
     os << "\n";
 }
+
+
+
 

@@ -14,12 +14,13 @@ class VRR_Writer
 
         void WriteVRR(std::ostream & os) const;
 
-        void AddConstants(void) const;
+        void AddConstants(ERIGeneratorInfo & info) const;
         void DeclarePrimArrays(std::ostream & os) const;
         void DeclarePrimPointers(std::ostream & os) const;
 
         void WriteVRRFile(std::ostream & os, std::ostream & osh) const;
 
+        bool HasVRR(void) const;
         bool HasBraVRR(void) const;
         bool HasKetVRR(void) const;
 

@@ -48,6 +48,7 @@ class VRR_Algorithm_Base
         StringSet GetVarReq(QAM am) const;
         StringSet GetAllVarReq(void) const;
 
+        bool HasVRR(void) const;
         bool HasBraVRR(void) const;
         bool HasKetVRR(void) const;
 

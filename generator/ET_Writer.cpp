@@ -11,6 +11,10 @@ ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo)
 { 
 }
 
+bool ET_Writer::HasET(void) const
+{
+    return et_algo_.HasET();
+}
 
 bool ET_Writer::HasBraET(void) const
 {
@@ -24,7 +28,7 @@ bool ET_Writer::HasKetET(void) const
 }
 
 
-void ET_Writer::AddConstants(void) const
+void ET_Writer::AddConstants(ERIGeneratorInfo & info) const
 {
     if(WriterInfo::GetOption(OPTION_INLINEET) > 0)
     {
