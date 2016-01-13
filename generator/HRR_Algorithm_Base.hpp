@@ -12,7 +12,7 @@ typedef std::map<DAM, DAMSet> HRR_AMReqMap;
 class HRR_Algorithm_Base
 {
     public:
-        HRR_Algorithm_Base(const OptionsMap & options);
+        HRR_Algorithm_Base(const OptionMap & options);
 
         void Create(QAM am);
         
@@ -40,11 +40,11 @@ class HRR_Algorithm_Base
         virtual ~HRR_Algorithm_Base() = default;
 
     protected:
-       int GetOption(int opt) const; 
+       int GetOption(Option opt) const; 
 
     private:
         // Options
-        OptionsMap options_;
+        OptionMap options_;
 
         QAM finalam_;
 

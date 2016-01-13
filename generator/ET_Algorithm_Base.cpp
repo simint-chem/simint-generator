@@ -2,17 +2,18 @@
 #include <algorithm>
 
 #include "generator/Helpers.hpp"
+#include "generator/Printing.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
 
 using namespace std;
 
-ET_Algorithm_Base::ET_Algorithm_Base(const OptionsMap & options)
+ET_Algorithm_Base::ET_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
 
-int ET_Algorithm_Base::GetOption(int opt) const
+int ET_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }
@@ -23,7 +24,7 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) con
 
     // if we want ( s s | X s ) to be formed via VRR instead of ET, and
     // then use ET in reverse, prune ( s s | X s)
-    if(GetOption(OPTION_NOSINGLEET) > 0)
+    if(GetOption(Option::NoSingleET) > 0)
     {
         for(auto & it : qs)
         {
@@ -37,7 +38,7 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) con
         }
         
     }
-    else if(GetOption(OPTION_NOET) > 0)
+    else if(GetOption(Option::NoET) > 0)
     {
         // prune everything. We aren't doing ET
         pruned.insert(qs.begin(), qs.end());
@@ -297,7 +298,7 @@ IntSet ET_Algorithm_Base::GetAllInt_q(void) const
 }
         
 
-bool ET_Algorithm_Base::HasBraET(void) const
+bool ET_Algorithm_Base::HasET(void) const
 {
     return HasBraET() || HasKetET();
 }

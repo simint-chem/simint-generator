@@ -9,7 +9,7 @@
 
 namespace {
         QAMSet contq_;  // set of contracted integral AM
-        OptionsMap options_;
+        OptionMap options_;
         size_t memory_;
         size_t nelements_;
         QAM finalam_;

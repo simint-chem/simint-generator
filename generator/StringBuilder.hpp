@@ -24,6 +24,12 @@ std::string StringBuilder(const std::string & arg)
     return arg;
 }
 
+// overload for string, since std::to_string(const char *) doesn't exist
+std::string StringBuilder(const char * arg)
+{
+    return std::string(arg);
+}
+
 
 template<typename T, typename ... Targs>
 std::string StringBuilder(const T & arg, Targs && ... args)

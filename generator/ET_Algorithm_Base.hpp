@@ -18,7 +18,7 @@ typedef std::map<QAM, IntSet> ET_IntReqMap;
 class ET_Algorithm_Base
 {
     public:
-        ET_Algorithm_Base(const OptionsMap & options);
+        ET_Algorithm_Base(const OptionMap & options);
 
         void Create(const QuartetSet & inittargets, DoubletType direction);
         void Create(QAM am, DoubletType direction);
@@ -45,11 +45,11 @@ class ET_Algorithm_Base
         virtual ~ET_Algorithm_Base() = default;
 
     protected:
-       int GetOption(int opt) const; 
+       int GetOption(Option opt) const; 
 
     private:
         // Options
-        OptionsMap options_;
+        OptionMap options_;
 
         DoubletType direction_;
 

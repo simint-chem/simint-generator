@@ -3,17 +3,27 @@
 
 #include <map>
 
-typedef std::map<int, int> OptionsMap;
+enum class Option
+{
+    StackMem,
+    InlineVRR,
+    InlineET,
+    InlineHRR,
+    Scalar,
+    NoSingleET,
+    NoET
+};
 
 
-// options
-#define OPTION_STACKMEM   1
-#define OPTION_INLINEVRR  2
-#define OPTION_INLINEET   3
-#define OPTION_INLINEHRR  4
-#define OPTION_INTRINSICS 5
-#define OPTION_SCALAR     6
+enum class Compiler
+{
+    Intel,
+    GCC
+};
 
-#define OPTION_NOSINGLEET 7
-#define OPTION_NOET       8
+
+
+typedef std::map<Option, int> OptionMap;
+
+
 #endif

@@ -15,7 +15,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND GENERATOR_CXX_FLAGS "-O0 -ggdb")
 else()
   list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
-  list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wextra -pedantic")
+  list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter")
   list(APPEND GENERATOR_CXX_FLAGS "-O0 -ggdb")
 endif()
 
@@ -25,17 +25,11 @@ endif()
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common OBJECT
-                         WriterInfo.cpp
                          Naming.cpp
                          VRR_Algorithm_Base.cpp
                          ET_Algorithm_Base.cpp
                          HRR_Algorithm_Base.cpp
-                         Helpers.cpp
-                         Boys.cpp
                          VRR_Writer.cpp
-                         ET_Writer.cpp
-                         HRR_Writer.cpp
-                         FileWriter.cpp
            )
 
 

@@ -178,10 +178,10 @@ GaussianSet AllGaussiansForAM(int am)
 }
 
 
-OptionsMap DefaultOptions(void)
+OptionMap DefaultOptions(void)
 {
     // default options
-    OptionsMap options;
+    OptionMap options;
     options[OPTION_STACKMEM] = 0;
     options[OPTION_INLINEVRR] = 1;
     options[OPTION_INLINEET] = 1;
@@ -195,7 +195,7 @@ OptionsMap DefaultOptions(void)
 }
 
 
-std::vector<std::string> ParseCommonOptions(OptionsMap & options, int argc, char ** argv)
+std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char ** argv)
 {
     std::vector<std::string> ret;
 

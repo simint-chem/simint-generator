@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
     try {
 
     // default options
-    OptionsMap options = DefaultOptions();
+    OptionMap options = DefaultOptions();
 
     // max L value
     int maxL = 0;

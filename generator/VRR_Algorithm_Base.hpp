@@ -24,7 +24,7 @@ typedef std::map<QAM, StringSet> VRR_VarReqMap;
 class VRR_Algorithm_Base
 {
     public:
-        VRR_Algorithm_Base(const OptionsMap & options);
+        VRR_Algorithm_Base(const OptionMap & options);
 
         void Create(const QuartetSet & q);
         void Create(QAM q);
@@ -57,11 +57,11 @@ class VRR_Algorithm_Base
         virtual ~VRR_Algorithm_Base() = default; 
 
     protected:
-       int GetOption(int opt) const; 
+       int GetOption(Option opt) const;
 
     private:
         // Options
-        OptionsMap options_;
+        OptionMap options_;
 
         // VRR_StepMap maps a AM quartet to its steps
         VRR_StepMap vrrmap_;

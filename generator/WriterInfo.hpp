@@ -6,7 +6,7 @@
 
 namespace WriterInfo {
 
-        void Init(const OptionsMap & options, const QAM & finalam,
+        void Init(const OptionMap & options, const QAM & finalam,
                   const std::string & cpuflags);
 
         void SetContQ(const QAMSet & topquartets);

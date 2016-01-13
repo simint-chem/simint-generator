@@ -35,7 +35,7 @@ std::set<std::string> ERIGeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
 ERIGeneratorInfo::ERIGeneratorInfo(QAM finalam,
                                    Compiler compiler,
                                    const std::string & cpuflagsstr,
-                                   const OptionsMap & options)
+                                   const OptionMap & options)
     : finalam_(finalam),
       compiler_(compiler),
       cpuflags_(ConvertCPUFlags(cpuflagsstr)),

@@ -19,7 +19,7 @@ int main(int argc, char ** argv)
 {
     try {
 
-    OptionsMap options = DefaultOptions();
+    OptionMap options = DefaultOptions();
 
     // other stuff
     std::string boystype;

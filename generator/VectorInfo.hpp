@@ -24,6 +24,8 @@ public:
     virtual std::string Power(const std::string & base, const std::string & exp) const = 0;
     virtual std::string Exp(const std::string & exp) const = 0;
 
+    virtual std::string IntConstant(int i) const = 0;
+
 
     // Uses the pure virtual functions
     virtual std::string ConstDoubleType(void) const { return StringBuilder("const ", DoubleType()); }
@@ -102,15 +104,20 @@ public:
         return StringBuilder("exp(", exp, ")");
     }
 
+    virtual std::string IntConstant(int i) const
+    {
+        return std::to_string(i);
+    }
+
 };
 
 
 
 class BasicIntelSIMDVector
 {
-public
+public:
     BasicIntelSIMDVector(int width)
-        : width_(width), dwidth(width/8)
+        : width_(width), dwidth_(width/8)
     {}
 
 
@@ -120,7 +127,7 @@ public
 
     virtual std::string DoubleSet1(const std::string & dbl) const
     {
-        return StringBuilder("mm", width_, "_set1_pd(" + dbl + ")";
+        return StringBuilder("mm", width_, "_set1_pd(" + dbl + ")");
     }
 
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const
@@ -128,7 +135,7 @@ public
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("mm", width_, "_load_pd(") + ptrstr + ")";
+        return StringBuilder("mm", width_, "_load_pd(", ptrstr, ")");
     }
 
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
@@ -136,7 +143,7 @@ public
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("mm", width_, "_store_pd(") + ptrstr + ")";
+        return StringBuilder("mm", width_, "_store_pd(", ptrstr, ", ", var, ")");
     }
 
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
@@ -167,6 +174,11 @@ public
     virtual std::string Exp(const std::string & exp) const
     {
         return StringBuilder("mm", width_, "_exp_pd(", exp, ")");
+    }
+
+    virtual std::string IntConstant(int i) const
+    {
+        return StringBuilder("const_", i);
     }
 
 private:

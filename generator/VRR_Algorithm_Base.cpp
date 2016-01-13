@@ -2,16 +2,17 @@
 #include <algorithm>
 
 #include "generator/Helpers.hpp"
+#include "generator/Printing.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
 
 using namespace std;
 
-VRR_Algorithm_Base::VRR_Algorithm_Base(const OptionsMap & options)
+VRR_Algorithm_Base::VRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
-int VRR_Algorithm_Base::GetOption(int opt) const
+int VRR_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }

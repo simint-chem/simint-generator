@@ -2,16 +2,17 @@
 #include <algorithm>
 
 #include "generator/Helpers.hpp"
+#include "generator/Printing.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
 
 using namespace std;
 
-HRR_Algorithm_Base::HRR_Algorithm_Base(const OptionsMap & options)
+HRR_Algorithm_Base::HRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
-int HRR_Algorithm_Base::GetOption(int opt) const
+int HRR_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }

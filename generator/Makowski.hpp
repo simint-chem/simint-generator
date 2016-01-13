@@ -11,7 +11,7 @@
 class Makowski_HRR : public HRR_Algorithm_Base
 {
     public:
-        Makowski_HRR(const OptionsMap & options)
+        Makowski_HRR(const OptionMap & options)
             : HRR_Algorithm_Base(options)
         { }
 
@@ -79,7 +79,7 @@ class Makowski_HRR : public HRR_Algorithm_Base
 class Makowski_VRR : public VRR_Algorithm_Base
 {
     public:
-        Makowski_VRR(const OptionsMap & options)
+        Makowski_VRR(const OptionMap & options)
             : VRR_Algorithm_Base(options)
         { }
 
@@ -253,7 +253,7 @@ class Makowski_VRR : public VRR_Algorithm_Base
 class Makowski_ET : public ET_Algorithm_Base
 {
     public:
-        Makowski_ET(const OptionsMap & options)
+        Makowski_ET(const OptionMap & options)
             : ET_Algorithm_Base(options)
         { }
 

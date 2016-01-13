@@ -1,28 +1,11 @@
 #ifndef GENERATORINFO_HPP
 #define GENERATORINFO_HPP
 
+#include <memory>
 #include "generator/Classes.hpp"
 #include "generator/VectorInfo.hpp"
-
-enum class Options
-{
-    StackMem,
-    InlineVRR,
-    InlineET,
-    InlineHRR,
-    Scalar,
-    NoSingleET,
-    NoET
-};
-
-
-enum class Compiler
-{
-    Intel,
-    GCC;
-};
-
-typedef std::map<Options, int> OptionsMap;
+#include "generator/Ncart.hpp"
+#include "generator/Options.hpp"
 
 
 
@@ -33,7 +16,7 @@ public:
     ERIGeneratorInfo(QAM finalam,
                      Compiler compiler,
                      const std::string & cpuflagsstr,
-                     const OptionsMap & options);
+                     const OptionMap & options);
 
 
     QAM FinalAM(void) const
@@ -41,7 +24,7 @@ public:
         return finalam_;
     }
 
-    int GetOption(Options opt) const
+    int GetOption(Option opt) const
     {
         return options_.at(opt);
     }
@@ -94,7 +77,7 @@ public:
 
     bool HasET(void) const
     {
-        return (!GetOption(Options::NoET)) && (finalam_[2]+finalam_[3] > 0);
+        return (!GetOption(Option::NoET)) && (finalam_[2]+finalam_[3] > 0);
     }
 
     bool HasHRR(void) const
@@ -166,9 +149,9 @@ public:
         constants_.emplace(name, val);
     }
 
-    void AddIntegerConstant(const std::string & name, int i)
+    void AddIntegerConstant(int i)
     {
-        AddBanedCibstabt(name, StringBuilder("const_", i));
+        AddNamedConstant(StringBuilder("const_", i), std::to_string(i));
     }
 
     std::map<std::string, std::string> GetConstants(void) const
@@ -211,7 +194,7 @@ public:
 
     bool UseStack(void) const
     {
-        return memory_ <= static_cast<size_t>(GetOption(Options::StackMem));
+        return memory_ <= static_cast<size_t>(GetOption(Option::StackMem));
     }
 
     bool UseHeap(void) const
@@ -234,7 +217,7 @@ public:
             includes_.insert(it);
     }
 
-    std::set(std::string) GetIncludes(void) const
+    std::set<std::string> GetIncludes(void) const
     {
         return includes_;
     }
@@ -245,7 +228,7 @@ private:
 
     Compiler comp_;
     std::set<std::string> cpuflags_;
-    OptionsMap options_;
+    OptionMap options_;
     bool scalar_;
 
     std::unique_ptr<VectorInfo> vector_;
