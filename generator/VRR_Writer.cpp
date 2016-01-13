@@ -5,7 +5,7 @@
 
 
 ///////////////////////////////
-// VRR Writer Base
+// Base VRR Writer
 ///////////////////////////////
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
     : vrr_algo_(vrr_algo)

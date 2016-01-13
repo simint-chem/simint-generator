@@ -9,6 +9,8 @@
 // foward declare
 class ERIGeneratorInfo;
 
+
+
 class VRR_Writer
 {   
     public:
@@ -22,8 +24,8 @@ class VRR_Writer
         void DeclarePrimPointers(std::ostream & os, const ERIGeneratorInfo & info) const;
 
 
-        virtual void WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
         virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
+        virtual void WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
         virtual void WriteVRRFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const = 0;
 
     protected:
