@@ -6,6 +6,9 @@
 #include "generator/Naming.hpp"
 
 
+///////////////////////////////
+// VRR Writer Base
+///////////////////////////////
 VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
     : vrr_algo_(vrr_algo)
 { 
@@ -26,16 +29,6 @@ bool VRR_Writer::HasKetVRR(void) const
     return vrr_algo_.HasKetVRR();
 }
 
-void VRR_Writer::AddConstants(void) const
-{
-    if(WriterInfo::GetOption(OPTION_INLINEVRR) > 0)
-    {
-        for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
-            WriterInfo::AddIntConstant(i);
-    }
-}
-
-
 void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
@@ -54,7 +47,6 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     os << "\n\n";
 }
 
-
 void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
     for(const auto & qam : vrr_algo_.GetAllAM()) 
@@ -66,7 +58,6 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 
     os << "\n\n";
 }
-
 
 void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
@@ -216,56 +207,103 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 
 
 
-void VRR_Writer::WriteVRRInline_(std::ostream & os) const
+
+
+
+
+///////////////////////////////////////
+// Inline VRR Writer
+///////////////////////////////////////
+
+void VRR_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
 {
-    if(WriterInfo::HasVRR())
+    for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
+        WriterInfo::AddIntConstant(i);
+}
+
+
+void VRR_Writer_Inline::WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const
+{
+    const VectorInfo & vinfo = info.GetVectorInfo();
+
+    os << "\n";
+    os << indent5 << "//////////////////////////////////////////////\n";
+    os << indent5 << "// Primitive integrals: Vertical recurrance\n";
+    os << indent5 << "//////////////////////////////////////////////\n";
+    os << "\n";
+
+    // constants
+    for(const auto & it : vrr_algo_.GetAllInt_2p())
     {
-        os << "\n";
-        os << indent5 << "//////////////////////////////////////////////\n";
-        os << indent5 << "// Primitive integrals: Vertical recurrance\n";
-        os << indent5 << "//////////////////////////////////////////////\n";
-        os << "\n";
+        if(it == 1)
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
+        else
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n"; 
+    }
 
-        // constants
-        for(const auto & it : vrr_algo_.GetAllInt_2p())
-        {
-            if(it == 1)
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
-            else
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << WriterInfo::IntConstant(it) << " * one_over_2p;\n"; 
-        }
+    for(const auto & it : vrr_algo_.GetAllInt_2q())
+    {
+        if(it == 1)
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
+        else
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n"; 
+    }
 
-        for(const auto & it : vrr_algo_.GetAllInt_2q())
-        {
-            if(it == 1)
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
-            else
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << WriterInfo::IntConstant(it) << " * one_over_2q;\n"; 
-        }
-
-        for(const auto & it : vrr_algo_.GetAllInt_2pq())
-        {
-            if(it == 1)
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
-            else
-                os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::IntConstant(it) << " * one_over_2pq;\n"; 
-        }
+    for(const auto & it : vrr_algo_.GetAllInt_2pq())
+    {
+        if(it == 1)
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
+        else
+            os << indent5 << WriterInfo::ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << WriterInfo::IntConstant(it) << " * one_over_2pq;\n"; 
+    }
 
 
-        // iterate over increasing am
-        for(const auto & qam : vrr_algo_.GetAMOrder())
-        {
-            // Write out the steps
-            if(qam != QAM{0,0,0,0})
-                WriteVRRSteps_(os, qam, vrr_algo_.GetSteps(qam), 
-                               std::to_string(vrr_algo_.GetMReq(qam)+1));
-
-            os << "\n\n";
-        }
+    // iterate over increasing am
+    for(const auto & qam : vrr_algo_.GetAMOrder())
+    {
+        // Write out the steps
+        if(qam != QAM{0,0,0,0})
+            WriteVRRSteps_(os, qam, vrr_algo_.GetSteps(qam), 
+                           std::to_string(vrr_algo_.GetMReq(qam)+1));
 
         os << "\n\n";
     }
+
+    os << "\n\n";
 }
+
+
+void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) const
+{ }
+
+
+
+///////////////////////////////////////
+// External VRR Writer
+///////////////////////////////////////
+
+void VRR_Writer_External::AddConstants(ERIGeneratorInfo & info) const
+{
+
+}
+
+void VRR_Writer_External::WriteVRR(std::ostream & os) const
+{
+}
+
+void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh) const
+{ 
+
+}
+
+
+
+
+
+
+
+
+
 
 
 

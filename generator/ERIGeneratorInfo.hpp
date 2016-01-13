@@ -56,7 +56,7 @@ public:
         return am == finalam_;
     }
 
-    
+/*    
     bool HasBraVRR(void) const
     {
         return ((finalam_[0] + finalam_[1] + finalam_[2] + finalam_[3]) > 0);
@@ -131,7 +131,7 @@ public:
     {
         return HasKetHRR() && (finalam_[2] >= finalam_[3]);
     }
-
+*/
     bool HasCPUFlag(const std::string & flag) const
     {
         return cpuflags_.count(flag);
