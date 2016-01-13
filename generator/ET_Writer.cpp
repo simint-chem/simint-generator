@@ -131,6 +131,9 @@ std::string ET_Writer::ETStepString_(const ETStep & et, const ERIGeneratorInfo &
 ////////////////////////
 // Inline ET Writer
 ////////////////////////
+ET_Writer_Inline::ET_Writer_Inline(const ET_Algorithm_Base & et_algo)
+    : ET_Writer(et_algo)
+{ }
 
 void ET_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
 {
@@ -190,6 +193,9 @@ void ET_Writer_Inline::WriteETFile(std::ostream & os, std::ostream & osh, const 
 ////////////////////////
 // External ET Writer
 ////////////////////////
+ET_Writer_External::ET_Writer_External(const ET_Algorithm_Base & et_algo)
+    : ET_Writer(et_algo)
+{ }
 
 void ET_Writer_External::AddConstants(ERIGeneratorInfo & info) const
 {

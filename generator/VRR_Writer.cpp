@@ -78,33 +78,30 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
         // Get the stepping
         XYZStep step = it.xyz;
 
-        std::stringstream primname, srcname[8];
-        primname << PrimVarName(qam) << "[n * " << NCART(qam) << " + " << it.target.idx() << "]";
+        std::string primname = StringBuilder(PrimVarName(qam), "[n * ", NCART(qam), " + ", it.target.idx(), "]");
+        std::string srcname[8];
+
         if(it.src[0])
-            srcname[0] << PrimVarName(it.src[0].amlist()) << "[n * " << it.src[0].ncart() << " + " << it.src[0].idx() << "]";
+            srcname[0] = StringBuilder(PrimVarName(it.src[0].amlist()), "[n * ", it.src[0].ncart(), " + ", it.src[0].idx(), "]");
         if(it.src[1])
-            srcname[1] << PrimVarName(it.src[1].amlist()) << "[(n+1) * " << it.src[1].ncart() << " + " << it.src[1].idx() << "]";
+            srcname[1] = StringBuilder( PrimVarName(it.src[1].amlist()), "[(n+1) * ", it.src[1].ncart(), " + ", it.src[1].idx(), "]");
         if(it.src[2])
-            srcname[2] << PrimVarName(it.src[2].amlist()) << "[n * " << it.src[2].ncart() << " + " << it.src[2].idx() << "]";
+            srcname[2] = StringBuilder(PrimVarName(it.src[2].amlist()), "[n * ", it.src[2].ncart(), " + ", it.src[2].idx(), "]");
         if(it.src[3])
-            srcname[3] << PrimVarName(it.src[3].amlist()) << "[(n+1) * " << it.src[3].ncart() << " + " << it.src[3].idx() << "]";
+            srcname[3] = StringBuilder(PrimVarName(it.src[3].amlist()), "[(n+1) * ", it.src[3].ncart(), " + ", it.src[3].idx(), "]");
         if(it.src[4])
-            srcname[4] << PrimVarName(it.src[4].amlist()) << "[n * " << it.src[4].ncart() << " + " << it.src[4].idx() << "]";
+            srcname[4] = StringBuilder(PrimVarName(it.src[4].amlist()), "[n * ", it.src[4].ncart(), " + ", it.src[4].idx(), "]");
         if(it.src[5])
-            srcname[5] << PrimVarName(it.src[5].amlist()) << "[(n+1) * " << it.src[5].ncart() << " + " << it.src[5].idx() << "]";
+            srcname[5] = StringBuilder(PrimVarName(it.src[5].amlist()), "[(n+1) * ", it.src[5].ncart(), " + ", it.src[5].idx(), "]");
         if(it.src[6])
-            srcname[6] << PrimVarName(it.src[6].amlist()) << "[(n+1) * " << it.src[6].ncart() << " + " << it.src[6].idx() << "]";
+            srcname[6] = StringBuilder(PrimVarName(it.src[6].amlist()), "[(n+1) * ", it.src[6].ncart(), " + ", it.src[6].idx(), "]");
         if(it.src[7])
-            srcname[7] << PrimVarName(it.src[7].amlist()) << "[(n+1) * " << it.src[7].ncart() << " + " << it.src[7].idx() << "]";
+            srcname[7] = StringBuilder(PrimVarName(it.src[7].amlist()), "[(n+1) * ", it.src[7].ncart(), " + ", it.src[7].idx(), "]");
 
         os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 
-        std::string aoppq;
-        std::string vrr_const0;
-        std::string vrr_const1;
-        std::string vrr_const2;
-        std::string vrr_const3;
-        std::string aover;
+        std::string aoppq, aover;
+        std::string vrr_const0, vrr_const1, vrr_const2, vrr_const3;
 
         // Note - the signs on a_over_p, a_over_q, etc, are taken care of in FileWriter.cpp
         if(it.type == RRStepType::I || it.type == RRStepType::J)
@@ -132,72 +129,72 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
         {
             if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
-                os << indent6 << primname.str() << " = ";
+                os << indent6 << primname << " = ";
                 if(it.type == RRStepType::I)
                     os << "P_PA_" << step;
                 else
                     os << "P_PB_" << step;
 
-                os << " * " << srcname[0].str() << ";\n";
+                os << " * " << srcname[0] << ";\n";
             }
             else
             {
-                os << indent6 << primname.str();
+                os << indent6 << primname;
 
                 if(it.type == RRStepType::K)
                     os << " = Q_PA_" << step;
                 else
                     os << " = Q_PB_" << step;
 
-                os << " * " << srcname[0].str() << ";\n";
+                os << " * " << srcname[0] << ";\n";
             }
 
             if(it.src[1])
-                os << indent6 << primname.str() << " = " << vinfo.FMAdd(aoppq, srcname[1].str(), primname.str()) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
             if(it.src[2] && it.src[3])
-                os << indent6 << primname.str() << " = " << vinfo.FMAdd(vrr_const0, vinfo.FMAdd(aover, srcname[3].str(), srcname[2].str()), primname.str()) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const0, vinfo.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
             if(it.src[4] && it.src[5])
-                os << indent6 << primname.str() << " = " << vinfo.FMAdd(vrr_const1, vinfo.FMAdd(aover, srcname[5].str(), srcname[4].str()), primname.str()) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const1, vinfo.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
             if(it.src[6])
-                os << indent6 << primname.str() << " = " << vinfo.FMAdd(vrr_const2, srcname[6].str(), primname.str()) << ";\n";
+                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
             if(it.src[7])
-                os << indent6 << primname.str() << " = " << vinfo.FMAdd(vrr_const3, srcname[7].str(), primname.str()) << ";\n";
+                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
         }
         else
         {
             if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
-                os << indent6 << primname.str();
+                os << indent6 << primname;
 
                 if(it.type == RRStepType::I)
                     os << " = P_PA_" << step;
                 else
                     os << " = P_PB_" << step;
 
-                os << " * " << srcname[0].str();
+                os << " * " << srcname[0];
             }
             else
             {
-                os << indent6 << primname.str();
+                os << indent6 << primname;
 
                 if(it.type == RRStepType::K)
                     os << " = Q_PA_" << step;
                 else
                     os << " = Q_PB_" << step;
 
-                os << " * " << srcname[0].str();
+                os << " * " << srcname[0];
             }
 
             if(it.src[1])
-                os << " + " << aoppq << " * " << srcname[1].str(); 
+                os << " + " << aoppq << " * " << srcname[1]; 
             if(it.src[2] && it.src[3])
-                os << " + " << vrr_const0 << " * (" << srcname[2].str() << " + " << aover << " * " << srcname[3].str() << ")"; 
+                os << " + " << vrr_const0 << " * (" << srcname[2] << " + " << aover << " * " << srcname[3] << ")"; 
             if(it.src[4] && it.src[5])
-                os << " + " << vrr_const1 << " * (" << srcname[4].str() << " + " << aover << " * " << srcname[5].str() << ")"; 
+                os << " + " << vrr_const1 << " * (" << srcname[4] << " + " << aover << " * " << srcname[5] << ")"; 
             if(it.src[6])
-                os << " + " << vrr_const2 << " * " << srcname[6].str();
+                os << " + " << vrr_const2 << " * " << srcname[6];
             if(it.src[7])
-                os << " + " << vrr_const3 << " * " << srcname[7].str();
+                os << " + " << vrr_const3 << " * " << srcname[7];
             os << ";\n";
         }
         
@@ -212,11 +209,13 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 
 
 
-
-
 ///////////////////////////////////////
 // Inline VRR Writer
 ///////////////////////////////////////
+VRR_Writer_Inline::VRR_Writer_Inline(const VRR_Algorithm_Base & vrr_algo)
+    : VRR_Writer(vrr_algo)
+{ 
+}
 
 void VRR_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
 {
@@ -285,6 +284,10 @@ void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh, cons
 ///////////////////////////////////////
 // External VRR Writer
 ///////////////////////////////////////
+VRR_Writer_External::VRR_Writer_External(const VRR_Algorithm_Base & vrr_algo)
+    : VRR_Writer(vrr_algo)
+{ 
+}
 
 void VRR_Writer_External::AddConstants(ERIGeneratorInfo & info) const
 {

@@ -41,6 +41,8 @@ class ET_Writer
 class ET_Writer_Inline : public ET_Writer
 {
     public:
+        ET_Writer_Inline(const ET_Algorithm_Base & et_algo);
+
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;
         virtual void WriteETFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const;
@@ -50,6 +52,8 @@ class ET_Writer_Inline : public ET_Writer
 class ET_Writer_External : public ET_Writer
 {
     public:
+        ET_Writer_External(const ET_Algorithm_Base & et_algo);
+
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;
         virtual void WriteETFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const;

@@ -31,6 +31,7 @@ add_library(generator_common OBJECT
                          HRR_Algorithm_Base.cpp
                          VRR_Writer.cpp
                          ET_Writer.cpp
+                         HRR_Writer.cpp
            )
 
 

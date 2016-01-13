@@ -6,26 +6,28 @@
 #include "generator/Classes.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
 
+// foward declare
+class ERIGeneratorInfo;
+
+
 
 class HRR_Writer
 {   
     public:
         HRR_Writer(const HRR_Algorithm_Base & hrr_algo);
 
-        void WriteHRR(std::ostream & os) const;
-
-        void AddConstants(ERIGeneratorInfo & info) const;
-        void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
-
         bool HasHRR(void) const;
         bool HasBraHRR(void) const;
         bool HasKetHRR(void) const;
 
-    private:
-        const HRR_Algorithm_Base & hrr_algo_; 
 
-        void WriteHRRInline_(std::ostream & os) const;
-        void WriteHRRExternal_(std::ostream & os) const;
+        virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
+        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const = 0;
+
+
+    protected:
+        const HRR_Algorithm_Base & hrr_algo_; 
 
         void WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                             const std::string & ncart_ket, const std::string & ketstr) const;
@@ -34,6 +36,31 @@ class HRR_Writer
 
         std::string HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, const std::string & ketstr) const;
         std::string HRRKetStepVar_(const Doublet & d, const std::string & brastr) const;
+};
+
+
+
+class HRR_Writer_Inline : public HRR_Writer
+{
+    public:
+        HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo);
+
+        virtual void AddConstants(ERIGeneratorInfo & info) const;
+        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const;
+
+};
+
+
+class HRR_Writer_External : public HRR_Writer
+{
+    public:
+        HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo);
+
+        virtual void AddConstants(ERIGeneratorInfo & info) const;
+        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const;
+
 };
 
 #endif
