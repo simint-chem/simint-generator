@@ -110,6 +110,10 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & br
 // Inline HRR Writer
 ////////////////////////
 
+HRR_Writer_Inline::HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo) 
+    : HRR_Writer(hrr_algo)
+{ }
+
 void HRR_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
 {
 }
@@ -211,9 +215,18 @@ void HRR_Writer_Inline::WriteHRR(std::ostream & os, const ERIGeneratorInfo & inf
 }
 
 
+void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const
+{
+    
+}
+
 ////////////////////////
 // External HRR Writer
 ////////////////////////
+
+HRR_Writer_External::HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo) 
+    : HRR_Writer(hrr_algo)
+{ }
 
 void HRR_Writer_External::AddConstants(ERIGeneratorInfo & info) const
 {

@@ -226,7 +226,7 @@ public:
 private:
     QAM finalam_;
 
-    Compiler comp_;
+    Compiler compiler_;
     std::set<std::string> cpuflags_;
     OptionMap options_;
     bool scalar_;

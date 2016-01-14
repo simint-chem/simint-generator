@@ -72,7 +72,7 @@ public:
 
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "]"; }
 
-    virtual std::string DoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "] = " + var; }
+    virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "] = " + var; }
 
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
     {
@@ -113,7 +113,7 @@ public:
 
 
 
-class BasicIntelSIMDVector
+class BasicIntelSIMDVector : public VectorInfo
 {
 public:
     BasicIntelSIMDVector(int width)

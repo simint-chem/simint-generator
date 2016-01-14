@@ -443,6 +443,14 @@ typedef std::set<Gaussian> GaussianSet;
 
 
 
+// Some helper functions
+QuartetSet GenerateInitialQuartetTargets(QAM amlst);
+
+DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type);
+
+int GaussianOrder(const QAM & ijk);
+
+GaussianSet AllGaussiansForAM(int am);
 
 
 

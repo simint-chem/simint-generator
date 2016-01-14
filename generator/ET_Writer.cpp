@@ -141,7 +141,7 @@ void ET_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
         info.AddIntegerConstant(it);
 }
 
-void ET_Writer::WriteET(std::ostream & os, const ERIGeneratorInfo & info) const
+void ET_Writer_Inline::WriteET(std::ostream & os, const ERIGeneratorInfo & info) const
 {
     const VectorInfo & vinfo = info.GetVectorInfo();
 

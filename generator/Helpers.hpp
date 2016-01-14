@@ -8,11 +8,7 @@
 
 QuartetSet GenerateInitialQuartetTargets(QAM amlst);
 DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type);
-
-
 int GaussianOrder(const QAM & ijk);
-
-
 GaussianSet AllGaussiansForAM(int am);
 
 

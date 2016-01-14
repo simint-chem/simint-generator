@@ -25,9 +25,11 @@ endif()
 string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common OBJECT
+                         Classes.cpp
                          Naming.cpp
                          Printing.cpp
                          CommandLine.cpp
+                         ERIGeneratorInfo.cpp
                          VRR_Algorithm_Base.cpp
                          ET_Algorithm_Base.cpp
                          HRR_Algorithm_Base.cpp

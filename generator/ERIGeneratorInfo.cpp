@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "generator/ERIGeneratorInfo.hpp"
 
 static char TransformPred(char c)
@@ -15,7 +17,7 @@ std::set<std::string> ERIGeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
 
     // separate by spaces rather than commas
     // and convert to lower case
-    std::transform(s.begin(), s.end(), s.begin(), TransformPred);
+    std::transform(cpuflagsstr.begin(), cpuflagsstr.end(), cpuflagsstr.begin(), TransformPred);
 
     std::stringstream ss(cpuflagsstr);
 
