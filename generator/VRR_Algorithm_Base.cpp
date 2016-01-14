@@ -137,34 +137,50 @@ bool VRR_Algorithm_Base::HasVRR(void) const
     return HasBraVRR() || HasKetVRR();
 }
 
-
-bool VRR_Algorithm_Base::HasBraVRR(void) const
+bool VRR_Algorithm_Base::HasVRROfType(RRStepType steptype) const
 {
     for(const auto & it : vrrmap_)
     {
         for(const auto & it2 : it.second)
         {
-            if(it2.type == RRStepType::I || it2.type == RRStepType::J)
+            if(it2.type == steptype)
                 return true;
         }
     }
 
     return false;
+}
+
+bool VRR_Algorithm_Base::HasBraVRR(void) const
+{
+    return HasVRROfType(RRStepType::I) || HasVRROfType(RRStepType::J);
 }
 
 bool VRR_Algorithm_Base::HasKetVRR(void) const
 {
-    for(const auto & it : vrrmap_)
-    {
-        for(const auto & it2 : it.second)
-        {
-            if(it2.type == RRStepType::K || it2.type == RRStepType::L)
-                return true;
-        }
-    }
-
-    return false;
+    return HasVRROfType(RRStepType::K) || HasVRROfType(RRStepType::L);
 }
+
+bool VRR_Algorithm_Base::HasVRR_I(void) const
+{
+    return HasVRROfType(RRStepType::I);
+}
+
+bool VRR_Algorithm_Base::HasVRR_J(void) const
+{
+    return HasVRROfType(RRStepType::J);
+}
+
+bool VRR_Algorithm_Base::HasVRR_K(void) const
+{
+    return HasVRROfType(RRStepType::K);
+}
+
+bool VRR_Algorithm_Base::HasVRR_L(void) const
+{
+    return HasVRROfType(RRStepType::L);
+}
+
 
 void VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
 {

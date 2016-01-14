@@ -197,6 +197,7 @@ ET_Writer_External::ET_Writer_External(const ET_Algorithm_Base & et_algo)
     : ET_Writer(et_algo)
 { }
 
+
 void ET_Writer_External::AddConstants(ERIGeneratorInfo & info) const
 {
 }

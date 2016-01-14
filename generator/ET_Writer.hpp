@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "generator/Classes.hpp"
+#include "generator/WriterBase.hpp"
 #include "generator/ET_Algorithm_Base.hpp"
 
 // foward declare
@@ -11,7 +12,7 @@ class ERIGeneratorInfo;
 
 
 
-class ET_Writer
+class ET_Writer : public WriterBase
 {   
     public:
         ET_Writer(const ET_Algorithm_Base & et_algo); 
@@ -38,7 +39,7 @@ class ET_Writer
 
 
 
-class ET_Writer_Inline : public ET_Writer
+class ET_Writer_Inline : public ET_Writer, public IsInlineRR
 {
     public:
         ET_Writer_Inline(const ET_Algorithm_Base & et_algo);
@@ -49,7 +50,7 @@ class ET_Writer_Inline : public ET_Writer
 };
 
 
-class ET_Writer_External : public ET_Writer
+class ET_Writer_External : public ET_Writer, public IsExternalRR
 {
     public:
         ET_Writer_External(const ET_Algorithm_Base & et_algo);

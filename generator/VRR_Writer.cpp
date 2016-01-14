@@ -27,6 +27,26 @@ bool VRR_Writer::HasKetVRR(void) const
     return vrr_algo_.HasKetVRR();
 }
 
+bool VRR_Writer::HasVRR_I(void) const
+{
+    return vrr_algo_.HasVRR_I();
+}
+
+bool VRR_Writer::HasVRR_J(void) const
+{
+    return vrr_algo_.HasVRR_J();
+}
+
+bool VRR_Writer::HasVRR_K(void) const
+{
+    return vrr_algo_.HasVRR_K();
+}
+
+bool VRR_Writer::HasVRR_L(void) const
+{
+    return vrr_algo_.HasVRR_L();
+}
+
 void VRR_Writer::DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & info) const
 {
     const VectorInfo & vinfo = info.GetVectorInfo();

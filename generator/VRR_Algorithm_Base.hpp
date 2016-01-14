@@ -48,9 +48,15 @@ class VRR_Algorithm_Base
         StringSet GetVarReq(QAM am) const;
         StringSet GetAllVarReq(void) const;
 
+        bool HasVRROfType(RRStepType steptype) const;
+
         bool HasVRR(void) const;
         bool HasBraVRR(void) const;
         bool HasKetVRR(void) const;
+        bool HasVRR_I(void) const;
+        bool HasVRR_J(void) const;
+        bool HasVRR_K(void) const;
+        bool HasVRR_L(void) const;
 
         int GetMaxInt(void) const;
 

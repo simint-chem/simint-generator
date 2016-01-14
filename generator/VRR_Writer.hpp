@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "generator/Classes.hpp"
+#include "generator/WriterBase.hpp"
 #include "generator/VRR_Algorithm_Base.hpp"
 
 // foward declare
@@ -11,7 +12,7 @@ class ERIGeneratorInfo;
 
 
 
-class VRR_Writer
+class VRR_Writer : public WriterBase
 {   
     public:
         VRR_Writer(const VRR_Algorithm_Base & vrr_algo);
@@ -19,6 +20,10 @@ class VRR_Writer
         bool HasVRR(void) const;
         bool HasBraVRR(void) const;
         bool HasKetVRR(void) const;
+        bool HasVRR_I(void) const;
+        bool HasVRR_J(void) const;
+        bool HasVRR_K(void) const;
+        bool HasVRR_L(void) const;
 
         void DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & info) const;
         void DeclarePrimPointers(std::ostream & os, const ERIGeneratorInfo & info) const;
@@ -36,7 +41,7 @@ class VRR_Writer
 
 
 
-class VRR_Writer_Inline : public VRR_Writer
+class VRR_Writer_Inline : public VRR_Writer, public IsInlineRR
 {
     public:
         VRR_Writer_Inline(const VRR_Algorithm_Base & vrr_algo);
@@ -47,7 +52,7 @@ class VRR_Writer_Inline : public VRR_Writer
 };
 
 
-class VRR_Writer_External : public VRR_Writer
+class VRR_Writer_External : public VRR_Writer, public IsExternalRR
 {
     public:
         VRR_Writer_External(const VRR_Algorithm_Base & vrr_algo);

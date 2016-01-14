@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "generator/Classes.hpp"
+#include "generator/WriterBase.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
 
 // foward declare
@@ -11,7 +12,7 @@ class ERIGeneratorInfo;
 
 
 
-class HRR_Writer
+class HRR_Writer : public WriterBase
 {   
     public:
         HRR_Writer(const HRR_Algorithm_Base & hrr_algo);
@@ -40,7 +41,7 @@ class HRR_Writer
 
 
 
-class HRR_Writer_Inline : public HRR_Writer
+class HRR_Writer_Inline : public HRR_Writer, public IsInlineRR
 {
     public:
         HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo);
@@ -52,7 +53,7 @@ class HRR_Writer_Inline : public HRR_Writer
 };
 
 
-class HRR_Writer_External : public HRR_Writer
+class HRR_Writer_External : public HRR_Writer, public IsExternalRR
 {
     public:
         HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo);
