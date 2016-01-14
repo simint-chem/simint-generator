@@ -32,6 +32,8 @@ add_library(generator_common OBJECT
                          VRR_Writer.cpp
                          ET_Writer.cpp
                          HRR_Writer.cpp
+                         Boys_FO.cpp
+                         Boys_split.cpp
            )
 
 

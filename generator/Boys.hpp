@@ -12,16 +12,16 @@
 #include <vector>
 #include <map>
 
+// Forward declarations
+class ERIGeneratorInfo;
+
 
 /////////////////////////////////////////////////////////////
 // Where to switch from calculating all the boys parameters
 // to calculating only the highest and then using the
 // downard recurrance
 /////////////////////////////////////////////////////////////
-
-
 #define BOYS_FO_RECUR 3
-
 #define BOYS_SPLIT_RECUR 500 // effectively disabled
 
 
@@ -31,13 +31,9 @@
 class BoysGen
 {
     public:
-        virtual void WriteBoys(std::ostream & os) const = 0;
-
+        virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
         virtual void AddIncludes(ERIGeneratorInfo & info) const = 0;
-
-
-        virtual ~BoysGen() { };
-
+        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
 };
 
 
@@ -48,9 +44,9 @@ class BoysFO : public BoysGen
     public:
         BoysFO(std::string dir); // read from directory
 
-        virtual void WriteBoys(std::ostream & os) const;
-
+        virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void AddIncludes(ERIGeneratorInfo & info) const;
+        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const;
 
     private:
         struct BoysFit
@@ -71,19 +67,18 @@ class BoysFO : public BoysGen
 
         std::map<int, BoysFit> bfmap_;
 
-        std::string GetFOConstant(std::string ab, int m, int i) const;
+        std::string GetFOConstant_(std::string ab, int m, int i) const;
 
-        void WriteBoysSingle_(std::ostream & os, int m, bool prefac) const;
+        void WriteBoysSingle_(std::ostream & os, int m, bool prefac, const ERIGeneratorInfo & info) const;
 };
 
 
 struct BoysSplit : public BoysGen
 {
     public:
-        // default constructors ok
-        virtual void WriteBoys(std::ostream & os) const;
-
+        virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void AddIncludes(ERIGeneratorInfo & info) const;
+        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const;
 };
 
 
