@@ -12,14 +12,13 @@ class ERIGeneratorInfo;
 
 typedef std::array<int, 4> QAM;
 
-void WriteERIFile(std::ostream & os,
-               const QAM & am,
+void WriteFile(std::ostream & os,
+               ERIGeneratorInfo & info,
                const BoysGen & bg,
                const VRR_Writer & vrr_writer,
                const ET_Writer & et_writer,
-               const HRR_Writer & hrr_writer,
-               const ERIGeneratorInfo & info);
+               const HRR_Writer & hrr_writer);
 
-void WriteERIFile_Permute(std::ostream & os);
+void WriteFile_Permute(std::ostream & os, ERIGeneratorInfo & info);
 
 #endif

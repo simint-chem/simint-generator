@@ -41,10 +41,13 @@ class VRR_Writer : public WriterBase
 
 
 
-class VRR_Writer_Inline : public VRR_Writer, public IsInlineRR
+class VRR_Writer_Inline : public VRR_Writer
 {
     public:
         VRR_Writer_Inline(const VRR_Algorithm_Base & vrr_algo);
+
+        bool IsInline(void) const { return true; }
+        bool IsExternal(void) const { return false; }
 
         virtual void WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const;
         virtual void AddConstants(ERIGeneratorInfo & info) const;
@@ -52,10 +55,13 @@ class VRR_Writer_Inline : public VRR_Writer, public IsInlineRR
 };
 
 
-class VRR_Writer_External : public VRR_Writer, public IsExternalRR
+class VRR_Writer_External : public VRR_Writer
 {
     public:
         VRR_Writer_External(const VRR_Algorithm_Base & vrr_algo);
+
+        bool IsInline(void) const { return false; }
+        bool IsExternal(void) const { return true; }
 
         virtual void WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const;
         virtual void AddConstants(ERIGeneratorInfo & info) const;

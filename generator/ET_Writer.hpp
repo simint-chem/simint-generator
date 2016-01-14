@@ -39,10 +39,13 @@ class ET_Writer : public WriterBase
 
 
 
-class ET_Writer_Inline : public ET_Writer, public IsInlineRR
+class ET_Writer_Inline : public ET_Writer
 {
     public:
         ET_Writer_Inline(const ET_Algorithm_Base & et_algo);
+
+        bool IsInline(void) const { return true; }
+        bool IsExternal(void) const { return false; }
 
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;
@@ -50,10 +53,13 @@ class ET_Writer_Inline : public ET_Writer, public IsInlineRR
 };
 
 
-class ET_Writer_External : public ET_Writer, public IsExternalRR
+class ET_Writer_External : public ET_Writer
 {
     public:
         ET_Writer_External(const ET_Algorithm_Base & et_algo);
+
+        bool IsInline(void) const { return false; }
+        bool IsExternal(void) const { return true; }
 
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;

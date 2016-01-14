@@ -41,10 +41,13 @@ class HRR_Writer : public WriterBase
 
 
 
-class HRR_Writer_Inline : public HRR_Writer, public IsInlineRR
+class HRR_Writer_Inline : public HRR_Writer
 {
     public:
         HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo);
+
+        bool IsInline(void) const { return true; }
+        bool IsExternal(void) const { return false; }
 
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;
@@ -53,10 +56,13 @@ class HRR_Writer_Inline : public HRR_Writer, public IsInlineRR
 };
 
 
-class HRR_Writer_External : public HRR_Writer, public IsExternalRR
+class HRR_Writer_External : public HRR_Writer
 {
     public:
         HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo);
+
+        bool IsInline(void) const { return false; }
+        bool IsExternal(void) const { return true; }
 
         virtual void AddConstants(ERIGeneratorInfo & info) const;
         virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;

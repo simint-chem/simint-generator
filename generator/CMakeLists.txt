@@ -26,6 +26,8 @@ string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
 
 add_library(generator_common OBJECT
                          Naming.cpp
+                         Printing.cpp
+                         CommandLine.cpp
                          VRR_Algorithm_Base.cpp
                          ET_Algorithm_Base.cpp
                          HRR_Algorithm_Base.cpp

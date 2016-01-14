@@ -121,31 +121,6 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type)
 
 
 
-void PrintQuartetSet(const QuartetSet & q, const std::string & title)
-{
-    cout << title << ": " << q.size() << "\n";
-    for(const auto & it : q)
-        cout << "    " << it << "\n";
-    cout << "\n";
-}
-
-
-void PrintDoubletSet(const DoubletSet & d, const std::string & title)
-{
-    cout << title << ": " << d.size() << "\n";
-    for(const auto & it : d)
-        cout << "    " << it << "\n";
-    cout << "\n";
-}
-
-void PrintGaussianSet(const GaussianSet & g, const std::string & title)
-{
-    cout << title << ": " << g.size() << "\n";
-    for(const auto & it : g)
-        cout << "    " << it << "\n";
-    cout << "\n";
-}
-
 int GaussianOrder(const ExpList & ijk)
 {
     if(!ordermap_.size())
@@ -178,22 +153,6 @@ GaussianSet AllGaussiansForAM(int am)
 }
 
 
-OptionMap DefaultOptions(void)
-{
-    // default options
-    OptionMap options;
-    options[OPTION_STACKMEM] = 0;
-    options[OPTION_INLINEVRR] = 1;
-    options[OPTION_INLINEET] = 1;
-    options[OPTION_INLINEHRR] = 1;
-    options[OPTION_INTRINSICS] = 0;
-    options[OPTION_SCALAR] = 0;
-
-    options[OPTION_NOSINGLEET] = 0;
-    options[OPTION_NOET] = 1;
-    return options;
-}
-
 
 std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char ** argv)
 {
@@ -204,21 +163,19 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
     {
         std::string argstr(GetNextArg(i, argc, argv));
         if(argstr == "-et")
-            options[OPTION_NOET] = 0;
+            options[Option::NoET] = 0;
         if(argstr == "-etvrr")
-            options[OPTION_NOSINGLEET] = 1;
+            options[Option::NoSingleET] = 1;
         if(argstr == "-ve")
-            options[OPTION_INLINEVRR] = 0;
+            options[Option::InlineVRR] = 0;
         else if(argstr == "-ee")
-            options[OPTION_INLINEET] = 0;
+            options[Option::InlineET] = 0;
         else if(argstr == "-he")
-            options[OPTION_INLINEHRR] = 0;
+            options[Option::InlineHRR] = 0;
         else if(argstr == "-s")
-            options[OPTION_STACKMEM] = GetIArg(i, argc, argv);
-        else if(argstr == "-i")
-            options[OPTION_INTRINSICS] = 1;
+            options[Option::StackMem] = GetIArg(i, argc, argv);
         else if(argstr == "-S")
-            options[OPTION_SCALAR] = 1;
+            options[Option::Scalar] = 1;
         else
             ret.push_back(argstr);
     }

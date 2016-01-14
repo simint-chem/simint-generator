@@ -10,7 +10,7 @@ std::string StringBuilder(const T & arg)
     return std::to_string(arg);
 }
 
-std::string StringBuilder(const double & arg)
+inline std::string StringBuilder(const double & arg)
 {
     std::stringstream ss;
     ss.precision(18);
@@ -19,13 +19,13 @@ std::string StringBuilder(const double & arg)
 }
 
 // overload for string, since std::to_string(std::string) doesn't exist
-std::string StringBuilder(const std::string & arg)
+inline std::string StringBuilder(const std::string & arg)
 {
     return arg;
 }
 
 // overload for string, since std::to_string(const char *) doesn't exist
-std::string StringBuilder(const char * arg)
+inline std::string StringBuilder(const char * arg)
 {
     return std::string(arg);
 }

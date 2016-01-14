@@ -4,13 +4,15 @@
 #include <fstream>
 
 #include "generator/Helpers.hpp"
+#include "generator/CommandLine.hpp"
 #include "generator/Algorithms.hpp"
+
+#include "generator/ERIGeneratorInfo.hpp"
 #include "generator/Boys.hpp"
-#include "generator/WriterInfo.hpp"
 #include "generator/VRR_Writer.hpp"
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
-#include "generator/FileWriter.hpp"
+#include "generator/ERI_Writer.hpp"
 
 using namespace std;
 
@@ -26,9 +28,9 @@ int main(int argc, char ** argv)
     std::string fpath;
     std::string cpuflags;
     std::string datdir;
-    QAM amlist;
+    QAM finalam;
 
-    bool amlistset = false;
+    bool finalamset = false;
 
     // parse command line
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
@@ -48,11 +50,11 @@ int main(int argc, char ** argv)
             boystype = GetNextArg(iarg, otheropt);
         else if(argstr == "-q")
         {
-            amlist[0] = GetIArg(iarg, otheropt);   
-            amlist[1] = GetIArg(iarg, otheropt);   
-            amlist[2] = GetIArg(iarg, otheropt);   
-            amlist[3] = GetIArg(iarg, otheropt);   
-            amlistset = true;
+            finalam[0] = GetIArg(iarg, otheropt);   
+            finalam[1] = GetIArg(iarg, otheropt);   
+            finalam[2] = GetIArg(iarg, otheropt);   
+            finalam[3] = GetIArg(iarg, otheropt);   
+            finalamset = true;
         }
         else
         {
@@ -84,7 +86,7 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    if(amlistset == false)
+    if(finalamset == false)
     {
         std::cout << "\nAM quartet (-q) required\n\n";
         return 2;
@@ -93,12 +95,6 @@ int main(int argc, char ** argv)
     if(cpuflags == "")
     {
         std::cout << "\nCPU flags required\n\n";
-        return 2;
-    }
-
-    if(options[OPTION_INTRINSICS] != 0 && options[OPTION_SCALAR] != 0)
-    {
-        std::cout << "\nUsing intrinsics with a scalar calculation doesn't make sense...\n\n";
         return 2;
     }
 
@@ -112,14 +108,16 @@ int main(int argc, char ** argv)
     }
     
 
-    // Base writer information
-    WriterInfo::Init(options, amlist, cpuflags);
+    // Information for this ERI
+    ERIGeneratorInfo info(finalam,
+                          Compiler::Intel,
+                          cpuflags, options);
 
 
     // is this one a special permutation?
-    if( ( (amlist[0] == 0 && amlist[1] > 0)  && ( amlist[2] == 0 || amlist[3] == 0 ) ) ||
-        ( (amlist[2] == 0 && amlist[3] > 0)  && ( amlist[0] == 0 || amlist[1] == 0 ) ) )
-        WriteFile_Permute(of);
+    if( ( (finalam[0] == 0 && finalam[1] > 0)  && ( finalam[2] == 0 || finalam[3] == 0 ) ) ||
+        ( (finalam[2] == 0 && finalam[3] > 0)  && ( finalam[0] == 0 || finalam[1] == 0 ) ) )
+        WriteFile_Permute(of, info);
     else
     {
         // Read in the boys map
@@ -129,8 +127,6 @@ int main(int argc, char ** argv)
             bg = std::unique_ptr<BoysGen>(new BoysFO(datdir));
         else if(boystype == "split")
             bg = std::unique_ptr<BoysGen>(new BoysSplit());
-        else if(boystype == "vref")
-            bg = std::unique_ptr<BoysGen>(new BoysVRef());
         else
         {
             std::cout << "Unknown boys type \"" << boystype << "\"\n";
@@ -142,32 +138,50 @@ int main(int argc, char ** argv)
         std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
         std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
+        // Writers
+        std::unique_ptr<HRR_Writer> hrr_writer;
+        std::unique_ptr<VRR_Writer> vrr_writer;
+        std::unique_ptr<ET_Writer> et_writer;
+
         // Working backwards, I need:
         // 1.) HRR Steps
-        hrralgo->Create(amlist);
-        HRR_Writer hrr_writer(*hrralgo);
+        hrralgo->Create(finalam);
+        if(options[Option::InlineHRR])
+            hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_Inline(*hrralgo));
+        else
+            hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_External(*hrralgo));
+
 
         // 2.) ET steps
         //     with the HRR top level stuff as the initial targets
-        DoubletType dir = DoubletType::KET;
-        if((amlist[2]+amlist[3]) > (amlist[0]+amlist[1]))
-            dir = DoubletType::BRA;
+        DoubletType etdirection = DoubletType::KET;
+        if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
+            etdirection = DoubletType::BRA;
 
-        etalgo->Create(hrralgo->TopQuartets(), dir);
-        ET_Writer et_writer(*etalgo);
+
+        etalgo->Create(hrralgo->TopQuartets(), etdirection);
+
+        if(options[Option::InlineET])
+            et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_Inline(*etalgo));
+        else
+            et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_External(*etalgo));
 
         // 3.) VRR Steps
         // requirements for vrr are the top level stuff from ET
         vrralgo->Create(etalgo->TopQuartets());
-        VRR_Writer vrr_writer(*vrralgo);
+
+        if(options[Option::InlineVRR])
+            vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_Inline(*vrralgo));
+        else
+            vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_External(*vrralgo));
 
         // set the contracted quartets
-        WriterInfo::SetContQ(hrralgo->TopAM());
+        info.SetContQ(hrralgo->TopAM());
 
         // print out some info
-        std::cout << "MEMORY (per shell quartet): " << WriterInfo::MemoryReq() << "\n";
+        std::cout << "MEMORY (per shell quartet): " << info.ContMemoryReq() << "\n";
 
-        WriteFile(of, *bg, vrr_writer, et_writer, hrr_writer);
+        WriteFile(of, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
     }
     }
     catch(std::exception & ex)
