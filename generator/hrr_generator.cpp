@@ -88,23 +88,8 @@ int main(int argc, char ** argv)
     }
 
 
-    if(fpath == "")
-    {
-        std::cout << "\noutput path (-o) required\n\n";
-        return 2;
-    }
-
-    if(maxL == 0)
-    {
-        std::cout << "\nMaximum L value (-L) required\n\n";
-        return 2;
-    }
-
-    if(cpuflags == "")
-    {
-        std::cout << "\nCPU flags required\n\n";
-        return 2;
-    }
+    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
+    CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
 
     if(fpath.back() != '/')
         fpath += '/';
@@ -175,7 +160,7 @@ int main(int argc, char ** argv)
         std::cout << "\n\n";
         std::cout << "Caught exception\n";
         std::cout << "What = " << ex.what() << "\n\n";
-        return 100;
+        return 1;
     }
     return 0;
 }

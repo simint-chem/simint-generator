@@ -69,7 +69,6 @@ int main(int argc, char ** argv)
     CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
     CMDLINE_ASSERT( datdir != "", "dat directory (-d) required" )
     CMDLINE_ASSERT( finalamset == true, "AM quartet (-q) required" )
-    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
 
 
     // open the output file

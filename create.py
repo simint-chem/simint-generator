@@ -184,39 +184,40 @@ if ret != 0:
 ####################################################
 # Generate the external ET source
 ####################################################
-logfile = os.path.join(outdir_erigen, "et.log")
-
-cmdline = [et_gen]
-cmdline.extend(["-c", str(args.c)])
-cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l*4)])
-if args.i:
-    cmdline.append("-i")
-if args.S:
-    cmdline.append("-S")
 if args.et:
-    cmdline.append("-et")
-if args.etvrr:
-    cmdline.append("-etvrr")
+    logfile = os.path.join(outdir_erigen, "et.log")
 
-print("Creating ET sources in {}".format(outdir_erigen))
-print("     Logfile: {}".format(logfile))
-print()
-print("Command line:")
-print(' '.join(cmdline))
-print()
+    cmdline = [et_gen]
+    cmdline.extend(["-c", str(args.c)])
+    cmdline.extend(["-o", outdir_erigen])
+    cmdline.extend(["-L", str(args.l*4)])
+    if args.i:
+        cmdline.append("-i")
+    if args.S:
+        cmdline.append("-S")
+    if args.et:
+        cmdline.append("-et")
+    if args.etvrr:
+        cmdline.append("-etvrr")
 
-with open(logfile, 'w') as lf:
-  ret = subprocess.call(cmdline, stdout=lf)
+    print("Creating ET sources in {}".format(outdir_erigen))
+    print("     Logfile: {}".format(logfile))
+    print()
+    print("Command line:")
+    print(' '.join(cmdline))
+    print()
 
-if ret != 0:
-  print("\n")
-  print("*********************************")
-  print("When generating et sources")
-  print("Subprocess returned {} - aborting".format(ret))
-  print("*********************************")
-  print("\n")
-  quit(1)
+    with open(logfile, 'w') as lf:
+      ret = subprocess.call(cmdline, stdout=lf)
+
+    if ret != 0:
+      print("\n")
+      print("*********************************")
+      print("When generating et sources")
+      print("Subprocess returned {} - aborting".format(ret))
+      print("*********************************")
+      print("\n")
+      quit(1)
 
 
 

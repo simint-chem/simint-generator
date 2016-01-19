@@ -117,17 +117,17 @@ class BasicIntelSIMDVector : public VectorInfo
 {
 public:
     BasicIntelSIMDVector(int width)
-        : width_(width), dwidth_(width/8)
+        : width_(width), dwidth_(width/64)
     {}
 
 
-    virtual std::string DoubleType(void) const { return StringBuilder("__mm", width_, "d"); }
+    virtual std::string DoubleType(void) const { return StringBuilder("__m", width_, "d"); }
 
     virtual std::string UnionType(void) const { return StringBuilder("union double", dwidth_); }
 
     virtual std::string DoubleSet1(const std::string & dbl) const
     {
-        return StringBuilder("mm", width_, "_set1_pd(" + dbl + ")");
+        return StringBuilder("_mm", width_, "_set1_pd(" + dbl + ")");
     }
 
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const
@@ -135,7 +135,7 @@ public:
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("mm", width_, "_load_pd(", ptrstr, ")");
+        return StringBuilder("_mm", width_, "_load_pd(", ptrstr, ")");
     }
 
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
@@ -143,22 +143,22 @@ public:
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("mm", width_, "_store_pd(", ptrstr, ", ", var, ")");
+        return StringBuilder("_mm", width_, "_store_pd(", ptrstr, ", ", var, ")");
     }
 
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("mm", width_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
+        return StringBuilder("_mm", width_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
     }
 
     virtual std::string FMSub(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("mm", width_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
+        return StringBuilder("_mm", width_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
     }
 
     virtual std::string Sqrt(const std::string & val) const
     {
-        return StringBuilder("mm", width_, "_sqrt_pd(", val, ")");
+        return StringBuilder("_mm", width_, "_sqrt_pd(", val, ")");
     }
 
     virtual std::string RSqrt(const std::string & val) const
@@ -168,12 +168,12 @@ public:
 
     virtual std::string Power(const std::string & base, const std::string & exp) const
     {
-        return StringBuilder("mm", width_, "_pow_pd(", base, ",", exp, ")");
+        return StringBuilder("_mm", width_, "_pow_pd(", base, ",", exp, ")");
     }
 
     virtual std::string Exp(const std::string & exp) const
     {
-        return StringBuilder("mm", width_, "_exp_pd(", exp, ")");
+        return StringBuilder("_mm", width_, "_exp_pd(", exp, ")");
     }
 
     virtual std::string IntConstant(int i) const

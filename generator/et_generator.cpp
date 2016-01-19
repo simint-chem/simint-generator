@@ -50,7 +50,6 @@ int main(int argc, char ** argv)
 
 
     CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
-    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
     CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
 
     if(fpath.back() != '/')
@@ -137,7 +136,7 @@ int main(int argc, char ** argv)
         std::cout << "\n\n";
         std::cout << "Caught exception\n";
         std::cout << "What = " << ex.what() << "\n\n";
-        return 100;
+        return 1;
     }
     return 0;
 }

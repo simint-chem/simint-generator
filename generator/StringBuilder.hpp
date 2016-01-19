@@ -24,6 +24,12 @@ inline std::string StringBuilder(const std::string & arg)
     return arg;
 }
 
+// overload for char, so it doesn't get converted to an integer type
+inline std::string StringBuilder(const char & arg)
+{
+    return std::string(1, arg);
+}
+
 // overload for string, since std::to_string(const char *) doesn't exist
 inline std::string StringBuilder(const char * arg)
 {

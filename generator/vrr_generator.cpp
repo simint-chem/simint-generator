@@ -74,7 +74,6 @@ int main(int argc, char ** argv)
     }
 
     CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
-    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
     CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
 
     if(fpath.back() != '/')

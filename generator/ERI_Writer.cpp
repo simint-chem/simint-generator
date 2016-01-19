@@ -509,7 +509,7 @@ void WriteFile(std::ostream & os,
     os << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
     os << indent4 << "{\n";
 
-    if(!info.Vectorized())
+    if(info.Vectorized())
         WriteShellOffsets(os, info);
     else
         WriteShellOffsets_Scalar(os, info);
