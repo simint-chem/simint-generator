@@ -162,10 +162,11 @@ void HRR_Algorithm_Base::Create(QAM am)
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
-    cout << "BRA HRR step done. Solution is " << brasteps_.size() << " steps\n";
+    cout << "BRA HRR step done.\n";
     cout << "--------------------------------------------------------------------------------\n";
-    //for(auto & it : brasteps_)
-    //    cout << it << "\n";
+    //for(const auto & it : brasteps_)
+    //for(const auto & it2 : it.second)
+    //    std::cout << it2 << "\n";
     
 
     // now do kets
@@ -200,10 +201,11 @@ void HRR_Algorithm_Base::Create(QAM am)
 
     cout << "\n\n";
     cout << "--------------------------------------------------------------------------------\n";
-    cout << "KET HRR step done. Solution is " << ketsteps_.size() << " steps\n";
+    cout << "KET HRR step done.\n";
     cout << "--------------------------------------------------------------------------------\n";
-    //for(auto & it : ketsteps_)
-    //    cout << it << "\n";
+    //for(const auto & it : ketsteps_)
+    //for(const auto & it2 : it.second)
+    //    std::cout << it2 << "\n";
 
     cout << "\n\n";
 

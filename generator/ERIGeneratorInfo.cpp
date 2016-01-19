@@ -44,10 +44,18 @@ ERIGeneratorInfo::ERIGeneratorInfo(QAM finalam,
       options_(options),
       scalar_(false)
 {
+    AddInclude("\"vectorization/vectorization.h\"");
+
     if(HasCPUFlag("avx"))
+    {
         vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(256));
+        AddInclude("\"vectorization/intrinsics_avx.h\"");
+    }
     else if(HasCPUFlag("sse2"))
+    {
         vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(128));
+        AddInclude("\"vectorization/intrinsics_sse.h\"");
+    }
     else
     {
         scalar_ = true;

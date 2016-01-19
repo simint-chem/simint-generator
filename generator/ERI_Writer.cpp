@@ -356,7 +356,7 @@ void WriteFile(std::ostream & os,
     //////////////////////////////
     // Function name & signature
     //////////////////////////////
-    std::string funcline = StringBuilder("int eri_", "int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcline = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
     std::string indent(funcline.length(), ' ');
 
 
@@ -467,8 +467,9 @@ void WriteFile(std::ostream & os,
     os << indent4 << "iprimcd = 0;\n";
     os << indent4 << "nprim_icd = Q.nprim12[cd];\n";
 
-    if(vrr_writer.HasVRR())
-        vrr_writer.DeclarePrimPointers(os, info);
+    // Note: vrr_writer handles the prim pointers for s_s_s_s
+    //       so we always want to run this
+    vrr_writer.DeclarePrimPointers(os, info);
     if(et_writer.HasET())
         et_writer.DeclarePrimPointers(os, info);
     os << "\n";
@@ -516,8 +517,9 @@ void WriteFile(std::ostream & os,
 
     os << "\n";
 
-    if(vrr_writer.HasVRR())
-        vrr_writer.DeclarePrimArrays(os, info);
+    // Note: vrr_writer handles the prim arrays for s_s_s_s
+    //       so we always want to run this
+    vrr_writer.DeclarePrimArrays(os, info);
     if(et_writer.HasET())
         et_writer.DeclarePrimArrays(os, info);
 
@@ -634,9 +636,11 @@ void WriteFile(std::ostream & os,
 
     bg.WriteBoys(os, info);
 
-    vrr_writer.WriteVRR(os, info);
+    if(vrr_writer.HasVRR())
+        vrr_writer.WriteVRR(os, info);
 
-    et_writer.WriteET(os, info);
+    if(et_writer.HasET())
+        et_writer.WriteET(os, info);
 
     WriteAccumulation(os, info);
 
@@ -652,8 +656,8 @@ void WriteFile(std::ostream & os,
         os << indent3 << "abcd += nshellbatch;\n";
     os << indent3 << "\n";
 
-
-    hrr_writer.WriteHRR(os, info);
+    if(hrr_writer.HasHRR())
+        hrr_writer.WriteHRR(os, info);
 
     os << "\n";
 

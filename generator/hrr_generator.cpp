@@ -45,7 +45,6 @@ void CreateHRR(QAM am,
 
         std::unique_ptr<HRR_Writer> hrr_writer(new HRR_Writer_External(*hrralgo));
         hrr_writer->WriteHRRFile(ofb, ofk, ofh, info);
-
 }
 
 
@@ -139,12 +138,12 @@ int main(int argc, char ** argv)
         int j = it.second;
 
         // create left->right
-        std::string brapath1 = StringBuilder("hrr_bra_J_", amchar[i], "_", amchar[j], ".c");
-        std::string ketpath1 = StringBuilder("hrr_bra_L_", amchar[i], "_", amchar[j], ".c");
+        std::string brapath1 = StringBuilder(fpath, "hrr_bra_J_", amchar[i], "_", amchar[j], ".c");
+        std::string ketpath1 = StringBuilder(fpath, "hrr_ket_L_", amchar[i], "_", amchar[j], ".c");
 
         // create right->left
-        std::string brapath2 = StringBuilder("hrr_bra_I_", amchar[j], "_", amchar[i], ".c");
-        std::string ketpath2 = StringBuilder("hrr_bra_K_", amchar[j], "_", amchar[i], ".c");
+        std::string brapath2 = StringBuilder(fpath, "hrr_bra_I_", amchar[j], "_", amchar[i], ".c");
+        std::string ketpath2 = StringBuilder(fpath, "hrr_ket_K_", amchar[j], "_", amchar[i], ".c");
 
         // Write out
         CreateHRR({i, j, i, j}, brapath1, ketpath1, cpuflags, options, ofh);
