@@ -3,13 +3,51 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/Helpers.hpp"
+#include "generator/CommandLine.hpp"
 #include "generator/Algorithms.hpp"
-#include "generator/Options.hpp"
-#include "generator/WriterInfo.hpp"
+
+#include "generator/ERIGeneratorInfo.hpp"
 #include "generator/HRR_Writer.hpp"
 
-using namespace std;
+
+static
+void CreateHRR(QAM am,
+               const std::string & brapath, const std::string & ketpath,
+               const std::string & cpuflags,
+               const OptionMap & options, std::ostream & ofh)
+{
+        std::ofstream ofb(brapath);
+        std::ofstream ofk(ketpath);
+
+        if(!ofb.is_open())
+            throw std::runtime_error(StringBuilder("Cannot open file: ", brapath, "\n"));
+        if(!ofk.is_open())
+            throw std::runtime_error(StringBuilder("Cannot open file: ", ketpath, "\n"));
+
+        ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
+
+        ofb << "\n#include \"eri/eri.h\"\n\n\n";
+        ofk << "\n#include \"eri/eri.h\"\n\n\n";
+
+        // disable this diagnostic (for now)
+        ofb << "#ifdef __INTEL_COMPILER\n";
+        ofb << "    #pragma warning(disable:2620)\n";
+        ofb << "#endif\n\n\n";
+
+        ofk << "#ifdef __INTEL_COMPILER\n";
+        ofk << "    #pragma warning(disable:2620)\n";
+        ofk << "#endif\n\n\n";
+
+        // The algorithm to use
+        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+
+        hrralgo->Create(am);
+
+        std::unique_ptr<HRR_Writer> hrr_writer(new HRR_Writer_External(*hrralgo));
+        hrr_writer->WriteHRRFile(ofb, ofk, ofh, info);
+
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -76,7 +114,7 @@ int main(int argc, char ** argv)
     // different source and header files
     std::string headpath = fpath + "hrr.h";
     
-    cout << "Generating header file " << headpath << "\n";
+    std::cout << "Generating header file " << headpath << "\n";
 
 
     std::ofstream ofh(headpath);
@@ -106,7 +144,8 @@ int main(int argc, char ** argv)
     for(int j = 1; j <= (2*maxL-i); j++)
         togen.push_back({i,j});
 
-    
+
+ 
 
     // create left->right
     for(const auto & it : togen)
@@ -114,130 +153,28 @@ int main(int argc, char ** argv)
         int i = it.first;
         int j = it.second;
 
-        std::stringstream ssb, ssk;
-        ssb << fpath << "hrr_bra_J_" << amchar[i] << "_" << amchar[j] << ".c";
-        ssk << fpath << "hrr_ket_L_" << amchar[i] << "_" << amchar[j] << ".c";
+        // create left->right
+        std::string brapath1 = StringBuilder("hrr_bra_J_", amchar[i], "_", amchar[j], ".c");
+        std::string ketpath1 = StringBuilder("hrr_bra_L_", amchar[i], "_", amchar[j], ".c");
 
-        std::string srcpath_bra = ssb.str();
-        std::string srcpath_ket = ssk.str();
+        // create right->left
+        std::string brapath2 = StringBuilder("hrr_bra_I_", amchar[j], "_", amchar[i], ".c");
+        std::string ketpath2 = StringBuilder("hrr_bra_K_", amchar[j], "_", amchar[i], ".c");
 
-        std::ofstream ofb(srcpath_bra);
-        if(!ofb.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath_bra << "\n";
-            return 2; 
-        }
-
-        std::ofstream ofk(srcpath_ket);
-        if(!ofk.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath_ket << "\n";
-            return 2; 
-        }
-
-        // include files for sources
-        ofb << "\n";
-        ofb << "#include \"eri/eri.h\"\n\n\n";
-
-        ofk << "\n";
-        ofk << "#include \"eri/eri.h\"\n";
-        ofk << "\n\n";
-
-        // disable this diagnostic (for now)
-        ofb << "#ifdef __INTEL_COMPILER\n";
-        ofb << "    #pragma warning(disable:2620)\n";
-        ofb << "#endif\n";
-        ofb << "\n\n";
-
-        ofk << "#ifdef __INTEL_COMPILER\n";
-        ofk << "    #pragma warning(disable:2620)\n";
-        ofk << "#endif\n";
-        ofk << "\n\n";
-
-        // The algorithm to use
-        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-
-        // we can create functions for both bras/kets in the same loop iteration
-        QAM am{i, j, i, j};
-        WriterInfo::Init(options, am, cpuflags);
-
-        hrralgo->Create(am);
-        HRR_Writer hrr_writer(*hrralgo);
-
-        // write to the output file (appending)
-        hrr_writer.WriteHRRFile(ofb, ofk, ofh);
+        // Write out
+        CreateHRR({i, j, i, j}, brapath1, ketpath1, cpuflags, options, ofh);
+        CreateHRR({j, i, j, i}, brapath2, ketpath2, cpuflags, options, ofh);
     }
 
-    // create right -> left
-    for(const auto & it : togen)
-    {
-        int i = it.first;
-        int j = it.second;
-
-        std::stringstream ssb, ssk;
-        ssb << fpath << "hrr_bra_I_" << amchar[j] << "_" << amchar[i] << ".c";
-        ssk << fpath << "hrr_ket_K_" << amchar[j] << "_" << amchar[i] << ".c";
-
-        std::string srcpath_bra = ssb.str();
-        std::string srcpath_ket = ssk.str();
-
-        std::ofstream ofb(srcpath_bra);
-        if(!ofb.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath_bra << "\n";
-            return 2; 
-        }
-
-        std::ofstream ofk(srcpath_ket);
-        if(!ofk.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath_ket << "\n";
-            return 2; 
-        }
-
-        // include files for sources
-        ofb << "\n";
-        ofb << "#include \"eri/eri.h\"\n\n\n";
-
-        ofk << "\n";
-        ofk << "#include \"eri/eri.h\"\n";
-        ofk << "\n\n";
-
-        // disable this diagnostic (for now)
-        ofb << "#ifdef __INTEL_COMPILER\n";
-        ofb << "    #pragma warning(disable:2620)\n";
-        ofb << "#endif\n";
-        ofb << "\n\n";
-
-        ofk << "#ifdef __INTEL_COMPILER\n";
-        ofk << "    #pragma warning(disable:2620)\n";
-        ofk << "#endif\n";
-        ofk << "\n\n";
-
-        // The algorithm to use
-        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-
-        // we can create functions for both bras/kets in the same loop iteration
-        QAM am{j, i, j, i};
-        WriterInfo::Init(options, am, cpuflags);
-
-        hrralgo->Create(am);
-        HRR_Writer hrr_writer(*hrralgo);
-
-        // write to the output file (appending)
-        hrr_writer.WriteHRRFile(ofb, ofk, ofh);
-    }
 
     ofh << "#endif\n";
-
-    cout << "Done!\n";
 
     }
     catch(std::exception & ex)
     {
-        cout << "\n\n";
-        cout << "Caught exception\n";
-        cout << "What = " << ex.what() << "\n\n";
+        std::cout << "\n\n";
+        std::cout << "Caught exception\n";
+        std::cout << "What = " << ex.what() << "\n\n";
         return 100;
     }
     return 0;

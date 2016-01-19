@@ -1,7 +1,6 @@
 #include <iostream>
 #include <algorithm>
 
-#include "generator/Helpers.hpp"
 #include "generator/Printing.hpp"
 #include "generator/HRR_Algorithm_Base.hpp"
 

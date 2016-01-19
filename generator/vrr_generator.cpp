@@ -3,13 +3,37 @@
 #include <stdexcept>
 #include <fstream>
 
+#include "generator/CommandLine.hpp"
 #include "generator/Algorithms.hpp"
-#include "generator/Helpers.hpp"
-#include "generator/Options.hpp"
-#include "generator/WriterInfo.hpp"
+
+#include "generator/ERIGeneratorInfo.hpp"
 #include "generator/VRR_Writer.hpp"
 
-using namespace std;
+
+static
+void CreateVRR(QAM am, const std::string & path, const std::string & cpuflags,
+               const OptionMap & options, std::ostream & ofh)
+{
+    std::cout << "Generating source file " << path << "\n";
+    std::ofstream of(path);
+    if(!of.is_open())
+        throw std::runtime_error(StringBuilder("Cannot open file: ", path, "\n"));
+
+    ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
+
+    // output to source file
+    // Include the main eri file
+    of << "#include \"eri/eri.h\"\n";
+
+    // create the algorithm
+    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    vrralgo->Create(am);
+
+    // create the writer and write it
+    std::unique_ptr<VRR_Writer> vrr_writer(new VRR_Writer_External(*vrralgo));
+    vrr_writer->WriteVRRFile(of, ofh, info);
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -49,41 +73,22 @@ int main(int argc, char ** argv)
         } 
     }
 
-
-    if(fpath == "")
-    {
-        std::cout << "\noutput path (-o) required\n\n";
-        return 2;
-    }
-
-    if(maxL == 0)
-    {
-        std::cout << "\nMaximum L value (-L) required\n\n";
-        return 2;
-    }
-
-    if(cpuflags == "")
-    {
-        std::cout << "\nCPU flags required\n\n";
-        return 2;
-    }
+    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
+    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
+    CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
 
     if(fpath.back() != '/')
         fpath += '/';
 
 
-
     // different source and header files
     std::string headpath = fpath + "vrr.h";
     
-    cout << "Generating header file " << headpath << "\n";
+    std::cout << "Generating header file " << headpath << "\n";
 
     std::ofstream ofh(headpath);
     if(!ofh.is_open())
-    {
-        std::cout << "Cannot open file: " << headpath << "\n";
-        return 2; 
-    }
+        throw std::runtime_error(StringBuilder("Cannot open file: ", headpath, "\n"));
 
     // start the header file
     ofh << "#ifndef VRR__H\n";
@@ -93,194 +98,48 @@ int main(int argc, char ** argv)
     ofh << "\n";
 
     // init once here to get the includes
-    WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuflags);
-    WriterInfo::WriteIncludes(ofh);
+    ERIGeneratorInfo info({maxL, 0, 0, 0},
+                          Compiler::Intel,
+                          cpuflags, options);
 
 
-    // we want all gaussians up to the maximum L value
+    // write out the includes
+    for(const auto & it : info.GetIncludes())
+        ofh << "#include " << it << "\n";
+    ofh << "\n";
+
+
+    // we want all VRR up to the maximum L value
     for(int i = 1; i <= maxL; i++)
     {
-        std::stringstream ss1, ss2, ss3, ss4;
-        ss1 << fpath << "vrr_" << amchar[i] << "_s_s_s.c";
-        ss2 << fpath << "vrr_s_" << amchar[i] << "_s_s.c";
-        ss3 << fpath << "vrr_s_s_" << amchar[i] << "_s.c";
-        ss4 << fpath << "vrr_s_s_s_" << amchar[i] << "_.c";
+        std::string srcpath1 = StringBuilder(fpath, "vrr_", amchar[i], "_s_s_s.c");
+        std::string srcpath2 = StringBuilder(fpath, "vrr_s_", amchar[i], "_s_s.c");
+        std::string srcpath3 = StringBuilder(fpath, "vrr_s_s_", amchar[i], "_s.c");
+        std::string srcpath4 = StringBuilder(fpath, "vrr_s_s_s_", amchar[i], ".c");
 
-        std::string srcpath1 = ss1.str();
-        std::string srcpath2 = ss2.str();
-        std::string srcpath3 = ss3.str();
-        std::string srcpath4 = ss4.str();
-        cout << "Generating source file " << srcpath1 << "\n";
-        cout << "Generating source file " << srcpath2 << "\n";
-        cout << "Generating source file " << srcpath3 << "\n";
-        cout << "Generating source file " << srcpath4 << "\n";
-
-        std::ofstream of1(srcpath1);
-        std::ofstream of2(srcpath2);
-        std::ofstream of3(srcpath3);
-        std::ofstream of4(srcpath4);
-
-        if(!of1.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath1 << "\n";
-            return 2; 
-        }
-
-        if(!of2.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath2 << "\n";
-            return 2; 
-        }
-
-        if(!of3.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath3 << "\n";
-            return 2; 
-        }
-
-        if(!of4.is_open())
-        {
-            std::cout << "Cannot open file: " << srcpath4 << "\n";
-            return 2; 
-        }
-
-
-        // output to source file
-        of1 << "#include \"eri/eri.h\"\n";
-        of2 << "#include \"eri/eri.h\"\n";
-        of3 << "#include \"eri/eri.h\"\n";
-        of4 << "#include \"eri/eri.h\"\n";
-
-        // The algorithm to use 
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo1(new Makowski_VRR(options));
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo2(new Makowski_VRR(options));
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo3(new Makowski_VRR(options));
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo4(new Makowski_VRR(options));
-
-        QAM am1{i, 0, 0, 0};
-        QAM am2{0, i, 0, 0};
-        QAM am3{0, 0, i, 0};
-        QAM am4{0, 0, 0, i};
-
-
-        // Create the mapping
-        WriterInfo::Init(options, am1, cpuflags);
-        vrralgo1->Create(am1);
-        VRR_Writer vrr_writer1(*vrralgo1);
-        vrr_writer1.WriteVRRFile(of1, ofh);
-
-        WriterInfo::Init(options, am2, cpuflags);
-        vrralgo2->Create(am2);
-        VRR_Writer vrr_writer2(*vrralgo2);
-        vrr_writer2.WriteVRRFile(of2, ofh);
-
-        WriterInfo::Init(options, am3, cpuflags);
-        vrralgo3->Create(am3);
-        VRR_Writer vrr_writer3(*vrralgo3);
-        vrr_writer3.WriteVRRFile(of3, ofh);
-
-        WriterInfo::Init(options, am4, cpuflags);
-        vrralgo4->Create(am4);
-        VRR_Writer vrr_writer4(*vrralgo4);
-        vrr_writer4.WriteVRRFile(of4, ofh);
-
-        cout << "Done!\n";
-
+        CreateVRR({i, 0, 0, 0}, srcpath1, cpuflags, options, ofh);
+        CreateVRR({0, i, 0, 0}, srcpath2, cpuflags, options, ofh);
+        CreateVRR({0, 0, i, 0}, srcpath3, cpuflags, options, ofh);
+        CreateVRR({0, 0, 0, i}, srcpath4, cpuflags, options, ofh);
     }
 
-    if(options[OPTION_NOET] > 0)
+
+    if(options[Option::NoET] > 0)
     {
         // we have to generate ( X s | X s ) VRR relations
         // (and sXsX, and XssX, and sXXs)
         for(int i = 1; i <= maxL; i++)
         for(int j = 1; j <= maxL; j++)
         {
-            std::stringstream ss1, ss2, ss3, ss4;
-            ss1 << fpath << "vrr_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
-            ss2 << fpath << "vrr_s_" << amchar[i] << "_s_" << amchar[j] << ".c";
-            ss3 << fpath << "vrr_" << amchar[i] << "_s_s_" << amchar[j] << ".c";
-            ss4 << fpath << "vrr_s_" << amchar[i] << "_" << amchar[j] << "_s.c";
+            std::string srcpath1 = StringBuilder(fpath, "vrr_", amchar[i], "_s_", amchar[j], "_s.c");
+            std::string srcpath2 = StringBuilder(fpath, "vrr_s_", amchar[i], "_s_", amchar[j], ".c");
+            std::string srcpath3 = StringBuilder(fpath, "vrr_", amchar[i], "_s_s_", amchar[j], ".c");
+            std::string srcpath4 = StringBuilder(fpath, "vrr_s_", amchar[i], "_", amchar[j], "_s.c");
 
-            std::string srcpath1 = ss1.str();
-            std::string srcpath2 = ss2.str();
-            std::string srcpath3 = ss3.str();
-            std::string srcpath4 = ss4.str();
-            cout << "Generating source file " << srcpath1 << "\n";
-            cout << "Generating source file " << srcpath2 << "\n";
-            cout << "Generating source file " << srcpath3 << "\n";
-            cout << "Generating source file " << srcpath4 << "\n";
-
-            std::ofstream of1(srcpath1);
-            std::ofstream of2(srcpath2);
-            std::ofstream of3(srcpath3);
-            std::ofstream of4(srcpath4);
-
-            if(!of1.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath1 << "\n";
-                return 2; 
-            }
-
-            if(!of2.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath2 << "\n";
-                return 2; 
-            }
-
-            if(!of3.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath3 << "\n";
-                return 2; 
-            }
-
-            if(!of4.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath4 << "\n";
-                return 2; 
-            }
-
-
-            // output to source file
-            of1 << "#include \"eri/eri.h\"\n";
-            of2 << "#include \"eri/eri.h\"\n";
-            of3 << "#include \"eri/eri.h\"\n";
-            of4 << "#include \"eri/eri.h\"\n";
-
-            // The algorithm to use 
-            std::unique_ptr<VRR_Algorithm_Base> vrralgo1(new Makowski_VRR(options));
-            std::unique_ptr<VRR_Algorithm_Base> vrralgo2(new Makowski_VRR(options));
-            std::unique_ptr<VRR_Algorithm_Base> vrralgo3(new Makowski_VRR(options));
-            std::unique_ptr<VRR_Algorithm_Base> vrralgo4(new Makowski_VRR(options));
-
-            QAM am1{i, 0, j, 0};
-            QAM am2{0, i, 0, j};
-            QAM am3{i, 0, 0, j};
-            QAM am4{0, i, j, 0};
-
-
-            // Create the mapping
-            WriterInfo::Init(options, am1, cpuflags);
-            vrralgo1->Create(am1);
-            VRR_Writer vrr_writer1(*vrralgo1);
-            vrr_writer1.WriteVRRFile(of1, ofh);
-
-            WriterInfo::Init(options, am2, cpuflags);
-            vrralgo2->Create(am2);
-            VRR_Writer vrr_writer2(*vrralgo2);
-            vrr_writer2.WriteVRRFile(of2, ofh);
-
-            WriterInfo::Init(options, am3, cpuflags);
-            vrralgo3->Create(am3);
-            VRR_Writer vrr_writer3(*vrralgo3);
-            vrr_writer3.WriteVRRFile(of3, ofh);
-
-            WriterInfo::Init(options, am4, cpuflags);
-            vrralgo4->Create(am4);
-            VRR_Writer vrr_writer4(*vrralgo4);
-            vrr_writer4.WriteVRRFile(of4, ofh);
-
-            cout << "Done!\n";
-
+            CreateVRR({i, 0, j, 0}, srcpath1, cpuflags, options, ofh);
+            CreateVRR({0, i, 0, j}, srcpath2, cpuflags, options, ofh);
+            CreateVRR({i, 0, 0, j}, srcpath3, cpuflags, options, ofh);
+            CreateVRR({0, i, j, 0}, srcpath4, cpuflags, options, ofh);
         }
     }
 
@@ -291,10 +150,10 @@ int main(int argc, char ** argv)
     } // close try block
     catch(std::exception & ex)
     {
-        cout << "\n\n";
-        cout << "Caught exception\n";
-        cout << "What = " << ex.what() << "\n\n";
-        return 100;
+        std::cout << "\n\n";
+        std::cout << "Caught exception\n";
+        std::cout << "What = " << ex.what() << "\n\n";
+        return 1;
     }
     return 0;
 }

@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/Helpers.hpp"
 #include "generator/CommandLine.hpp"
 #include "generator/Algorithms.hpp"
 
@@ -13,8 +12,6 @@
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
 #include "generator/ERI_Writer.hpp"
-
-using namespace std;
 
 
 int main(int argc, char ** argv)
@@ -68,44 +65,17 @@ int main(int argc, char ** argv)
 
 
     // check for required options
-    if(boystype == "")
-    {
-        std::cout << "\nBoys type (-b) required\n\n";
-        return 2;
-    }
-
-    if(fpath == "")
-    {
-        std::cout << "\noutput path (-o) required\n\n";
-        return 2;
-    }
-
-    if(datdir == "")
-    {
-        std::cout << "\ndat directory (-d) required\n\n";
-        return 2;
-    }
-
-    if(finalamset == false)
-    {
-        std::cout << "\nAM quartet (-q) required\n\n";
-        return 2;
-    }
-
-    if(cpuflags == "")
-    {
-        std::cout << "\nCPU flags required\n\n";
-        return 2;
-    }
+    CMDLINE_ASSERT( boystype != "", "Boys type (-b) required" )
+    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
+    CMDLINE_ASSERT( datdir != "", "dat directory (-d) required" )
+    CMDLINE_ASSERT( finalamset == true, "AM quartet (-q) required" )
+    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
 
 
     // open the output file
     std::ofstream of(fpath);
     if(!of.is_open())
-    {
-        std::cout << "Cannot open file: " << fpath << "\n";
-        return 2; 
-    }
+        throw std::runtime_error(StringBuilder("Cannot open file: ", fpath, "\n"));
     
 
     // Information for this ERI
@@ -186,10 +156,10 @@ int main(int argc, char ** argv)
     }
     catch(std::exception & ex)
     {
-        cout << "\n\n";
-        cout << "Caught exception\n";
-        cout << "What = " << ex.what() << "\n\n";
-        return 100;
+        std::cout << "\n\n";
+        std::cout << "Caught exception\n";
+        std::cout << "What = " << ex.what() << "\n\n";
+        return 1;
     }
     return 0;
 }

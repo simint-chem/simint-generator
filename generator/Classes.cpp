@@ -3,7 +3,6 @@
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
-#include "generator/Helpers.hpp"
 
 using std::cout;
 

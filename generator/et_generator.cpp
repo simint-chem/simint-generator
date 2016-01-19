@@ -3,13 +3,12 @@
 #include <stdexcept>
 #include <fstream>
 
+#include "generator/CommandLine.hpp"
 #include "generator/Algorithms.hpp"
-#include "generator/Helpers.hpp"
-#include "generator/Options.hpp"
-#include "generator/WriterInfo.hpp"
+
+#include "generator/ERIGeneratorInfo.hpp"
 #include "generator/ET_Writer.hpp"
 
-using namespace std;
 
 int main(int argc, char ** argv)
 {
@@ -50,41 +49,23 @@ int main(int argc, char ** argv)
     }
 
 
-    if(fpath == "")
-    {
-        std::cout << "\noutput path (-o) required\n\n";
-        return 2;
-    }
-
-    if(maxL == 0)
-    {
-        std::cout << "\nMaximum L value (-L) required\n\n";
-        return 2;
-    }
-
-    if(cpuflags == "")
-    {
-        std::cout << "\nCPU flags required\n\n";
-        return 2;
-    }
+    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
+    CMDLINE_ASSERT( cpuflags != "", "CPU flags (-c) required" )
+    CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
 
     if(fpath.back() != '/')
         fpath += '/';
 
 
-
     // different source and header files
     std::string headpath = fpath + "et.h";
     
-    cout << "Generating header file " << headpath << "\n";
+    std::cout << "Generating header file " << headpath << "\n";
 
 
     std::ofstream ofh(headpath);
     if(!ofh.is_open())
-    {
-        std::cout << "Cannot open file: " << headpath << "\n";
-        return 2; 
-    }
+        throw std::runtime_error(StringBuilder("Cannot open file: ", headpath, "\n"));
 
     // start the header file
     ofh << "#ifndef ET__H\n";
@@ -92,87 +73,57 @@ int main(int argc, char ** argv)
     ofh << "\n";
     ofh << "#include \"eri/eri.h\"\n\n\n";
 
-    // init once here to get the includes
-    WriterInfo::Init(options, {maxL, 0, 0, 0}, cpuflags);
-    WriterInfo::WriteIncludes(ofh);
-
     // disable no single et
     // so they are available for all
-    options[OPTION_NOSINGLEET] = 0;
+    options[Option::NoSingleET] = 0;
 
 
-    if(options[OPTION_NOET] > 0)
-        std::cout << "\nNot generating ET. I was told not to...\n";
-    else
+    // we want all gaussians up to the maximum L value
+    // First, bra -> ket
+    for(int i = 0; i <= maxL; i++)
+    for(int j = 1; j <= maxL; j++)
     {
+        std::string srcpath = StringBuilder(fpath, "et_ket_", amchar[i], "_s_", amchar[j], "_s.c");
+        std::cout << "Generating source file " << srcpath << "\n";
+        std::ofstream of(srcpath);
 
-        // we want all gaussians up to the maximum L value
-        // First, bra -> ket
-        for(int i = 0; i <= maxL; i++)
-        for(int j = 1; j <= maxL; j++)
-        {
-            std::stringstream ss;
-            ss << fpath << "et_ket_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+        if(!of.is_open())
+            throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
 
-            std::string srcpath = ss.str();
-            cout << "Generating source file " << srcpath << "\n";
-            std::ofstream of(srcpath);
+        QAM am{i, 0, j, 0};
+        ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
 
-            if(!of.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath << "\n";
-                return 2; 
-            }
+        of << "#include \"eri/eri.h\"\n";
 
-            // output to source file
-            of << "#include \"eri/eri.h\"\n";
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+        etalgo->Create(am, DoubletType::KET);
 
-            // The algorithm to use 
-            std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-
-            QAM am{i, 0, j, 0};
-            WriterInfo::Init(options, am, cpuflags);
-
-            etalgo->Create(am, DoubletType::KET);
-            ET_Writer et_writer(*etalgo);
-            et_writer.WriteETFile(of, ofh);
-            cout << "Done!\n";
-
-        }
+        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo));
+        et_writer->WriteETFile(of, ofh, info);
+    }
 
 
-        // Now, ket->bra
-        for(int i = 1; i <= maxL; i++)
-        for(int j = 0; j <= maxL; j++)
-        {
-            std::stringstream ss;
-            ss << fpath << "et_bra_" << amchar[i] << "_s_" << amchar[j] << "_s.c";
+    // Now, ket->bra
+    for(int i = 1; i <= maxL; i++)
+    for(int j = 0; j <= maxL; j++)
+    {
+        std::string srcpath = StringBuilder(fpath, "et_bra_", amchar[i], "_s_", amchar[j], "_s.c");
+        std::cout << "Generating source file " << srcpath << "\n";
+        std::ofstream of(srcpath);
 
-            std::string srcpath = ss.str();
-            cout << "Generating source file " << srcpath << "\n";
-            std::ofstream of(srcpath);
+        if(!of.is_open())
+            throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
 
-            if(!of.is_open())
-            {
-                std::cout << "Cannot open file: " << srcpath << "\n";
-                return 2; 
-            }
+        QAM am{i, 0, j, 0};
+        ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
 
-            // output to source file
-            of << "#include \"eri/eri.h\"\n";
+        of << "#include \"eri/eri.h\"\n";
 
-            // The algorithm to use 
-            std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+        etalgo->Create(am, DoubletType::BRA);
 
-            QAM am{i, 0, j, 0};
-            WriterInfo::Init(options, am, cpuflags);
-            etalgo->Create(am, DoubletType::BRA);
-            ET_Writer et_writer(*etalgo);
-
-            // write to the output file
-            et_writer.WriteETFile(of, ofh);
-            cout << "Done!\n";
-        }
+        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo));
+        et_writer->WriteETFile(of, ofh, info);
     }
 
 
@@ -183,9 +134,9 @@ int main(int argc, char ** argv)
     } // close try block
     catch(std::exception & ex)
     {
-        cout << "\n\n";
-        cout << "Caught exception\n";
-        cout << "What = " << ex.what() << "\n\n";
+        std::cout << "\n\n";
+        std::cout << "Caught exception\n";
+        std::cout << "What = " << ex.what() << "\n\n";
         return 100;
     }
     return 0;

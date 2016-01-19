@@ -11,3 +11,8 @@ int GetIArg(size_t & i, const std::vector<std::string> & opt);
 
 std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char ** argv);
 
+
+// A helper macro
+#define CMDLINE_ASSERT(val, desc) if( !(val) ) { std::cout << "\n" << (desc) << "\n\n"; return 1; }
+
+
