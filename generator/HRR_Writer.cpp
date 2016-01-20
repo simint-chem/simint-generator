@@ -7,8 +7,8 @@
 ////////////////////////
 // Base HRR Writer
 ////////////////////////
-HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo) 
-    : hrr_algo_(hrr_algo)
+HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info) 
+    : hrr_algo_(hrr_algo), info_(info), vinfo_(info.GetVectorInfo())
 { }
 
 
@@ -25,6 +25,12 @@ bool HRR_Writer::HasBraHRR(void) const
 bool HRR_Writer::HasKetHRR(void) const
 {
     return hrr_algo_.HasKetHRR();
+}
+
+ConstantMap HRR_Writer::GetConstants(void) const
+{
+    // by default, return empty
+    return ConstantMap();
 }
 
 
@@ -110,18 +116,9 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & br
 // Inline HRR Writer
 ////////////////////////
 
-HRR_Writer_Inline::HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo) 
-    : HRR_Writer(hrr_algo)
-{ }
-
-void HRR_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
+void HRR_Writer_Inline::WriteHRR(std::ostream & os) const
 {
-}
-
-
-void HRR_Writer_Inline::WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const
-{
-    QAM finalam = info.FinalAM();
+    QAM finalam = info_.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
 
     os << indent3 << "//////////////////////////////////////////////\n";
@@ -163,7 +160,7 @@ void HRR_Writer_Inline::WriteHRR(std::ostream & os, const ERIGeneratorInfo & inf
             os << indent4 << "// form " << ArrVarName(am) << "\n";
 
             // allocate temporary if needed
-            if(!info.IsContQ(am) && !info.IsFinalAM(am))
+            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
             // ncart_ket in string form
@@ -194,7 +191,7 @@ void HRR_Writer_Inline::WriteHRR(std::ostream & os, const ERIGeneratorInfo & inf
             os << indent4 << "// form " << ArrVarName(am) << "\n";
 
             // allocate temporary if needed
-            if(!info.IsContQ(am) && !info.IsFinalAM(am))
+            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
             // ncart_bra in string form
@@ -215,7 +212,7 @@ void HRR_Writer_Inline::WriteHRR(std::ostream & os, const ERIGeneratorInfo & inf
 }
 
 
-void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const
+void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const
 {
     
 }
@@ -224,18 +221,9 @@ void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std
 // External HRR Writer
 ////////////////////////
 
-HRR_Writer_External::HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo) 
-    : HRR_Writer(hrr_algo)
-{ }
-
-void HRR_Writer_External::AddConstants(ERIGeneratorInfo & info) const
+void HRR_Writer_External::WriteHRR(std::ostream & os) const
 {
-}
-
-
-void HRR_Writer_External::WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const
-{
-    QAM finalam = info.FinalAM();
+    QAM finalam = info_.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
 
 
@@ -279,7 +267,7 @@ void HRR_Writer_External::WriteHRR(std::ostream & os, const ERIGeneratorInfo & i
             os << indent4 << "// form " << ArrVarName(am) << "\n";
 
             // allocate temporary if needed
-            if(!info.IsContQ(am) && !info.IsFinalAM(am))
+            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
             // call function
@@ -317,7 +305,7 @@ void HRR_Writer_External::WriteHRR(std::ostream & os, const ERIGeneratorInfo & i
             os << indent4 << "// form " << ArrVarName(am) << "\n";
 
             // allocate temporary if needed
-            if(!info.IsContQ(am) && !info.IsFinalAM(am))
+            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
             os << indent4 << "HRR_KET_" << steptypestr << "_";
@@ -346,10 +334,9 @@ void HRR_Writer_External::WriteHRR(std::ostream & os, const ERIGeneratorInfo & i
 
 
 void HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
-                                       std::ostream & ofk, std::ostream & ofh,
-                                       const ERIGeneratorInfo & info) const
+                                       std::ostream & ofk, std::ostream & ofh) const
 {
-    QAM finalam = info.FinalAM();
+    QAM finalam = info_.FinalAM();
     DAM braam = {finalam[0], finalam[1]};
     DAM ketam = {finalam[2], finalam[3]};
 

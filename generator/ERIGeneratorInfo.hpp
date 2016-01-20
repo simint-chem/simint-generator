@@ -202,21 +202,6 @@ public:
         return !UseStack();
     }
 
-
-    ////////////////////
-    // Include files
-    ////////////////////
-    void AddInclude(const std::string & inc)
-    {
-        includes_.insert(inc);
-    }
-
-    void AddIncludes(const std::set<std::string> & incs)
-    {
-        for(const auto & it : incs)
-            includes_.insert(it);
-    }
-
     std::set<std::string> GetIncludes(void) const
     {
         return includes_;

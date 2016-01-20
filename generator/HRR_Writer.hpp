@@ -15,20 +15,22 @@ class ERIGeneratorInfo;
 class HRR_Writer : public WriterBase
 {   
     public:
-        HRR_Writer(const HRR_Algorithm_Base & hrr_algo);
+        HRR_Writer(const HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info);
 
         bool HasHRR(void) const;
         bool HasBraHRR(void) const;
         bool HasKetHRR(void) const;
 
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
-        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const = 0;
+        virtual ConstantMap GetConstants(void) const;
+        virtual void WriteHRR(std::ostream & os) const = 0;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const = 0;
 
 
     protected:
         const HRR_Algorithm_Base & hrr_algo_; 
+        const ERIGeneratorInfo & info_;
+        const VectorInfo & vinfo_;
 
         void WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                             const std::string & ncart_ket, const std::string & ketstr) const;
@@ -44,14 +46,13 @@ class HRR_Writer : public WriterBase
 class HRR_Writer_Inline : public HRR_Writer
 {
     public:
-        HRR_Writer_Inline(const HRR_Algorithm_Base & hrr_algo);
+        using HRR_Writer::HRR_Writer;
 
         bool IsInline(void) const { return true; }
         bool IsExternal(void) const { return false; }
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const;
+        virtual void WriteHRR(std::ostream & os) const;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
 
 };
 
@@ -59,14 +60,13 @@ class HRR_Writer_Inline : public HRR_Writer
 class HRR_Writer_External : public HRR_Writer
 {
     public:
-        HRR_Writer_External(const HRR_Algorithm_Base & hrr_algo);
+        using HRR_Writer::HRR_Writer;
 
         bool IsInline(void) const { return false; }
         bool IsExternal(void) const { return true; }
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void WriteHRR(std::ostream & os, const ERIGeneratorInfo & info) const;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh, const ERIGeneratorInfo & info) const;
+        virtual void WriteHRR(std::ostream & os) const;
+        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
 
 };
 

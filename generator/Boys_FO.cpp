@@ -10,12 +10,14 @@
 ////////////////////////////////////
 // FO fitting
 ////////////////////////////////////
-void BoysFO::AddConstants(ERIGeneratorInfo & info) const
+ConstantMap BoysFO::GetConstants(void) const
 {
-    const int L = info.L();
+    ConstantMap cm;
+
+    const int L = info_.L();
 
     // for b0
-    info.AddIntegerConstant(1);
+    cm.emplace("const_1", "1");
 
     if(L < BOYS_FO_RECUR)
     {
@@ -23,36 +25,38 @@ void BoysFO::AddConstants(ERIGeneratorInfo & info) const
         {
             const BoysFit & bf = bfmap_.at(m);
             for(size_t i = 0; i < bf.a.size(); i++)
-                info.AddNamedConstant(StringBuilder("FO_", m, "_a_", i), bf.a[i]);
+                cm.emplace(StringBuilder("FO_", m, "_a_", i), bf.a[i]);
             for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
-                info.AddNamedConstant(StringBuilder("FO_", m, "_b_", i), bf.b[i]);
+                cm.emplace(StringBuilder("FO_", m, "_b_", i), bf.b[i]);
         }
 
     } 
     else
     {
         // add the factor of 2.0
-        info.AddIntegerConstant(2);
+        cm.emplace("const_2", "2");
 
         const BoysFit & bf = bfmap_.at(L);
         for(size_t i = 0; i < bf.a.size(); i++)
-            info.AddNamedConstant(StringBuilder("FO_", L, "_a_", i), bf.a[i]);
+            cm.emplace(StringBuilder("FO_", L, "_a_", i), bf.a[i]);
         for(size_t i = 1; i < bf.b.size(); i++) // skip b0 = 1.0
-            info.AddNamedConstant(StringBuilder("FO_", L, "_b_", i), bf.b[i]);
+            cm.emplace(StringBuilder("FO_", L, "_b_", i), bf.b[i]);
 
 
         // constants for the recursion
         // skipping i = 0 since that is 1.0
         for(int i = L-1; i > 0; i--)
-            info.AddNamedConstant(StringBuilder("FO_RECUR_", i),
-                                  StringBuilder((1.0/(2.0*i+1.0))));
+            cm.emplace(StringBuilder("FO_RECUR_", i),
+                       StringBuilder((1.0/(2.0*i+1.0))));
     }
        
+    return cm;
+
 }
 
-void BoysFO::AddIncludes(ERIGeneratorInfo & info) const
+IncludeSet BoysFO::GetIncludes(void) const
 {
-    info.AddInclude("\"boys/boys_FO.h\"");
+    return {"\"boys/boys_FO.h\""};
 }
 
 
@@ -93,31 +97,28 @@ std::string BoysFO::GetFOConstant_(std::string ab, int m, int i) const
 
 
 
-void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac,
-                              const ERIGeneratorInfo & info) const
+void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
-
     const BoysFit & bf = bfmap_.at(m); 
 
     std::string varstr = StringBuilder(PrimVarName({0,0,0,0}), "[", bf.v, "]");
     std::string powstr = StringBuilder(bf.v, ".0+0.5");
 
 
-    if(info.HasFMA())
+    if(info_.HasFMA())
     {
         // Horner's rule
         // Numerator
-        os << indent5 << "num = " << vinfo.FMAdd("F_x", GetFOConstant_("a", m, bf.a.size()-1), GetFOConstant_("a", m, bf.a.size()-2)) << ";\n";
+        os << indent5 << "num = " << vinfo_.FMAdd("F_x", GetFOConstant_("a", m, bf.a.size()-1), GetFOConstant_("a", m, bf.a.size()-2)) << ";\n";
         for(int i = bf.a.size()-3; i >= 0; i--)
-            os << indent5 << "num = " << vinfo.FMAdd("F_x", "num", GetFOConstant_("a", m, i)) << ";\n";
+            os << indent5 << "num = " << vinfo_.FMAdd("F_x", "num", GetFOConstant_("a", m, i)) << ";\n";
         os << "\n";
 
         // Denominator
-        os << indent5 << "den = " << vinfo.FMAdd("F_x", GetFOConstant_("b", m, bf.b.size()-1), GetFOConstant_("b", m, bf.b.size()-2)) << ";\n"; 
+        os << indent5 << "den = " << vinfo_.FMAdd("F_x", GetFOConstant_("b", m, bf.b.size()-1), GetFOConstant_("b", m, bf.b.size()-2)) << ";\n"; 
         for(int i = bf.b.size()-3; i >= 1; i--)
-            os << indent5 << "den = " << vinfo.FMAdd("F_x", "den", GetFOConstant_("b", m, i)) << ";\n";
-        os << indent5 << "den = " << vinfo.FMAdd("F_x", "den", vinfo.IntConstant(1)) << ";\n";
+            os << indent5 << "den = " << vinfo_.FMAdd("F_x", "den", GetFOConstant_("b", m, i)) << ";\n";
+        os << indent5 << "den = " << vinfo_.FMAdd("F_x", "den", vinfo_.IntConstant(1)) << ";\n";
         os << "\n";
         os << indent5 << varstr << " = num / den;\n";
     }
@@ -135,7 +136,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac,
         os << indent5 << "                   )\n";
         os << indent5 << "                   /\n";
         os << indent5 << "                   (\n";
-        os << indent5 << "                               " << vinfo.IntConstant(1) << "\n";   //<< GetFOConstant_("b", 0, m) << "\n";
+        os << indent5 << "                               " << vinfo_.IntConstant(1) << "\n";   //<< GetFOConstant_("b", 0, m) << "\n";
         for(size_t i = 1; i < bf.b.size(); i++)
             os << indent5 << "                     + F_x * ( " << GetFOConstant_("b", m, i) << "\n";
 
@@ -150,16 +151,16 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac,
     // apply prefac and power
     // calculate the prefactor if this is the first time it's needed
     if(prefac && m == 0)
-        os << indent5 << vinfo.ConstDoubleType() << " prefac = P_prefac * " << vinfo.DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " prefac = P_prefac * " << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
 
 
 
     os << indent5 << varstr << " = ";
     
     if(prefac)
-        os << "prefac * " << vinfo.Sqrt(varstr + " * one_over_PQalpha_sum");
+        os << "prefac * " << vinfo_.Sqrt(varstr + " * one_over_PQalpha_sum");
     else
-        os << vinfo.Sqrt(varstr);
+        os << vinfo_.Sqrt(varstr);
 
     for(int i = 0; i < bf.v; i++)
         os << " * " << varstr;
@@ -169,32 +170,31 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac,
 
 
 
-void BoysFO::WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const
+void BoysFO::WriteBoys(std::ostream & os) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
-    const int L = info.L();
+    const int L = info_.L();
 
     std::string primname = PrimVarName({0,0,0,0});
 
     // if using FMA, we need to declare the numerator and denominator separately
-    if(info.HasFMA())
-        os << indent5 << vinfo.DoubleType() << " num, den;\n\n";
+    if(info_.HasFMA())
+        os << indent5 << vinfo_.DoubleType() << " num, den;\n\n";
 
     // just calculate them all if L is small
     // value of 3 found by testing
     if(L < BOYS_FO_RECUR)
     {
         for(int m = 0; m <= L; m++)
-            WriteBoysSingle_(os, m, true, info);
+            WriteBoysSingle_(os, m, true);
     }
     else
     {
         // calculate highest, and recurse down
-        WriteBoysSingle_(os, L, false, info);
+        WriteBoysSingle_(os, L, false);
 
         // calculate the downward recursion factors
-        os << indent5 << vinfo.ConstDoubleType() << " x2 = " << vinfo.IntConstant(2) << " * F_x;\n";
-        os << indent5 << vinfo.ConstDoubleType() << " ex = " << vinfo.Exp("-F_x") << ";\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " x2 = " << vinfo_.IntConstant(2) << " * F_x;\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " ex = " << vinfo_.Exp("-F_x") << ";\n";
 
         for(int m = L-1; m > 0; m--)
         {
@@ -207,7 +207,7 @@ void BoysFO::WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const
 
 
         // add prefac now
-        os << indent5 << vinfo.ConstDoubleType() << " prefac = " << vinfo.Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << vinfo.DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
  
         os << "\n";
         os << indent5 << "for(n = 0; n <= " << L << "; ++n)\n";
@@ -217,7 +217,8 @@ void BoysFO::WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const
 }
 
 
-BoysFO::BoysFO(std::string dir)
+BoysFO::BoysFO(const ERIGeneratorInfo & info, std::string dir)
+    : BoysGen(info)
 {
     if(dir.back() == '/')
         dir = dir.substr(0, dir.size()-1);

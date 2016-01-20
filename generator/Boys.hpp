@@ -8,12 +8,13 @@
 #ifndef BOYS_HPP
 #define BOYS_HPP
 
-#include <string>
 #include <vector>
-#include <map>
+
+#include "generator/WriterBase.hpp" // for ConstantMap and IncludeSet
 
 // Forward declarations
 class ERIGeneratorInfo;
+class VectorInfo;
 
 
 /////////////////////////////////////////////////////////////
@@ -26,14 +27,21 @@ class ERIGeneratorInfo;
 
 
 
+
 /*! \brief Base class for boys function generation
  */
 class BoysGen
 {
     public:
-        virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
-        virtual void AddIncludes(ERIGeneratorInfo & info) const = 0;
-        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
+        BoysGen(const ERIGeneratorInfo & info);
+
+        virtual ConstantMap GetConstants(void) const;
+        virtual IncludeSet GetIncludes(void) const = 0;
+        virtual void WriteBoys(std::ostream & os) const = 0;
+
+    protected:
+        const ERIGeneratorInfo & info_;
+        const VectorInfo & vinfo_;
 };
 
 
@@ -42,11 +50,11 @@ class BoysGen
 class BoysFO : public BoysGen
 {
     public:
-        BoysFO(std::string dir); // read from directory
+        BoysFO(const ERIGeneratorInfo & info, std::string dir); // read from directory
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void AddIncludes(ERIGeneratorInfo & info) const;
-        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const;
+        virtual ConstantMap GetConstants(void) const;
+        virtual IncludeSet GetIncludes(void) const;
+        virtual void WriteBoys(std::ostream & os) const;
 
     private:
         struct BoysFit
@@ -69,31 +77,21 @@ class BoysFO : public BoysGen
 
         std::string GetFOConstant_(std::string ab, int m, int i) const;
 
-        void WriteBoysSingle_(std::ostream & os, int m, bool prefac, const ERIGeneratorInfo & info) const;
+        void WriteBoysSingle_(std::ostream & os, int m, bool prefac) const;
 };
 
 
-struct BoysSplit : public BoysGen
+class BoysSplit : public BoysGen
 {
     public:
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void AddIncludes(ERIGeneratorInfo & info) const;
-        virtual void WriteBoys(std::ostream & os, const ERIGeneratorInfo & info) const;
-};
+        using BoysGen::BoysGen;
 
-
-
-
-/*
-struct BoysVRef : public BoysGen
-{
-    public:
-        // default constructors ok
+        virtual ConstantMap GetConstants(void) const;
+        virtual IncludeSet GetIncludes(void) const;
         virtual void WriteBoys(std::ostream & os) const;
-
-        virtual void AddIncludes(ERIGeneratorInfo & info) const;
-
 };
-*/
+
+
+
 
 #endif

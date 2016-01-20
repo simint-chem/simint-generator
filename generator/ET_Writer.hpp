@@ -15,24 +15,26 @@ class ERIGeneratorInfo;
 class ET_Writer : public WriterBase
 {   
     public:
-        ET_Writer(const ET_Algorithm_Base & et_algo); 
+        ET_Writer(const ET_Algorithm_Base & et_algo, const ERIGeneratorInfo & info); 
 
         bool HasET(void) const;
         bool HasBraET(void) const;
         bool HasKetET(void) const;
 
-        void DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & info) const;
-        void DeclarePrimPointers(std::ostream & os, const ERIGeneratorInfo & info) const;
+        void DeclarePrimArrays(std::ostream & os) const;
+        void DeclarePrimPointers(std::ostream & os) const;
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const = 0;
-        virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const = 0;
-        virtual void WriteETFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const = 0;
+        virtual ConstantMap GetConstants(void) const;
+        virtual void WriteET(std::ostream & os) const = 0;
+        virtual void WriteETFile(std::ostream & os, std::ostream & osh) const = 0;
 
 
     protected:
         const ET_Algorithm_Base & et_algo_;
+        const ERIGeneratorInfo & info_;
+        const VectorInfo & vinfo_;
 
-        std::string ETStepString_(const ETStep & et, const ERIGeneratorInfo & info) const;
+        std::string ETStepString_(const ETStep & et) const;
         std::string ETStepVar_(const Quartet & q) const;
 
 };
@@ -42,28 +44,27 @@ class ET_Writer : public WriterBase
 class ET_Writer_Inline : public ET_Writer
 {
     public:
-        ET_Writer_Inline(const ET_Algorithm_Base & et_algo);
+        using ET_Writer::ET_Writer;
 
         bool IsInline(void) const { return true; }
         bool IsExternal(void) const { return false; }
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;
-        virtual void WriteETFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const;
+        virtual ConstantMap GetConstants(void) const;
+        virtual void WriteET(std::ostream & os) const;
+        virtual void WriteETFile(std::ostream & os, std::ostream & osh) const;
 };
 
 
 class ET_Writer_External : public ET_Writer
 {
     public:
-        ET_Writer_External(const ET_Algorithm_Base & et_algo);
+        using ET_Writer::ET_Writer;
 
         bool IsInline(void) const { return false; }
         bool IsExternal(void) const { return true; }
 
-        virtual void AddConstants(ERIGeneratorInfo & info) const;
-        virtual void WriteET(std::ostream & os, const ERIGeneratorInfo & info) const;
-        virtual void WriteETFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const;
+        virtual void WriteET(std::ostream & os) const;
+        virtual void WriteETFile(std::ostream & os, std::ostream & osh) const;
 };
 
 

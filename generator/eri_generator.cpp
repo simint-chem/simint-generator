@@ -83,75 +83,74 @@ int main(int argc, char ** argv)
                           cpuflags, options);
 
 
-    // is this one a special permutation?
-    if( ( (finalam[0] == 0 && finalam[1] > 0)  && ( finalam[2] == 0 || finalam[3] == 0 ) ) ||
-        ( (finalam[2] == 0 && finalam[3] > 0)  && ( finalam[0] == 0 || finalam[1] == 0 ) ) )
-        WriteFile_Permute(of, info);
+    //////////////////////////////////////////////////////////////
+    //! \todo We are doing all this work even if it is a special
+    //        permutation
+    //////////////////////////////////////////////////////////////
+
+    // Read in the boys map
+    std::unique_ptr<BoysGen> bg;
+
+    if(boystype == "FO")
+        bg = std::unique_ptr<BoysGen>(new BoysFO(info, datdir));
+    else if(boystype == "split")
+        bg = std::unique_ptr<BoysGen>(new BoysSplit(info));
     else
     {
-        // Read in the boys map
-        std::unique_ptr<BoysGen> bg;
-
-        if(boystype == "FO")
-            bg = std::unique_ptr<BoysGen>(new BoysFO(datdir));
-        else if(boystype == "split")
-            bg = std::unique_ptr<BoysGen>(new BoysSplit());
-        else
-        {
-            std::cout << "Unknown boys type \"" << boystype << "\"\n";
-            return 3;
-        }
-
-        // algorithms used
-        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-        std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-
-        // Writers
-        std::unique_ptr<HRR_Writer> hrr_writer;
-        std::unique_ptr<VRR_Writer> vrr_writer;
-        std::unique_ptr<ET_Writer> et_writer;
-
-        // Working backwards, I need:
-        // 1.) HRR Steps
-        hrralgo->Create(finalam);
-        if(options[Option::InlineHRR])
-            hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_Inline(*hrralgo));
-        else
-            hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_External(*hrralgo));
-
-
-        // 2.) ET steps
-        //     with the HRR top level stuff as the initial targets
-        DoubletType etdirection = DoubletType::KET;
-        if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
-            etdirection = DoubletType::BRA;
-
-
-        etalgo->Create(hrralgo->TopQuartets(), etdirection);
-
-        if(options[Option::InlineET])
-            et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_Inline(*etalgo));
-        else
-            et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_External(*etalgo));
-
-        // 3.) VRR Steps
-        // requirements for vrr are the top level stuff from ET
-        vrralgo->Create(etalgo->TopQuartets());
-
-        if(options[Option::InlineVRR])
-            vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_Inline(*vrralgo));
-        else
-            vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_External(*vrralgo));
-
-        // set the contracted quartets
-        info.SetContQ(hrralgo->TopAM());
-
-        // print out some info
-        std::cout << "MEMORY (per shell quartet): " << info.ContMemoryReq() << "\n";
-
-        WriteFile(of, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
+        std::cout << "Unknown boys type \"" << boystype << "\"\n";
+        return 3;
     }
+
+    // algorithms used
+    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+
+    // Writers
+    std::unique_ptr<HRR_Writer> hrr_writer;
+    std::unique_ptr<VRR_Writer> vrr_writer;
+    std::unique_ptr<ET_Writer> et_writer;
+
+    // Working backwards, I need:
+    // 1.) HRR Steps
+    hrralgo->Create(finalam);
+    if(options[Option::InlineHRR])
+        hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_Inline(*hrralgo, info));
+    else
+        hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_External(*hrralgo, info));
+
+
+    // 2.) ET steps
+    //     with the HRR top level stuff as the initial targets
+    DoubletType etdirection = DoubletType::KET;
+    if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
+        etdirection = DoubletType::BRA;
+
+
+    etalgo->Create(hrralgo->TopQuartets(), etdirection);
+
+    if(options[Option::InlineET])
+        et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_Inline(*etalgo, info));
+    else
+        et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_External(*etalgo, info));
+
+    // 3.) VRR Steps
+    // requirements for vrr are the top level stuff from ET
+    vrralgo->Create(etalgo->TopQuartets());
+
+    if(options[Option::InlineVRR])
+        vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_Inline(*vrralgo, info));
+    else
+        vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_External(*vrralgo, info));
+
+
+    // set the contracted quartets
+    info.SetContQ(hrralgo->TopAM());
+
+    // Create the ERI_Writer and write the file
+    ERI_Writer_Basic eri_writer(of, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
+    eri_writer.WriteFile();
+
     }
     catch(std::exception & ex)
     {

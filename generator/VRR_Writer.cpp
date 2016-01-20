@@ -7,8 +7,8 @@
 ///////////////////////////////
 // Base VRR Writer
 ///////////////////////////////
-VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo)
-    : vrr_algo_(vrr_algo)
+VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo, const ERIGeneratorInfo & info)
+    : vrr_algo_(vrr_algo), info_(info), vinfo_(info_.GetVectorInfo())
 { 
 }
 
@@ -47,10 +47,14 @@ bool VRR_Writer::HasVRR_L(void) const
     return vrr_algo_.HasVRR_L();
 }
 
-void VRR_Writer::DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & info) const
+ConstantMap VRR_Writer::GetConstants(void) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
+    // by default, return empty
+    return ConstantMap();
+}
 
+void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
+{
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
     os << indent5 << "// with m as the slowest index\n";
 
@@ -59,7 +63,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & i
     {
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
-        os << indent5 << vinfo.DoubleType() << " " << PrimVarName(qam)
+        os << indent5 << vinfo_.DoubleType() << " " << PrimVarName(qam)
            << "[" << (vrr_algo_.GetMReq(qam)+1) << " * " 
            << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
@@ -67,11 +71,11 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os, const ERIGeneratorInfo & i
     os << "\n\n";
 }
 
-void VRR_Writer::DeclarePrimPointers(std::ostream & os, const ERIGeneratorInfo & info) const
+void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
     for(const auto & qam : vrr_algo_.GetAllAM()) 
     {
-        if(info.IsContQ(qam))
+        if(info_.IsContQ(qam))
             os << indent4 << "double * restrict " << PrimPtrName(qam)
                << " = " << ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
     }
@@ -79,11 +83,8 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os, const ERIGeneratorInfo &
     os << "\n\n";
 }
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n,
-                                const ERIGeneratorInfo & info) const
+void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
-
     os << indent5 << "// Forming " << PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
     os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
@@ -145,7 +146,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 
 
 
-        if(info.HasFMA())
+        if(info_.HasFMA())
         {
             if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
@@ -170,15 +171,15 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
             }
 
             if(it.src[1])
-                os << indent6 << primname << " = " << vinfo.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo_.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
             if(it.src[2] && it.src[3])
-                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const0, vinfo.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const0, vinfo_.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
             if(it.src[4] && it.src[5])
-                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const1, vinfo.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
+                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const1, vinfo_.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
             if(it.src[6])
-                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
+                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
             if(it.src[7])
-                os << indent6 << primname << " = " << vinfo.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
+                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
         }
         else
         {
@@ -232,22 +233,17 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 ///////////////////////////////////////
 // Inline VRR Writer
 ///////////////////////////////////////
-VRR_Writer_Inline::VRR_Writer_Inline(const VRR_Algorithm_Base & vrr_algo)
-    : VRR_Writer(vrr_algo)
-{ 
-}
-
-void VRR_Writer_Inline::AddConstants(ERIGeneratorInfo & info) const
+ConstantMap VRR_Writer_Inline::GetConstants(void) const
 {
+    ConstantMap cm;
     for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
-        info.AddIntegerConstant(i);
+        cm.emplace(StringBuilder("const_", i), StringBuilder(i));
+    return cm;
 }
 
 
-void VRR_Writer_Inline::WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const
+void VRR_Writer_Inline::WriteVRR(std::ostream & os) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
-
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
     os << indent5 << "// Primitive integrals: Vertical recurrance\n";
@@ -258,25 +254,25 @@ void VRR_Writer_Inline::WriteVRR(std::ostream & os, const ERIGeneratorInfo & inf
     for(const auto & it : vrr_algo_.GetAllInt_2p())
     {
         if(it == 1)
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
         else
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo.IntConstant(it) << " * one_over_2p;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo_.IntConstant(it) << " * one_over_2p;\n"; 
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2q())
     {
         if(it == 1)
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
         else
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo.IntConstant(it) << " * one_over_2q;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo_.IntConstant(it) << " * one_over_2q;\n"; 
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2pq())
     {
         if(it == 1)
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
         else
-            os << indent5 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo.IntConstant(it) << " * one_over_2pq;\n"; 
+            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.IntConstant(it) << " * one_over_2pq;\n"; 
     }
 
 
@@ -286,8 +282,7 @@ void VRR_Writer_Inline::WriteVRR(std::ostream & os, const ERIGeneratorInfo & inf
         // Write out the steps
         if(qam != QAM{0,0,0,0})
             WriteVRRSteps_(os, qam, vrr_algo_.GetSteps(qam), 
-                           std::to_string(vrr_algo_.GetMReq(qam)+1),
-                           info);
+                           std::to_string(vrr_algo_.GetMReq(qam)+1));
 
         os << "\n\n";
     }
@@ -296,7 +291,7 @@ void VRR_Writer_Inline::WriteVRR(std::ostream & os, const ERIGeneratorInfo & inf
 }
 
 
-void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const
+void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 { }
 
 
@@ -304,17 +299,7 @@ void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh, cons
 ///////////////////////////////////////
 // External VRR Writer
 ///////////////////////////////////////
-VRR_Writer_External::VRR_Writer_External(const VRR_Algorithm_Base & vrr_algo)
-    : VRR_Writer(vrr_algo)
-{ 
-}
-
-void VRR_Writer_External::AddConstants(ERIGeneratorInfo & info) const
-{
-
-}
-
-void VRR_Writer_External::WriteVRR(std::ostream & os, const ERIGeneratorInfo & info) const
+void VRR_Writer_External::WriteVRR(std::ostream & os) const
 {
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
@@ -345,11 +330,9 @@ void VRR_Writer_External::WriteVRR(std::ostream & os, const ERIGeneratorInfo & i
 }
 
 
-void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh, const ERIGeneratorInfo & info) const
+void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 {
-    const VectorInfo & vinfo = info.GetVectorInfo();
-
-    QAM am = info.FinalAM();
+    QAM am = info_.FinalAM();
 
     os << "//////////////////////////////////////////////\n";
     os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
@@ -359,13 +342,13 @@ void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh, co
     prototype << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
-    prototype << indent3 << vinfo.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
+    prototype << indent3 << vinfo_.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
 
     for(const auto & it : vrr_algo_.GetAMReq(am))
-        prototype << indent3 << vinfo.ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
+        prototype << indent3 << vinfo_.ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
-        prototype << indent3 << vinfo.ConstDoubleType() << " " << it << ",\n";
+        prototype << indent3 << vinfo_.ConstDoubleType() << " " << it << ",\n";
 
     prototype << indent3 << "const int num_n)";
 
@@ -382,16 +365,16 @@ void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh, co
         os << "    int n = 0;\n";
 
         for(const auto & it : vrr_algo_.GetIntReq_2p(am))
-            os << indent1 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo.DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2q(am))
-            os << indent1 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo.DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
-            os << indent1 << vinfo.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo.DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
 
         // Write out the steps
-        WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n", info);
+        WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n");
 
     }
     else
