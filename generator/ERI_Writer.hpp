@@ -1,5 +1,5 @@
-#ifndef ERIWRITER_HPP
-#define ERIWRITER_HPP
+#ifndef SIMINT_GUARD_GENERATOR__ERI_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_WRITER_HPP_
 
 #include <ostream>
 

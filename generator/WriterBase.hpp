@@ -1,5 +1,5 @@
-#ifndef WRITERBASE_HPP
-#define WRITERBASE_HPP
+#ifndef SIMINT_GUARD_GENERATOR__WRITERBASE_HPP_
+#define SIMINT_GUARD_GENERATOR__WRITERBASE_HPP_
 
 #include <map>
 #include <set>

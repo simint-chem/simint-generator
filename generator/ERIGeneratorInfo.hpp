@@ -1,5 +1,5 @@
-#ifndef GENERATORINFO_HPP
-#define GENERATORINFO_HPP
+#ifndef SIMINT_GUARD_GENERATOR__ERIGENERATORINFO_HPP_
+#define SIMINT_GUARD_GENERATOR__ERIGENERATORINFO_HPP_
 
 #include <memory>
 #include "generator/Classes.hpp"

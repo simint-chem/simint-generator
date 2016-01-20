@@ -1,5 +1,5 @@
-#ifndef ET_ALGORITHMBASE_HPP
-#define ET_ALGORITHMBASE_HPP
+#ifndef SIMINT_GUARD_GENERATOR__ET_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_GENERATOR__ET_ALGORITHM_BASE_HPP_
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"

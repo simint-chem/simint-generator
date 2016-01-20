@@ -1,5 +1,5 @@
-#ifndef NAMING_HPP
-#define NAMING_HPP
+#ifndef SIMINT_GUARD_GENERATOR__NAMING_HPP_
+#define SIMINT_GUARD_GENERATOR__NAMING_HPP_
 
 #include <string>
 

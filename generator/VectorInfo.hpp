@@ -1,5 +1,5 @@
-#ifndef VECTORTYPES_HPP
-#define VECTORTYPES_HPP
+#ifndef SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
+#define SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
 
 #include "generator/StringBuilder.hpp"
 

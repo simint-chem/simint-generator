@@ -1,5 +1,5 @@
-#ifndef OPTIONS_HPP
-#define OPTIONS_HPP
+#ifndef SIMINT_GUARD_GENERATOR__OPTIONS_HPP_
+#define SIMINT_GUARD_GENERATOR__OPTIONS_HPP_
 
 #include <map>
 

@@ -1,5 +1,5 @@
-#ifndef ETWRITER_HPP
-#define ETWRITER_HPP
+#ifndef SIMINT_GUARD_GENERATOR__ET_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__ET_WRITER_HPP_
 
 #include <iostream>
 

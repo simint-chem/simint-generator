@@ -5,8 +5,8 @@
  */
 
 
-#ifndef BOYS_HPP
-#define BOYS_HPP
+#ifndef SIMINT_GUARD_GENERATOR__BOYS_HPP_
+#define SIMINT_GUARD_GENERATOR__BOYS_HPP_
 
 #include <vector>
 

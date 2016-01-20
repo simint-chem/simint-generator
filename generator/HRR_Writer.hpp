@@ -1,5 +1,5 @@
-#ifndef HRRWRITER_HPP
-#define HRRWRITER_HPP
+#ifndef SIMINT_GUARD_GENERATOR__HRR_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__HRR_WRITER_HPP_
 
 #include <iostream>
 

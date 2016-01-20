@@ -1,5 +1,5 @@
-#ifndef INDENT_HPP
-#define INDENT_HPP
+#ifndef SIMINT_GUARD_GENERATOR__PRINTING_HPP_
+#define SIMINT_GUARD_GENERATOR__PRINTING_HPP_
 
 #include "generator/Classes.hpp"
 

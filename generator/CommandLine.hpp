@@ -1,3 +1,6 @@
+#ifndef SIMINT_GUARD_GENERATOR__COMMANDLINE_HPP_
+#define SIMINT_GUARD_GENERATOR__COMMANDLINE_HPP_
+
 #include <vector>
 #include "generator/Options.hpp"
 
@@ -16,3 +19,4 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
 #define CMDLINE_ASSERT(val, desc) if( !(val) ) { std::cout << "\n" << (desc) << "\n\n"; return 1; }
 
 
+#endif

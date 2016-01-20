@@ -1,5 +1,5 @@
-#ifndef MAKOWSKI_HPP
-#define MAKOWSKI_HPP
+#ifndef SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
+#define SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
 
 #include <stdexcept>
 #include <algorithm>

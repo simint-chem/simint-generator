@@ -1,5 +1,5 @@
-#ifndef NCART_HPP
-#define NCART_HPP
+#ifndef SIMINT_GUARD_GENERATOR__NCART_HPP_
+#define SIMINT_GUARD_GENERATOR__NCART_HPP_
 
 #include <array>
 

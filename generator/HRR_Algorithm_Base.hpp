@@ -1,5 +1,5 @@
-#ifndef HRR_ALGORITHM_BASE_HPP
-#define HRR_ALGORITHM_BASE_HPP
+#ifndef SIMINT_GUARD_GENERATOR__HRR_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_GENERATOR__HRR_ALGORITHM_BASE_HPP_
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"

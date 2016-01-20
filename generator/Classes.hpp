@@ -1,5 +1,5 @@
-#ifndef GENERATOR_CLASSES_HPP
-#define GENERATOR_CLASSES_HPP
+#ifndef SIMINT_GUARD_GENERATOR__CLASSES_HPP_
+#define SIMINT_GUARD_GENERATOR__CLASSES_HPP_
 
 #include <array>
 #include <string>

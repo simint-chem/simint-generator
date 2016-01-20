@@ -1,5 +1,5 @@
-#ifndef VRRWRITER_HPP
-#define VRRWRITER_HPP
+#ifndef SIMINT_GUARD_GENERATOR__VRR_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__VRR_WRITER_HPP_
 
 #include <iostream>
 
