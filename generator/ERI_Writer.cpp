@@ -261,7 +261,7 @@ void ERI_Writer_Basic::WriteFile_Permute(void) const
         std::swap(tocall[2], tocall[3]);
     }
 
-    std::string funcline = StringBuilder("int eri_", "int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcline = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
     std::string indent(funcline.length(), ' ');
 
     // start output to the file
@@ -311,7 +311,10 @@ void ERI_Writer_Basic::WriteFile(void) const
     // is this a special permutation? Handle it if so.
     if( ( (am[0] == 0 && am[1] > 0)  && ( am[2] == 0 || am[3] == 0 ) ) ||
         ( (am[2] == 0 && am[3] > 0)  && ( am[0] == 0 || am[1] == 0 ) ) )
+    {
         WriteFile_Permute();
+        return;
+    }
 
 
 
