@@ -4,7 +4,7 @@
 #include <ostream>
 
 
-class BoysGen;
+class BoysGenerator;
 class VRR_Writer;
 class ET_Writer;
 class HRR_Writer;
@@ -17,7 +17,7 @@ class ERI_Writer
 public:
     ERI_Writer(std::ostream & os,
                const ERIGeneratorInfo & info,
-               const BoysGen & bg,
+               const BoysGenerator & bg,
                const VRR_Writer & vrr_writer,
                const ET_Writer & et_writer,
                const HRR_Writer & hrr_writer);
@@ -37,7 +37,7 @@ protected:
     std::ostream & os_;
     const ERIGeneratorInfo & info_;
     const VectorInfo & vinfo_;
-    const BoysGen & bg_;
+    const BoysGenerator & bg_;
     const VRR_Writer & vrr_writer_;
     const ET_Writer & et_writer_;
     const HRR_Writer & hrr_writer_;

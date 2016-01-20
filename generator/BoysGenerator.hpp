@@ -30,10 +30,10 @@ class VectorInfo;
 
 /*! \brief Base class for boys function generation
  */
-class BoysGen
+class BoysGenerator
 {
     public:
-        BoysGen(const ERIGeneratorInfo & info);
+        BoysGenerator(const ERIGeneratorInfo & info);
 
         virtual ConstantMap GetConstants(void) const;
         virtual IncludeSet GetIncludes(void) const = 0;
@@ -47,7 +47,7 @@ class BoysGen
 
 
 
-class BoysFO : public BoysGen
+class BoysFO : public BoysGenerator
 {
     public:
         BoysFO(const ERIGeneratorInfo & info, std::string dir); // read from directory
@@ -81,10 +81,10 @@ class BoysFO : public BoysGen
 };
 
 
-class BoysSplit : public BoysGen
+class BoysSplit : public BoysGenerator
 {
     public:
-        using BoysGen::BoysGen;
+        using BoysGenerator::BoysGenerator;
 
         virtual ConstantMap GetConstants(void) const;
         virtual IncludeSet GetIncludes(void) const;

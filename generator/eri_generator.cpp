@@ -7,7 +7,7 @@
 #include "generator/Algorithms.hpp"
 
 #include "generator/ERIGeneratorInfo.hpp"
-#include "generator/Boys.hpp"
+#include "generator/BoysGenerator.hpp"
 #include "generator/VRR_Writer.hpp"
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
@@ -89,12 +89,12 @@ int main(int argc, char ** argv)
     //////////////////////////////////////////////////////////////
 
     // Read in the boys map
-    std::unique_ptr<BoysGen> bg;
+    std::unique_ptr<BoysGenerator> bg;
 
     if(boystype == "FO")
-        bg = std::unique_ptr<BoysGen>(new BoysFO(info, datdir));
+        bg = std::unique_ptr<BoysGenerator>(new BoysFO(info, datdir));
     else if(boystype == "split")
-        bg = std::unique_ptr<BoysGen>(new BoysSplit(info));
+        bg = std::unique_ptr<BoysGenerator>(new BoysSplit(info));
     else
     {
         std::cout << "Unknown boys type \"" << boystype << "\"\n";

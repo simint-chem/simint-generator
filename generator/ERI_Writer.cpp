@@ -1,5 +1,5 @@
 #include "generator/ERI_Writer.hpp"
-#include "generator/Boys.hpp"
+#include "generator/BoysGenerator.hpp"
 #include "generator/VRR_Writer.hpp"
 #include "generator/ET_Writer.hpp"
 #include "generator/HRR_Writer.hpp"
@@ -14,7 +14,7 @@
 ///////////////////////////
 ERI_Writer::ERI_Writer(std::ostream & os,
                        const ERIGeneratorInfo & info,
-                       const BoysGen & bg,
+                       const BoysGenerator & bg,
                        const VRR_Writer & vrr_writer,
                        const ET_Writer & et_writer,
                        const HRR_Writer & hrr_writer)

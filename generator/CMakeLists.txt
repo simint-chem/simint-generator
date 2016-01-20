@@ -36,9 +36,9 @@ add_library(generator_common OBJECT
                          VRR_Writer.cpp
                          ET_Writer.cpp
                          HRR_Writer.cpp
-                         Boys.cpp
-                         Boys_FO.cpp
-                         Boys_split.cpp
+                         BoysGenerator.cpp
+                         BoysGenerator_FO.cpp
+                         BoysGenerator_split.cpp
                          ERI_Writer.cpp
            )
 

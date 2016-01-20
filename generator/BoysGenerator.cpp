@@ -1,16 +1,16 @@
-#include "generator/Boys.hpp"
+#include "generator/BoysGenerator.hpp"
 #include "generator/ERIGeneratorInfo.hpp"
 
 
 ////////////////
 // Base class
 ////////////////
-BoysGen::BoysGen(const ERIGeneratorInfo & info)
+BoysGenerator::BoysGenerator(const ERIGeneratorInfo & info)
     : info_(info), vinfo_(info.GetVectorInfo())
 { }
         
 
-ConstantMap BoysGen::GetConstants(void) const
+ConstantMap BoysGenerator::GetConstants(void) const
 {
     return ConstantMap();
 }

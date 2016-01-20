@@ -1,7 +1,7 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "generator/Boys.hpp"
+#include "generator/BoysGenerator.hpp"
 #include "generator/ERIGeneratorInfo.hpp"
 #include "generator/Naming.hpp"
 #include "generator/Printing.hpp"
@@ -218,7 +218,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
 
 BoysFO::BoysFO(const ERIGeneratorInfo & info, std::string dir)
-    : BoysGen(info)
+    : BoysGenerator(info)
 {
     if(dir.back() == '/')
         dir = dir.substr(0, dir.size()-1);
