@@ -43,8 +43,8 @@ void CreateHRR(QAM am,
 
         hrralgo->Create(am);
 
-        std::unique_ptr<HRR_Writer> hrr_writer(new HRR_Writer_External(*hrralgo));
-        hrr_writer->WriteHRRFile(ofb, ofk, ofh, info);
+        std::unique_ptr<HRR_Writer> hrr_writer(new HRR_Writer_External(*hrralgo, info));
+        hrr_writer->WriteHRRFile(ofb, ofk, ofh);
 }
 
 

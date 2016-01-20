@@ -30,8 +30,8 @@ void CreateVRR(QAM am, const std::string & path, const std::string & cpuflags,
     vrralgo->Create(am);
 
     // create the writer and write it
-    std::unique_ptr<VRR_Writer> vrr_writer(new VRR_Writer_External(*vrralgo));
-    vrr_writer->WriteVRRFile(of, ofh, info);
+    std::unique_ptr<VRR_Writer> vrr_writer(new VRR_Writer_External(*vrralgo, info));
+    vrr_writer->WriteVRRFile(of, ofh);
 }
 
 

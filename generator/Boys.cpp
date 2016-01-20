@@ -8,3 +8,9 @@
 BoysGen::BoysGen(const ERIGeneratorInfo & info)
     : info_(info), vinfo_(info.GetVectorInfo())
 { }
+        
+
+ConstantMap BoysGen::GetConstants(void) const
+{
+    return ConstantMap();
+}

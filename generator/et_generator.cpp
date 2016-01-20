@@ -97,8 +97,8 @@ int main(int argc, char ** argv)
         std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
         etalgo->Create(am, DoubletType::KET);
 
-        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo));
-        et_writer->WriteETFile(of, ofh, info);
+        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo, info));
+        et_writer->WriteETFile(of, ofh);
     }
 
 
@@ -121,8 +121,8 @@ int main(int argc, char ** argv)
         std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
         etalgo->Create(am, DoubletType::BRA);
 
-        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo));
-        et_writer->WriteETFile(of, ofh, info);
+        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo, info));
+        et_writer->WriteETFile(of, ofh);
     }
 
 
