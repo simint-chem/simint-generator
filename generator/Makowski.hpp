@@ -15,11 +15,11 @@
 #include "generator/ERI_ET_Algorithm_Base.hpp" 
 #include "generator/ERI_HRR_Algorithm_Base.hpp" 
 
-class Makowski_HRR : public HRR_Algorithm_Base
+class Makowski_HRR : public ERI_HRR_Algorithm_Base
 {
     public:
         Makowski_HRR(const OptionMap & options)
-            : HRR_Algorithm_Base(options)
+            : ERI_HRR_Algorithm_Base(options)
         { }
 
 
@@ -83,11 +83,11 @@ class Makowski_HRR : public HRR_Algorithm_Base
 
 
 
-class Makowski_VRR : public VRR_Algorithm_Base
+class Makowski_VRR : public ERI_VRR_Algorithm_Base
 {
     public:
         Makowski_VRR(const OptionMap & options)
-            : VRR_Algorithm_Base(options)
+            : ERI_VRR_Algorithm_Base(options)
         { }
 
 
@@ -257,11 +257,11 @@ class Makowski_VRR : public VRR_Algorithm_Base
 
 
 
-class Makowski_ET : public ET_Algorithm_Base
+class Makowski_ET : public ERI_ET_Algorithm_Base
 {
     public:
         Makowski_ET(const OptionMap & options)
-            : ET_Algorithm_Base(options)
+            : ERI_ET_Algorithm_Base(options)
         { }
 
 

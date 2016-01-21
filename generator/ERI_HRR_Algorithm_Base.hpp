@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__HRR_ALGORITHM_BASE_HPP_
-#define SIMINT_GUARD_GENERATOR__HRR_ALGORITHM_BASE_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_HRR_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_HRR_ALGORITHM_BASE_HPP_
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
@@ -9,10 +9,10 @@ typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
 typedef std::map<DAM, HRRDoubletStepList> HRR_StepMap;
 typedef std::map<DAM, DAMSet> HRR_AMReqMap;
 
-class HRR_Algorithm_Base
+class ERI_HRR_Algorithm_Base
 {
     public:
-        HRR_Algorithm_Base(const OptionMap & options);
+        ERI_HRR_Algorithm_Base(const OptionMap & options);
 
         void Create(QAM am);
         
@@ -37,7 +37,7 @@ class HRR_Algorithm_Base
         bool HasKetHRR(void) const;
 
 
-        virtual ~HRR_Algorithm_Base() = default;
+        virtual ~ERI_HRR_Algorithm_Base() = default;
 
     protected:
        int GetOption(Option opt) const; 

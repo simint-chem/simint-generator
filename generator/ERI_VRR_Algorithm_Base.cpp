@@ -10,44 +10,44 @@
 #include "generator/ERI_VRR_Algorithm_Base.hpp"
 
 
-VRR_Algorithm_Base::VRR_Algorithm_Base(const OptionMap & options)
+ERI_VRR_Algorithm_Base::ERI_VRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
-int VRR_Algorithm_Base::GetOption(Option opt) const
+int ERI_VRR_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }
 
-QAMList VRR_Algorithm_Base::GetAMOrder(void) const
+QAMList ERI_VRR_Algorithm_Base::GetAMOrder(void) const
 {
     return amorder_; 
 }
 
-QAMSet VRR_Algorithm_Base::GetAllAM(void) const
+QAMSet ERI_VRR_Algorithm_Base::GetAllAM(void) const
 {
     return allam_;
 }
 
-int VRR_Algorithm_Base::GetMReq(QAM am) const
+int ERI_VRR_Algorithm_Base::GetMReq(QAM am) const
 {
     return vrrmreq_max_.at(am);
 }
 
-VRR_StepSet VRR_Algorithm_Base::GetSteps(QAM am) const
+VRR_StepSet ERI_VRR_Algorithm_Base::GetSteps(QAM am) const
 {
     return vrrmap_.at(am);
 }
 
 
-QAMSet VRR_Algorithm_Base::GetAMReq(QAM am) const
+QAMSet ERI_VRR_Algorithm_Base::GetAMReq(QAM am) const
 {
     return qamreq_.at(am);
 }
 
 
-IntSet VRR_Algorithm_Base::GetIntReq_2p(QAM am) const
+IntSet ERI_VRR_Algorithm_Base::GetIntReq_2p(QAM am) const
 {
     if(qamint_2p_.count(am) == 0)
         return IntSet();
@@ -56,7 +56,7 @@ IntSet VRR_Algorithm_Base::GetIntReq_2p(QAM am) const
 }
 
 
-IntSet VRR_Algorithm_Base::GetIntReq_2q(QAM am) const
+IntSet ERI_VRR_Algorithm_Base::GetIntReq_2q(QAM am) const
 {
     if(qamint_2q_.count(am) == 0)
         return IntSet();
@@ -65,7 +65,7 @@ IntSet VRR_Algorithm_Base::GetIntReq_2q(QAM am) const
 }
 
 
-IntSet VRR_Algorithm_Base::GetIntReq_2pq(QAM am) const
+IntSet ERI_VRR_Algorithm_Base::GetIntReq_2pq(QAM am) const
 {
     if(qamint_2pq_.count(am) == 0)
         return IntSet();
@@ -73,7 +73,7 @@ IntSet VRR_Algorithm_Base::GetIntReq_2pq(QAM am) const
         return qamint_2pq_.at(am);
 }
 
-IntSet VRR_Algorithm_Base::GetAllInt_2p(void) const
+IntSet ERI_VRR_Algorithm_Base::GetAllInt_2p(void) const
 {
     IntSet iset;
     for(const auto & it : qamint_2p_)
@@ -81,7 +81,7 @@ IntSet VRR_Algorithm_Base::GetAllInt_2p(void) const
     return iset;
 }
 
-IntSet VRR_Algorithm_Base::GetAllInt_2q(void) const
+IntSet ERI_VRR_Algorithm_Base::GetAllInt_2q(void) const
 {
     IntSet iset;
     for(const auto & it : qamint_2q_)
@@ -89,7 +89,7 @@ IntSet VRR_Algorithm_Base::GetAllInt_2q(void) const
     return iset;
 }
 
-IntSet VRR_Algorithm_Base::GetAllInt_2pq(void) const
+IntSet ERI_VRR_Algorithm_Base::GetAllInt_2pq(void) const
 {
     IntSet iset;
     for(const auto & it : qamint_2pq_)
@@ -98,13 +98,13 @@ IntSet VRR_Algorithm_Base::GetAllInt_2pq(void) const
 }
 
 
-StringSet VRR_Algorithm_Base::GetVarReq(QAM am) const
+StringSet ERI_VRR_Algorithm_Base::GetVarReq(QAM am) const
 {
     return varreq_.at(am);
 }
 
 
-StringSet VRR_Algorithm_Base::GetAllVarReq(void) const
+StringSet ERI_VRR_Algorithm_Base::GetAllVarReq(void) const
 {
     StringSet sset;
     for(const auto & it : varreq_)
@@ -114,14 +114,14 @@ StringSet VRR_Algorithm_Base::GetAllVarReq(void) const
 
 
 
-int VRR_Algorithm_Base::GetMaxInt(void) const
+int ERI_VRR_Algorithm_Base::GetMaxInt(void) const
 {
     return maxint_;
 }
 
 
 
-void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
+void ERI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
 {
     QuartetSet qnew;
  
@@ -135,12 +135,12 @@ void VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
 }
 
 
-bool VRR_Algorithm_Base::HasVRR(void) const
+bool ERI_VRR_Algorithm_Base::HasVRR(void) const
 {
     return HasBraVRR() || HasKetVRR();
 }
 
-bool VRR_Algorithm_Base::HasVRROfType(RRStepType steptype) const
+bool ERI_VRR_Algorithm_Base::HasVRROfType(RRStepType steptype) const
 {
     for(const auto & it : vrrmap_)
     {
@@ -154,38 +154,38 @@ bool VRR_Algorithm_Base::HasVRROfType(RRStepType steptype) const
     return false;
 }
 
-bool VRR_Algorithm_Base::HasBraVRR(void) const
+bool ERI_VRR_Algorithm_Base::HasBraVRR(void) const
 {
     return HasVRROfType(RRStepType::I) || HasVRROfType(RRStepType::J);
 }
 
-bool VRR_Algorithm_Base::HasKetVRR(void) const
+bool ERI_VRR_Algorithm_Base::HasKetVRR(void) const
 {
     return HasVRROfType(RRStepType::K) || HasVRROfType(RRStepType::L);
 }
 
-bool VRR_Algorithm_Base::HasVRR_I(void) const
+bool ERI_VRR_Algorithm_Base::HasVRR_I(void) const
 {
     return HasVRROfType(RRStepType::I);
 }
 
-bool VRR_Algorithm_Base::HasVRR_J(void) const
+bool ERI_VRR_Algorithm_Base::HasVRR_J(void) const
 {
     return HasVRROfType(RRStepType::J);
 }
 
-bool VRR_Algorithm_Base::HasVRR_K(void) const
+bool ERI_VRR_Algorithm_Base::HasVRR_K(void) const
 {
     return HasVRROfType(RRStepType::K);
 }
 
-bool VRR_Algorithm_Base::HasVRR_L(void) const
+bool ERI_VRR_Algorithm_Base::HasVRR_L(void) const
 {
     return HasVRROfType(RRStepType::L);
 }
 
 
-void VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
+void ERI_VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
 {
     // skip if it was already done somewhere
     if(std::find(order.begin(), order.end(), am) != order.end())
@@ -205,14 +205,14 @@ void VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) c
 }
 
 
-void VRR_Algorithm_Base::Create(QAM q)
+void ERI_VRR_Algorithm_Base::Create(QAM q)
 {
     Create(GenerateInitialQuartetTargets(q));
 }
 
 
 
-void VRR_Algorithm_Base::Create(const QuartetSet & q)
+void ERI_VRR_Algorithm_Base::Create(const QuartetSet & q)
 {
     // holds the requirements for each am
     // so store what we initially want

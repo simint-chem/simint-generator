@@ -7,34 +7,34 @@
 ////////////////////////
 // Base HRR Writer
 ////////////////////////
-HRR_Writer::HRR_Writer(const HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info) 
+ERI_HRR_Writer::ERI_HRR_Writer(const ERI_HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info) 
     : hrr_algo_(hrr_algo), info_(info), vinfo_(info.GetVectorInfo())
 { }
 
 
-bool HRR_Writer::HasHRR(void) const
+bool ERI_HRR_Writer::HasHRR(void) const
 {
     return hrr_algo_.HasHRR();
 }
 
-bool HRR_Writer::HasBraHRR(void) const
+bool ERI_HRR_Writer::HasBraHRR(void) const
 {
     return hrr_algo_.HasBraHRR();
 }
 
-bool HRR_Writer::HasKetHRR(void) const
+bool ERI_HRR_Writer::HasKetHRR(void) const
 {
     return hrr_algo_.HasKetHRR();
 }
 
-ConstantMap HRR_Writer::GetConstants(void) const
+ConstantMap ERI_HRR_Writer::GetConstants(void) const
 {
     // by default, return empty
     return ConstantMap();
 }
 
 
-void HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+void ERI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                                 const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
@@ -66,7 +66,7 @@ void HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & st
 }
 
 
-void HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+void ERI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                                 const std::string & ncart_bra, const std::string & brastr) const
 {
         os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
@@ -97,7 +97,7 @@ void HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & st
 }
 
 
-std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
+std::string ERI_HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
                                        const std::string & ketstr) const
 {
     std::string arrname = ArrVarName(d.left.am(), d.right.am(), ketstr);
@@ -105,7 +105,7 @@ std::string HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & nc
 }
 
 
-std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & brastr) const
+std::string ERI_HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & brastr) const
 {
     std::string arrname = ArrVarName(brastr, d.left.am(), d.right.am());
     return StringBuilder("HRR_", arrname, "[ibra * ", d.ncart(), " + ", d.idx(), "]"); 
@@ -116,7 +116,7 @@ std::string HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & br
 // Inline HRR Writer
 ////////////////////////
 
-void HRR_Writer_Inline::WriteHRR(std::ostream & os) const
+void ERI_HRR_Writer_Inline::WriteHRR(std::ostream & os) const
 {
     QAM finalam = info_.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
@@ -212,7 +212,7 @@ void HRR_Writer_Inline::WriteHRR(std::ostream & os) const
 }
 
 
-void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const
+void ERI_HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const
 {
     
 }
@@ -221,7 +221,7 @@ void HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std
 // External HRR Writer
 ////////////////////////
 
-void HRR_Writer_External::WriteHRR(std::ostream & os) const
+void ERI_HRR_Writer_External::WriteHRR(std::ostream & os) const
 {
     QAM finalam = info_.FinalAM();
     DAM finalbra{finalam[0], finalam[1]};
@@ -333,7 +333,7 @@ void HRR_Writer_External::WriteHRR(std::ostream & os) const
 }
 
 
-void HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
+void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
                                        std::ostream & ofk, std::ostream & ofh) const
 {
     QAM finalam = info_.FinalAM();

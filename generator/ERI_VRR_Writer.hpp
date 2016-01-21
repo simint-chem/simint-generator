@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__VRR_WRITER_HPP_
-#define SIMINT_GUARD_GENERATOR__VRR_WRITER_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_VRR_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_VRR_WRITER_HPP_
 
 #include <iostream>
 
@@ -12,10 +12,10 @@ class ERIGeneratorInfo;
 
 
 
-class VRR_Writer : public WriterBase
+class ERI_VRR_Writer : public WriterBase
 {   
     public:
-        VRR_Writer(const VRR_Algorithm_Base & vrr_algo, const ERIGeneratorInfo & info);
+        ERI_VRR_Writer(const ERI_VRR_Algorithm_Base & vrr_algo, const ERIGeneratorInfo & info);
 
         bool HasVRR(void) const;
         bool HasBraVRR(void) const;
@@ -34,7 +34,7 @@ class VRR_Writer : public WriterBase
         virtual void WriteVRRFile(std::ostream & os, std::ostream & osh) const = 0;
 
     protected:
-        const VRR_Algorithm_Base & vrr_algo_;
+        const ERI_VRR_Algorithm_Base & vrr_algo_;
         const ERIGeneratorInfo & info_;
         const VectorInfo & vinfo_;
 
@@ -43,10 +43,10 @@ class VRR_Writer : public WriterBase
 
 
 
-class VRR_Writer_Inline : public VRR_Writer
+class ERI_VRR_Writer_Inline : public ERI_VRR_Writer
 {
     public:
-        using VRR_Writer::VRR_Writer;
+        using ERI_VRR_Writer::ERI_VRR_Writer;
 
         bool IsInline(void) const { return true; }
         bool IsExternal(void) const { return false; }
@@ -57,10 +57,10 @@ class VRR_Writer_Inline : public VRR_Writer
 };
 
 
-class VRR_Writer_External : public VRR_Writer
+class ERI_VRR_Writer_External : public ERI_VRR_Writer
 {
     public:
-        using VRR_Writer::VRR_Writer;
+        using ERI_VRR_Writer::ERI_VRR_Writer;
 
         bool IsInline(void) const { return false; }
         bool IsExternal(void) const { return true; }

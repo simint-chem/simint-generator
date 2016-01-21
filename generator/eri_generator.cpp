@@ -102,22 +102,22 @@ int main(int argc, char ** argv)
     }
 
     // algorithms used
-    std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-    std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+    std::unique_ptr<ERI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+    std::unique_ptr<ERI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
     // Writers
-    std::unique_ptr<HRR_Writer> hrr_writer;
-    std::unique_ptr<VRR_Writer> vrr_writer;
-    std::unique_ptr<ET_Writer> et_writer;
+    std::unique_ptr<ERI_HRR_Writer> hrr_writer;
+    std::unique_ptr<ERI_VRR_Writer> vrr_writer;
+    std::unique_ptr<ERI_ET_Writer> et_writer;
 
     // Working backwards, I need:
     // 1.) HRR Steps
     hrralgo->Create(finalam);
     if(options[Option::InlineHRR])
-        hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_Inline(*hrralgo, info));
+        hrr_writer = std::unique_ptr<ERI_HRR_Writer>(new ERI_HRR_Writer_Inline(*hrralgo, info));
     else
-        hrr_writer = std::unique_ptr<HRR_Writer>(new HRR_Writer_External(*hrralgo, info));
+        hrr_writer = std::unique_ptr<ERI_HRR_Writer>(new ERI_HRR_Writer_External(*hrralgo, info));
 
 
     // 2.) ET steps
@@ -130,18 +130,18 @@ int main(int argc, char ** argv)
     etalgo->Create(hrralgo->TopQuartets(), etdirection);
 
     if(options[Option::InlineET])
-        et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_Inline(*etalgo, info));
+        et_writer = std::unique_ptr<ERI_ET_Writer>(new ERI_ET_Writer_Inline(*etalgo, info));
     else
-        et_writer = std::unique_ptr<ET_Writer>(new ET_Writer_External(*etalgo, info));
+        et_writer = std::unique_ptr<ERI_ET_Writer>(new ERI_ET_Writer_External(*etalgo, info));
 
     // 3.) VRR Steps
     // requirements for vrr are the top level stuff from ET
     vrralgo->Create(etalgo->TopQuartets());
 
     if(options[Option::InlineVRR])
-        vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_Inline(*vrralgo, info));
+        vrr_writer = std::unique_ptr<ERI_VRR_Writer>(new ERI_VRR_Writer_Inline(*vrralgo, info));
     else
-        vrr_writer = std::unique_ptr<VRR_Writer>(new VRR_Writer_External(*vrralgo, info));
+        vrr_writer = std::unique_ptr<ERI_VRR_Writer>(new ERI_VRR_Writer_External(*vrralgo, info));
 
 
     // set the contracted quartets

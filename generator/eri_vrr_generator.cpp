@@ -26,11 +26,11 @@ void CreateVRR(QAM am, const std::string & path, const std::string & cpuflags,
     of << "#include \"eri/eri.h\"\n";
 
     // create the algorithm
-    std::unique_ptr<VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    std::unique_ptr<ERI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
     vrralgo->Create(am);
 
     // create the writer and write it
-    std::unique_ptr<VRR_Writer> vrr_writer(new VRR_Writer_External(*vrralgo, info));
+    std::unique_ptr<ERI_VRR_Writer> vrr_writer(new ERI_VRR_Writer_External(*vrralgo, info));
     vrr_writer->WriteVRRFile(of, ofh);
 }
 

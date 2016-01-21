@@ -5,9 +5,9 @@
 
 
 class BoysGenerator;
-class VRR_Writer;
-class ET_Writer;
-class HRR_Writer;
+class ERI_VRR_Writer;
+class ERI_ET_Writer;
+class ERI_HRR_Writer;
 class ERIGeneratorInfo;
 class VectorInfo;
 
@@ -18,9 +18,9 @@ public:
     ERI_Writer(std::ostream & os,
                const ERIGeneratorInfo & info,
                const BoysGenerator & bg,
-               const VRR_Writer & vrr_writer,
-               const ET_Writer & et_writer,
-               const HRR_Writer & hrr_writer);
+               const ERI_VRR_Writer & vrr_writer,
+               const ERI_ET_Writer & et_writer,
+               const ERI_HRR_Writer & hrr_writer);
 
 
     ERI_Writer(const ERI_Writer &) = default;
@@ -38,9 +38,9 @@ protected:
     const ERIGeneratorInfo & info_;
     const VectorInfo & vinfo_;
     const BoysGenerator & bg_;
-    const VRR_Writer & vrr_writer_;
-    const ET_Writer & et_writer_;
-    const HRR_Writer & hrr_writer_;
+    const ERI_VRR_Writer & vrr_writer_;
+    const ERI_ET_Writer & et_writer_;
+    const ERI_HRR_Writer & hrr_writer_;
 
 };
 

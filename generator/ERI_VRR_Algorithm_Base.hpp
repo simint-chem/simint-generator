@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__VRR_ALGORITHM_BASE_HPP_
-#define SIMINT_GUARD_GENERATOR__VRR_ALGORITHM_BASE_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_VRR_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_VRR_ALGORITHM_BASE_HPP_
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
@@ -21,10 +21,10 @@ typedef std::map<QAM, IntSet> VRR_IntReqMap;
 // Maps factors/variables (as strings) for a target AM
 typedef std::map<QAM, StringSet> VRR_VarReqMap;
 
-class VRR_Algorithm_Base
+class ERI_VRR_Algorithm_Base
 {
     public:
-        VRR_Algorithm_Base(const OptionMap & options);
+        ERI_VRR_Algorithm_Base(const OptionMap & options);
 
         void Create(const QuartetSet & q);
         void Create(QAM q);
@@ -60,7 +60,7 @@ class VRR_Algorithm_Base
 
         int GetMaxInt(void) const;
 
-        virtual ~VRR_Algorithm_Base() = default; 
+        virtual ~ERI_VRR_Algorithm_Base() = default; 
 
     protected:
        int GetOption(Option opt) const;

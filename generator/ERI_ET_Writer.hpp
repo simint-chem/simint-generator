@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__ET_WRITER_HPP_
-#define SIMINT_GUARD_GENERATOR__ET_WRITER_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_ET_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_ET_WRITER_HPP_
 
 #include <iostream>
 
@@ -12,10 +12,10 @@ class ERIGeneratorInfo;
 
 
 
-class ET_Writer : public WriterBase
+class ERI_ET_Writer : public WriterBase
 {   
     public:
-        ET_Writer(const ET_Algorithm_Base & et_algo, const ERIGeneratorInfo & info); 
+        ERI_ET_Writer(const ERI_ET_Algorithm_Base & et_algo, const ERIGeneratorInfo & info); 
 
         bool HasET(void) const;
         bool HasBraET(void) const;
@@ -30,7 +30,7 @@ class ET_Writer : public WriterBase
 
 
     protected:
-        const ET_Algorithm_Base & et_algo_;
+        const ERI_ET_Algorithm_Base & et_algo_;
         const ERIGeneratorInfo & info_;
         const VectorInfo & vinfo_;
 
@@ -41,10 +41,10 @@ class ET_Writer : public WriterBase
 
 
 
-class ET_Writer_Inline : public ET_Writer
+class ERI_ET_Writer_Inline : public ERI_ET_Writer
 {
     public:
-        using ET_Writer::ET_Writer;
+        using ERI_ET_Writer::ERI_ET_Writer;
 
         bool IsInline(void) const { return true; }
         bool IsExternal(void) const { return false; }
@@ -55,10 +55,10 @@ class ET_Writer_Inline : public ET_Writer
 };
 
 
-class ET_Writer_External : public ET_Writer
+class ERI_ET_Writer_External : public ERI_ET_Writer
 {
     public:
-        using ET_Writer::ET_Writer;
+        using ERI_ET_Writer::ERI_ET_Writer;
 
         bool IsInline(void) const { return false; }
         bool IsExternal(void) const { return true; }

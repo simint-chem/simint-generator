@@ -11,17 +11,17 @@
 #include "generator/ERI_HRR_Algorithm_Base.hpp"
 
 
-HRR_Algorithm_Base::HRR_Algorithm_Base(const OptionMap & options)
+ERI_HRR_Algorithm_Base::ERI_HRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
-int HRR_Algorithm_Base::GetOption(Option opt) const
+int ERI_HRR_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }
 
-void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRStepType steptype)
+void ERI_HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRStepType steptype)
 {
     DoubletSet dnew;
 
@@ -46,7 +46,7 @@ void HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRS
     d = dnew; 
 }
 
-void HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type) const
+void ERI_HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type) const
 {
     // skip if already done
     if(std::find(order.begin(), order.end(), am) != order.end())
@@ -79,7 +79,7 @@ void HRR_Algorithm_Base::AMOrder_AddWithDependencies_(DAMList & order, DAM am, D
 
 
 
-void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
+void ERI_HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
                                          const DoubletSet & inittargets,
                                          DoubletSet & solveddoublets,
                                          DoubletSet & pruned,
@@ -124,7 +124,7 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
 
 
 
-void HRR_Algorithm_Base::Create(QAM am)
+void ERI_HRR_Algorithm_Base::Create(QAM am)
 {
     finalam_ = am;
 
@@ -247,27 +247,27 @@ void HRR_Algorithm_Base::Create(QAM am)
 }
 
 
-DAMSet HRR_Algorithm_Base::TopBraAM(void) const
+DAMSet ERI_HRR_Algorithm_Base::TopBraAM(void) const
 {
     return bratopam_;
 }
 
-DAMSet HRR_Algorithm_Base::TopKetAM(void) const
+DAMSet ERI_HRR_Algorithm_Base::TopKetAM(void) const
 {
     return kettopam_;
 }
 
-DoubletSet HRR_Algorithm_Base::TopBraDoublets(void) const
+DoubletSet ERI_HRR_Algorithm_Base::TopBraDoublets(void) const
 {
     return bratop_;
 }
 
-DoubletSet HRR_Algorithm_Base::TopKetDoublets(void) const
+DoubletSet ERI_HRR_Algorithm_Base::TopKetDoublets(void) const
 {
     return kettop_;
 }
 
-QAMSet HRR_Algorithm_Base::TopAM(void) const
+QAMSet ERI_HRR_Algorithm_Base::TopAM(void) const
 {
     QAMSet qs;
     for(const auto & it1 : TopBraAM())
@@ -276,54 +276,54 @@ QAMSet HRR_Algorithm_Base::TopAM(void) const
     return qs;
 }
 
-QuartetSet HRR_Algorithm_Base::TopQuartets(void) const
+QuartetSet ERI_HRR_Algorithm_Base::TopQuartets(void) const
 {
     return topquartets_;
 }
 
-DAMSet HRR_Algorithm_Base::GetBraAMReq(DAM am) const
+DAMSet ERI_HRR_Algorithm_Base::GetBraAMReq(DAM am) const
 {
     return brareq_.at(am);
 }
 
-DAMSet HRR_Algorithm_Base::GetKetAMReq(DAM am) const
+DAMSet ERI_HRR_Algorithm_Base::GetKetAMReq(DAM am) const
 {
     return ketreq_.at(am);
 }
 
 
-HRRDoubletStepList HRR_Algorithm_Base::GetBraSteps(DAM am) const
+HRRDoubletStepList ERI_HRR_Algorithm_Base::GetBraSteps(DAM am) const
 {
     return brasteps_.at(am);
 }
 
-HRRDoubletStepList HRR_Algorithm_Base::GetKetSteps(DAM am) const
+HRRDoubletStepList ERI_HRR_Algorithm_Base::GetKetSteps(DAM am) const
 {
     return ketsteps_.at(am);
 }
 
 
-DAMList HRR_Algorithm_Base::GetBraAMOrder(void) const
+DAMList ERI_HRR_Algorithm_Base::GetBraAMOrder(void) const
 {
     return braamorder_;
 }
 
-DAMList HRR_Algorithm_Base::GetKetAMOrder(void) const
+DAMList ERI_HRR_Algorithm_Base::GetKetAMOrder(void) const
 {
     return ketamorder_;
 }
 
-bool HRR_Algorithm_Base::HasHRR(void) const
+bool ERI_HRR_Algorithm_Base::HasHRR(void) const
 {
     return HasBraHRR() || HasKetHRR();
 }
 
-bool HRR_Algorithm_Base::HasBraHRR(void) const
+bool ERI_HRR_Algorithm_Base::HasBraHRR(void) const
 {
     return brasteps_.size();
 }
 
-bool HRR_Algorithm_Base::HasKetHRR(void) const
+bool ERI_HRR_Algorithm_Base::HasKetHRR(void) const
 {
     return ketsteps_.size();
 }

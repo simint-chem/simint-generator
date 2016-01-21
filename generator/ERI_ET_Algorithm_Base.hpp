@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__ET_ALGORITHM_BASE_HPP_
-#define SIMINT_GUARD_GENERATOR__ET_ALGORITHM_BASE_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_ET_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_ET_ALGORITHM_BASE_HPP_
 
 #include "generator/Classes.hpp"
 #include "generator/Options.hpp"
@@ -15,10 +15,10 @@ typedef std::map<QAM, QAMSet> ET_AMReqMap;
 typedef std::map<QAM, IntSet> ET_IntReqMap;
 
 
-class ET_Algorithm_Base
+class ERI_ET_Algorithm_Base
 {
     public:
-        ET_Algorithm_Base(const OptionMap & options);
+        ERI_ET_Algorithm_Base(const OptionMap & options);
 
         void Create(const QuartetSet & inittargets, DoubletType direction);
         void Create(QAM am, DoubletType direction);
@@ -42,7 +42,7 @@ class ET_Algorithm_Base
         bool HasBraET(void) const;
         bool HasKetET(void) const;
 
-        virtual ~ET_Algorithm_Base() = default;
+        virtual ~ERI_ET_Algorithm_Base() = default;
 
     protected:
        int GetOption(Option opt) const; 

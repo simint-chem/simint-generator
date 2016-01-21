@@ -94,10 +94,10 @@ int main(int argc, char ** argv)
 
         of << "#include \"eri/eri.h\"\n";
 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+        std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
         etalgo->Create(am, DoubletType::KET);
 
-        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo, info));
+        std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
         et_writer->WriteETFile(of, ofh);
     }
 
@@ -118,10 +118,10 @@ int main(int argc, char ** argv)
 
         of << "#include \"eri/eri.h\"\n";
 
-        std::unique_ptr<ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+        std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
         etalgo->Create(am, DoubletType::BRA);
 
-        std::unique_ptr<ET_Writer> et_writer(new ET_Writer_External(*etalgo, info));
+        std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
         et_writer->WriteETFile(of, ofh);
     }
 

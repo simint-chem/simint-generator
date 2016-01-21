@@ -1,5 +1,5 @@
-#ifndef SIMINT_GUARD_GENERATOR__HRR_WRITER_HPP_
-#define SIMINT_GUARD_GENERATOR__HRR_WRITER_HPP_
+#ifndef SIMINT_GUARD_GENERATOR__ERI_HRR_WRITER_HPP_
+#define SIMINT_GUARD_GENERATOR__ERI_HRR_WRITER_HPP_
 
 #include <iostream>
 
@@ -12,10 +12,10 @@ class ERIGeneratorInfo;
 
 
 
-class HRR_Writer : public WriterBase
+class ERI_HRR_Writer : public WriterBase
 {   
     public:
-        HRR_Writer(const HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info);
+        ERI_HRR_Writer(const ERI_HRR_Algorithm_Base & hrr_algo, const ERIGeneratorInfo & info);
 
         bool HasHRR(void) const;
         bool HasBraHRR(void) const;
@@ -28,7 +28,7 @@ class HRR_Writer : public WriterBase
 
 
     protected:
-        const HRR_Algorithm_Base & hrr_algo_; 
+        const ERI_HRR_Algorithm_Base & hrr_algo_; 
         const ERIGeneratorInfo & info_;
         const VectorInfo & vinfo_;
 
@@ -43,10 +43,10 @@ class HRR_Writer : public WriterBase
 
 
 
-class HRR_Writer_Inline : public HRR_Writer
+class ERI_HRR_Writer_Inline : public ERI_HRR_Writer
 {
     public:
-        using HRR_Writer::HRR_Writer;
+        using ERI_HRR_Writer::ERI_HRR_Writer;
 
         bool IsInline(void) const { return true; }
         bool IsExternal(void) const { return false; }
@@ -57,10 +57,10 @@ class HRR_Writer_Inline : public HRR_Writer
 };
 
 
-class HRR_Writer_External : public HRR_Writer
+class ERI_HRR_Writer_External : public ERI_HRR_Writer
 {
     public:
-        using HRR_Writer::HRR_Writer;
+        using ERI_HRR_Writer::ERI_HRR_Writer;
 
         bool IsInline(void) const { return false; }
         bool IsExternal(void) const { return true; }

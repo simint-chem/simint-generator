@@ -7,53 +7,53 @@
 ///////////////////////////////
 // Base VRR Writer
 ///////////////////////////////
-VRR_Writer::VRR_Writer(const VRR_Algorithm_Base & vrr_algo, const ERIGeneratorInfo & info)
+ERI_VRR_Writer::ERI_VRR_Writer(const ERI_VRR_Algorithm_Base & vrr_algo, const ERIGeneratorInfo & info)
     : vrr_algo_(vrr_algo), info_(info), vinfo_(info_.GetVectorInfo())
 { 
 }
 
-bool VRR_Writer::HasVRR(void) const
+bool ERI_VRR_Writer::HasVRR(void) const
 {
     return vrr_algo_.HasVRR();
 }
 
-bool VRR_Writer::HasBraVRR(void) const
+bool ERI_VRR_Writer::HasBraVRR(void) const
 {
     return vrr_algo_.HasBraVRR();
 }
 
-bool VRR_Writer::HasKetVRR(void) const
+bool ERI_VRR_Writer::HasKetVRR(void) const
 {
     return vrr_algo_.HasKetVRR();
 }
 
-bool VRR_Writer::HasVRR_I(void) const
+bool ERI_VRR_Writer::HasVRR_I(void) const
 {
     return vrr_algo_.HasVRR_I();
 }
 
-bool VRR_Writer::HasVRR_J(void) const
+bool ERI_VRR_Writer::HasVRR_J(void) const
 {
     return vrr_algo_.HasVRR_J();
 }
 
-bool VRR_Writer::HasVRR_K(void) const
+bool ERI_VRR_Writer::HasVRR_K(void) const
 {
     return vrr_algo_.HasVRR_K();
 }
 
-bool VRR_Writer::HasVRR_L(void) const
+bool ERI_VRR_Writer::HasVRR_L(void) const
 {
     return vrr_algo_.HasVRR_L();
 }
 
-ConstantMap VRR_Writer::GetConstants(void) const
+ConstantMap ERI_VRR_Writer::GetConstants(void) const
 {
     // by default, return empty
     return ConstantMap();
 }
 
-void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
+void ERI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
     os << indent5 << "// with m as the slowest index\n";
@@ -71,7 +71,7 @@ void VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     os << "\n\n";
 }
 
-void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
+void ERI_VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
     for(const auto & qam : vrr_algo_.GetAllAM()) 
     {
@@ -83,7 +83,7 @@ void VRR_Writer::DeclarePrimPointers(std::ostream & os) const
     os << "\n\n";
 }
 
-void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
+void ERI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
     os << indent5 << "// Forming " << PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
@@ -233,7 +233,7 @@ void VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & 
 ///////////////////////////////////////
 // Inline VRR Writer
 ///////////////////////////////////////
-ConstantMap VRR_Writer_Inline::GetConstants(void) const
+ConstantMap ERI_VRR_Writer_Inline::GetConstants(void) const
 {
     ConstantMap cm;
     for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
@@ -242,7 +242,7 @@ ConstantMap VRR_Writer_Inline::GetConstants(void) const
 }
 
 
-void VRR_Writer_Inline::WriteVRR(std::ostream & os) const
+void ERI_VRR_Writer_Inline::WriteVRR(std::ostream & os) const
 {
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
@@ -291,7 +291,7 @@ void VRR_Writer_Inline::WriteVRR(std::ostream & os) const
 }
 
 
-void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) const
+void ERI_VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 { }
 
 
@@ -299,7 +299,7 @@ void VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) cons
 ///////////////////////////////////////
 // External VRR Writer
 ///////////////////////////////////////
-void VRR_Writer_External::WriteVRR(std::ostream & os) const
+void ERI_VRR_Writer_External::WriteVRR(std::ostream & os) const
 {
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
@@ -330,7 +330,7 @@ void VRR_Writer_External::WriteVRR(std::ostream & os) const
 }
 
 
-void VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh) const
+void ERI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 {
     QAM am = info_.FinalAM();
 

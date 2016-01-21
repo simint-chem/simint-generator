@@ -8,34 +8,34 @@
 // Base ET Writer
 ////////////////////////
 
-ET_Writer::ET_Writer(const ET_Algorithm_Base & et_algo, const ERIGeneratorInfo & info) 
+ERI_ET_Writer::ERI_ET_Writer(const ERI_ET_Algorithm_Base & et_algo, const ERIGeneratorInfo & info) 
     : et_algo_(et_algo), info_(info), vinfo_(info_.GetVectorInfo())
 { 
 }
 
-bool ET_Writer::HasET(void) const
+bool ERI_ET_Writer::HasET(void) const
 {
     return et_algo_.HasET();
 }
 
-bool ET_Writer::HasBraET(void) const
+bool ERI_ET_Writer::HasBraET(void) const
 {
     return et_algo_.HasBraET();
 }
 
 
-bool ET_Writer::HasKetET(void) const
+bool ERI_ET_Writer::HasKetET(void) const
 {
     return et_algo_.HasKetET();
 }
 
-ConstantMap ET_Writer::GetConstants(void) const
+ConstantMap ERI_ET_Writer::GetConstants(void) const
 {
     // by default, return empty
     return ConstantMap();
 }
 
-void ET_Writer::DeclarePrimArrays(std::ostream & os) const
+void ERI_ET_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     QAMSet allam = et_algo_.GetAllAM();
  
@@ -52,7 +52,7 @@ void ET_Writer::DeclarePrimArrays(std::ostream & os) const
 }
 
 
-void ET_Writer::DeclarePrimPointers(std::ostream & os) const
+void ERI_ET_Writer::DeclarePrimPointers(std::ostream & os) const
 {
     QAMSet allam = et_algo_.GetAllAM();
  
@@ -71,14 +71,14 @@ void ET_Writer::DeclarePrimPointers(std::ostream & os) const
 }
 
 
-std::string ET_Writer::ETStepVar_(const Quartet & q) const
+std::string ERI_ET_Writer::ETStepVar_(const Quartet & q) const
 {
     return StringBuilder(PrimVarName(q.amlist()), "[", q.idx(), "]");
 }
 
 
 
-std::string ET_Writer::ETStepString_(const ETStep & et) const
+std::string ERI_ET_Writer::ETStepString_(const ETStep & et) const
 {
     int stepidx = XYZStepToIdx(et.xyz);
 
@@ -133,7 +133,7 @@ std::string ET_Writer::ETStepString_(const ETStep & et) const
 ////////////////////////
 // Inline ET Writer
 ////////////////////////
-ConstantMap ET_Writer_Inline::GetConstants(void) const
+ConstantMap ERI_ET_Writer_Inline::GetConstants(void) const
 {
     ConstantMap cm;
     for(const auto & it : et_algo_.GetAllInt())
@@ -141,7 +141,7 @@ ConstantMap ET_Writer_Inline::GetConstants(void) const
     return cm;
 }
 
-void ET_Writer_Inline::WriteET(std::ostream & os) const
+void ERI_ET_Writer_Inline::WriteET(std::ostream & os) const
 {
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
@@ -182,7 +182,7 @@ void ET_Writer_Inline::WriteET(std::ostream & os) const
     }
 }
 
-void ET_Writer_Inline::WriteETFile(std::ostream & os, std::ostream & osh) const
+void ERI_ET_Writer_Inline::WriteETFile(std::ostream & os, std::ostream & osh) const
 {
 }
 
@@ -191,7 +191,7 @@ void ET_Writer_Inline::WriteETFile(std::ostream & os, std::ostream & osh) const
 ////////////////////////
 // External ET Writer
 ////////////////////////
-void ET_Writer_External::WriteET(std::ostream & os) const
+void ERI_ET_Writer_External::WriteET(std::ostream & os) const
 {
     std::string braket = (et_algo_.GetDirection() == DoubletType::KET) ? "KET" : "BRA";
 
@@ -228,7 +228,7 @@ void ET_Writer_External::WriteET(std::ostream & os) const
 }
 
 
-void ET_Writer_External::WriteETFile(std::ostream & os, std::ostream & osh) const
+void ERI_ET_Writer_External::WriteETFile(std::ostream & os, std::ostream & osh) const
 {
     QAM am = info_.FinalAM();
     std::string braket = (et_algo_.GetDirection() == DoubletType::KET) ? "KET" : "BRA";

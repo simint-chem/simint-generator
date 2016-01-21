@@ -39,11 +39,11 @@ void CreateHRR(QAM am,
         ofk << "#endif\n\n\n";
 
         // The algorithm to use
-        std::unique_ptr<HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+        std::unique_ptr<ERI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
 
         hrralgo->Create(am);
 
-        std::unique_ptr<HRR_Writer> hrr_writer(new HRR_Writer_External(*hrralgo, info));
+        std::unique_ptr<ERI_HRR_Writer> hrr_writer(new ERI_HRR_Writer_External(*hrralgo, info));
         hrr_writer->WriteHRRFile(ofb, ofk, ofh);
 }
 

@@ -10,18 +10,18 @@
 #include "generator/ERI_ET_Algorithm_Base.hpp"
 
 
-ET_Algorithm_Base::ET_Algorithm_Base(const OptionMap & options)
+ERI_ET_Algorithm_Base::ERI_ET_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
 }
 
 
-int ET_Algorithm_Base::GetOption(Option opt) const
+int ERI_ET_Algorithm_Base::GetOption(Option opt) const
 {
     return options_.at(opt);
 }
 
-void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) const
+void ERI_ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) const
 {
     QuartetSet qsnew;
 
@@ -67,7 +67,7 @@ void ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned) con
 }
 
 
-void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
+void ERI_ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) const
 {
     // skip if it was already done somewhere
     if(std::find(order.begin(), order.end(), am) != order.end()) 
@@ -87,7 +87,7 @@ void ET_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM am) co
 }
 
 
-void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
+void ERI_ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
                                    const QuartetSet & inittargets,
                                    QuartetSet & solvedquartets,
                                    QuartetSet & pruned)
@@ -139,13 +139,13 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
 }
 
 
-void ET_Algorithm_Base::Create(QAM am, DoubletType direction)
+void ERI_ET_Algorithm_Base::Create(QAM am, DoubletType direction)
 {
     Create(GenerateInitialQuartetTargets(am), direction);
 }
 
 
-void ET_Algorithm_Base::Create(const QuartetSet & inittargets, DoubletType direction)
+void ERI_ET_Algorithm_Base::Create(const QuartetSet & inittargets, DoubletType direction)
 {
     direction_ = direction;
 
@@ -242,37 +242,37 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets, DoubletType direc
 }
 
 
-ETStepList ET_Algorithm_Base::GetSteps(QAM am) const
+ETStepList ERI_ET_Algorithm_Base::GetSteps(QAM am) const
 {
     return etsteps_.at(am);
 }
 
-QAMList ET_Algorithm_Base::GetAMOrder(void) const
+QAMList ERI_ET_Algorithm_Base::GetAMOrder(void) const
 {
     return amorder_;
 }
 
-QAMSet ET_Algorithm_Base::GetAllAM(void) const
+QAMSet ERI_ET_Algorithm_Base::GetAllAM(void) const
 {
     return allam_;
 }
 
-QAMSet ET_Algorithm_Base::GetAMReq(QAM am) const
+QAMSet ERI_ET_Algorithm_Base::GetAMReq(QAM am) const
 {
     return etreq_.at(am);
 }
 
-QuartetSet ET_Algorithm_Base::TopQuartets(void) const
+QuartetSet ERI_ET_Algorithm_Base::TopQuartets(void) const
 {
     return ettop_;
 }
 
-QAMSet ET_Algorithm_Base::TopAM(void) const
+QAMSet ERI_ET_Algorithm_Base::TopAM(void) const
 {
     return ettopam_;
 }
 
-IntSet ET_Algorithm_Base::GetIntReq(QAM am) const
+IntSet ERI_ET_Algorithm_Base::GetIntReq(QAM am) const
 {
     if(intreq_.count(am))
         return intreq_.at(am);
@@ -280,39 +280,39 @@ IntSet ET_Algorithm_Base::GetIntReq(QAM am) const
         return IntSet();
 }
 
-DoubletType ET_Algorithm_Base::GetDirection(void) const
+DoubletType ERI_ET_Algorithm_Base::GetDirection(void) const
 {
     return direction_;
 }
 
-IntSet ET_Algorithm_Base::GetAllInt(void) const
+IntSet ERI_ET_Algorithm_Base::GetAllInt(void) const
 {
     return allintreq_;
 }
 
-IntSet ET_Algorithm_Base::GetAllInt_p(void) const
+IntSet ERI_ET_Algorithm_Base::GetAllInt_p(void) const
 {
     return allintreq_p_;
 }
 
-IntSet ET_Algorithm_Base::GetAllInt_q(void) const
+IntSet ERI_ET_Algorithm_Base::GetAllInt_q(void) const
 {
     return allintreq_q_;
 }
         
 
-bool ET_Algorithm_Base::HasET(void) const
+bool ERI_ET_Algorithm_Base::HasET(void) const
 {
     return HasBraET() || HasKetET();
 }
 
-bool ET_Algorithm_Base::HasBraET(void) const
+bool ERI_ET_Algorithm_Base::HasBraET(void) const
 {
     return (direction_ == DoubletType::BRA && allam_.size() > 0);
 }
 
 
-bool ET_Algorithm_Base::HasKetET(void) const
+bool ERI_ET_Algorithm_Base::HasKetET(void) const
 {
     return (direction_ == DoubletType::KET && allam_.size() > 0);
 }

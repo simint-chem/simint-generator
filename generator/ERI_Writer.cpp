@@ -15,9 +15,9 @@
 ERI_Writer::ERI_Writer(std::ostream & os,
                        const ERIGeneratorInfo & info,
                        const BoysGenerator & bg,
-                       const VRR_Writer & vrr_writer,
-                       const ET_Writer & et_writer,
-                       const HRR_Writer & hrr_writer)
+                       const ERI_VRR_Writer & vrr_writer,
+                       const ERI_ET_Writer & et_writer,
+                       const ERI_HRR_Writer & hrr_writer)
    : os_(os), info_(info), vinfo_(info_.GetVectorInfo()), bg_(bg),
      vrr_writer_(vrr_writer), et_writer_(et_writer), hrr_writer_(hrr_writer)
 { }
