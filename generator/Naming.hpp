@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "generator/Classes.hpp"
+#include "generator/Types.hpp"
 
 std::string ArrVarName(const QAM & am, const std::string & prefix = "");
 std::string ArrVarName(int am1, int am2, const std::string & ketstr, const std::string & prefix = "");

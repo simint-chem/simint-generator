@@ -7,7 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include "generator/Printing.hpp"
-#include "generator/ERI_ET_Algorithm_Base.hpp"
+#include "generator/eri/ERI_ET_Algorithm_Base.hpp"
 
 
 ERI_ET_Algorithm_Base::ERI_ET_Algorithm_Base(const OptionMap & options)

@@ -1,11 +1,11 @@
-#ifndef SIMINT_GUARD_GENERATOR__ERI_VRR_WRITER_HPP_
-#define SIMINT_GUARD_GENERATOR__ERI_VRR_WRITER_HPP_
+#ifndef SIMINT_GUARD_ERI__ERI_VRR_WRITER_HPP_
+#define SIMINT_GUARD_ERI__ERI_VRR_WRITER_HPP_
 
 #include <iostream>
 
-#include "generator/Classes.hpp"
+#include "generator/Types.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/ERI_VRR_Algorithm_Base.hpp"
+#include "generator/eri/ERI_VRR_Algorithm_Base.hpp"
 
 // foward declare
 class ERIGeneratorInfo;

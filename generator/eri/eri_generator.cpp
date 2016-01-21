@@ -3,15 +3,16 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "generator/CommandLine.hpp"
-#include "generator/Algorithms.hpp"
-
-#include "generator/ERIGeneratorInfo.hpp"
 #include "generator/BoysGenerator.hpp"
-#include "generator/ERI_VRR_Writer.hpp"
-#include "generator/ERI_ET_Writer.hpp"
-#include "generator/ERI_HRR_Writer.hpp"
-#include "generator/ERI_Writer.hpp"
+
+#include "generator/CommandLine.hpp"
+
+#include "generator/eri/Algorithms.hpp"
+#include "generator/eri/ERIGeneratorInfo.hpp"
+#include "generator/eri/ERI_VRR_Writer.hpp"
+#include "generator/eri/ERI_ET_Writer.hpp"
+#include "generator/eri/ERI_HRR_Writer.hpp"
+#include "generator/eri/ERI_Writer.hpp"
 
 
 int main(int argc, char ** argv)

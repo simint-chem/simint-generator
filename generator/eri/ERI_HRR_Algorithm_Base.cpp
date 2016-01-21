@@ -8,7 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include "generator/Printing.hpp"
-#include "generator/ERI_HRR_Algorithm_Base.hpp"
+#include "generator/eri/ERI_HRR_Algorithm_Base.hpp"
 
 
 ERI_HRR_Algorithm_Base::ERI_HRR_Algorithm_Base(const OptionMap & options)

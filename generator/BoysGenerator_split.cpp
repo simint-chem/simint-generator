@@ -1,7 +1,5 @@
-#include <stdexcept>
-
 #include "generator/BoysGenerator.hpp"
-#include "generator/ERIGeneratorInfo.hpp"
+#include "generator/GeneratorInfoBase.hpp"
 #include "generator/Naming.hpp"
 #include "generator/Printing.hpp"
         

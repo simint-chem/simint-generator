@@ -10,10 +10,10 @@
 
 #include <vector>
 
-#include "generator/WriterBase.hpp" // for ConstantMap and IncludeSet
+#include "generator/Types.hpp" // for ConstantMap and IncludeSet
 
 // Forward declarations
-class ERIGeneratorInfo;
+class GeneratorInfoBase;
 class VectorInfo;
 
 
@@ -33,14 +33,14 @@ class VectorInfo;
 class BoysGenerator
 {
     public:
-        BoysGenerator(const ERIGeneratorInfo & info);
+        BoysGenerator(const GeneratorInfoBase & info);
 
         virtual ConstantMap GetConstants(void) const;
         virtual IncludeSet GetIncludes(void) const = 0;
         virtual void WriteBoys(std::ostream & os) const = 0;
 
     protected:
-        const ERIGeneratorInfo & info_;
+        const GeneratorInfoBase & info_;
         const VectorInfo & vinfo_;
 };
 
@@ -50,7 +50,7 @@ class BoysGenerator
 class BoysFO : public BoysGenerator
 {
     public:
-        BoysFO(const ERIGeneratorInfo & info, std::string dir); // read from directory
+        BoysFO(const GeneratorInfoBase & info, std::string dir); // read from directory
 
         virtual ConstantMap GetConstants(void) const;
         virtual IncludeSet GetIncludes(void) const;

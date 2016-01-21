@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 
-#include "generator/Classes.hpp"
+#include "generator/Types.hpp"
 #include "generator/Options.hpp"
 
 using std::cout;

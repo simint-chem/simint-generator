@@ -1,12 +1,12 @@
-#include "generator/Classes.hpp"
+#include "generator/Types.hpp"
 #include "generator/Printing.hpp"
 #include "generator/Naming.hpp"
 #include "generator/BoysGenerator.hpp"
-#include "generator/ERIGeneratorInfo.hpp"
-#include "generator/ERI_VRR_Writer.hpp"
-#include "generator/ERI_ET_Writer.hpp"
-#include "generator/ERI_HRR_Writer.hpp"
-#include "generator/ERI_Writer.hpp"
+#include "generator/eri/ERIGeneratorInfo.hpp"
+#include "generator/eri/ERI_VRR_Writer.hpp"
+#include "generator/eri/ERI_ET_Writer.hpp"
+#include "generator/eri/ERI_HRR_Writer.hpp"
+#include "generator/eri/ERI_Writer.hpp"
 
 
 ///////////////////////////
@@ -450,7 +450,7 @@ void ERI_Writer_Basic::WriteFile(void) const
 
     // Write out all the constants 
     os_ << indent1 << "//Create constants\n";
-    for(const auto & it : info_.GetConstants())
+    for(const auto & it : cm)
         os_ << indent1 << vinfo_.NewConstDoubleSet1(it.first, it.second) << ";\n";
 
     

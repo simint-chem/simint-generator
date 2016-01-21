@@ -1,7 +1,7 @@
 #ifndef SIMINT_GUARD_GENERATOR__PRINTING_HPP_
 #define SIMINT_GUARD_GENERATOR__PRINTING_HPP_
 
-#include "generator/Classes.hpp"
+#include "generator/Types.hpp"
 
 static const std::string indent1(4, ' ');
 static const std::string indent2(8, ' ');

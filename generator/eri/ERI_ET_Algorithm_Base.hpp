@@ -1,7 +1,7 @@
-#ifndef SIMINT_GUARD_GENERATOR__ERI_ET_ALGORITHM_BASE_HPP_
-#define SIMINT_GUARD_GENERATOR__ERI_ET_ALGORITHM_BASE_HPP_
+#ifndef SIMINT_GUARD_ERI__ERI_ET_ALGORITHM_BASE_HPP_
+#define SIMINT_GUARD_ERI__ERI_ET_ALGORITHM_BASE_HPP_
 
-#include "generator/Classes.hpp"
+#include "generator/eri/ERITypes.hpp"
 #include "generator/Options.hpp"
 
 typedef std::vector<ETStep> ETStepList;

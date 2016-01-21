@@ -4,10 +4,10 @@
 #include <fstream>
 
 #include "generator/CommandLine.hpp"
-#include "generator/Algorithms.hpp"
 
-#include "generator/ERIGeneratorInfo.hpp"
-#include "generator/ERI_VRR_Writer.hpp"
+#include "generator/eri/Algorithms.hpp"
+#include "generator/eri/ERIGeneratorInfo.hpp"
+#include "generator/eri/ERI_VRR_Writer.hpp"
 
 
 static

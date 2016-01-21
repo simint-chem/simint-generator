@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "generator/ERIGeneratorInfo.hpp"
+#include "generator/GeneratorInfoBase.hpp"
 
 static char TransformPred(char c)
 {
@@ -11,7 +11,7 @@ static char TransformPred(char c)
 }
 
 
-std::set<std::string> ERIGeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
+IncludeSet GeneratorInfoBase::ConvertCPUFlags(std::string cpuflagsstr)
 {
     std::set<std::string> cpuflags;
 
@@ -34,10 +34,10 @@ std::set<std::string> ERIGeneratorInfo::ConvertCPUFlags(std::string cpuflagsstr)
 }
 
 
-ERIGeneratorInfo::ERIGeneratorInfo(QAM finalam,
-                                   Compiler compiler,
-                                   const std::string & cpuflagsstr,
-                                   const OptionMap & options)
+GeneratorInfoBase::GeneratorInfoBase(QAM finalam,
+                                     Compiler compiler,
+                                     const std::string & cpuflagsstr,
+                                     const OptionMap & options)
     : finalam_(finalam),
       compiler_(compiler),
       cpuflags_(ConvertCPUFlags(cpuflagsstr)),

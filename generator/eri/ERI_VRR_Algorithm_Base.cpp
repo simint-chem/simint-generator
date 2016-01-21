@@ -7,7 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include "generator/Printing.hpp"
-#include "generator/ERI_VRR_Algorithm_Base.hpp"
+#include "generator/eri/ERI_VRR_Algorithm_Base.hpp"
 
 
 ERI_VRR_Algorithm_Base::ERI_VRR_Algorithm_Base(const OptionMap & options)

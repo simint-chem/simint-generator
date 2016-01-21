@@ -5,15 +5,15 @@
  */
 
 
-#ifndef SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
-#define SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
+#ifndef SIMINT_GUARD_ERI__MAKOWSKI_HPP_
+#define SIMINT_GUARD_ERI__MAKOWSKI_HPP_
 
 #include <stdexcept>
 #include <algorithm>
 
-#include "generator/ERI_VRR_Algorithm_Base.hpp" 
-#include "generator/ERI_ET_Algorithm_Base.hpp" 
-#include "generator/ERI_HRR_Algorithm_Base.hpp" 
+#include "generator/eri/ERI_VRR_Algorithm_Base.hpp" 
+#include "generator/eri/ERI_ET_Algorithm_Base.hpp" 
+#include "generator/eri/ERI_HRR_Algorithm_Base.hpp" 
 
 class Makowski_HRR : public ERI_HRR_Algorithm_Base
 {

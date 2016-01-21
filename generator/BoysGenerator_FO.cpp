@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 #include "generator/BoysGenerator.hpp"
-#include "generator/ERIGeneratorInfo.hpp"
+#include "generator/GeneratorInfoBase.hpp"
 #include "generator/Naming.hpp"
 #include "generator/Printing.hpp"
         
@@ -217,7 +217,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
 }
 
 
-BoysFO::BoysFO(const ERIGeneratorInfo & info, std::string dir)
+BoysFO::BoysFO(const GeneratorInfoBase & info, std::string dir)
     : BoysGenerator(info)
 {
     if(dir.back() == '/')

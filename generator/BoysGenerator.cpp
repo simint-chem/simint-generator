@@ -1,11 +1,11 @@
 #include "generator/BoysGenerator.hpp"
-#include "generator/ERIGeneratorInfo.hpp"
+#include "generator/GeneratorInfoBase.hpp"
 
 
 ////////////////
 // Base class
 ////////////////
-BoysGenerator::BoysGenerator(const ERIGeneratorInfo & info)
+BoysGenerator::BoysGenerator(const GeneratorInfoBase & info)
     : info_(info), vinfo_(info.GetVectorInfo())
 { }
         

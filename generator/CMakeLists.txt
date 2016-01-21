@@ -11,57 +11,31 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   #         seems to have lots of false positives, even when it should be obvious
   #   383 : value copied to temporary, reference to temporary used
   list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
-  list(APPEND GENERATOR_CXX_FLAGS "-qopt-report=5 -w3 -wd10397 -wd981 -wd383")
-  list(APPEND GENERATOR_CXX_FLAGS "-O0 -ggdb")
+  list(APPEND GENERATOR_CXX_FLAGS "-qopt-report=5;-w3;-wd10397;-wd981;-wd383")
 else()
   list(APPEND GENERATOR_CXX_FLAGS "-std=c++11")
-  list(APPEND GENERATOR_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter")
-  list(APPEND GENERATOR_CXX_FLAGS "-O0 -ggdb")
+  list(APPEND GENERATOR_CXX_FLAGS "-Wall;-Wextra;-pedantic;-Wno-unused-parameter")
 endif()
 
 
 
-# Prepare list for CXX Flags
-string(REPLACE ";" " " GENERATOR_CXX_FLAGS "${GENERATOR_CXX_FLAGS}")
-
 add_library(generator_common OBJECT
-                         Classes.cpp
-                         Naming.cpp
-                         Printing.cpp
-                         CommandLine.cpp
                          BoysGenerator.cpp
                          BoysGenerator_FO.cpp
                          BoysGenerator_split.cpp
 
-                         ERIGeneratorInfo.cpp
-                         ERI_VRR_Algorithm_Base.cpp
-                         ERI_ET_Algorithm_Base.cpp
-                         ERI_HRR_Algorithm_Base.cpp
-                         ERI_VRR_Writer.cpp
-                         ERI_ET_Writer.cpp
-                         ERI_HRR_Writer.cpp
-                         ERI_Writer.cpp
+                         GeneratorInfoBase.cpp
+                         Types.cpp
+                         Naming.cpp
+                         Printing.cpp
+                         CommandLine.cpp
            )
 
 
-
+target_include_directories(generator_common PRIVATE ${GENERATOR_CXX_INCLUDES})
+target_compile_options(generator_common PRIVATE ${GENERATOR_CXX_FLAGS})
 set_target_properties(generator_common PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
 set_target_properties(generator_common PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
 
-
-add_executable(eri_generator eri_generator.cpp $<TARGET_OBJECTS:generator_common>)
-set_target_properties(eri_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(eri_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-
-add_executable(eri_vrr_generator eri_vrr_generator.cpp $<TARGET_OBJECTS:generator_common>)
-set_target_properties(eri_vrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(eri_vrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-
-add_executable(eri_et_generator eri_et_generator.cpp $<TARGET_OBJECTS:generator_common>)
-set_target_properties(eri_et_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(eri_et_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
-
-add_executable(eri_hrr_generator eri_hrr_generator.cpp $<TARGET_OBJECTS:generator_common>)
-set_target_properties(eri_hrr_generator PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(eri_hrr_generator PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
+add_subdirectory(eri)

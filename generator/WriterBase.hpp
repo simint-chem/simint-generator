@@ -14,8 +14,4 @@ public:
 };
 
 
-typedef std::map<std::string, std::string> ConstantMap;
-typedef std::set<std::string> IncludeSet;
-
-
 #endif
