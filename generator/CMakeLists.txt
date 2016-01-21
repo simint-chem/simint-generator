@@ -34,8 +34,6 @@ add_library(generator_common OBJECT
 
 target_include_directories(generator_common PRIVATE ${GENERATOR_CXX_INCLUDES})
 target_compile_options(generator_common PRIVATE ${GENERATOR_CXX_FLAGS})
-set_target_properties(generator_common PROPERTIES INCLUDE_DIRECTORIES "${GENERATOR_CXX_INCLUDES}")
-set_target_properties(generator_common PROPERTIES COMPILE_FLAGS ${GENERATOR_CXX_FLAGS})
 
 
 add_subdirectory(eri)
