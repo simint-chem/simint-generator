@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Class for generating the Boys function via Modified Fructl-Otto
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include <fstream>
 #include <stdexcept>
 

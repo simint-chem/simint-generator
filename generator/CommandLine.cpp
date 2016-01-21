@@ -1,4 +1,10 @@
-#include "generator/Options.hpp"
+/*! \file
+ *
+ * \brief Some helpers for parsing the command line (source)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include "generator/CommandLine.hpp"
 
 
@@ -72,8 +78,6 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
             options[Option::InlineHRR] = 0;
         else if(argstr == "-s")
             options[Option::StackMem] = GetIArg(i, argc, argv);
-        else if(argstr == "-S")
-            options[Option::Scalar] = 1;
         else
             ret.push_back(argstr);
     }

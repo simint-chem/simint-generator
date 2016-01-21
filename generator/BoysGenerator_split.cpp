@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Class for generating the Boys function via split method
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include "generator/BoysGenerator.hpp"
 #include "generator/GeneratorInfoBase.hpp"
 #include "generator/Naming.hpp"

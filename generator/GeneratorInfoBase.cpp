@@ -1,7 +1,17 @@
+/*! \file
+ *
+ * \brief Holds information about the requested generation (source)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include <algorithm>
 
 #include "generator/GeneratorInfoBase.hpp"
 
+
+/*! \brief Returns the lowercase verion of c and replaces commas with spaces
+ */
 static char TransformPred(char c)
 {
     if(c == ',')
@@ -13,7 +23,7 @@ static char TransformPred(char c)
 
 IncludeSet GeneratorInfoBase::ConvertCPUFlags(std::string cpuflagsstr)
 {
-    std::set<std::string> cpuflags;
+    StringSet cpuflags;
 
     // separate by spaces rather than commas
     // and convert to lower case
