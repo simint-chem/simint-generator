@@ -1,5 +1,5 @@
 #include "generator/ERIGeneratorInfo.hpp"
-#include "generator/VRR_Writer.hpp"
+#include "generator/ERI_VRR_Writer.hpp"
 #include "generator/Printing.hpp"
 #include "generator/Naming.hpp"
 

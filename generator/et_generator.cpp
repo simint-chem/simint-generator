@@ -7,7 +7,7 @@
 #include "generator/Algorithms.hpp"
 
 #include "generator/ERIGeneratorInfo.hpp"
-#include "generator/ET_Writer.hpp"
+#include "generator/ERI_ET_Writer.hpp"
 
 
 int main(int argc, char ** argv)

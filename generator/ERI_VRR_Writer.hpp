@@ -5,7 +5,7 @@
 
 #include "generator/Classes.hpp"
 #include "generator/WriterBase.hpp"
-#include "generator/VRR_Algorithm_Base.hpp"
+#include "generator/ERI_VRR_Algorithm_Base.hpp"
 
 // foward declare
 class ERIGeneratorInfo;

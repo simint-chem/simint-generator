@@ -1,10 +1,14 @@
+/*! \file
+ * 
+ * \brief Base class for ERI Vertical Recurrence Relation steps (header)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
 #include <iostream>
 #include <algorithm>
-
 #include "generator/Printing.hpp"
-#include "generator/VRR_Algorithm_Base.hpp"
+#include "generator/ERI_VRR_Algorithm_Base.hpp"
 
-using namespace std;
 
 VRR_Algorithm_Base::VRR_Algorithm_Base(const OptionMap & options)
     : options_(options)

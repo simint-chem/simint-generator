@@ -1,10 +1,15 @@
+/*! \file
+ * 
+ * \brief Base class for ERI Horizontal Recurrence Relation steps (header)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include <iostream>
 #include <algorithm>
-
 #include "generator/Printing.hpp"
-#include "generator/HRR_Algorithm_Base.hpp"
+#include "generator/ERI_HRR_Algorithm_Base.hpp"
 
-using namespace std;
 
 HRR_Algorithm_Base::HRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
@@ -110,7 +115,7 @@ void HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
 
         //cout << "After pruning: " << newtargets.size() << " new targets\n";
         //for(const auto & it : newtargets)
-        //    cout << "    " << it << "\n";
+        //    std::cout << "    " << it << "\n";
 
         targets = newtargets;
     } 
@@ -160,10 +165,10 @@ void HRR_Algorithm_Base::Create(QAM am)
     }
 
 
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << "BRA HRR step done.\n";
-    cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "\n\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "BRA HRR step done.\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
     //for(const auto & it : brasteps_)
     //for(const auto & it2 : it.second)
     //    std::cout << it2 << "\n";
@@ -181,7 +186,7 @@ void HRR_Algorithm_Base::Create(QAM am)
     targets = initkets;
     PruneDoublets_(targets, kettop_, steptype);
 
-    cout << "\n\n";
+    std::cout << "\n\n";
     PrintDoubletSet(targets, "Initial ket targets");
 
     // Solve the ket part
@@ -199,15 +204,15 @@ void HRR_Algorithm_Base::Create(QAM am)
     }
     
 
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << "KET HRR step done.\n";
-    cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "\n\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "KET HRR step done.\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
     //for(const auto & it : ketsteps_)
     //for(const auto & it2 : it.second)
     //    std::cout << it2 << "\n";
 
-    cout << "\n\n";
+    std::cout << "\n\n";
 
     // fill in top info
     for(const auto & it : bratop_)

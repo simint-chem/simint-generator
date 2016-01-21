@@ -8,9 +8,9 @@
 
 #include "generator/ERIGeneratorInfo.hpp"
 #include "generator/BoysGenerator.hpp"
-#include "generator/VRR_Writer.hpp"
-#include "generator/ET_Writer.hpp"
-#include "generator/HRR_Writer.hpp"
+#include "generator/ERI_VRR_Writer.hpp"
+#include "generator/ERI_ET_Writer.hpp"
+#include "generator/ERI_HRR_Writer.hpp"
 #include "generator/ERI_Writer.hpp"
 
 

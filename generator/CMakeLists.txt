@@ -29,16 +29,17 @@ add_library(generator_common OBJECT
                          Naming.cpp
                          Printing.cpp
                          CommandLine.cpp
-                         ERIGeneratorInfo.cpp
-                         VRR_Algorithm_Base.cpp
-                         ET_Algorithm_Base.cpp
-                         HRR_Algorithm_Base.cpp
-                         VRR_Writer.cpp
-                         ET_Writer.cpp
-                         HRR_Writer.cpp
                          BoysGenerator.cpp
                          BoysGenerator_FO.cpp
                          BoysGenerator_split.cpp
+
+                         ERIGeneratorInfo.cpp
+                         ERI_VRR_Algorithm_Base.cpp
+                         ERI_ET_Algorithm_Base.cpp
+                         ERI_HRR_Algorithm_Base.cpp
+                         ERI_VRR_Writer.cpp
+                         ERI_ET_Writer.cpp
+                         ERI_HRR_Writer.cpp
                          ERI_Writer.cpp
            )
 

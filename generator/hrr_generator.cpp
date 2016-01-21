@@ -7,7 +7,7 @@
 #include "generator/Algorithms.hpp"
 
 #include "generator/ERIGeneratorInfo.hpp"
-#include "generator/HRR_Writer.hpp"
+#include "generator/ERI_HRR_Writer.hpp"
 
 
 static

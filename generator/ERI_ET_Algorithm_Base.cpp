@@ -1,10 +1,14 @@
+/*! \file
+ * 
+ * \brief Base class for ERI Electron-transfer steps (header)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
 #include <iostream>
 #include <algorithm>
-
 #include "generator/Printing.hpp"
-#include "generator/ET_Algorithm_Base.hpp"
+#include "generator/ERI_ET_Algorithm_Base.hpp"
 
-using namespace std;
 
 ET_Algorithm_Base::ET_Algorithm_Base(const OptionMap & options)
     : options_(options)
@@ -122,13 +126,13 @@ void ET_Algorithm_Base::ETStepLoop_(ETStepList & etsl,
         //cout << "Generated " << newtargets.size() << " new targets\n";
         //cout << "Before pruning: " << newtargets.size() << " new targets\n";
         //for(const auto & it : newtargets)
-        //    cout << "    " << it << "\n";
+        //    std::cout << "    " << it << "\n";
 
         PruneQuartets_(newtargets, pruned);
 
         //cout << "After pruning: " << newtargets.size() << " new targets\n";
         //for(const auto & it : newtargets)
-        //    cout << "    " << it << "\n";
+        //    std::cout << "    " << it << "\n";
 
         targets = newtargets;
     } 
@@ -159,14 +163,14 @@ void ET_Algorithm_Base::Create(const QuartetSet & inittargets, DoubletType direc
     ETStepLoop_(etstep, targets, solvedquartets, ettop_);
 
 
-    cout << "\n\n";
-    cout << "--------------------------------------------------------------------------------\n";
-    cout << "ET step done. Solution is " << etsteps_.size() << " steps\n";
-    cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "\n\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "ET step done. Solution is " << etsteps_.size() << " steps\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
     //for(auto & it : etsteps_)
-    //    cout << it << "\n";
+    //    std::cout << it << "\n";
 
-    cout << "\n\n";
+    std::cout << "\n\n";
 
     // store top level stuff
     for(const auto & it : ettop_)

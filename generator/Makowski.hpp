@@ -1,12 +1,19 @@
+/*! \file
+ *
+ * \brief Makowski algorithm (Int J Quantum Chem v107, issue 1, pp30--36)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
 #define SIMINT_GUARD_GENERATOR__MAKOWSKI_HPP_
 
 #include <stdexcept>
 #include <algorithm>
 
-#include "generator/VRR_Algorithm_Base.hpp" 
-#include "generator/ET_Algorithm_Base.hpp" 
-#include "generator/HRR_Algorithm_Base.hpp" 
+#include "generator/ERI_VRR_Algorithm_Base.hpp" 
+#include "generator/ERI_ET_Algorithm_Base.hpp" 
+#include "generator/ERI_HRR_Algorithm_Base.hpp" 
 
 class Makowski_HRR : public HRR_Algorithm_Base
 {
