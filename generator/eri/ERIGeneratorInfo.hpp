@@ -1,11 +1,8 @@
 #ifndef SIMINT_GUARD_ERI__ERIGENERATORINFO_HPP_
 #define SIMINT_GUARD_ERI__ERIGENERATORINFO_HPP_
 
-#include <memory>
 #include "generator/Types.hpp"
 #include "generator/GeneratorInfoBase.hpp"
-#include "generator/VectorInfo.hpp"
-#include "generator/Ncart.hpp"
 #include "generator/Options.hpp"
 
 
