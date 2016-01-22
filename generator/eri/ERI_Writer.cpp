@@ -35,12 +35,13 @@ void ERI_Writer_Basic::DeclareContwork(void) const
         return;
 
     size_t contmem = info_.ContMemoryReq();
+    size_t contnel = info_.ContNElements();
 
-    os_ << indent1 << "//Workspace for contracted integrals\n";
+    os_ << indent1 << "// Workspace for contracted integrals\n";
     if(info_.UseHeap())
         os_ << indent1 << "double * const constwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
     else
-        os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contmem << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
+        os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
     os_ << indent1 << "// partition workspace into shells\n";
     size_t ptidx = 0;
@@ -330,7 +331,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     bool hasbravrr = vrr_writer_.HasBraVRR();
     bool hasketvrr = vrr_writer_.HasKetVRR();
 
-    bool haset = et_writer_.HasET();
+    //bool haset = et_writer_.HasET();
     bool hasbraet = et_writer_.HasBraET(); 
     bool hasketet = et_writer_.HasKetET(); 
 
@@ -338,7 +339,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     bool hasoneoverq = (hasketvrr || hasketet);
     bool hasoneover2p = (hasbraet || (hasbravrr && (am[0]+am[1]) > 1)); 
     bool hasoneover2q = (hasketet || (hasketvrr && (am[2]+am[3]) > 1)); 
-    bool hasoneover2pq = haset && (am[0] + am[1] > 0) && (am[2] + am[3] > 0);
+    bool hasoneover2pq = hasketvrr;
 
 
     std::string dbltype = vinfo_.DoubleType();
@@ -449,7 +450,7 @@ void ERI_Writer_Basic::WriteFile(void) const
 
 
     // Write out all the constants 
-    os_ << indent1 << "//Create constants\n";
+    os_ << indent1 << "// Create constants\n";
     for(const auto & it : cm)
         os_ << indent1 << vinfo_.NewConstDoubleSet1(it.first, it.second) << ";\n";
 

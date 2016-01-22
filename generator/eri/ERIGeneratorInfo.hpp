@@ -40,6 +40,11 @@ public:
     {
         return memory_;
     }
+
+    size_t ContNElements(void) const
+    {
+        return nelements_;
+    }
     
     bool IsContQ(const QAM & am) const
     {

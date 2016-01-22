@@ -70,59 +70,65 @@ int main(int argc, char ** argv)
     ofh << "\n";
     ofh << "#include \"eri/eri.h\"\n\n\n";
 
-    // disable no single et
-    // so they are available for all
-    options[Option::NoSingleET] = 0;
 
-
-    // we want all gaussians up to the maximum L value
-    // First, bra -> ket
-    for(int i = 0; i <= maxL; i++)
-    for(int j = 1; j <= maxL; j++)
+    // only do this if we are actually doing ET
+    // (we always need to create the header file though)
+    if(!options[Option::NoET])
     {
-        std::string srcpath = StringBuilder(fpath, "et_ket_", amchar[i], "_s_", amchar[j], "_s.c");
-        std::cout << "Generating source file " << srcpath << "\n";
-        std::ofstream of(srcpath);
 
-        if(!of.is_open())
-            throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
+        // disable no single et
+        // so they are available for all
+        options[Option::NoSingleET] = 0;
 
-        QAM am{i, 0, j, 0};
-        ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
 
-        of << "#include \"eri/eri.h\"\n";
+        // we want all gaussians up to the maximum L value
+        // First, bra -> ket
+        for(int i = 0; i <= maxL; i++)
+        for(int j = 1; j <= maxL; j++)
+        {
+            std::string srcpath = StringBuilder(fpath, "et_ket_", amchar[i], "_s_", amchar[j], "_s.c");
+            std::cout << "Generating source file " << srcpath << "\n";
+            std::ofstream of(srcpath);
 
-        std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-        etalgo->Create(am, DoubletType::KET);
+            if(!of.is_open())
+                throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
 
-        std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
-        et_writer->WriteETFile(of, ofh);
+            QAM am{i, 0, j, 0};
+            ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
+
+            of << "#include \"eri/eri.h\"\n";
+
+            std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+            etalgo->Create(am, DoubletType::KET);
+
+            std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
+            et_writer->WriteETFile(of, ofh);
+        }
+
+
+        // Now, ket->bra
+        for(int i = 1; i <= maxL; i++)
+        for(int j = 0; j <= maxL; j++)
+        {
+            std::string srcpath = StringBuilder(fpath, "et_bra_", amchar[i], "_s_", amchar[j], "_s.c");
+            std::cout << "Generating source file " << srcpath << "\n";
+            std::ofstream of(srcpath);
+
+            if(!of.is_open())
+                throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
+
+            QAM am{i, 0, j, 0};
+            ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
+
+            of << "#include \"eri/eri.h\"\n";
+
+            std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
+            etalgo->Create(am, DoubletType::BRA);
+
+            std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
+            et_writer->WriteETFile(of, ofh);
+        }
     }
-
-
-    // Now, ket->bra
-    for(int i = 1; i <= maxL; i++)
-    for(int j = 0; j <= maxL; j++)
-    {
-        std::string srcpath = StringBuilder(fpath, "et_bra_", amchar[i], "_s_", amchar[j], "_s.c");
-        std::cout << "Generating source file " << srcpath << "\n";
-        std::ofstream of(srcpath);
-
-        if(!of.is_open())
-            throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
-
-        QAM am{i, 0, j, 0};
-        ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
-
-        of << "#include \"eri/eri.h\"\n";
-
-        std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-        etalgo->Create(am, DoubletType::BRA);
-
-        std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
-        et_writer->WriteETFile(of, ofh);
-    }
-
 
     ofh << "\n";
     ofh << "#endif\n\n";

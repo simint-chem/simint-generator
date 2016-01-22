@@ -78,9 +78,9 @@ skeldir = os.path.join(topdir, "skel")
 
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
-hrr_gen = os.path.join(args.g, "hrr_generator")
-et_gen = os.path.join(args.g, "et_generator")
-vrr_gen = os.path.join(args.g, "vrr_generator")
+hrr_gen = os.path.join(args.g, "eri_hrr_generator")
+et_gen = os.path.join(args.g, "eri_et_generator")
+vrr_gen = os.path.join(args.g, "eri_vrr_generator")
 
 if not os.path.isdir(args.d):
   print("The directory \"{}\" does not exist or is not accessible".format(args.d))
@@ -184,40 +184,39 @@ if ret != 0:
 ####################################################
 # Generate the external ET source
 ####################################################
+logfile = os.path.join(outdir_erigen, "et.log")
+
+cmdline = [et_gen]
+cmdline.extend(["-c", str(args.c)])
+cmdline.extend(["-o", outdir_erigen])
+cmdline.extend(["-L", str(args.l*4)])
+if args.i:
+    cmdline.append("-i")
+if args.S:
+    cmdline.append("-S")
 if args.et:
-    logfile = os.path.join(outdir_erigen, "et.log")
+    cmdline.append("-et")
+if args.etvrr:
+    cmdline.append("-etvrr")
 
-    cmdline = [et_gen]
-    cmdline.extend(["-c", str(args.c)])
-    cmdline.extend(["-o", outdir_erigen])
-    cmdline.extend(["-L", str(args.l*4)])
-    if args.i:
-        cmdline.append("-i")
-    if args.S:
-        cmdline.append("-S")
-    if args.et:
-        cmdline.append("-et")
-    if args.etvrr:
-        cmdline.append("-etvrr")
+print("Creating ET sources in {}".format(outdir_erigen))
+print("     Logfile: {}".format(logfile))
+print()
+print("Command line:")
+print(' '.join(cmdline))
+print()
 
-    print("Creating ET sources in {}".format(outdir_erigen))
-    print("     Logfile: {}".format(logfile))
-    print()
-    print("Command line:")
-    print(' '.join(cmdline))
-    print()
+with open(logfile, 'w') as lf:
+  ret = subprocess.call(cmdline, stdout=lf)
 
-    with open(logfile, 'w') as lf:
-      ret = subprocess.call(cmdline, stdout=lf)
-
-    if ret != 0:
-      print("\n")
-      print("*********************************")
-      print("When generating et sources")
-      print("Subprocess returned {} - aborting".format(ret))
-      print("*********************************")
-      print("\n")
-      quit(1)
+if ret != 0:
+  print("\n")
+  print("*********************************")
+  print("When generating et sources")
+  print("Subprocess returned {} - aborting".format(ret))
+  print("*********************************")
+  print("\n")
+  quit(1)
 
 
 
