@@ -39,7 +39,7 @@ void ERI_Writer_Basic::DeclareContwork(void) const
 
     os_ << indent1 << "// Workspace for contracted integrals\n";
     if(info_.UseHeap())
-        os_ << indent1 << "double * const constwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
+        os_ << indent1 << "double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
     else
         os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
