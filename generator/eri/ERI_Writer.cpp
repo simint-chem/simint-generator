@@ -339,7 +339,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     bool hasoneoverq = (hasketvrr || hasketet);
     bool hasoneover2p = (hasbraet || (hasbravrr && (am[0]+am[1]) > 1)); 
     bool hasoneover2q = (hasketet || (hasketvrr && (am[2]+am[3]) > 1)); 
-    bool hasoneover2pq = hasketvrr;
+    bool hasoneover2pq = (hasketvrr && (am[0]+am[1]) > 0);
 
 
     std::string dbltype = vinfo_.DoubleType();
