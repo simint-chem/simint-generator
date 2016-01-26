@@ -35,6 +35,8 @@ class BoysGenerator
     public:
         BoysGenerator(const GeneratorInfoBase & info);
 
+        virtual ~BoysGenerator() = default;
+
         virtual ConstantMap GetConstants(void) const;
         virtual IncludeSet GetIncludes(void) const = 0;
         virtual void WriteBoys(std::ostream & os) const = 0;

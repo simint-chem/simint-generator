@@ -1,3 +1,6 @@
+#######################
+# Common OS ERI stuff
+#######################
 add_library(eri_generator_common OBJECT
                          ERI_VRR_Algorithm_Base.cpp
                          ERI_ET_Algorithm_Base.cpp

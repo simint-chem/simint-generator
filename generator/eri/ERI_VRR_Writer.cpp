@@ -99,25 +99,25 @@ void ERI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSe
         // Get the stepping
         XYZStep step = it.xyz;
 
-        std::string primname = StringBuilder(PrimVarName(qam), "[n * ", NCART(qam), " + ", it.target.idx(), "]");
+        std::string primname = StringBuilder(PrimVarName(qam), "[n * ", NCART(qam), " + ", it.target.index(), "]");
         std::string srcname[8];
 
         if(it.src[0])
-            srcname[0] = StringBuilder(PrimVarName(it.src[0].amlist()), "[n * ", it.src[0].ncart(), " + ", it.src[0].idx(), "]");
+            srcname[0] = StringBuilder(PrimVarName(it.src[0].amlist()), "[n * ", it.src[0].ncart(), " + ", it.src[0].index(), "]");
         if(it.src[1])
-            srcname[1] = StringBuilder( PrimVarName(it.src[1].amlist()), "[(n+1) * ", it.src[1].ncart(), " + ", it.src[1].idx(), "]");
+            srcname[1] = StringBuilder( PrimVarName(it.src[1].amlist()), "[(n+1) * ", it.src[1].ncart(), " + ", it.src[1].index(), "]");
         if(it.src[2])
-            srcname[2] = StringBuilder(PrimVarName(it.src[2].amlist()), "[n * ", it.src[2].ncart(), " + ", it.src[2].idx(), "]");
+            srcname[2] = StringBuilder(PrimVarName(it.src[2].amlist()), "[n * ", it.src[2].ncart(), " + ", it.src[2].index(), "]");
         if(it.src[3])
-            srcname[3] = StringBuilder(PrimVarName(it.src[3].amlist()), "[(n+1) * ", it.src[3].ncart(), " + ", it.src[3].idx(), "]");
+            srcname[3] = StringBuilder(PrimVarName(it.src[3].amlist()), "[(n+1) * ", it.src[3].ncart(), " + ", it.src[3].index(), "]");
         if(it.src[4])
-            srcname[4] = StringBuilder(PrimVarName(it.src[4].amlist()), "[n * ", it.src[4].ncart(), " + ", it.src[4].idx(), "]");
+            srcname[4] = StringBuilder(PrimVarName(it.src[4].amlist()), "[n * ", it.src[4].ncart(), " + ", it.src[4].index(), "]");
         if(it.src[5])
-            srcname[5] = StringBuilder(PrimVarName(it.src[5].amlist()), "[(n+1) * ", it.src[5].ncart(), " + ", it.src[5].idx(), "]");
+            srcname[5] = StringBuilder(PrimVarName(it.src[5].amlist()), "[(n+1) * ", it.src[5].ncart(), " + ", it.src[5].index(), "]");
         if(it.src[6])
-            srcname[6] = StringBuilder(PrimVarName(it.src[6].amlist()), "[(n+1) * ", it.src[6].ncart(), " + ", it.src[6].idx(), "]");
+            srcname[6] = StringBuilder(PrimVarName(it.src[6].amlist()), "[(n+1) * ", it.src[6].ncart(), " + ", it.src[6].index(), "]");
         if(it.src[7])
-            srcname[7] = StringBuilder(PrimVarName(it.src[7].amlist()), "[(n+1) * ", it.src[7].ncart(), " + ", it.src[7].idx(), "]");
+            srcname[7] = StringBuilder(PrimVarName(it.src[7].amlist()), "[(n+1) * ", it.src[7].ncart(), " + ", it.src[7].index(), "]");
 
         os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 

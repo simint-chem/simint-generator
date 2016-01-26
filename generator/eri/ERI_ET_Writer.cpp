@@ -73,7 +73,7 @@ void ERI_ET_Writer::DeclarePrimPointers(std::ostream & os) const
 
 std::string ERI_ET_Writer::ETStepVar_(const Quartet & q) const
 {
-    return StringBuilder(PrimVarName(q.amlist()), "[", q.idx(), "]");
+    return StringBuilder(PrimVarName(q.amlist()), "[", q.index(), "]");
 }
 
 

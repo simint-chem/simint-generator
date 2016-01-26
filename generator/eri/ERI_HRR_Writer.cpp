@@ -101,14 +101,14 @@ std::string ERI_HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string 
                                        const std::string & ketstr) const
 {
     std::string arrname = ArrVarName(d.left.am(), d.right.am(), ketstr);
-    return StringBuilder("HRR_", arrname, "[", d.idx(), " * ", ncart_ket, " + iket]"); 
+    return StringBuilder("HRR_", arrname, "[", d.index(), " * ", ncart_ket, " + iket]"); 
 }
 
 
 std::string ERI_HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & brastr) const
 {
     std::string arrname = ArrVarName(brastr, d.left.am(), d.right.am());
-    return StringBuilder("HRR_", arrname, "[ibra * ", d.ncart(), " + ", d.idx(), "]"); 
+    return StringBuilder("HRR_", arrname, "[ibra * ", d.ncart(), " + ", d.index(), "]"); 
 }
 
 
@@ -227,9 +227,6 @@ void ERI_HRR_Writer_External::WriteHRR(std::ostream & os) const
     DAM finalbra{finalam[0], finalam[1]};
 
 
-    RRStepType brasteptype = (finalam[1] > finalam[0] ? RRStepType::J : RRStepType::I);
-    const char * steptypestr = (brasteptype == RRStepType::J ? "J" : "I");
-
     os << indent3 << "//////////////////////////////////////////////\n";
     os << indent3 << "// Contracted integrals: Horizontal recurrance\n";
     os << indent3 << "//////////////////////////////////////////////\n";
@@ -260,6 +257,9 @@ void ERI_HRR_Writer_External::WriteHRR(std::ostream & os) const
 
     if(HasBraHRR())
     {
+        RRStepType brasteptype = (finalam[1] > finalam[0] ? RRStepType::J : RRStepType::I);
+        const char * steptypestr = (brasteptype == RRStepType::J ? "J" : "I");
+
         for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
         for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
         {

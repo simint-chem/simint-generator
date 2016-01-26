@@ -39,6 +39,9 @@ public:
                       const std::string & cpuflagsstr,
                       const OptionMap & options);
 
+
+    virtual ~GeneratorInfoBase() = default;
+
     /*! \brief The final target AM for this generation run
      */   
     QAM FinalAM(void) const

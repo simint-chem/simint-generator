@@ -85,7 +85,7 @@ struct Gaussian
     ExpList ijk;
 
     int am(void) const { return ijk[0] + ijk[1] + ijk[2]; }
-    int idx(void) const { return GaussianOrder(ijk); } 
+    int index(void) const { return GaussianOrder(ijk); } 
     int ncart(void) const { return ((am()+1)*(am()+2))/2; }
 
     std::string str(void) const
@@ -179,7 +179,7 @@ struct Doublet
     Gaussian right;
 
     int am(void) const { return left.am() + right.am(); }    
-    int idx(void) const { return left.idx() * right.ncart() + right.idx(); }
+    int index(void) const { return left.index() * right.ncart() + right.index(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
     DAM amlist(void) const { return {left.am(), right.am()}; }
 
@@ -238,7 +238,7 @@ struct Quartet
     int m;
 
     int am(void) const { return bra.am() + ket.am(); }
-    int idx(void) const { return bra.idx() * ket.ncart() + ket.idx(); }
+    int index(void) const { return bra.index() * ket.ncart() + ket.index(); }
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
     QAM amlist(void) const { return { bra.left.am(), bra.right.am(),
                                           ket.left.am(), ket.right.am() }; }
