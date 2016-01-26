@@ -53,7 +53,6 @@ parser.add_argument("-et", required=False, action='store_true', help="Use electr
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-ee", required=False, type=int, default=1000, help="External ET for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
-parser.add_argument("-etvrr", required=False, action='store_true', help="Use VRR for ( s s | X s ) rather than ET")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
@@ -157,8 +156,6 @@ if args.S:
     cmdline.append("-S")
 if args.et:
     cmdline.append("-et")
-if args.etvrr:
-    cmdline.append("-etvrr")
 
 print("Creating HRR sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -196,8 +193,6 @@ if args.S:
     cmdline.append("-S")
 if args.et:
     cmdline.append("-et")
-if args.etvrr:
-    cmdline.append("-etvrr")
 
 print("Creating ET sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -227,10 +222,7 @@ if ret != 0:
 logfile = os.path.join(outdir_erigen, "vrr.log")
 
 if args.et:
-  if args.etvrr:
-    maxL = args.l*2
-  else:
-    maxL = args.l*4
+  maxL = args.l*4
 else:
   maxL = args.l*2
 
@@ -245,8 +237,6 @@ if args.S:
     cmdline.append("-S")
 if args.et:
     cmdline.append("-et")
-if args.etvrr:
-    cmdline.append("-etvrr")
 
 print("Creating VRR sources in {}".format(outdir_erigen))
 print("     Logfile: {}".format(logfile))
@@ -375,8 +365,6 @@ for q in valid:
         cmdline.append("-S")
     if args.et:
         cmdline.append("-et")
-    if args.etvrr:
-        cmdline.append("-etvrr")
 
     print()
     print("Command line:")
@@ -427,10 +415,37 @@ with open(headerfile, 'w') as hfile:
 
   hfile.write("#endif\n")
 
-print("\n")
-print("Array filling lines:")
-print("\n")
-for q in valid:
-  funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-  print("funcs[{}][{}][{}][{}] = {};".format(q[0], q[1], q[2], q[3], funcname))
-print("\n\n")
+
+
+####################################################
+# Vectorization config header
+####################################################
+vinfofile = os.path.join(outdir_vec, "simint_vectorinfo.h")
+with open(vinfofile, 'w') as vf:
+
+  # Parse the cpu flags
+  cpuflags = args.c.lower().split(',')
+    
+
+  vf.write("#ifndef SIMINT_VECTORINFO_H\n")
+  vf.write("#define SIMINT_VECTORINFO_H\n\n\n")
+
+
+  if "avx" in cpuflags:
+    vf.write("#define SIMINT_SIMD_LEN 4\n")
+  elif "sse2" in cpuflags:
+    vf.write("#define SIMINT_SIMD_LEN 2\n")
+  else:
+    vf.write("#define SIMINT_SIMD_LEN 1\n")
+  
+
+  vf.write("\n\n#endif\n")
+
+
+
+#print("Array filling lines:")
+#print("\n")
+#for q in valid:
+#  funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+#  print("funcs[{}][{}][{}][{}] = {};".format(q[0], q[1], q[2], q[3], funcname))
+#print("\n\n")

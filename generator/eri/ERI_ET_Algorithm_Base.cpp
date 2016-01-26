@@ -25,23 +25,7 @@ void ERI_ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
 {
     QuartetSet qsnew;
 
-    // if we want ( s s | X s ) to be formed via VRR instead of ET, and
-    // then use ET in reverse, prune ( s s | X s)
-    if(GetOption(Option::NoSingleET) > 0)
-    {
-        for(auto & it : qs)
-        {
-            if(it)
-            {
-                if(it.ket.left.am() != 0 && it.bra.left.am() != 0)
-                    qsnew.insert(it);
-                else
-                    pruned.insert(it);
-            }
-        }
-        
-    }
-    else if(GetOption(Option::NoET) > 0)
+    if(GetOption(Option::NoET) > 0)
     {
         // prune everything. We aren't doing ET
         pruned.insert(qs.begin(), qs.end());

@@ -75,12 +75,6 @@ int main(int argc, char ** argv)
     // (we always need to create the header file though)
     if(!options[Option::NoET])
     {
-
-        // disable no single et
-        // so they are available for all
-        options[Option::NoSingleET] = 0;
-
-
         // we want all gaussians up to the maximum L value
         // First, bra -> ket
         for(int i = 0; i <= maxL; i++)

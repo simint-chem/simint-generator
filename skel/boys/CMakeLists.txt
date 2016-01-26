@@ -6,5 +6,5 @@ add_library(simint_boys OBJECT
                                boys_vref.c
            )
 
-set_target_properties(simint_boys PROPERTIES INCLUDE_DIRECTORIES "${SIMINT_C_INCLUDES}")
-set_target_properties(simint_boys PROPERTIES COMPILE_FLAGS ${SIMINT_C_FLAGS})
+target_include_directories(simint_boys PRIVATE ${SIMINT_C_INCLUDES})
+target_compile_options(simint_boys PRIVATE ${SIMINT_C_FLAGS})

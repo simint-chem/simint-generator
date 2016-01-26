@@ -18,7 +18,6 @@ enum class Option
     InlineVRR,  //!< Write VRR inline with the generated code (opposite is to use external functions)
     InlineET,   //!< Write ET inline with the generated code (opposite is to use external functions)
     InlineHRR,  //!< Write HRR inline with the generated code (opposite is to use external functions)
-    NoSingleET, //!< Don't use ET where a single VRR step would also work.
     NoET        //!< Don't use ET at all (do VRR rather than ET)
 };
 
@@ -47,7 +46,6 @@ inline OptionMap DefaultOptions(void)
                       {Option::InlineVRR, 1},
                       {Option::InlineET, 1},
                       {Option::InlineHRR, 1},
-                      {Option::NoSingleET, 0},
                       {Option::NoET, 1}
                     };
 }
