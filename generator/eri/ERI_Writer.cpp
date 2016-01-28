@@ -34,15 +34,6 @@ void ERI_Writer_Basic::DeclareContwork(void) const
     if(info_.ContMemoryReq() == 0)
         return;
 
-    size_t contmem = info_.ContMemoryReq();
-    size_t contnel = info_.ContNElements();
-
-    os_ << indent1 << "// Workspace for contracted integrals\n";
-    if(info_.UseHeap())
-        os_ << indent1 << "double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
-    else
-        os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
-
     os_ << indent1 << "// partition workspace into shells\n";
     size_t ptidx = 0;
 
@@ -242,7 +233,7 @@ void ERI_Writer_Basic::WriteAccumulation(void) const
 }
 
 
-void ERI_Writer_Basic::WriteFile_Permute(void) const
+void ERI_Writer_Basic::WriteFile_Permute_(void) const
 {
     QAM am = info_.FinalAM();
     QAM tocall = am;
@@ -262,7 +253,7 @@ void ERI_Writer_Basic::WriteFile_Permute(void) const
         std::swap(tocall[2], tocall[3]);
     }
 
-    std::string funcline = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcline = StringBuilder("int eri_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
     std::string indent(funcline.length(), ' ');
 
     // start output to the file
@@ -274,6 +265,7 @@ void ERI_Writer_Basic::WriteFile_Permute(void) const
     os_ << funcline;
     os_ << "struct multishell_pair P,\n";
     os_ << indent << "struct multishell_pair Q,\n";
+    os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
     os_ << indent1 << "// Can be accomplished by swapping some variables\n";
@@ -294,10 +286,10 @@ void ERI_Writer_Basic::WriteFile_Permute(void) const
         os_ << indent1 << "tmp = Q.PA_z;   Q.PA_z = Q.PB_z;   Q.PB_z = tmp;\n";
     }
 
-    os_ << indent1 << "return eri_" << amchar[tocall[0]] << "_" 
-                                   << amchar[tocall[1]] << "_" 
-                                   << amchar[tocall[2]] << "_" 
-                                   << amchar[tocall[3]] << "(P, Q, " << ArrVarName(am) << ");\n"; 
+    os_ << indent1 << "return eri_sharedwork_" << amchar[tocall[0]] << "_" 
+                                               << amchar[tocall[1]] << "_" 
+                                               << amchar[tocall[2]] << "_" 
+                                               << amchar[tocall[3]] << "(P, Q, contwork, " << ArrVarName(am) << ");\n"; 
 
 
     os_ << "}\n";
@@ -305,22 +297,10 @@ void ERI_Writer_Basic::WriteFile_Permute(void) const
 }
 
 
-void ERI_Writer_Basic::WriteFile(void) const
+void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 {
     const QAM am = info_.FinalAM();
-
-    // is this a special permutation? Handle it if so.
-    if( ( (am[0] == 0 && am[1] > 0)  && ( am[2] == 0 || am[3] == 0 ) ) ||
-        ( (am[2] == 0 && am[3] > 0)  && ( am[0] == 0 || am[1] == 0 ) ) )
-    {
-        WriteFile_Permute();
-        return;
-    }
-
-
-
     const int ncart = NCART(am);
-
 
     // some helper bools
     bool hashrr = hrr_writer_.HasHRR();
@@ -389,7 +369,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     //////////////////////////////
     // Function name & signature
     //////////////////////////////
-    std::string funcline = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcline = StringBuilder("int eri_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
     std::string indent(funcline.length(), ' ');
 
 
@@ -397,6 +377,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     os_ << funcline;
     os_ << "struct multishell_pair const P,\n";
     os_ << indent << "struct multishell_pair const Q,\n";
+    os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
     os_ << "\n";
@@ -441,6 +422,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     }
 
     os_ << "\n";
+
 
     // Declare the temporary space 
     // Only needed if we are doing HRR
@@ -712,7 +694,6 @@ void ERI_Writer_Basic::WriteFile(void) const
 
     os_ << "\n";
 
-    FreeContwork();
 
     os_ << indent1 << "return P.nshell12 * Q.nshell12;\n";
     os_ << "}\n";
@@ -720,5 +701,56 @@ void ERI_Writer_Basic::WriteFile(void) const
 }
 
 
+
+void ERI_Writer_Basic::WriteFile(void) const
+{
+    const QAM am = info_.FinalAM();
+
+    // is this a special permutation? Handle it if so.
+    if( ( (am[0] == 0 && am[1] > 0)  && ( am[2] == 0 || am[3] == 0 ) ) ||
+        ( (am[2] == 0 && am[3] > 0)  && ( am[0] == 0 || am[1] == 0 ) ) )
+    {
+        WriteFile_Permute_();
+    }
+    else
+        WriteFile_NoPermute_();
+
+
+    // Version that allocate the contracted workspace
+    // remove the return type
+    std::string funcline = StringBuilder("eri_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcline2 = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string indent = std::string(funcline2.length(), ' ');
+
+    os_ << "\n\n\n";
+    os_ << funcline2;
+    os_ << "struct multishell_pair const P,\n";
+    os_ << indent << "struct multishell_pair const Q,\n";
+    os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    os_ << "{\n";
+
+    size_t contmem = info_.ContMemoryReq();
+    if(contmem == 0)
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, NULL, ", ArrVarName(am), ");");
+    else
+    {
+        size_t contnel = info_.ContNElements();
+
+        os_ << indent1 << "// Workspace for contracted integrals\n";
+        if(info_.UseHeap())
+            os_ << indent1 << "double * const contwork = ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
+        else
+            os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
+
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, contwork, ", ArrVarName(am), ");");
+
+    }
+
+    os_ << "\n\n"; 
+
+    FreeContwork();
+    os_ << indent1 << "return ret;\n";
+    os_ << "}\n";
+}
 
 

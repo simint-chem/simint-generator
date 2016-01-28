@@ -150,6 +150,10 @@ int main(int argc, char ** argv)
     ERI_Writer_Basic eri_writer(of, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
     eri_writer.WriteFile();
 
+
+    // For information
+    std::cout << "\nCONTWORK SIZE: " << info.ContNElements() << "  " << info.ContMemoryReq() << "\n";
+
     }
     catch(std::exception & ex)
     {

@@ -62,7 +62,9 @@ private:
     void WriteShellOffsets(void) const;
     void WriteShellOffsets_Scalar(void) const;
     void WriteAccumulation(void) const;
-    void WriteFile_Permute(void) const;
+
+    void WriteFile_Permute_(void) const;
+    void WriteFile_NoPermute_(void) const;
 };
 
 
