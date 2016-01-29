@@ -44,6 +44,8 @@ int main(int argc, char ** argv)
     /* Storage of integrals */
     double * res_ints = (double *)ALLOC(maxsize * sizeof(double)); 
 
+    /* contracted workspace */
+    double * simint_work = (double *)ALLOC(SIMINT_ERI_MAX_WORKMEM);
 
     // initialize stuff
     // nothing needs initializing!
@@ -121,7 +123,7 @@ int main(int argc, char ** argv)
 
 
             // actually calculate
-            time_am += Simint_Integral(P, Q, res_ints);
+            time_am += Simint_Integral(P, Q, simint_work, res_ints);
 
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals

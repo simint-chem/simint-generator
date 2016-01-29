@@ -66,6 +66,9 @@ int main(int argc, char ** argv)
     double * all_res_libint          = (double *)ALLOC(nthread * maxsize * sizeof(double));
     double * all_res_valeev          = (double *)ALLOC(nthread * maxsize * sizeof(double));
 
+    /* contracted workspace */
+    double * all_simint_work = (double *)ALLOC(nthread * SIMINT_ERI_MAX_WORKMEM);
+
     // initialize stuff
     Valeev_Init();
     Boys_Init();
@@ -134,6 +137,7 @@ int main(int argc, char ** argv)
             double * res_liberd    = all_res_liberd + ithread * maxsize;
             double * res_libint    = all_res_libint + ithread * maxsize;
             double * res_valeev    = all_res_valeev + ithread * maxsize;
+            double * simint_work   = all_simint_work + ithread * SIMINT_ERI_MAX_WORKMEM;
 
             const int nshell1 = 1; 
             const int nshell2 = 1; 
@@ -176,7 +180,7 @@ int main(int argc, char ** argv)
             ////////////////////////////
             // Calculate with my code
             ////////////////////////////
-            Simint_Integral(P, Q, res);
+            Simint_Integral(P, Q, simint_work, res);
 
 
             // Analyze
