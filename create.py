@@ -47,7 +47,7 @@ parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
-parser.add_argument("-c", type=str, required=True, default="",   help="CPU Flags (comma separated)")
+parser.add_argument("-c", type=str, required=False, default="",   help="CPU Flags (comma separated)")
 
 parser.add_argument("-et", required=False, action='store_true', help="Use electron transfer rather than second VRR")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
@@ -147,7 +147,8 @@ shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
 logfile = os.path.join(outdir_erigen, "hrr.log")
 
 cmdline = [hrr_gen]
-cmdline.extend(["-c", str(args.c)])
+if args.c:
+    cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
 cmdline.extend(["-L", str(args.l)])
 if args.i:
@@ -184,7 +185,9 @@ if ret != 0:
 logfile = os.path.join(outdir_erigen, "et.log")
 
 cmdline = [et_gen]
-cmdline.extend(["-c", str(args.c)])
+
+if args.c:
+    cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
 cmdline.extend(["-L", str(args.l*4)])
 if args.i:
@@ -228,7 +231,8 @@ else:
 
 
 cmdline = [vrr_gen]
-cmdline.extend(["-c", str(args.c)])
+if args.c:
+    cmdline.extend(["-c", str(args.c)])
 cmdline.extend(["-o", outdir_erigen])
 cmdline.extend(["-L", str(maxL)])
 if args.i:
@@ -352,7 +356,10 @@ for q in valid:
     cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-s", str(args.s)])
-    cmdline.extend(["-c", str(args.c)])
+
+    if args.c:
+        cmdline.extend(["-c", str(args.c)])
+
     cmdline.extend(["-d", args.d])
 
     if vrrtype == "External":

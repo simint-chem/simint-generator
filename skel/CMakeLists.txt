@@ -9,6 +9,14 @@ enable_language(CXX)
 list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
+##################################################
+# Flags passed in
+##################################################
+set(SIMINT_C_FLAGS CACHE BOOL "Additional compilation flags for Simint")
+set(SIMINT_CXX_FLAGS CACHE BOOL "Additional compilation flags for Simint testing/benchmarking")
+
+
+
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   # Globally-disabled diagnostics:
   # 10397 : Remark about creating .optrpt files
@@ -30,6 +38,7 @@ list(APPEND SIMINT_C_FLAGS "${OpenMP_C_FLAGS}")
 
 message(STATUS "  C_INCLUDES: ${SIMINT_C_INCLUDES}")
 message(STATUS "     Simint C_FLAGS: ${SIMINT_C_FLAGS}")
+
 
 
 # Add the subdirectories with the library components

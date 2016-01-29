@@ -432,11 +432,17 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
     // Write out all the constants 
-    os_ << indent1 << "// Create constants\n";
-    for(const auto & it : cm)
-        os_ << indent1 << vinfo_.NewConstDoubleSet1(it.first, it.second) << ";\n";
+    // This is only needed if this is NOT scalar code
+    if(info_.Vectorized())
+    {
+        os_ << indent1 << "// Create constants\n";
+        for(const auto & it : cm)
+            os_ << indent1 << vinfo_.NewConstDoubleSet1(it.first, it.second) << ";\n";
+    }
 
-    
+    // some constants used here
+    std::string const1_str = vinfo_.IntConstant(1);
+    std::string consthalf_str = info_.Vectorized() ? "one_half" : "0.5";
 
 
     os_ << "\n\n";
@@ -541,7 +547,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
     os_ << indent5 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
     os_ << indent5 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
-    os_ << indent5 << cdbltype << " one_over_PQalpha_sum = " << "const_1 / PQalpha_sum;\n";
+    os_ << indent5 << cdbltype << " one_over_PQalpha_sum = " << const1_str << " / PQalpha_sum;\n";
     os_ << "\n";
     os_ << "\n";
     os_ << indent5 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
@@ -555,19 +561,19 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
     if(hasoneoverp)
-        os_ << indent5 << cdbltype << " one_over_p = " << "const_1 / P_alpha;\n";
+        os_ << indent5 << cdbltype << " one_over_p = " << const1_str << " / P_alpha;\n";
 
     if(hasoneoverq)
-        os_ << indent5 << cdbltype << " one_over_q = " << "const_1 / Q_alpha;\n";
+        os_ << indent5 << cdbltype << " one_over_q = " << const1_str << " / Q_alpha;\n";
 
     if(hasoneover2p)    
-        os_ << indent5 << cdbltype << " one_over_2p = " << "one_half * one_over_p;  // gets multiplied in VRR\n";
+        os_ << indent5 << cdbltype << " one_over_2p = " << consthalf_str << " * one_over_p;  // gets multiplied in VRR\n";
 
     if(hasoneover2q)    
-        os_ << indent5 << cdbltype << " one_over_2q = " << "one_half * one_over_q;  // gets multiplied in VRR\n";
+        os_ << indent5 << cdbltype << " one_over_2q = " << consthalf_str << " * one_over_q;  // gets multiplied in VRR\n";
 
     if(hasoneover2pq)
-        os_ << indent5 << cdbltype << " one_over_2pq = " << "one_half * one_over_PQalpha_sum;\n";
+        os_ << indent5 << cdbltype << " one_over_2pq = " << consthalf_str << " * one_over_PQalpha_sum;\n";
 
     if(hasketvrr)
     {
