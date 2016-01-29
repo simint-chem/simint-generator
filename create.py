@@ -311,7 +311,6 @@ headerbase = "eri_generated.h"
 headerfile = os.path.join(outdir_erigen, headerbase)
 
 # Maximum required contwork
-maxworkmem = 0   # number of bytes
 maxworksize = 0  # number of elements
 
 print()
@@ -389,7 +388,6 @@ for q in valid:
   # reopen the logfile, find contwork
   for line in open(logfile, 'r').readlines():
     if line.startswith("CONTWORK SIZE"):
-      maxworkmem = max(maxworkmem, int(line.split()[3]))
       maxworksize = max(maxworksize, int(line.split()[2]))
 
   print()
@@ -413,8 +411,8 @@ with open(headerfile, 'w') as hfile:
   hfile.write("\n\n")
 
   hfile.write("#define SIMINT_ERI_MAXAM {}\n".format(args.l))
-  hfile.write("#define SIMINT_ERI_MAX_WORKMEM (SIMINT_NSHELL_SIMD * {})\n".format(maxworkmem))
-  hfile.write("#define SIMINT_ERI_MAX_WORKSIZE (SIMINT_NSHELL_SIMD * {})\n".format(maxworksize))
+  hfile.write("#define SIMINT_ERI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
+  hfile.write("#define SIMINT_ERI_MAX_WORKMEM (SIMINT_ERI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n\n")
 
   for q in valid:

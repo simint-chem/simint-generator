@@ -137,7 +137,7 @@ int main(int argc, char ** argv)
             double * res_liberd    = all_res_liberd + ithread * maxsize;
             double * res_libint    = all_res_libint + ithread * maxsize;
             double * res_valeev    = all_res_valeev + ithread * maxsize;
-            double * simint_work   = all_simint_work + ithread * SIMINT_ERI_MAX_WORKMEM;
+            double * simint_work   = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
 
             const int nshell1 = 1; 
             const int nshell2 = 1; 
