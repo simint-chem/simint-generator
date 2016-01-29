@@ -261,6 +261,7 @@ int main(int argc, char ** argv)
     FREE(all_res_liberd);
     FREE(all_res_libint);
     FREE(all_res);
+    FREE(all_simint_work);
 
     return 0;
 }
