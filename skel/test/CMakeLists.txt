@@ -1,13 +1,7 @@
-macro(ADDTESTS TNAME TFILES)
-  add_executable(${TNAME} ${TFILES}
-                 $<TARGET_OBJECTS:test_valeev>
-                 $<TARGET_OBJECTS:test_erd>
-                 $<TARGET_OBJECTS:test_libint2>
-                 $<TARGET_OBJECTS:test_simint>
-                 $<TARGET_OBJECTS:test_common>)
+macro(ADDTEST TNAME TFILES)
+  add_executable(${TNAME} ${TFILES} $<TARGET_OBJECTS:test_common>)
 
-  target_link_libraries(${TNAME} PRIVATE simint
-                                 ${LIBERD_LIBRARY} ${LIBINT2_LIBRARY})
+  target_link_libraries(${TNAME} PRIVATE simint ${TESTS_CXX_LIBRARIES})
                                  
   if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
     target_link_libraries(${TNAME} PRIVATE ifcore)
@@ -42,18 +36,6 @@ set(TESTS_LIBINT2_SIMD FALSE CACHE BOOL "Libint2 Compiled with SIMD support")
 ###################
 list(APPEND TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
-if(TESTS_BENCHMARK_VALIDATE)
-  list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE")
-endif()
-
-if(TESTS_LIBINT2_SIMD)
-  list(APPEND TESTS_CXX_FLAGS "-DTESTS_LIBINT2_SIMD")
-  list(APPEND TESTS_LIBINT2_FILES "Libint2_simd.cpp")
-else()
-  list(APPEND TESTS_LIBINT2_FILES "Libint2_scalar.cpp")
-endif()
-
-
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   # Globally-disabled diagnostics:
   # 10397 : Remark about creating .optrpt files
@@ -71,20 +53,41 @@ endif()
 
 
 ##################################################
-# Libint/liberd comparison
+# Comparison with other packages
 ##################################################
 set(LIBINT2_PATH "" CACHE FILEPATH "Path to libint2 directory")
 set(LIBERD_PATH "" CACHE FILEPATH "Path to liberd lib directory")
 
+set(TESTS_ENABLE_LIBINT2 FALSE)
+set(TESTS_ENABLE_LIBERD FALSE)
+
+# Did the user specify the path to libint2 ?
 if(NOT(LIBINT2_PATH STREQUAL ""))
+  # Add include path / library
   list(APPEND TESTS_CXX_INCLUDES "${LIBINT2_PATH}/include/libint2")
-  set(LIBINT2_LIBRARY "${LIBINT2_PATH}/lib/libint2.a")
-else()
-  message(FATAL_ERROR "Error - set libint2 path!")
+  list(APPEND TESTS_CXX_LIBRARIES "${LIBINT2_PATH}/lib/libint2.a")
+  list(APPEND TESTS_CXX_ADDITIONAL_SOURCES "ERD.cpp") 
+
+  # Set some other variables
+  set(TESTS_ENABLE_LIBINT2 TRUE)
+  list(APPEND TESTS_CXX_FLAGS "-DTESTS_ENABLE_LIBINT2")
+
+  if(TESTS_LIBINT2_SIMD)
+    list(APPEND TESTS_CXX_FLAGS "-DTESTS_LIBINT2_SIMD")
+    list(APPEND TESTS_CXX_ADDITIONAL_SOURCES "Libint2_simd.cpp")
+  else()
+    list(APPEND TESTS_CXX_ADDITIONAL_SOURCES "Libint2_scalar.cpp")
+  endif()
 endif()
-if(LIBERD_PATH STREQUAL "")
-  message(FATAL_ERROR "Error - set liberd path!")
+
+
+if(NOT(LIBERD_PATH STREQUAL ""))
+  set(TESTS_ENABLE_LIBERD TRUE)
+  list(APPEND TESTS_CXX_FLAGS "-DTESTS_ENABLE_LIBERD")
+  list(APPEND TESTS_CXX_ADDITIONAL_SOURCES "ERD.cpp")
+  list(APPEND TESTS_CXX_LIBRARIES "${LIBERD_PATH}/lib/liberd.a")
 endif()
+
 
 
 ##################################################
@@ -94,42 +97,24 @@ list(APPEND TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}")
 list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
 
 
-list(APPEND TESTS_CXX_FLAGS "-DTESTS_USE_LIBERD")
-set(LIBERD_LIBRARY "${LIBERD_PATH}/lib/liberd.a")
-
 
 ###########################
 # Add OBJECT targets
 ###########################
 # Add common object files
-add_library(test_common OBJECT common.cpp)
+add_library(test_common OBJECT common.cpp simint.cpp valeev.cpp ${TESTS_CXX_ADDITIONAL_SOURCES})
 target_include_directories(test_common PRIVATE ${TESTS_CXX_INCLUDES})
 target_compile_options(test_common PRIVATE ${TESTS_CXX_FLAGS})
 
 
-# Add simint object files
-add_library(test_simint OBJECT simint.cpp)
-target_include_directories(test_simint PRIVATE ${TESTS_CXX_INCLUDES})
-target_compile_options(test_simint PRIVATE ${TESTS_CXX_FLAGS})
+# Various testing and benchmarking
+ADDTEST(test_eri test_eri.cpp)
+ADDTEST(benchmark_eri benchmark_eri.cpp)
 
-# Add valeev object files
-add_library(test_valeev OBJECT valeev.cpp)
-target_include_directories(test_valeev PRIVATE ${TESTS_CXX_INCLUDES})
-target_compile_options(test_valeev PRIVATE ${TESTS_CXX_FLAGS})
+if(TESTS_ENABLE_LIBERD)
+  ADDTEST(benchmark_erd benchmark_erd.cpp)
+endif()
 
-# liberd
-add_library(test_erd OBJECT ERD.cpp)
-target_include_directories(test_erd PRIVATE ${TESTS_CXX_INCLUDES})
-target_compile_options(test_erd PRIVATE ${TESTS_CXX_FLAGS})
-
-# Libint2
-add_library(test_libint2 OBJECT ${TESTS_LIBINT2_FILES})
-target_include_directories(test_libint2 PRIVATE ${TESTS_CXX_INCLUDES})
-target_compile_options(test_libint2 PRIVATE ${TESTS_CXX_FLAGS})
-
-
-ADDTESTS(test_eri test_eri.cpp)
-
-ADDTESTS(benchmark_eri benchmark_eri.cpp)
-ADDTESTS(benchmark_erd benchmark_erd.cpp)
-ADDTESTS(benchmark_libint2 benchmark_libint2.cpp)
+if(TESTS_ENABLE_LIBINT2)
+  ADDTEST(benchmark_libint2 benchmark_libint2.cpp)
+endif()

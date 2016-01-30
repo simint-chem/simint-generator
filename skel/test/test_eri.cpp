@@ -1,26 +1,37 @@
 #include <cstdio>
 #include <atomic>
 #include <memory>
+#include <cmath>
 
 #include <omp.h>
 
 #include "boys/boys.h"
 #include "test/common.hpp"
 #include "test/valeev.hpp"
-#include "test/ERD.hpp"
 #include "test/simint.hpp"
-#include "test/Libint2.hpp"
-#include "vectorization/vectorization.h"
+//#include "vectorization/vectorization.h"
+
+#ifdef TESTS_ENABLE_LIBERD
+  #include "test/ERD.hpp"
+#endif
+
+#ifdef TESTS_ENABLE_LIBINT2
+  #include "test/Libint2.hpp"
+#endif
+
 
 typedef std::array<int, 4> QAM;
+typedef std::pair<double, double> ErrorPair;
 
+// Prog -> { QAM -> { Absolute error, Relative Error } }
+typedef std::map<std::string, std::map<QAM, ErrorPair>> ErrorMap;
 
-static void UpdateMap(std::map<QAM, std::pair<double, double>> & m, std::pair<double, double> p, QAM am)
+static void UpdateErrorMap(ErrorMap & m, const std::string & prog, QAM am, ErrorPair p)
 {
-    std::pair<double, double> val = m.at(am);
+    ErrorPair val = m.at(prog).at(am);
     val.first = std::max(val.first, p.first);
     val.second = std::max(val.second, p.second);
-    m[am] = val;
+    m[prog][am] = val;
 }
 
 
@@ -41,14 +52,21 @@ int main(int argc, char ** argv)
 
     // read in the shell info
     ShellMap shellmap = ReadBasis(basfile);
-    ShellMap shellmap_erd = CopyShellMap(shellmap);
 
-    // normalize
-    for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
+
+    // copy and normalize for liberd
+    // (MUST BE DONE BEFORE NORMALIZING THE ORIGINAL)
+    #ifdef TESTS_ENABLE_LIBERD
+    ShellMap shellmap_erd = CopyShellMap(shellmap);
     for(auto & it : shellmap_erd)
         normalize_gaussian_shells_erd(it.second.size(), it.second.data());
-        
+    #endif
+
+
+    // normalize the original
+    for(auto & it : shellmap)
+        normalize_gaussian_shells(it.second.size(), it.second.data());
+
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
@@ -60,56 +78,91 @@ int main(int argc, char ** argv)
     int nthread = omp_get_max_threads();
 
 
-    /* Storage of integrals */
-    double * all_res                 = (double *)ALLOC(nthread * maxsize * sizeof(double));
-    double * all_res_liberd          = (double *)ALLOC(nthread * maxsize * sizeof(double));
-    double * all_res_libint          = (double *)ALLOC(nthread * maxsize * sizeof(double));
-    double * all_res_valeev          = (double *)ALLOC(nthread * maxsize * sizeof(double));
-
     /* contracted workspace */
     double * all_simint_work = (double *)ALLOC(nthread * SIMINT_ERI_MAX_WORKMEM);
+
+
+    /* Storage of integrals */
+    double * all_res_simint = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_valeev = (double *)ALLOC(nthread * maxsize * sizeof(double));
+
+
+    // Map containing the errors
+    // QAM -> (absolute error, relative error)
+    ErrorMap errmap_simint;
+
 
     // initialize stuff
     Valeev_Init();
     Boys_Init();
-    LIBINT2_PREFIXED_NAME(libint2_static_init)();
 
-    std::vector<std::unique_ptr<ERD_ERI>> erd;
-    std::vector<std::unique_ptr<Libint2_ERI>> libint;
+    // Map of errors
+    ErrorMap errors;
 
-    for(int i = 0; i < nthread; i++)
-    {
-        erd.push_back(std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1)));
-        libint.push_back(std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim)));
-    }
-             
-             
-    printf("\n");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", 
-                                                         "Quartet", "MaxErr", "", "", 
-                                                         "MaxRelErr", "", "");
-    printf("%17s    %10s  %10s  %10s   %10s  %10s  %10s\n", "",
-                                                         "Me", "erd", "libint", 
-                                                         "Me", "erd", "libint");
-
-    std::map<QAM, std::pair<double, double>> errmap, errmap_erd, errmap_libint;
-
+    // Create an entry in the error map with no errors
+    std::map<QAM, ErrorPair> initerror;
+    // Set initial errors to zero
     for(int i = 0; i <= maxam; i++)
     for(int j = 0; j <= maxam; j++)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
-    {
-        errmap[{i,j,k,l}] = {0,0};
-        errmap_erd[{i,j,k,l}] = {0,0};
-        errmap_libint[{i,j,k,l}] = {0,0};
-    }
+        initerror[{i,j,k,l}] = {0,0};
 
-        
+
+    // make one for simint
+    errors.emplace("Simint", initerror);
+
+    ///////////////////////////////////////////////
+    // initialize and allocate space for liberd
+    ///////////////////////////////////////////////
+    #ifdef TESTS_ENABLE_LIBERD
+    double * all_res_liberd = (double *)ALLOC(nthread * maxsize * sizeof(double));
+
+    std::vector<std::unique_ptr<ERD_ERI>> erd;
+
+    for(int i = 0; i < nthread; i++)
+        erd.push_back(std::unique_ptr<ERD_ERI>(new ERD_ERI(maxam, maxnprim, 1)));
+
+    errors.emplace("LibERD", initerror);
+    #endif
+
+    ///////////////////////////////////////////////
+    // initialize and allocate space for libint2
+    ///////////////////////////////////////////////
+    #ifdef TESTS_ENABLE_LIBINT2
+    double * all_res_libint2 = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    LIBINT2_PREFIXED_NAME(libint2_static_init)();
+
+    std::vector<std::unique_ptr<Libint2_ERI>> libint;
+
+    for(int i = 0; i < nthread; i++)
+        libint.push_back(std::unique_ptr<Libint2_ERI>(new Libint2_ERI(maxam, maxnprim)));
+
+    errors.emplace("Libint2", initerror);
+    #endif
+
+
+    // Print the header for the final results table
+    printf("\n");
+    printf("%17s  ", "Quartet");
+    for(size_t i = 0; i < errors.size(); i++) printf("  %10s", "MaxErr");
+    for(size_t i = 0; i < errors.size(); i++) printf("  %10s", "MaxRelErr");
+    printf("\n");
+
+    printf("%17s  ", "");
+
+    for(const auto & it : errors)
+        printf("  %10s", it.first.c_str());
+    for(const auto & it : errors)
+        printf("  %10s", it.first.c_str());
+    printf("\n");
+
 
     // Number of contracted integrals calculated
     std::atomic<long> ncont = 0;
 
-    // loop over all quartets, choosing only valid ones
+
+    // loop over all AM quartets, choosing only valid ones
     for(int i = 0; i <= maxam; i++)
     for(int j = 0; j <= maxam; j++)
     for(int k = 0; k <= maxam; k++)
@@ -133,21 +186,28 @@ int main(int argc, char ** argv)
         {
             int ithread = omp_get_thread_num();
 
-            double * res           = all_res + ithread * maxsize;
-            double * res_liberd    = all_res_liberd + ithread * maxsize;
-            double * res_libint    = all_res_libint + ithread * maxsize;
-            double * res_valeev    = all_res_valeev + ithread * maxsize;
-            double * simint_work   = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
+            double * res_simint = all_res_simint + ithread * maxsize;
+            double * simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
+            double * res_valeev = all_res_valeev + ithread * maxsize;
 
-            const int nshell1 = 1; 
-            const int nshell2 = 1; 
+            #ifdef TESTS_ENABLE_LIBERD
+            double * res_liberd = all_res_liberd + ithread * maxsize;
+            #endif
+            #ifdef TESTS_ENABLE_LIBINT2
+            double * res_libint2 = all_res_libint2 + ithread * maxsize;
+            #endif
+
+            const int nshell1 = 1;
+            const int nshell2 = 1;
 
             struct multishell_pair P = create_multishell_pair(nshell1, &shellmap[i][a],
                                                               nshell2, &shellmap[j][b]);
-   
+
 
             const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
 
+            const int nshell1234 = P.nshell12 * Q.nshell12;
+            const int arrlen = nshell1234 * ncart1234;
 
 
             /////////////////////////////////
@@ -162,39 +222,46 @@ int main(int argc, char ** argv)
 
 
 
-            const int nshell1234 = P.nshell12 * Q.nshell12;
-            const int arrlen = nshell1234 * ncart1234;
+            ////////////////////////////
+            // Calculate with my code
+            ////////////////////////////
+            Simint_Integral(P, Q, simint_work, res_simint);
 
 
             /////////////////////////////////
-            // Calculate with liberd and libint2
+            // Calculate with liberd
             /////////////////////////////////
+            #ifdef TESTS_ENABLE_LIBERD
             erd.at(ithread)->Integrals(&shellmap_erd[i][a], nshell1,
                           &shellmap_erd[j][b], nshell2,
                           &shellmap_erd[k][0], nshell3,
                           &shellmap_erd[l][0], nshell4,
                           res_liberd);
-
-            libint.at(ithread)->Integrals(P, Q, res_libint);
-
-            ////////////////////////////
-            // Calculate with my code
-            ////////////////////////////
-            Simint_Integral(P, Q, simint_work, res);
+            #endif
 
 
-            // Analyze
-            std::pair<double, double> err           = CalcError(res,         res_valeev,  arrlen);
-            std::pair<double, double> err_erd       = CalcError(res_liberd,  res_valeev,  arrlen);
-            std::pair<double, double> err_libint    = CalcError(res_libint,  res_valeev,  arrlen);
+            /////////////////////////////////
+            // Calculate with libint2
+            /////////////////////////////////
+            #ifdef TESTS_ENABLE_LIBINT2
+            libint.at(ithread)->Integrals(P, Q, res_libint2);
+            #endif
 
+
+            /////////////////////////////////
+            // Update the error map
+            /////////////////////////////////
             #pragma omp critical
             {
-                UpdateMap(errmap, err, {i,j,k,l});
-                UpdateMap(errmap_erd, err_erd, {i,j,k,l});
-                UpdateMap(errmap_libint, err_libint, {i,j,k,l});
-            }
+                UpdateErrorMap(errors, "Simint", {i, j, k, l}, CalcError(res_simint, res_valeev, arrlen));
 
+                #ifdef TESTS_ENABLE_LIBERD
+                UpdateErrorMap(errors, "LibERD", {i, j, k, l}, CalcError(res_liberd, res_valeev, arrlen));
+                #endif
+                #ifdef TESTS_ENABLE_LIBINT2
+                UpdateErrorMap(errors, "Libint2", {i, j, k, l}, CalcError(res_libint2, res_valeev, arrlen));
+                #endif
+            }
 
 
             // For debugging
@@ -208,22 +275,39 @@ int main(int argc, char ** argv)
             for(int c3 = 0; c3 < NCART(k); c3++)
             for(int c4 = 0; c4 < NCART(l); c4++, ++m)
             {
-                double diff = fabs(res_valeev[m] - res[m]);
-                double rdiff = fabs(diff / res_valeev[m]);
-                double ldiff = fabs(res_valeev[m] - res_libint[m]);
-                double lrdiff = fabs(ldiff / res_valeev[m]);
-                double ediff = fabs(res_valeev[m] - res_liberd[m]);
-                double erdiff = fabs(ediff / res_liberd[m]);
+                double diff_simint = fabs(res_valeev[m] - res_simint[m]);
+                double rdiff_simint = fabs(diff_simint / res_valeev[m]);
 
-                if( (diff > 1e-14 && rdiff > 1e-8) || 
-                    (ediff > 1e-14 && erdiff > 1e-8) ||
-                    (ldiff > 1e-14 && lrdiff > 1e-8) )
+                double diff_liberd = 0;
+                double rdiff_liberd = 0;
+                double diff_libint2 = 0;
+                double rdiff_libint2 = 0;
+
+                #ifdef TESTS_ENABLE_LIBERD
+                diff_liberd = fabs(res_valeev[m] - res_liberd[m]);
+                rdiff_liberd = fabs(diff_liberd / res_liberd[m]);
+                #endif
+
+                #ifdef TESTS_ENABLE_LIBINT2
+                diff_libint2 = fabs(res_valeev[m] - res_libint2[m]);
+                rdiff_libint2 = fabs(diff_libint2 / res_valeev[m]);
+                #endif
+
+
+                if( (diff_simint > 1e-14 && rdiff_simint > 1e-8) ||
+                    (diff_liberd > 1e-14 && rdiff_liberd > 1e-8) ||
+                    (diff_libint2 > 1e-14 && rdiff_libint2 > 1e-8) )
                 {
-                    printf(" [%d/%d] %d %d %d %d : %d %d %d %d  %25.16e  %25.16e  %25.16e   %25.16e  %25.16e  %25.16e  %25.16e\n",
-                                                                                              ithread, nthread,
-                                                                                              m1, m2, m3, m4, c1, c2, c3, c4,
-                                                                                              res_valeev[m], res_liberd[m], res[m], 
-                                                                                              diff, rdiff, ediff, erdiff);
+                    printf(" [%d/%d] %d %d %d %d : %d %d %d %d", ithread, nthread, int(a+m1), int(b+m2), m3, m4, c1, c2, c3, c4);
+
+                    printf("   %25.16e  %25.16e  %25.16e", res_simint[m], diff_simint, rdiff_simint);
+                    #ifdef TESTS_ENABLE_LIBERD
+                    printf("   %25.16e  %25.16e  %25.16e", res_liberd[m], diff_liberd, rdiff_liberd);
+                    #endif
+                    #ifdef TESTS_ENABLE_LIBINT2
+                    printf("   %25.16e  %25.16e  %25.16e", res_libint2[m], diff_libint2, rdiff_libint2);
+                    #endif
+                    printf("\n");
                 }
             }
 
@@ -233,18 +317,19 @@ int main(int argc, char ** argv)
             ncont += arrlen;
 
         } // end threaded loop over a,b
-       
- 
+
+
         free_multishell_pair(Q);
 
-        // print the errors for this quartet
-        std::pair<double, double> err        = errmap.at({i,j,k,l});
-        std::pair<double, double> err_erd    = errmap_erd.at({i,j,k,l});
-        std::pair<double, double> err_libint = errmap_libint.at({i,j,k,l});
-        printf("( %2d %2d | %2d %2d )    %10.3e  %10.3e  %10.3e    %10.3e  %10.3e  %10.3e\n", i, j, k, l,
-                                                      err.first,  err_erd.first,  err_libint.first,
-                                                      err.second, err_erd.second, err_libint.second);
+        // print out the errors for this quartet
+        printf("( %2d %2d | %2d %2d )  ", i, k, k, l);
 
+        // should be the same order as the header, right?
+        for(const auto & it : errors)
+            printf("  %10.3e", it.second.at({i, j, k, l}).first);
+        for(const auto & it : errors)
+            printf("  %10.3e", it.second.at({i, j, k, l}).second);
+        printf("\n");
     }
 
     printf("\n");
@@ -252,16 +337,22 @@ int main(int argc, char ** argv)
     printf("\n");
 
     FreeShellMap(shellmap);
+
+    #ifdef TESTS_ENABLE_LIBERD
     FreeShellMap(shellmap_erd);
+    FREE(all_res_liberd);
+    #endif
+
+    #ifdef TESTS_ENABLE_LIBINT2
+    FREE(all_res_libint2);
+    #endif
 
     Valeev_Finalize();
     Boys_Finalize();
 
-    FREE(all_res_valeev);
-    FREE(all_res_liberd);
-    FREE(all_res_libint);
-    FREE(all_res);
+    FREE(all_res_simint);
     FREE(all_simint_work);
+    FREE(all_res_valeev);
 
     return 0;
 }
