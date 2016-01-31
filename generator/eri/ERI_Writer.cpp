@@ -13,12 +13,13 @@
 // ERI_Writer Base Class //
 ///////////////////////////
 ERI_Writer::ERI_Writer(std::ostream & os,
+                       std::ostream & osh,
                        const ERIGeneratorInfo & info,
                        const BoysGenerator & bg,
                        const ERI_VRR_Writer & vrr_writer,
                        const ERI_ET_Writer & et_writer,
                        const ERI_HRR_Writer & hrr_writer)
-   : os_(os), info_(info), vinfo_(info_.GetVectorInfo()), bg_(bg),
+   : os_(os), osh_(osh), info_(info), vinfo_(info_.GetVectorInfo()), bg_(bg),
      vrr_writer_(vrr_writer), et_writer_(et_writer), hrr_writer_(hrr_writer)
 { }
 
@@ -722,19 +723,26 @@ void ERI_Writer_Basic::WriteFile(void) const
         WriteFile_NoPermute_();
 
 
-    // Version that allocate the contracted workspace
-    // remove the return type
+    // for header and for non-shared-work version
+    // note - no return type
     std::string funcline = StringBuilder("eri_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string funcline2 = StringBuilder("int eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string indent = std::string(funcline2.length(), ' ');
+    std::string funcline2 = StringBuilder("eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
+    std::string funcindent = std::string(funcline.length()+4, ' ');  // +4 for return type
+    std::string funcindent2 = std::string(funcline2.length()+4, ' ');
+    std::stringstream ssig, ssig2;
+    ssig << "struct multishell_pair const P,\n"
+         << funcindent << "struct multishell_pair const Q,\n"
+         << funcindent << "double * const restrict contwork,\n"
+         << funcindent << "double * const restrict " << ArrVarName(am) << ")";
+    ssig2 << "struct multishell_pair const P,\n"
+          << funcindent2 << "struct multishell_pair const Q,\n"
+          << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";
 
-    os_ << "\n\n\n";
-    os_ << funcline2;
-    os_ << "struct multishell_pair const P,\n";
-    os_ << indent << "struct multishell_pair const Q,\n";
-    os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+
+    // create the version that allocates contwork for the user
+    os_ << "\n\n";
+    os_ << "int " << funcline2 << ssig2.str() << "\n";
     os_ << "{\n";
-
     size_t contmem = info_.ContMemoryReq();
     if(contmem == 0)
         os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, NULL, ", ArrVarName(am), ");");
@@ -757,6 +765,11 @@ void ERI_Writer_Basic::WriteFile(void) const
     FreeContwork();
     os_ << indent1 << "return ret;\n";
     os_ << "}\n";
+
+
+    // Add both versions to the header
+    osh_ << "int " << funcline << ssig.str() << ";\n\n";
+    osh_ << "int " << funcline2 << ssig2.str() << ";\n\n";
 }
 
 

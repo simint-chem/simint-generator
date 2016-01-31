@@ -10,18 +10,17 @@ import shutil
 
 
 def ValidQuartet(q):
-  return True
   if q[0] < q[1]:
     return False
 
   if q[2] < q[3]:
     return False
 
-  #if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
-  #  return False
+  if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
+    return False
 
-  #if q[0] < q[2]:
-  #  return False 
+  if q[0] < q[2]:
+    return False 
 
   return True
 
@@ -47,7 +46,9 @@ parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
 parser.add_argument("-b", type=str, required=True, help="Type of boys function")
-parser.add_argument("-c", type=str, required=False, default="",   help="CPU Flags (comma separated)")
+
+parser.add_argument("-c", type=str, required=False, default="", help="CPU Flags (comma separated)")
+parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
 
 parser.add_argument("-et", required=False, action='store_true', help="Use electron transfer rather than second VRR")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
@@ -144,38 +145,108 @@ shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
 ####################################################
 # Generate the external HRR source
 ####################################################
-logfile = os.path.join(outdir_erigen, "hrr.log")
+print("-------------------------------")
+print("Generating HRR")
+print("-------------------------------")
 
-cmdline = [hrr_gen]
-if args.c:
-    cmdline.extend(["-c", str(args.c)])
-cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l)])
-if args.i:
-    cmdline.append("-i")
-if args.S:
-    cmdline.append("-S")
-if args.et:
-    cmdline.append("-et")
+valid = set()
+invalid = set()
 
-print("Creating HRR sources in {}".format(outdir_erigen))
-print("     Logfile: {}".format(logfile))
-print()
-print("Command line:")
-print(' '.join(cmdline))
 print()
 
-with open(logfile, 'w') as lf:
-  ret = subprocess.call(cmdline, stdout=lf)
+# TODO - generate too much here?
+for i in range(1, args.l+1):
+  for j in range(1, i+1):
+    valid.add((i,j));
+    if args.p:
+        valid.add((j, i))
 
-if ret != 0:
-  print("\n")
-  print("*********************************")
-  print("When generating hrr sources")
-  print("Subprocess returned {} - aborting".format(ret))
-  print("*********************************")
-  print("\n")
-  quit(1)
+for i in range(args.l+1, 2*args.l):
+  for j in range(1, 2*args.l-i+1):
+    valid.add((i,j));
+    if args.p:
+        valid.add((j, i))
+
+
+print()
+
+print("Valid: {}".format(len(valid)))
+for q in valid:
+  print("  {}".format(QStr([q[0], q[1], q[0], q[1]])))
+
+print()
+print("==========================================================================================")
+print()
+
+headerbase = "hrr_generated.h"
+headerfile = os.path.join(outdir_erigen, headerbase)
+
+print()
+print("Header file: {}".format(headerfile))
+print()
+
+
+# Start the header file
+defineline = re.sub('[\W]', '_', headerbase.upper()) 
+with open(headerfile, 'w') as hfile:
+  hfile.write("#ifndef {}\n".format(defineline))
+  hfile.write("#define {}\n".format(defineline))
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("\n")
+
+
+for q in valid:
+    filebase = "hrr_{}_{}".format(amchar[q[0]], amchar[q[1]])
+
+    outfile = os.path.join(outdir_erigen, filebase + ".c")
+    logfile = os.path.join(outdir_erigen, filebase + ".log")
+    print("Creating: {}".format(filebase))
+    print("      Output: {}".format(outfile))
+    print("     Logfile: {}".format(logfile))
+    cmdline = [hrr_gen]
+
+    cmdline.extend(["-q", str(q[0]), str(q[1])])
+    cmdline.extend(["-o", outfile])
+    cmdline.extend(["-oh", headerfile])
+
+    if args.c:
+        cmdline.extend(["-c", str(args.c)])
+    if args.i:
+        cmdline.append("-i")
+    if args.S:
+        cmdline.append("-S")
+
+    print()
+    print("Command line:")
+    print(' '.join(cmdline))
+    print()
+
+    with open(logfile, 'w') as lf:
+      ret = subprocess.call(cmdline, stdout=lf)
+
+    if ret != 0:
+      print("\n")
+      print("*********************************")
+      print("When generating hrr sources")
+      print("Subprocess returned {} - aborting".format(ret))
+      print("*********************************")
+      print("\n")
+      quit(1)
+
+# Close out the header file
+with open(headerfile, 'a') as hfile:
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("}\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+  hfile.write("#endif // {}\n".format(defineline))
+  hfile.write("\n")
 
 
 
@@ -222,60 +293,130 @@ if ret != 0:
 ####################################################
 # Generate the external VRR source
 ####################################################
-logfile = os.path.join(outdir_erigen, "vrr.log")
+print("-------------------------------")
+print("Generating VRR")
+print("-------------------------------")
+
+valid = set()
+invalid = set()
+
+print()
 
 if args.et:
-  maxL = args.l*4
+  for i in range(0, args.l*4+1):
+    valid.add((i, 0, 0, 0))
+
+    if args.p:
+      valid.add((0, 0, i, 0)) 
+
+    # TODO - more are probably needed here
+
 else:
-  maxL = args.l*2
+  # also need (X s | X s), etc 
+  for i in range(0, args.l*2+1):
+    for j in range(0, args.l*2+1):
+      if i == 0 and j == 0: # skip ssss
+        continue
+      valid.add((i, 0, j, 0))
 
+      if args.p:
+        valid.add((0, i, 0, j))
+        valid.add((i, 0, 0, j))
+        valid.add((0, i, j, 0))
 
-cmdline = [vrr_gen]
-if args.c:
-    cmdline.extend(["-c", str(args.c)])
-cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(maxL)])
-if args.i:
-    cmdline.append("-i")
-if args.S:
-    cmdline.append("-S")
-if args.et:
-    cmdline.append("-et")
-
-print("Creating VRR sources in {}".format(outdir_erigen))
-print("     Logfile: {}".format(logfile))
-print()
-print("Command line:")
-print(' '.join(cmdline))
 print()
 
-with open(logfile, 'w') as lf:
-  ret = subprocess.call(cmdline, stdout=lf)
+print("Valid: {}".format(len(valid)))
+for q in valid:
+  print("  {}".format(QStr(q)))
 
-if ret != 0:
-  print("\n")
-  print("*********************************")
-  print("When generating vrr sources")
-  print("Subprocess returned {} - aborting".format(ret))
-  print("*********************************")
-  print("\n")
-  quit(1)
+print()
+print("==========================================================================================")
+print()
+
+headerbase = "vrr_generated.h"
+headerfile = os.path.join(outdir_erigen, headerbase)
+
+print()
+print("Header file: {}".format(headerfile))
+print()
+
+# Start the header file
+defineline = re.sub('[\W]', '_', headerbase.upper()) 
+with open(headerfile, 'w') as hfile:
+  hfile.write("#ifndef {}\n".format(defineline))
+  hfile.write("#define {}\n".format(defineline))
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("\n")
 
 
+for q in valid:
+    filebase = "vrr_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+    outfile = os.path.join(outdir_erigen, filebase + ".c")
+    logfile = os.path.join(outdir_erigen, filebase + ".log")
+    print("Creating: {}".format(filebase))
+    print("      Output: {}".format(outfile))
+    print("     Logfile: {}".format(logfile))
 
 
+    with open(logfile, 'w') as lf:
+      cmdline = [vrr_gen]
+      cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
+      cmdline.extend(["-o", outfile])
+      cmdline.extend(["-oh", headerfile])
+
+      if args.c:
+          cmdline.extend(["-c", str(args.c)])
+      if args.i:
+          cmdline.append("-i")
+      if args.S:
+          cmdline.append("-S")
+
+      print()
+      print("Command line:")
+      print(' '.join(cmdline))
+      print()
+
+      ret = subprocess.call(cmdline, stdout=lf)
+
+      if ret != 0:
+        print("\n")
+        print("*********************************")
+        print("When generating vrr sources")
+        print("Subprocess returned {} - aborting".format(ret))
+        print("*********************************")
+        print("\n")
+        quit(1)
+
+    print()
+
+# Close out the header file
+with open(headerfile, 'a') as hfile:
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("}\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+  hfile.write("#endif // {}\n".format(defineline))
+  hfile.write("\n")
 
 
 ####################################################
 # Generate the ERI sources and headers
 ####################################################
 print("-------------------------------")
+print("Generating ERI")
 print("Maximum AM: {}".format(args.l))
 print("Naive combinations: {}".format((args.l+1) ** 4))
 print("-------------------------------")
 
-valid = []
-invalid = []
+valid = set()
+invalid = set()
 
 print()
 
@@ -283,15 +424,11 @@ for i in range(0, args.l + 1):
   for j in range(0, args.l + 1):
     for k in range(0, args.l + 1):
       for l in range(0, args.l + 1):
-        q = [i,j,k,l]
-        v = ValidQuartet(q)
-        if v:
-          valid.append(q)
+        q = (i,j,k,l)
+        if args.p or ValidQuartet(q):
+          valid.add(q)
         else:
-          invalid.append(q)
-
-        #print("{}  ->  {}".format(QStr(q), v))
-
+          invalid.add(q)
 
 print()
 print("Valid: {}".format(len(valid)))
@@ -299,11 +436,6 @@ for q in valid:
   print("  {}".format(QStr(q)))
 
 print()
-print("Invalid: {}".format(len(invalid)))
-#for q in invalid:
-#  print("  {}".format(QStr(q)))
-print()
-
 print("==========================================================================================")
 print()
 
@@ -320,6 +452,22 @@ maxworksize = 0  # number of elements
 print()
 print("Header file: {}".format(headerfile))
 print()
+
+# Start the header file
+defineline = re.sub('[\W]', '_', headerbase.upper()) 
+with open(headerfile, 'w') as hfile:
+  hfile.write("#ifndef {}\n".format(defineline))
+  hfile.write("#define {}\n".format(defineline))
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("#include \"shell/shell.h\"\n")
+  hfile.write("\n")
+
+
 for q in valid:
   filebase = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_erigen, filebase + ".c")
@@ -335,8 +483,9 @@ for q in valid:
     vrrtype = "Inline";
   print("         VRR: {}".format(vrrtype))
 
-
-  if sum(q) >= args.ee:
+  if not args.et:
+    ettype = "Skipping"
+  elif sum(q) >= args.ee:
     ettype = "External"
   else:
     ettype = "Inline";
@@ -355,13 +504,12 @@ for q in valid:
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
     cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
+    cmdline.extend(["-oh", headerfile])
     cmdline.extend(["-s", str(args.s)])
+    cmdline.extend(["-d", args.d])
 
     if args.c:
         cmdline.extend(["-c", str(args.c)])
-
-    cmdline.extend(["-d", args.d])
-
     if vrrtype == "External":
         cmdline.append("-ve")
     if ettype == "External":
@@ -380,6 +528,7 @@ for q in valid:
     print("Command line:")
     print(' '.join(cmdline))
     print()
+
     ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
 
     if ret != 0:
@@ -400,43 +549,20 @@ for q in valid:
   print()
 
 
-
-# Create the header file for all eri
-with open(headerfile, 'w') as hfile:
-  defineline = re.sub('[\W]', '_', headerbase.upper()) 
-  hfile.write("#ifndef {}\n".format(defineline))
-  hfile.write("#define {}\n".format(defineline))
-  hfile.write("\n")
-
-  hfile.write("#ifdef __cplusplus\n")
-  hfile.write("extern \"C\" {\n")
-  hfile.write("#endif\n")
+# Close out the header file
+with open(headerfile, 'a') as hfile:
   hfile.write("\n\n")
-
-  hfile.write("#include \"shell/shell.h\"\n")
-  hfile.write("#include \"vectorization/vectorization.h\"\n")
-  hfile.write("\n\n")
-
   hfile.write("#define SIMINT_ERI_MAXAM {}\n".format(args.l))
   hfile.write("#define SIMINT_ERI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
   hfile.write("#define SIMINT_ERI_MAX_WORKMEM (SIMINT_ERI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n\n")
-
-  for q in valid:
-    funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    funcname2 = "eri_sharedwork_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    intname = "INT__{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict {});\n".format(funcname, intname))
-    hfile.write("int {}(struct multishell_pair const P, struct multishell_pair const Q, double * const restrict contwork, double * const restrict {});\n".format(funcname2, intname))
-
-  hfile.write("\n\n")
-
+  hfile.write("\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("}\n")
   hfile.write("#endif\n")
   hfile.write("\n")
-
-  hfile.write("#endif\n")
+  hfile.write("#endif // {}\n".format(defineline))
+  hfile.write("\n")
 
 
 
@@ -455,8 +581,10 @@ with open(vinfofile, 'w') as vf:
 
 
   if "avx" in cpuflags:
+    vf.write("#include \"vectorization/intrinsics_avx.h\"\n")
     vf.write("#define SIMINT_SIMD_LEN 4\n")
   elif "sse2" in cpuflags:
+    vf.write("#include \"vectorization/intrinsics_sse.h\"\n")
     vf.write("#define SIMINT_SIMD_LEN 2\n")
   else:
     vf.write("#define SIMINT_SIMD_LEN 1\n")

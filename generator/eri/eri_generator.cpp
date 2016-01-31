@@ -22,6 +22,7 @@ int main(int argc, char ** argv)
     // other stuff
     std::string boystype;
     std::string fpath;
+    std::string hpath;
     std::string cpuflags;
     std::string datdir;
     QAM finalam;
@@ -38,6 +39,8 @@ int main(int argc, char ** argv)
         std::string argstr(GetNextArg(iarg, otheropt));
         if(argstr == "-o")
             fpath = GetNextArg(iarg, otheropt);
+        else if(argstr == "-oh")
+            hpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
             cpuflags = GetNextArg(iarg, otheropt);
         else if(argstr == "-d")
@@ -65,15 +68,24 @@ int main(int argc, char ** argv)
 
     // check for required options
     CMDLINE_ASSERT( boystype != "", "Boys type (-b) required" )
-    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
+    CMDLINE_ASSERT( fpath != "", "output source file path (-o) required" )
+    CMDLINE_ASSERT( hpath != "", "output header file path (-oh) required" )
     CMDLINE_ASSERT( datdir != "", "dat directory (-d) required" )
     CMDLINE_ASSERT( finalamset == true, "AM quartet (-q) required" )
 
 
     // open the output file
+    // actually create
+    std::cout << "Generating source file " << fpath << "\n";
+    std::cout << "Appending to header file " << hpath << "\n";
+
     std::ofstream of(fpath);
     if(!of.is_open())
         throw std::runtime_error(StringBuilder("Cannot open file: ", fpath, "\n"));
+
+    std::ofstream ofh(hpath, std::ofstream::app);
+    if(!ofh.is_open())
+        throw std::runtime_error(StringBuilder("Cannot open file: ", hpath, "\n"));
     
 
     // Information for this ERI
@@ -147,7 +159,7 @@ int main(int argc, char ** argv)
     info.SetContQ(hrralgo->TopAM());
 
     // Create the ERI_Writer and write the file
-    ERI_Writer_Basic eri_writer(of, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
+    ERI_Writer_Basic eri_writer(of, ofh, info, *bg, *vrr_writer, *et_writer, *hrr_writer);
     eri_writer.WriteFile();
 
 

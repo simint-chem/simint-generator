@@ -24,7 +24,7 @@ class ERI_HRR_Writer : public WriterBase
 
         virtual ConstantMap GetConstants(void) const;
         virtual void WriteHRR(std::ostream & os) const = 0;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const = 0;
+        virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const = 0;
 
 
     protected:
@@ -52,7 +52,7 @@ class ERI_HRR_Writer_Inline : public ERI_HRR_Writer
         bool IsExternal(void) const { return false; }
 
         virtual void WriteHRR(std::ostream & os) const;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
+        virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const;
 
 };
 
@@ -66,7 +66,7 @@ class ERI_HRR_Writer_External : public ERI_HRR_Writer
         bool IsExternal(void) const { return true; }
 
         virtual void WriteHRR(std::ostream & os) const;
-        virtual void WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const;
+        virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const;
 
 };
 

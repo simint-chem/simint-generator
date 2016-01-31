@@ -17,8 +17,8 @@ extern "C" {
     #pragma warning(disable:2620)
 #endif
 
-#include "eri/gen/hrr.h"
-#include "eri/gen/vrr.h"
+#include "eri/gen/hrr_generated.h"
+#include "eri/gen/vrr_generated.h"
 #include "eri/gen/et.h"
 
 #ifdef __INTEL_COMPILER

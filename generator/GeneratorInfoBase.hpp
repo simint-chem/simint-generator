@@ -118,13 +118,6 @@ public:
         return !Scalar();
     }
 
-    /*! \brief Return the base files to include at the beginning of a source file
-     */   
-    IncludeSet GetIncludes(void) const
-    {
-        return includes_;
-    }
-
 
 private:
     //! The requested AM quartet
@@ -144,10 +137,6 @@ private:
 
     //! Get the vector intrinsics, etc, for this generation run
     std::unique_ptr<VectorInfo> vector_;
-
-    //! Base includes to put in the generated source file
-    IncludeSet includes_;
-
 
     /*! \brief Split a string of cpuflags into a set
      */

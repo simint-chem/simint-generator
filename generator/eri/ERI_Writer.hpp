@@ -16,6 +16,7 @@ class ERI_Writer
 {
 public:
     ERI_Writer(std::ostream & os,
+               std::ostream & osh,
                const ERIGeneratorInfo & info,
                const BoysGenerator & bg,
                const ERI_VRR_Writer & vrr_writer,
@@ -35,6 +36,7 @@ public:
 
 protected:
     std::ostream & os_;
+    std::ostream & osh_;
     const ERIGeneratorInfo & info_;
     const VectorInfo & vinfo_;
     const BoysGenerator & bg_;

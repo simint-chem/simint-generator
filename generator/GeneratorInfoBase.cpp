@@ -54,18 +54,10 @@ GeneratorInfoBase::GeneratorInfoBase(QAM finalam,
       options_(options),
       scalar_(false)
 {
-    includes_.insert("\"vectorization/vectorization.h\"");
-
     if(HasCPUFlag("avx"))
-    {
         vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(256));
-        includes_.insert("\"vectorization/intrinsics_avx.h\"");
-    }
     else if(HasCPUFlag("sse2"))
-    {
         vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(128));
-        includes_.insert("\"vectorization/intrinsics_sse.h\"");
-    }
     else
     {
         scalar_ = true;

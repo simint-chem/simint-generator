@@ -35,7 +35,7 @@ ConstantMap ERI_HRR_Writer::GetConstants(void) const
 
 
 void ERI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
-                                const std::string & ncart_ket, const std::string & ketstr) const
+                                    const std::string & ncart_ket, const std::string & ketstr) const
 {
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
     os << indent4 << "{\n";
@@ -98,7 +98,7 @@ void ERI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList 
 
 
 std::string ERI_HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
-                                       const std::string & ketstr) const
+                                           const std::string & ketstr) const
 {
     std::string arrname = ArrVarName(d.left.am(), d.right.am(), ketstr);
     return StringBuilder("HRR_", arrname, "[", d.index(), " * ", ncart_ket, " + iket]"); 
@@ -212,7 +212,7 @@ void ERI_HRR_Writer_Inline::WriteHRR(std::ostream & os) const
 }
 
 
-void ERI_HRR_Writer_Inline::WriteHRRFile(std::ostream & ofb, std::ostream & ofk, std::ostream & ofh) const
+void ERI_HRR_Writer_Inline::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
 {
     
 }
@@ -333,8 +333,7 @@ void ERI_HRR_Writer_External::WriteHRR(std::ostream & os) const
 }
 
 
-void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
-                                       std::ostream & ofk, std::ostream & ofh) const
+void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
 {
     QAM finalam = info_.FinalAM();
     DAM braam = {finalam[0], finalam[1]};
@@ -349,11 +348,11 @@ void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
         RRStepType brasteptype = (finalam[1] > finalam[0] ? RRStepType::J : RRStepType::I);
         const char * steptypestr = (brasteptype == RRStepType::J ? "J" : "I");
 
-        ofb << "//////////////////////////////////////////////\n";
-        ofb << "// BRA: ( " << amchar[braam[0]] << " " << amchar[braam[1]] << " |\n";
-        ofb << "// Steps: " << brasteps.size() << "\n";
-        ofb << "//////////////////////////////////////////////\n";
-        ofb << "\n";
+        of << "//////////////////////////////////////////////\n";
+        of << "// BRA: ( " << amchar[braam[0]] << " " << amchar[braam[1]] << " |\n";
+        of << "// Steps: " << brasteps.size() << "\n";
+        of << "//////////////////////////////////////////////\n";
+        of << "\n";
 
         std::stringstream prototype;
 
@@ -371,17 +370,17 @@ void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
 
 
 
-        ofb << prototype.str() << "\n";
-        ofb << "{\n";
-        ofb << indent1 << "int iket;\n";
-        ofb << "\n";
+        of << prototype.str() << "\n";
+        of << "{\n";
+        of << indent1 << "int iket;\n";
+        of << "\n";
 
-        WriteBraSteps_(ofb, brasteps, "ncart_ket", "X_X"); 
+        WriteBraSteps_(of, brasteps, "ncart_ket", "X_X"); 
 
-        ofb << "\n";
-        ofb << "}\n";
-        ofb << "\n";
-        ofb << "\n";
+        of << "\n";
+        of << "}\n";
+        of << "\n";
+        of << "\n";
 
 
         // header
@@ -394,11 +393,11 @@ void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
         RRStepType ketsteptype = (finalam[3] > finalam[2] ? RRStepType::L : RRStepType::K);
         const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
 
-        ofk << "//////////////////////////////////////////////\n";
-        ofk << "// KET: ( " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " |\n";
-        ofk << "// Steps: " << ketsteps.size() << "\n";
-        ofk << "//////////////////////////////////////////////\n";
-        ofk << "\n";
+        of << "//////////////////////////////////////////////\n";
+        of << "// KET: ( " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " |\n";
+        of << "// Steps: " << ketsteps.size() << "\n";
+        of << "//////////////////////////////////////////////\n";
+        of << "\n";
 
         std::stringstream prototype;
 
@@ -416,17 +415,17 @@ void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & ofb,
 
 
 
-        ofk << prototype.str() << "\n";
-        ofk << "{\n";
-        ofk << indent1 << "int ibra;\n";
-        ofk << "\n";
+        of << prototype.str() << "\n";
+        of << "{\n";
+        of << indent1 << "int ibra;\n";
+        of << "\n";
 
-        WriteKetSteps_(ofk, ketsteps, "ncart_bra", "X_X"); 
+        WriteKetSteps_(of, ketsteps, "ncart_bra", "X_X"); 
 
-        ofk << "\n";
-        ofk << "}\n";
-        ofk << "\n";
-        ofk << "\n";
+        of << "\n";
+        of << "}\n";
+        of << "\n";
+        of << "\n";
 
 
         // header
