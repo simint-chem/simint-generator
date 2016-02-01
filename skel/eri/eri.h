@@ -26,6 +26,12 @@ extern "C" {
 #endif
 
 
+typedef int (*simint_erifunc_sharedwork)(struct multishell_pair const, struct multishell_pair const, double * const restrict, double * const restrict);
+typedef int (*simint_erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
+
+extern simint_erifunc_sharedwork  simint_compute_eri_sharedwork[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
+extern simint_erifunc             simint_compute_eri[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
+
 
 #ifdef __cplusplus
 }

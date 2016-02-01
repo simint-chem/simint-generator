@@ -50,6 +50,7 @@ add_subdirectory(eri)
 
 # Create the main library
 add_library(simint STATIC
+                   simint_init.c
                    $<TARGET_OBJECTS:simint_eri>
                    $<TARGET_OBJECTS:simint_shell>
                    $<TARGET_OBJECTS:simint_boys>

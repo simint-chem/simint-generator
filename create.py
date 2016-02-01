@@ -139,6 +139,8 @@ shutil.copytree(os.path.join(skeldir, "shell"),         outdir_shell)
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
 shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
+shutil.copy(os.path.join(skeldir, "simint_init.h"),     args.outdir)
+shutil.copy(os.path.join(skeldir, "simint_init.c"),     args.outdir)
 
 
 
@@ -669,6 +671,11 @@ with open(sinfofile, 'w') as sf:
     sf.write("#define SIMINT_ERI_USE_ET\n")
   else:
     sf.write("#define SIMINT_ERI_NO_ET\n")
+
+  if args.p:
+    sf.write("#define SIMINT_ERI_PERMUTATIONS")
+  else:
+    sf.write("#define SIMINT_ERI_NO_PERMUTATIONS")
   
 
   sf.write("\n\n#endif\n")
