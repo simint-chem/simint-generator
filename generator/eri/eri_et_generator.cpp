@@ -22,6 +22,8 @@ int main(int argc, char ** argv)
 
     bool finalamset = 0;
 
+    bool direction_bra = false;
+
     // parse command line
     OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
@@ -37,6 +39,8 @@ int main(int argc, char ** argv)
             hpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
             cpuflags = GetNextArg(iarg, otheropt);
+        else if(argstr == "-b")
+            direction_bra = true;
         else if(argstr == "-q")
         {
             finalam[0] = GetIArg(iarg, otheropt);   
@@ -78,7 +82,7 @@ int main(int argc, char ** argv)
 
     std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
-    if(finalam[2] > finalam[0])
+    if(direction_bra)
         etalgo->Create(finalam, DoubletType::BRA);
     else
         etalgo->Create(finalam, DoubletType::KET);

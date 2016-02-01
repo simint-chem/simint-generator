@@ -125,22 +125,36 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
     const size_t dshell12_size = nshell12 * sizeof(double);
     const size_t ibatch_size = nbatch * sizeof(int);
 
-    const size_t memsize = dprim_size*11 + dshell12_size*3 + ishell12_size + ibatch_size;
+    int ndprim_size = 11;
+
+    #ifdef SIMINT_ERI_USE_ET
+    ndprim_size += 3;
+    #endif
+
+    const size_t memsize = dprim_size*ndprim_size + dshell12_size*3 + ishell12_size + ibatch_size;
     P->memsize = memsize;
 
+    int dcount = 0;
     // allocate one large space
     void * mem = ALLOC(memsize); 
-    P->x          = mem;
-    P->y          = mem +    dprim_size;
-    P->z          = mem +  2*dprim_size;
-    P->PA_x       = mem +  3*dprim_size;
-    P->PA_y       = mem +  4*dprim_size;
-    P->PA_z       = mem +  5*dprim_size;
-    P->PB_x       = mem +  6*dprim_size;
-    P->PB_y       = mem +  7*dprim_size;
-    P->PB_z       = mem +  8*dprim_size;
-    P->alpha      = mem +  9*dprim_size;
-    P->prefac     = mem + 10*dprim_size;
+    P->x          = mem + dprim_size*(dcount++);
+    P->y          = mem + dprim_size*(dcount++);
+    P->z          = mem + dprim_size*(dcount++);
+    P->PA_x       = mem + dprim_size*(dcount++);
+    P->PA_y       = mem + dprim_size*(dcount++);
+    P->PA_z       = mem + dprim_size*(dcount++);
+    P->PB_x       = mem + dprim_size*(dcount++);
+    P->PB_y       = mem + dprim_size*(dcount++);
+    P->PB_z       = mem + dprim_size*(dcount++);
+    P->alpha      = mem + dprim_size*(dcount++);
+    P->prefac     = mem + dprim_size*(dcount++);
+
+    #ifdef SIMINT_ERI_USE_ET
+    P->bAB_x      = mem + dprim_size*(dcount++);
+    P->bAB_y      = mem + dprim_size*(dcount++);
+    P->bAB_z      = mem + dprim_size*(dcount++);
+    #endif
+    
 
     // below are unaligned
     P->AB_x       = mem + 11*dprim_size;
@@ -233,11 +247,11 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                     P->PB_y[idx] = P->y[idx] - B[sb].y;
                     P->PB_z[idx] = P->z[idx] - B[sb].z;
 
-                    /*
+                    #ifdef SIMINT_ERI_USE_ET
                     P->bAB_x[idx] = B[sb].alpha[j]*Xab_x;
                     P->bAB_y[idx] = B[sb].alpha[j]*Xab_y;
                     P->bAB_z[idx] = B[sb].alpha[j]*Xab_z;
-                    */
+                    #endif
 
                     P->alpha[idx] = p_ab;
                     ++idx;

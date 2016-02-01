@@ -1,6 +1,8 @@
 #ifndef SIMINT_SHELL_H
 #define SIMINT_SHELL_H
 
+#include "simint_config.h" // for USE_ET define
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -50,11 +52,11 @@ struct multishell_pair
     double * PB_y;
     double * PB_z;
 
-    /*
+    #ifdef SIMINT_ERI_USE_ET
     double * bAB_x;
     double * bAB_y;
     double * bAB_z;
-    */
+    #endif
 
     double * alpha;
     double * prefac;

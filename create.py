@@ -263,14 +263,9 @@ invalid = set()
 print()
 
 if args.et:
-  for i in range(0, args.l+1):
-    for j in range(1, i+1):
+  for i in range(0, 2*args.l+4):
+    for j in range(1, 2*args.l+4):
       valid.add((i,0,j,0))
-
-  if args.p:
-    for i in range(1, args.l+1):
-      for j in range(i+1, args.l+1):
-        valid.add((i,0,j,0))
 else:
   print("Skipping ET...")
 print()
@@ -477,7 +472,6 @@ with open(headerfile, 'a') as hfile:
 print("-------------------------------")
 print("Generating ERI")
 print("Maximum AM: {}".format(args.l))
-print("Naive combinations: {}".format((args.l+1) ** 4))
 print("-------------------------------")
 
 valid = set()
@@ -658,10 +652,24 @@ with open(vinfofile, 'w') as vf:
   vf.write("\n\n#endif\n")
 
 
+####################################################
+# Overall config header
+####################################################
+sinfofile = os.path.join(args.outdir, "simint_config.h")
+with open(sinfofile, 'w') as sf:
 
-#print("Array filling lines:")
-#print("\n")
-#for q in valid:
-#  funcname = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-#  print("funcs[{}][{}][{}][{}] = {};".format(q[0], q[1], q[2], q[3], funcname))
-#print("\n\n")
+  # Parse the cpu flags
+  cpuflags = args.c.lower().split(',')
+    
+
+  sf.write("#ifndef SIMINT_CONFIG_H\n")
+  sf.write("#define SIMINT_CONFIG_H\n\n\n")
+
+  if args.et:
+    sf.write("#define SIMINT_ERI_USE_ET\n")
+  else:
+    sf.write("#define SIMINT_ERI_NO_ET\n")
+  
+
+  sf.write("\n\n#endif\n")
+
