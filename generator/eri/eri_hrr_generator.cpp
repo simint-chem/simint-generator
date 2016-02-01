@@ -12,12 +12,6 @@ int main(int argc, char ** argv)
 {
     try {
 
-    // default options
-    OptionMap options = DefaultOptions();
-
-    // max L value
-    int maxL = 0;
-
     // Doublet we are calculating
     DAM finalam;
 
@@ -29,6 +23,7 @@ int main(int argc, char ** argv)
     bool finalamset = false;
 
     // parse command line
+    OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
 
     // parse specific options
@@ -36,9 +31,7 @@ int main(int argc, char ** argv)
     while(iarg < otheropt.size())
     {
         std::string argstr(GetNextArg(iarg, otheropt));
-        if(argstr == "-L")
-            maxL = GetIArg(iarg, otheropt);
-        else if(argstr == "-o")
+        if(argstr == "-o")
             fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-oh")
             hpath = GetNextArg(iarg, otheropt);

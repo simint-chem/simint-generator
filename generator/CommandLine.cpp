@@ -68,7 +68,7 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
         std::string argstr(GetNextArg(i, argc, argv));
         if(argstr == "-et")
             options[Option::NoET] = 0;
-        if(argstr == "-ve")
+        else if(argstr == "-ve")
             options[Option::InlineVRR] = 0;
         else if(argstr == "-ee")
             options[Option::InlineET] = 0;

@@ -19,7 +19,7 @@ extern "C" {
 
 #include "eri/gen/hrr_generated.h"
 #include "eri/gen/vrr_generated.h"
-#include "eri/gen/et.h"
+#include "eri/gen/et_generated.h"
 
 #ifdef __INTEL_COMPILER
     #pragma warning(pop)

@@ -12,9 +12,6 @@ int main(int argc, char ** argv)
 {
     try {
 
-    // default options
-    OptionMap options = DefaultOptions();
-
     // quartet we are looking for
     QAM finalam;
 
@@ -26,6 +23,7 @@ int main(int argc, char ** argv)
     bool finalamset = false;
 
     // parse command line
+    OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
 
     // parse specific options

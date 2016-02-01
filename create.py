@@ -205,7 +205,7 @@ for q in valid:
 
     outfile = os.path.join(outdir_erigen, filebase + ".c")
     logfile = os.path.join(outdir_erigen, filebase + ".log")
-    print("Creating: {}".format(filebase))
+    print("Creating HRR: {}".format(filebase))
     print("      Output: {}".format(outfile))
     print("     Logfile: {}".format(logfile))
     cmdline = [hrr_gen]
@@ -253,40 +253,105 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 # Generate the external ET source
 ####################################################
-logfile = os.path.join(outdir_erigen, "et.log")
+print("-------------------------------")
+print("Generating ET")
+print("-------------------------------")
 
-cmdline = [et_gen]
+valid = set()
+invalid = set()
 
-if args.c:
-    cmdline.extend(["-c", str(args.c)])
-cmdline.extend(["-o", outdir_erigen])
-cmdline.extend(["-L", str(args.l*4)])
-if args.i:
-    cmdline.append("-i")
-if args.S:
-    cmdline.append("-S")
+print()
+
 if args.et:
-    cmdline.append("-et")
+  for i in range(0, args.l+1):
+    for j in range(1, i+1):
+      valid.add((i,0,j,0))
 
-print("Creating ET sources in {}".format(outdir_erigen))
-print("     Logfile: {}".format(logfile))
+  if args.p:
+    for i in range(1, args.l+1):
+      for j in range(i+1, args.l+1):
+        valid.add((i,0,j,0))
+else:
+  print("Skipping ET...")
 print()
-print("Command line:")
-print(' '.join(cmdline))
+
+print("Valid: {}".format(len(valid)))
+for q in valid:
+  print("  {}".format(QStr(q)))
+
+print()
+print("==========================================================================================")
 print()
 
-with open(logfile, 'w') as lf:
-  ret = subprocess.call(cmdline, stdout=lf)
+headerbase = "et_generated.h"
+headerfile = os.path.join(outdir_erigen, headerbase)
 
-if ret != 0:
-  print("\n")
-  print("*********************************")
-  print("When generating et sources")
-  print("Subprocess returned {} - aborting".format(ret))
-  print("*********************************")
-  print("\n")
-  quit(1)
+print()
+print("Header file: {}".format(headerfile))
+print()
 
+# Start the header file
+defineline = re.sub('[\W]', '_', headerbase.upper()) 
+with open(headerfile, 'w') as hfile:
+  hfile.write("#ifndef {}\n".format(defineline))
+  hfile.write("#define {}\n".format(defineline))
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("\n")
+
+
+for q in valid:
+    filebase = "et_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+    outfile = os.path.join(outdir_erigen, filebase + ".c")
+    logfile = os.path.join(outdir_erigen, filebase + ".log")
+    print("Creating ET: {}".format(filebase))
+    print("      Output: {}".format(outfile))
+    print("     Logfile: {}".format(logfile))
+
+    with open(logfile, 'w') as lf:
+      cmdline = [et_gen]
+      cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
+      cmdline.extend(["-o", outfile])
+      cmdline.extend(["-oh", headerfile])
+
+      if args.c:
+          cmdline.extend(["-c", str(args.c)])
+      if args.i:
+          cmdline.append("-i")
+      if args.S:
+          cmdline.append("-S")
+
+      print()
+      print("Command line:")
+      print(' '.join(cmdline))
+      print()
+
+      ret = subprocess.call(cmdline, stdout=lf)
+
+      if ret != 0:
+        print("\n")
+        print("*********************************")
+        print("When generating vrr sources")
+        print("Subprocess returned {} - aborting".format(ret))
+        print("*********************************")
+        print("\n")
+        quit(1)
+
+    print()
+
+# Close out the header file
+with open(headerfile, 'a') as hfile:
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("}\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+  hfile.write("#endif // {}\n".format(defineline))
+  hfile.write("\n")
 
 
 
@@ -303,7 +368,7 @@ invalid = set()
 print()
 
 if args.et:
-  for i in range(0, args.l*4+1):
+  for i in range(1, args.l*4+1):
     valid.add((i, 0, 0, 0))
 
     if args.p:
@@ -359,7 +424,7 @@ for q in valid:
     filebase = "vrr_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
     outfile = os.path.join(outdir_erigen, filebase + ".c")
     logfile = os.path.join(outdir_erigen, filebase + ".log")
-    print("Creating: {}".format(filebase))
+    print("Creating VRR: {}".format(filebase))
     print("      Output: {}".format(outfile))
     print("     Logfile: {}".format(logfile))
 

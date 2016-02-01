@@ -12,17 +12,18 @@ int main(int argc, char ** argv)
 {
     try {
 
-    // default options
-    OptionMap options = DefaultOptions();
-
-    // max L value
-    int maxL = 0;
+    // quartet we are looking for
+    QAM finalam;
 
     // other stuff
     std::string fpath;
+    std::string hpath;
     std::string cpuflags;
 
+    bool finalamset = 0;
+
     // parse command line
+    OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
 
     // parse specific options
@@ -30,12 +31,20 @@ int main(int argc, char ** argv)
     while(iarg < otheropt.size())
     {
         std::string argstr(GetNextArg(iarg, otheropt));
-        if(argstr == "-L")
-            maxL = GetIArg(iarg, otheropt);
-        else if(argstr == "-o")
+        if(argstr == "-o")
             fpath = GetNextArg(iarg, otheropt);
+        else if(argstr == "-oh")
+            hpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-c")
             cpuflags = GetNextArg(iarg, otheropt);
+        else if(argstr == "-q")
+        {
+            finalam[0] = GetIArg(iarg, otheropt);   
+            finalam[1] = GetIArg(iarg, otheropt);   
+            finalam[2] = GetIArg(iarg, otheropt);   
+            finalam[3] = GetIArg(iarg, otheropt);   
+            finalamset = true;
+        }
         else
         {
             std::cout << "\n\n";
@@ -47,85 +56,35 @@ int main(int argc, char ** argv)
     }
 
 
-    CMDLINE_ASSERT( fpath != "", "output path (-o) required" )
-    CMDLINE_ASSERT( maxL > 0, "Maximum L value (-L) greater than 0 required")
+    CMDLINE_ASSERT( fpath != "", "output source file path (-o) required" )
+    CMDLINE_ASSERT( hpath != "", "output header file path (-oh) required" )
+    CMDLINE_ASSERT( finalamset == true, "AM quartet (-q) required" )
 
-    if(fpath.back() != '/')
-        fpath += '/';
+    // actually create
+    std::cout << "Generating source file " << fpath << "\n";
+    std::cout << "Appending to header file " << hpath << "\n";
 
+    std::ofstream of(fpath);
+    if(!of.is_open())
+        throw std::runtime_error(StringBuilder("Cannot open file: ", fpath, "\n"));
 
-    // different source and header files
-    std::string headpath = fpath + "et.h";
-    
-    std::cout << "Generating header file " << headpath << "\n";
-
-
-    std::ofstream ofh(headpath);
+    std::ofstream ofh(hpath, std::ofstream::app);
     if(!ofh.is_open())
-        throw std::runtime_error(StringBuilder("Cannot open file: ", headpath, "\n"));
+        throw std::runtime_error(StringBuilder("Cannot open file: ", hpath, "\n"));
 
-    // start the header file
-    ofh << "#ifndef ET__H\n";
-    ofh << "#define ET__H\n";
-    ofh << "\n";
-    ofh << "#include \"eri/eri.h\"\n\n\n";
+    ERIGeneratorInfo info(finalam, Compiler::Intel, cpuflags, options);
 
+    of << "#include \"eri/eri.h\"\n";
 
-    // only do this if we are actually doing ET
-    // (we always need to create the header file though)
-    if(!options[Option::NoET])
-    {
-        // we want all gaussians up to the maximum L value
-        // First, bra -> ket
-        for(int i = 0; i <= maxL; i++)
-        for(int j = 1; j <= maxL; j++)
-        {
-            std::string srcpath = StringBuilder(fpath, "et_ket_", amchar[i], "_s_", amchar[j], "_s.c");
-            std::cout << "Generating source file " << srcpath << "\n";
-            std::ofstream of(srcpath);
+    std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
-            if(!of.is_open())
-                throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
+    if(finalam[2] > finalam[0])
+        etalgo->Create(finalam, DoubletType::BRA);
+    else
+        etalgo->Create(finalam, DoubletType::KET);
 
-            QAM am{i, 0, j, 0};
-            ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
-
-            of << "#include \"eri/eri.h\"\n";
-
-            std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-            etalgo->Create(am, DoubletType::KET);
-
-            std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
-            et_writer->WriteETFile(of, ofh);
-        }
-
-
-        // Now, ket->bra
-        for(int i = 1; i <= maxL; i++)
-        for(int j = 0; j <= maxL; j++)
-        {
-            std::string srcpath = StringBuilder(fpath, "et_bra_", amchar[i], "_s_", amchar[j], "_s.c");
-            std::cout << "Generating source file " << srcpath << "\n";
-            std::ofstream of(srcpath);
-
-            if(!of.is_open())
-                throw std::runtime_error(StringBuilder("Cannot open file: ", srcpath, "\n"));
-
-            QAM am{i, 0, j, 0};
-            ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
-
-            of << "#include \"eri/eri.h\"\n";
-
-            std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
-            etalgo->Create(am, DoubletType::BRA);
-
-            std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
-            et_writer->WriteETFile(of, ofh);
-        }
-    }
-
-    ofh << "\n";
-    ofh << "#endif\n\n";
+    std::unique_ptr<ERI_ET_Writer> et_writer(new ERI_ET_Writer_External(*etalgo, info));
+    et_writer->WriteETFile(of, ofh);
     
 
     } // close try block

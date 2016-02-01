@@ -17,7 +17,6 @@ int main(int argc, char ** argv)
 {
     try {
 
-    OptionMap options = DefaultOptions();
 
     // other stuff
     std::string boystype;
@@ -30,6 +29,7 @@ int main(int argc, char ** argv)
     bool finalamset = false;
 
     // parse command line
+    OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
 
     // parse specific options
@@ -130,24 +130,30 @@ int main(int argc, char ** argv)
     else
         hrr_writer = std::unique_ptr<ERI_HRR_Writer>(new ERI_HRR_Writer_External(*hrralgo, info));
 
+    QuartetSet topquartets = hrralgo->TopQuartets();
 
     // 2.) ET steps
     //     with the HRR top level stuff as the initial targets
-    DoubletType etdirection = DoubletType::KET;
-    if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
-        etdirection = DoubletType::BRA;
+    if(!options[Option::NoET])
+    {
+        DoubletType etdirection = DoubletType::KET;
+        if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
+            etdirection = DoubletType::BRA;
 
+        etalgo->Create(topquartets, etdirection);
+        topquartets = etalgo->TopQuartets();
+    }
 
-    etalgo->Create(hrralgo->TopQuartets(), etdirection);
 
     if(options[Option::InlineET])
         et_writer = std::unique_ptr<ERI_ET_Writer>(new ERI_ET_Writer_Inline(*etalgo, info));
     else
         et_writer = std::unique_ptr<ERI_ET_Writer>(new ERI_ET_Writer_External(*etalgo, info));
 
+
     // 3.) VRR Steps
     // requirements for vrr are the top level stuff from ET
-    vrralgo->Create(etalgo->TopQuartets());
+    vrralgo->Create(topquartets);
 
     if(options[Option::InlineVRR])
         vrr_writer = std::unique_ptr<ERI_VRR_Writer>(new ERI_VRR_Writer_Inline(*vrralgo, info));

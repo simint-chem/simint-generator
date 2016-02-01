@@ -25,25 +25,17 @@ void ERI_ET_Algorithm_Base::PruneQuartets_(QuartetSet & qs, QuartetSet & pruned)
 {
     QuartetSet qsnew;
 
-    if(GetOption(Option::NoET) > 0)
+    // Prune anything from VRR
+    for(auto & it : qs)
     {
-        // prune everything. We aren't doing ET
-        pruned.insert(qs.begin(), qs.end());
-    }
-    else
-    {
-        // Prune anything from VRR
-        for(auto & it : qs)
+        if(it)
         {
-            if(it)
-            {
-                if(direction_ == DoubletType::KET && it.ket.left.am() != 0)
-                    qsnew.insert(it);
-                else if(direction_ == DoubletType::BRA && it.bra.left.am() != 0)
-                    qsnew.insert(it);
-                else
-                    pruned.insert(it);
-            }
+            if(direction_ == DoubletType::KET && it.ket.left.am() != 0)
+                qsnew.insert(it);
+            else if(direction_ == DoubletType::BRA && it.bra.left.am() != 0)
+                qsnew.insert(it);
+            else
+                pruned.insert(it);
         }
     }
 
