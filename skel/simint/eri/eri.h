@@ -25,12 +25,46 @@ extern "C" {
     #pragma warning(pop)
 #endif
 
+// Allocation helpers
+// (to ensure alignment)
+inline double * simint_allocate_target(size_t ndoubles)
+{
+    return (double *)ALLOC(ndoubles * sizeof(double));
+}
 
+inline void simint_free_target(double * ptr)
+{
+    FREE(ptr);
+}
+
+
+// Typedefs for eri functions
 typedef int (*simint_erifunc_sharedwork)(struct multishell_pair const, struct multishell_pair const, double * const restrict, double * const restrict);
 typedef int (*simint_erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
 
-extern simint_erifunc_sharedwork  simint_compute_eri_sharedwork[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
-extern simint_erifunc             simint_compute_eri[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
+
+// Stores pointers to the eri functions
+extern simint_erifunc_sharedwork  simint_erifunc_sharedwork_array[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
+extern simint_erifunc             simint_erifunc_array[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
+
+
+
+
+// Convenience
+inline int simint_compute_eri(struct multishell_pair const P,
+                              struct multishell_pair const Q,
+                              double * const restrict integrals)
+{
+    return simint_erifunc_array[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
+}
+
+inline int simint_compute_eri_sharedwork(struct multishell_pair const P,
+                                         struct multishell_pair const Q,
+                                         double * const restrict work,
+                                         double * const restrict integrals)
+{
+    return simint_erifunc_sharedwork_array[P.am1][P.am2][Q.am1][Q.am2](P, Q, work, integrals);
+}
 
 
 #ifdef __cplusplus

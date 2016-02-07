@@ -118,6 +118,7 @@ if args.S and args.i:
 ####################################################
 outdir = os.path.join(args.outdir, "simint")
 outdir_test = os.path.join(args.outdir, "test")
+outdir_examples = os.path.join(args.outdir, "examples")
 
 outdir_eri = os.path.join(outdir, "eri")
 outdir_erigen = os.path.join(outdir_eri, "gen")
@@ -127,10 +128,12 @@ if os.path.isdir(args.outdir):
   print("WARNING - output directory exists. Overwriting...")
   shutil.rmtree(outdir, ignore_errors=True)
   shutil.rmtree(outdir_test, ignore_errors=True)
+  shutil.rmtree(outdir_examples, ignore_errors=True)
 
 
 shutil.copytree(os.path.join(skeldir, "simint"),        outdir) 
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
+shutil.copytree(os.path.join(skeldir, "examples"),          outdir_examples)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
 
 

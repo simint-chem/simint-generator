@@ -1,0 +1,153 @@
+#include <stdio.h>
+
+#include "simint/simint_init.h"
+#include "simint/eri/eri.h"
+
+/* Quick and dirty example of using Simint
+ *
+ * We use hard-coded water/STO-3G as a simple example
+ */
+int main(int argc, char ** argv)
+{
+    ////////////////////////////////
+    // General workflow as follows
+    ////////////////////////////////
+
+
+    ////////////////////////////////////////
+    // 1. Initialize the library
+    simint_init();
+
+
+    ////////////////////////////////////////
+    // 2. Create your shells
+    struct gaussian_shell s_shells[4];
+    struct gaussian_shell p_shells[1];
+
+    // allocate the memory
+    // arguments to allocate_gaussian_shell
+    //    Number of primitives
+    //    Pointer to the shell
+    // Note that this doesn't actually set the
+    // nprim member of the structure
+    allocate_gaussian_shell(3, &s_shells[0]);
+    allocate_gaussian_shell(3, &s_shells[1]);
+    allocate_gaussian_shell(3, &s_shells[2]);
+    allocate_gaussian_shell(3, &s_shells[3]);
+    allocate_gaussian_shell(3, &p_shells[0]);
+
+    //
+    // Coordinates are in atomic units!
+    //
+    // oxygen
+    s_shells[0].am = 0;  s_shells[0].nprim = 3;
+    s_shells[0].x = 0.00000; s_shells[0].y = -0.14322; s_shells[0].z = 0.0;
+    s_shells[0].alpha[0] = 130.7093200;  s_shells[0].coef[0] =  0.15432897;
+    s_shells[0].alpha[1] =  23.8088610;  s_shells[0].coef[1] =  0.53532814; 
+    s_shells[0].alpha[2] =   6.4436083;  s_shells[0].coef[2] =  0.44463454;
+
+    s_shells[1].am = 0;  s_shells[1].nprim = 3;
+    s_shells[1].x = 0.00000; s_shells[1].y = -0.14322; s_shells[1].z = 0.0;
+    s_shells[1].alpha[0] =   5.0331513;  s_shells[1].coef[0] = -0.09996723;
+    s_shells[1].alpha[1] =   1.1695961;  s_shells[1].coef[1] =  0.39951283; 
+    s_shells[1].alpha[2] =   0.3803890;  s_shells[1].coef[2] =  0.70011547;
+
+    p_shells[0].am = 1;  p_shells[0].nprim = 3;
+    p_shells[0].x = 0.00000; p_shells[0].y = -0.14322; p_shells[0].z = 0.0;
+    p_shells[0].alpha[0] =   5.0331513;  p_shells[0].coef[0] =  0.15591627;
+    p_shells[0].alpha[1] =   1.1695961;  p_shells[0].coef[1] =  0.60768372; 
+    p_shells[0].alpha[2] =   0.3803890;  p_shells[0].coef[2] =  0.39195739;
+
+    // hydrogen 1
+    s_shells[2].am = 0;  s_shells[2].nprim = 3;
+    s_shells[2].x =  1.63804; s_shells[2].y = 1.13654; s_shells[2].z = 0.0;
+    s_shells[2].alpha[0] =  3.42525091;  s_shells[2].coef[0] =  0.15432897;
+    s_shells[2].alpha[1] =  0.62391373;  s_shells[2].coef[1] =  0.53532814; 
+    s_shells[2].alpha[2] =  0.16885540;  s_shells[2].coef[2] =  0.44463454;
+
+    // hydrogen 2
+    s_shells[3].am = 0;  s_shells[3].nprim = 3;
+    s_shells[3].x = -1.63804; s_shells[3].y = 1.13654; s_shells[3].z = 0.0;
+    s_shells[3].alpha[0] =  3.42525091;  s_shells[3].coef[0] =  0.15432897;
+    s_shells[3].alpha[1] =  0.62391373;  s_shells[3].coef[1] =  0.53532814; 
+    s_shells[3].alpha[2] =  0.16885540;  s_shells[3].coef[2] =  0.44463454;
+
+
+    ////////////////////////////////////////
+    // 3. Normalize
+    // Arguments to normalize_gaussian_shells:
+    //   number of shells
+    //   pointer to array of shells
+    normalize_gaussian_shells(4, s_shells);
+    normalize_gaussian_shells(1, p_shells);
+
+
+    ////////////////////////////////////////
+    // 4. Create your multishell pairs
+    // Could obviously be done on the fly if needed
+    struct multishell_pair ss_pair = create_multishell_pair(4, s_shells, 4, s_shells);
+    struct multishell_pair ps_pair = create_multishell_pair(1, p_shells, 4, s_shells);
+    struct multishell_pair pp_pair = create_multishell_pair(1, p_shells, 1, p_shells);
+
+
+    ////////////////////////////////////////
+    // 5. Compute your integrals
+    // For this example, I'll just allocate
+    // space for all (although this overestimates
+    // since we are exploiting some symmetry)
+
+    // Argument is the number of doubles
+    double * targets = simint_allocate_target(7*7*7*7);
+    int ncomputed = 0;
+    int ntotal = 0;
+
+    ncomputed = simint_compute_eri(ss_pair, ss_pair, targets+ntotal);
+    printf("Computed %d contracted ssss integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    ncomputed = simint_compute_eri(ps_pair, ss_pair, targets+ntotal);
+    ncomputed *= 3;
+    printf("Computed %d contracted psss integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    ncomputed = simint_compute_eri(ps_pair, ps_pair, targets+ntotal);
+    ncomputed *= 9;
+    printf("Computed %d contracted psps integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    ncomputed = simint_compute_eri(pp_pair, ss_pair, targets+ntotal);
+    ncomputed *= 9;
+    printf("Computed %d contracted ppss integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    ncomputed = simint_compute_eri(pp_pair, ps_pair, targets+ntotal);
+    ncomputed *= 27;
+    printf("Computed %d contracted ppps integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    ncomputed = simint_compute_eri(pp_pair, pp_pair, targets+ntotal);
+    ncomputed *= 81;
+    printf("Computed %d contracted pppp integrals\n", ncomputed);
+    ntotal += ncomputed;
+
+    printf("++Computed %d contracted integrals\n", ntotal);
+
+    //for(int i = 0; i < ntotal; i++)
+    //    printf(" %d  %12.8e\n", i, targets[i]);
+
+    ////////////////////////////////////////
+    // 6. Clean up and finalize the library
+    //
+    free_gaussian_shell(s_shells[0]);
+    free_gaussian_shell(s_shells[1]);
+    free_gaussian_shell(s_shells[2]);
+    free_gaussian_shell(s_shells[3]);
+    free_gaussian_shell(p_shells[0]);
+    free_multishell_pair(ss_pair);
+    free_multishell_pair(ps_pair);
+    free_multishell_pair(pp_pair);
+    simint_free_target(targets);
+    simint_finalize();
+
+    return 0;
+}

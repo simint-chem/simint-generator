@@ -3,7 +3,7 @@ macro(ADDTEST TNAME TFILES)
 
   target_link_libraries(${TNAME} PRIVATE simint ${TESTS_CXX_LIBRARIES})
                                  
-  if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+  if(TESTS_ENABLE_LIBERD AND "${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
     target_link_libraries(${TNAME} PRIVATE ifcore)
   else()
     target_link_libraries(${TNAME} PRIVATE gfortran)

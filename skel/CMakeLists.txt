@@ -40,9 +40,13 @@ message(STATUS "  C_INCLUDES: ${SIMINT_C_INCLUDES}")
 message(STATUS "     Simint C_FLAGS: ${SIMINT_C_FLAGS}")
 
 
+# Main code subdirectory
 add_subdirectory(simint)
 
 # Make the test executables
 add_subdirectory(test)
+
+# Build examples
+add_subdirectory(examples)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/simint" DESTINATION include FILES_MATCHING PATTERN "*.h")
