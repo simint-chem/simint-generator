@@ -3,7 +3,7 @@
 
 #include <immintrin.h>
 
-#include "vectorization/intrinsics_sse.h"
+#include "simint/vectorization/intrinsics_sse.h"
 
 union double4
 {

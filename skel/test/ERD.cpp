@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "test/ERD.hpp"
-#include "vectorization/vectorization.h"
+#include "simint/vectorization/vectorization.h"
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 

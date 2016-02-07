@@ -1,10 +1,10 @@
 #include <math.h>
 #include <string.h>
 
-#include "vectorization/vectorization.h"
-#include "constants.h"
-#include "shell/shell.h"
-#include "shell/shell_constants.h"
+#include "simint/vectorization/vectorization.h"
+#include "simint/constants.h"
+#include "simint/shell/shell.h"
+#include "simint/shell/shell_constants.h"
 
 
 // Disable intel diagnostics

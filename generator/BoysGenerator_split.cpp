@@ -41,7 +41,7 @@ ConstantMap BoysSplit::GetConstants(void) const
 
 IncludeSet BoysSplit::GetIncludes(void) const
 {
-    return {"\"boys/boys_split.h\""};
+    return {"\"simint/boys/boys_split.h\""};
 }
 
 void BoysSplit::WriteBoys(std::ostream & os) const

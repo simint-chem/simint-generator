@@ -1,8 +1,8 @@
-#include "constants.h"
+#include "simint/constants.h"
 #include "test/Libint2.hpp"
-#include "boys/boys_split.h"
-#include "test/common.hpp"
-#include "vectorization/vectorization.h"
+#include "simint/boys/boys_split.h"
+#include "test/Common.hpp"
+#include "simint/vectorization/vectorization.h"
 
 
 // Disable intel warnings

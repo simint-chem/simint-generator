@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include "shell/shell.h"
-#include "test/timer.h"
+#include "simint/shell/shell.h"
+#include "test/Timer.h"
 
 // Disable intel diagnostics for libint
 // These happen in the libint header, so there's not much I can do about them

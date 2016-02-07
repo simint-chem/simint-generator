@@ -102,7 +102,11 @@ list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}")
 # Add OBJECT targets
 ###########################
 # Add common object files
-add_library(test_common OBJECT common.cpp simint.cpp valeev.cpp ${TESTS_CXX_ADDITIONAL_SOURCES})
+add_library(test_common OBJECT Common.cpp
+                               Simint.cpp
+                               ValeevRef.cpp
+                               ${TESTS_CXX_ADDITIONAL_SOURCES})
+
 target_include_directories(test_common PRIVATE ${TESTS_CXX_INCLUDES})
 target_compile_options(test_common PRIVATE ${TESTS_CXX_FLAGS})
 

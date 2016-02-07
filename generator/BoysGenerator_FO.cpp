@@ -63,7 +63,7 @@ ConstantMap BoysFO::GetConstants(void) const
 
 IncludeSet BoysFO::GetIncludes(void) const
 {
-    return {"\"boys/boys_FO.h\""};
+    return {"\"simint/boys/boys_FO.h\""};
 }
 
 

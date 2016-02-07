@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "eri/gen/eri_generated.h"
+#include "simint/eri/gen/eri_generated.h"
 
 
 // Disable this warning:
@@ -17,9 +17,9 @@ extern "C" {
     #pragma warning(disable:2620)
 #endif
 
-#include "eri/gen/hrr_generated.h"
-#include "eri/gen/vrr_generated.h"
-#include "eri/gen/et_generated.h"
+#include "simint/eri/gen/hrr_generated.h"
+#include "simint/eri/gen/vrr_generated.h"
+#include "simint/eri/gen/et_generated.h"
 
 #ifdef __INTEL_COMPILER
     #pragma warning(pop)

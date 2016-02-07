@@ -70,7 +70,7 @@ int main(int argc, char ** argv)
         throw std::runtime_error(StringBuilder("Cannot open file: ", hpath, "\n"));
 
     // Write out
-    of << "\n#include \"eri/eri.h\"\n";
+    of << "\n#include \"simint/eri/eri.h\"\n";
 
     ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
 

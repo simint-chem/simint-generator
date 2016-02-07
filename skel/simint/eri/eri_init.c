@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "simint_config.h"
-#include "eri/eri.h"
-#include "eri/eri_init.h"
+#include "simint/simint_config.h"
+#include "simint/eri/eri.h"
+#include "simint/eri/eri_init.h"
 
 simint_erifunc_sharedwork simint_compute_eri_sharedwork[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
 simint_erifunc            simint_compute_eri[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1][SIMINT_ERI_MAXAM+1];
@@ -38,6 +38,10 @@ int siminteri_shared_notyetimplemented(struct multishell_pair const P,
 }
 
 
+
+void simint_eri_finalize(void)
+{
+}
 
 
 void simint_eri_init(void)

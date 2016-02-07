@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
 #include <math.h>
-#include "boys/boys_longfac.h"
-#include "vectorization/vectorization.h"
+#include "simint/boys/boys_longfac.h"
+#include "simint/vectorization/vectorization.h"
 
 extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 

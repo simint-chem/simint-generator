@@ -3,13 +3,12 @@
 
 #include <utility>
 
-#include "eri/eri.h"
-#include "test/timer.h"
+#include "simint/eri/eri.h"
+#include "test/Timer.h"
 
-
-// Setting up function pointers and calculating integrals
-// using my code
 void Simint_Init(void);
+
+void Simint_Finalize(void);
 
 TimerType Simint_Integral(struct multishell_pair const P, struct multishell_pair const Q,
                           double * const restrict contwork, double * const restrict integrals);

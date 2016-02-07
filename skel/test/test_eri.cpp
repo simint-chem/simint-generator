@@ -5,11 +5,9 @@
 
 #include <omp.h>
 
-#include "boys/boys.h"
-#include "test/common.hpp"
-#include "test/valeev.hpp"
-#include "test/simint.hpp"
-//#include "vectorization/vectorization.h"
+#include "test/Common.hpp"
+#include "test/ValeevRef.hpp"
+#include "test/Simint.hpp"
 
 #ifdef TESTS_ENABLE_LIBERD
   #include "test/ERD.hpp"
@@ -70,7 +68,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = (maxparams[0] > MAXAM ? MAXAM : maxparams[0]);
+    const int maxam = (maxparams[0] > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams[0]);
     const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
@@ -93,8 +91,7 @@ int main(int argc, char ** argv)
 
 
     // initialize stuff
-    Valeev_Init();
-    Boys_Init();
+    ValeevRef_Init();
 
     // Map of errors
     ErrorMap errors;
@@ -214,11 +211,11 @@ int main(int argc, char ** argv)
             // Calculate valeev
             // reference integrals
             /////////////////////////////////
-            ValeevIntegrals(&shellmap[i][a], nshell1,
-                            &shellmap[j][b], nshell2,
-                            &shellmap[k][0], nshell3,
-                            &shellmap[l][0], nshell4,
-                            res_valeev, false);
+            ValeevRef_Integrals(&shellmap[i][a], nshell1,
+                                &shellmap[j][b], nshell2,
+                                &shellmap[k][0], nshell3,
+                                &shellmap[l][0], nshell4,
+                                res_valeev, false);
 
 
 
@@ -347,8 +344,8 @@ int main(int argc, char ** argv)
     FREE(all_res_libint2);
     #endif
 
-    Valeev_Finalize();
-    Boys_Finalize();
+    ValeevRef_Finalize();
+    Simint_Finalize();
 
     FREE(all_res_simint);
     FREE(all_simint_work);

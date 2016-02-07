@@ -1,7 +1,7 @@
 #ifndef SIMINT_SHELL_H
 #define SIMINT_SHELL_H
 
-#include "simint_config.h" // for USE_ET define
+#include "simint/simint_config.h" // for USE_ET define
 
 #include <stddef.h>
 #include <stdint.h>

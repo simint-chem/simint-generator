@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
     // output to source file
     // Include the main eri file
-    of << "#include \"eri/eri.h\"\n";
+    of << "#include \"simint/eri/eri.h\"\n";
 
     // create the algorithm
     std::unique_ptr<ERI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));

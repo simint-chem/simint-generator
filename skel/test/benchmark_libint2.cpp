@@ -1,11 +1,10 @@
 #include <cstdio>
 
-#include "vectorization/vectorization.h"
-#include "eri/eri.h"
-#include "boys/boys.h"
-#include "test/common.hpp"
+#include "simint/vectorization/vectorization.h"
+#include "simint/eri/eri.h"
+#include "test/Common.hpp"
 #include "test/Libint2.hpp"
-#include "test/timer.h"
+#include "test/Timer.h"
 
 
 #ifdef BENCHMARK_VALIDATE
@@ -35,7 +34,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = (maxparams[0] > MAXAM ? MAXAM : maxparams[0]);
+    const int maxam = (maxparams[0] > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams[0]);
     const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
@@ -49,7 +48,7 @@ int main(int argc, char ** argv)
 
 
     #ifdef BENCHMARK_VALIDATE
-    Valeev_Init();
+    ValeevRef_Init();
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
@@ -133,11 +132,11 @@ int main(int argc, char ** argv)
             const size_t ncont1234 = nshell1234 * ncart1234;
 
             #ifdef BENCHMARK_VALIDATE
-            ValeevIntegrals(A, nshell1,
-                            B, nshell2,
-                            C, nshell3,
-                            D, nshell4,
-                            res_ref, false);
+            ValeevRef_Integrals(A, nshell1,
+                                B, nshell2,
+                                C, nshell3,
+                                D, nshell4,
+                                res_ref, false);
             std::pair<double, double> err2 = CalcError(res_ints, res_ref, ncont1234);
 
             err.first = std::max(err.first, err2.first);
@@ -187,6 +186,7 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     FREE(res_ref);
+    ValeevRef_Finalize();
     #endif
     
     // Finalize stuff 

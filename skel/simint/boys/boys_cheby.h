@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "boys/boys_chebygrid.h"
+#include "simint/boys/boys_chebygrid.h"
 
 //extern double const * const restrict * const restrict boys_chebygrid_F0; // size [BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1]
 extern double const boys_chebygrid_F0[BOYS_CHEBY_NBIN][BOYS_CHEBY_ORDER+1];

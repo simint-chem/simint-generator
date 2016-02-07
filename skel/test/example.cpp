@@ -2,9 +2,8 @@
 
 #include "simint/vectorization/vectorization.h"
 #include "simint/eri/eri.h"
+#include "test/Simint.hpp"
 #include "test/Common.hpp"
-#include "test/ERD.hpp"
-#include "test/Timer.h"
 
 
 #ifdef BENCHMARK_VALIDATE
@@ -14,6 +13,9 @@
 
 int main(int argc, char ** argv)
 {
+    // set up the function pointers
+    Simint_Init();
+
     if(argc != 2)
     {
         printf("Give me 1 argument! I got %d\n", argc-1);
@@ -25,37 +27,30 @@ int main(int argc, char ** argv)
 
 
     // read in the shell info
-    ShellMap shellmap_erd = ReadBasis(basfile);
+    ShellMap shellmap = ReadBasis(basfile);
 
     // normalize
-    #ifdef BENCHMARK_VALIDATE
-    ShellMap shellmap = CopyShellMap(shellmap_erd);
     for(auto & it : shellmap)
         normalize_gaussian_shells(it.second.size(), it.second.data());
-    #endif
-
-
-    for(auto & it : shellmap_erd)
-        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
-
 
 
     // find the max dimensions
-    std::array<int, 3> maxparams = FindMapMaxParams(shellmap_erd);
+    std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
     const int maxam = (maxparams[0] > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams[0]);
-    const int maxnprim = maxparams[1];
     const int maxsize = maxparams[2];
 
     /* Storage of integrals */
     double * res_ints = (double *)ALLOC(maxsize * sizeof(double)); 
 
+    /* contracted workspace */
+    double * simint_work = (double *)ALLOC(SIMINT_ERI_MAX_WORKMEM);
 
     // initialize stuff
-    ERD_ERI eri(maxam, maxnprim, 1);
+    // nothing needs initializing!
 
 
     #ifdef BENCHMARK_VALIDATE
-    ValeevRef_Init();
+    Valeev_Init();
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
@@ -81,11 +76,19 @@ int main(int argc, char ** argv)
         // total amount of time for this AM quartet
         TimerType time_am = 0;
 
-        const size_t nshell3 = shellmap_erd[k].size();
-        const size_t nshell4 = shellmap_erd[l].size();
+        const size_t nshell3 = shellmap[k].size();
+        const size_t nshell4 = shellmap[l].size();
 
-        gaussian_shell const * const C = &shellmap_erd[k][0];
-        gaussian_shell const * const D = &shellmap_erd[l][0];
+        gaussian_shell const * const C = &shellmap[k][0];
+        gaussian_shell const * const D = &shellmap[l][0];
+
+        // time creation of Q
+        TimerType time_pair_34_0 = 0;
+        TimerType time_pair_34_1 = 0;
+        CLOCK(time_pair_34_0);
+        struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
+        CLOCK(time_pair_34_1);
+        time_am += time_pair_34_1 - time_pair_34_0;
 
 
         #ifdef BENCHMARK_VALIDATE
@@ -98,40 +101,41 @@ int main(int argc, char ** argv)
         size_t ncont1234_am = 0;
 
         // do one shell pair at a time on the bra side
-        for(size_t a = 0; a < shellmap_erd[i].size(); a++)
-        for(size_t b = 0; b < shellmap_erd[j].size(); b++)
+        for(size_t a = 0; a < shellmap[i].size(); a++)
+        for(size_t b = 0; b < shellmap[j].size(); b++)
         {
             const size_t nshell1 = 1;
             const size_t nshell2 = 1;
 
-            gaussian_shell const * const A = &shellmap_erd[i][a];
-            gaussian_shell const * const B = &shellmap_erd[j][b];
 
+            gaussian_shell const * const A = &shellmap[i][a];
+            gaussian_shell const * const B = &shellmap[j][b];
+
+            // time creation of P
+            TimerType time_pair_12_0 = 0;
+            TimerType time_pair_12_1 = 0;
+            CLOCK(time_pair_12_0);
+            struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+            CLOCK(time_pair_12_1);
+            time_am += time_pair_12_1 - time_pair_12_0;
 
 
             // actually calculate
-            time_am += eri.Integrals(A, nshell1, B, nshell2,
-                                     C, nshell3, D, nshell4, res_ints);
+            time_am += Simint_Integral(P, Q, simint_work, res_ints);
 
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals
-            size_t nprim1234 = 0;
-            for(size_t p = 0; p < nshell1; p++)
-            for(size_t q = 0; q < nshell2; q++)
-            for(size_t r = 0; r < nshell3; r++)
-            for(size_t s = 0; s < nshell4; s++)
-                nprim1234 += A[p].nprim * B[q].nprim * C[r].nprim * D[s].nprim;
-
-            const size_t nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
+            const size_t nprim1234 = P.nprim * Q.nprim;
+            const size_t nshell1234 = P.nshell12 * Q.nshell12;
             const size_t ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
             const size_t ncont1234 = nshell1234 * ncart1234;
 
             #ifdef BENCHMARK_VALIDATE
-            ValeevRef_Integrals(A, nshell1,
-                                B, nshell2,
-                                C, nshell3,
-                                D, nshell4,
-                                res_ref, false);
+            ValeevIntegrals(A, nshell1,
+                            B, nshell2,
+                            C, nshell3,
+                            D, nshell4,
+                            res_ref, false);
             std::pair<double, double> err2 = CalcError(res_ints, res_ref, ncont1234);
 
             err.first = std::max(err.first, err2.first);
@@ -139,11 +143,15 @@ int main(int argc, char ** argv)
             #endif
 
 
+            free_multishell_pair(P);
+
             // add primitive and shell count to running totals for this am
             ncont1234_am += ncont1234;
             nprim1234_am += nprim1234;
             nshell1234_am += nshell1234;
         }
+
+        free_multishell_pair(Q);
 
         // add primitive and shell count to overall running totals
         ncont1234_total += ncont1234_am;
@@ -171,16 +179,16 @@ int main(int argc, char ** argv)
     printf("Total ticks to calculate all:  %llu\n", time_total.first + time_total.second);
     printf("\n");
 
-    FreeShellMap(shellmap_erd);
+    FreeShellMap(shellmap);
     FREE(res_ints);
 
 
     #ifdef BENCHMARK_VALIDATE
-    FreeShellMap(shellmap);
     FREE(res_ref);
-    ValeevRef_Finalize();
     #endif
-   
+    
+    // Finalize stuff 
+    Simint_Finalize();
 
     return 0;
 }

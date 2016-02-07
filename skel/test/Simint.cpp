@@ -1,11 +1,16 @@
-#include "test/simint.hpp"
-#include "test/common.hpp"
-#include "eri/eri.h"
-#include "simint_init.h"
+#include "test/Simint.hpp"
+#include "test/Common.hpp"
+#include "simint/eri/eri.h"
+#include "simint/simint_init.h"
 
 void Simint_Init(void)
 {
     simint_init();
+}
+
+void Simint_Finalize(void)
+{
+    simint_finalize();
 }
 
 TimerType Simint_Integral(struct multishell_pair const P, struct multishell_pair const Q,

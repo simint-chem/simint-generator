@@ -1,9 +1,8 @@
 #ifndef SIMINT_ERD_H
 #define SIMINT_ERD_H
 
-#include "shell/shell.h"
-#include "test/common.hpp"
-#include "test/timer.h"
+#include "test/Common.hpp"
+#include "test/Timer.h"
 
 typedef std::vector<gaussian_shell> GaussianVec;
 

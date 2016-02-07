@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-#include "eri/eri_init.h"
-
 void simint_init(void);
+
+void simint_finalize(void);
 
 
 #ifdef __cplusplus

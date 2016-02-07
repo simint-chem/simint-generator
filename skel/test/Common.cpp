@@ -9,33 +9,7 @@
 #include <omp.h>
 #endif
 
-#include "test/common.hpp"
-#include "test/valeev.hpp"
-
-
-
-bool IsValidGaussian(const std::array<int, 3> & g)
-{
-    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0);
-}
-
-
-
-bool IterateGaussian(std::array<int, 3> & g)
-{
-    int am = g[0] + g[1] + g[2];
-
-    if(g[2] == am)  // at the end
-        return false;
-
-    if(g[2] < (am - g[0]))
-        g = {g[0],   g[1]-1,      g[2]+1 };
-    else
-        g = {g[0]-1, am-g[0]+1, 0        };
-
-    return IsValidGaussian(g);
-}
-
+#include "test/Common.hpp"
 
 
 bool ValidQuartet(std::array<int, 4> am)
@@ -57,6 +31,25 @@ bool ValidQuartet(int i, int j, int k, int l)
 {
     return ValidQuartet({i, j, k, l});
 }
+
+
+
+bool IterateGaussian(std::array<int, 3> & g)
+{
+    int am = g[0] + g[1] + g[2];
+
+    if(g[2] == am)  // at the end
+        return false;
+
+    if(g[2] < (am - g[0]))
+        g = {g[0],   g[1]-1,      g[2]+1 };
+    else
+        g = {g[0]-1, am-g[0]+1, 0        };
+
+    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0); 
+}
+
+
 
 
 GaussianVec CopyGaussianVec(const GaussianVec & v)
@@ -83,7 +76,7 @@ ShellMap CopyShellMap(const ShellMap & m)
 {
     ShellMap copy;
     for(auto & it : m)
-        copy.insert({it.first, CopyGaussianVec(it.second)});   
+        copy.insert({it.first, CopyGaussianVec(it.second)});
     return copy;
 }
 
@@ -228,73 +221,6 @@ std::array<int, 3> FindMapMaxParams(const ShellMap & m)
 
 
 
-void ValeevIntegrals(gaussian_shell const * const A, int nshell1,
-                     gaussian_shell const * const B, int nshell2,
-                     gaussian_shell const * const C, int nshell3,
-                     gaussian_shell const * const D, int nshell4,
-                     double * const integrals, bool normalize)
-{
-    int inorm = (normalize ? 1 : 0);
-
-    const int am1 = A[0].am;
-    const int am2 = B[0].am;
-    const int am3 = C[0].am;
-    const int am4 = D[0].am;
-
-    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
-
-    for(int i = 0; i < nshell1; i++)
-    {
-        const int idxstart = i * n234;
-        int idx = 0;
-
-        for(int j = 0; j < nshell2; j++)
-        for(int k = 0; k < nshell3; k++)
-        for(int l = 0; l < nshell4; l++)
-        {
-            long double vA[3] = { A[i].x, A[i].y, A[i].z };
-            long double vB[3] = { B[j].x, B[j].y, B[j].z };
-            long double vC[3] = { C[k].x, C[k].y, C[k].z };
-            long double vD[3] = { D[l].x, D[l].y, D[l].z };
-
-            std::array<int, 3> g1{am1, 0, 0};
-            do
-            {
-                std::array<int, 3> g2{am2, 0, 0};
-                do
-                {
-                    std::array<int, 3> g3{am3, 0, 0};
-                    do
-                    {
-                        std::array<int, 3> g4{am4, 0, 0};
-                        do
-                        {
-                            double myint = 0.0;
-
-                            for(int m = 0; m < A[i].nprim; m++)
-                            for(int n = 0; n < B[j].nprim; n++)
-                            for(int o = 0; o < C[k].nprim; o++)
-                            for(int p = 0; p < D[l].nprim; p++)
-                            {
-
-                                double val = (double)Valeev_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
-                                                                g2[0], g2[1], g2[2], B[j].alpha[n], vB,
-                                                                g3[0], g3[1], g3[2], C[k].alpha[o], vC,
-                                                                g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                myint += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
-
-                            }
-
-                            integrals[idxstart + idx] = myint;
-                            idx++;
-
-                        } while(IterateGaussian(g4));
-                    } while(IterateGaussian(g3));
-                } while(IterateGaussian(g2));
-            } while(IterateGaussian(g1));
-        }
-    }
-}
 
 
 

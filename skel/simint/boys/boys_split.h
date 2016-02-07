@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "boys/boys_taylor.h"
-#include "boys/boys_long.h"
+#include "simint/boys/boys_taylor.h"
+#include "simint/boys/boys_long.h"
 
 /////////////////////////
 // Inline functions

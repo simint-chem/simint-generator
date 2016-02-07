@@ -328,7 +328,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
     // add includes
-    IncludeSet includes{"<string.h>", "<math.h>", "\"eri/eri.h\""};
+    IncludeSet includes{"<string.h>", "<math.h>", "\"simint/eri/eri.h\""};
     for(const auto & it : bg_.GetIncludes())
         includes.insert(it);
 

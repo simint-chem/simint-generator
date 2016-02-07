@@ -1,8 +1,37 @@
+///////////////////////////////////////////
+// Reference calculation of ERI
+// Adapted from libint 2.0.5, by E. Valeev
+// https://github.com/evaleev/libint
+// http://www.valeevgroup.chem.vt.edu
+//
+// Originally released under GPL v2
+///////////////////////////////////////////
+//
+// LIBINT (version 2) - a library for the evaluation of molecular integrals of many-body
+// operators over Gaussian functions
+// Copyright (C) 2004-2013 Edward F. Valeev
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program (see file LICENSE); if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+///////////////////////////////////////////
+
 
 #include <math.h>
 #include <stdlib.h>
 
-#include "test/valeev.hpp"
+#include "test/ValeevRef.hpp"
+#include "test/Common.hpp"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -16,42 +45,6 @@ static long double * df;
 static long double ** bc;
 
 
-void Valeev_Init(void)
-{
-    int i = 0;
-    int j = 0;
-
-    fac = (long double *)malloc(MAXFAC * sizeof(long double));
-    fac[0] = 1.0;
-    for(i = 1; i < MAXFAC; i++)
-        fac[i] = fac[i-1] * i;
-
-    df = (long double *)malloc(2 * MAXFAC * sizeof(long double));
-    df[0] = 1.0;
-    df[1] = 1.0;
-    df[2] = 1.0;
-    for(i = 3; i < MAXFAC*2; i++)
-       df[i] = (i - 1) * df[i - 2];
-
-    bc = (long double **)malloc(MAXFAC * sizeof(long double*));
-    for(i = 0; i < MAXFAC; i++)
-    {
-        bc[i] = (long double *)malloc(MAXFAC * sizeof(long double));
-        for(j = 0; j <= i; j++)
-            bc[i][j] = fac[i] / (fac[i-j] * fac[j]);
-    }
-}
-
-void Valeev_Finalize(void)
-{
-    int i = 0;
-    free(fac);
-    free(df);
-
-    for(i = 0; i < MAXFAC; i++)
-        free(bc[i]);
-    free(bc);
-}
 
 static long double norm_const(unsigned int l1, unsigned int m1, unsigned int n1,
                          long double alpha1)
@@ -74,7 +67,7 @@ static void free_array(long double* array)
 }
 
 
-void Valeev_F(long double *F, int n, long double x)
+static void Valeev_F(long double *F, int n, long double x)
 {
     int i, m;
     int m2;
@@ -125,12 +118,12 @@ void Valeev_F(long double *F, int n, long double x)
     }
 }
 
-long double Valeev_eri(int l1, int m1, int n1, long double alpha1,
-                  const long double* A, int l2, int m2, int n2,
-                  long double alpha2, const long double* B, int l3, int m3,
-                  int n3, long double alpha3, const long double* C, int l4,
-                  int m4, int n4, long double alpha4, const long double* D,
-                  int norm_flag)
+static long double ValeevRef_eri(int l1, int m1, int n1, long double alpha1,
+                                 const long double* A, int l2, int m2, int n2,
+                                 long double alpha2, const long double* B, int l3, int m3,
+                                 int n3, long double alpha3, const long double* C, int l4,
+                                 int m4, int n4, long double alpha4, const long double* D,
+                                 int norm_flag)
 {
 
     const long double gammap = alpha1 + alpha2;
@@ -369,4 +362,115 @@ long double Valeev_eri(int l1, int m1, int n1, long double alpha1,
     free_array(fnq);
 
     return result * pfac;
+}
+
+
+
+
+
+void ValeevRef_Init(void)
+{
+    int i = 0;
+    int j = 0;
+
+    fac = (long double *)malloc(MAXFAC * sizeof(long double));
+    fac[0] = 1.0;
+    for(i = 1; i < MAXFAC; i++)
+        fac[i] = fac[i-1] * i;
+
+    df = (long double *)malloc(2 * MAXFAC * sizeof(long double));
+    df[0] = 1.0;
+    df[1] = 1.0;
+    df[2] = 1.0;
+    for(i = 3; i < MAXFAC*2; i++)
+       df[i] = (i - 1) * df[i - 2];
+
+    bc = (long double **)malloc(MAXFAC * sizeof(long double*));
+    for(i = 0; i < MAXFAC; i++)
+    {
+        bc[i] = (long double *)malloc(MAXFAC * sizeof(long double));
+        for(j = 0; j <= i; j++)
+            bc[i][j] = fac[i] / (fac[i-j] * fac[j]);
+    }
+}
+
+void ValeevRef_Finalize(void)
+{
+    int i = 0;
+    free(fac);
+    free(df);
+
+    for(i = 0; i < MAXFAC; i++)
+        free(bc[i]);
+    free(bc);
+}
+
+
+// Helper for calculating via gaussian_shell structures
+void ValeevRef_Integrals(gaussian_shell const * const A, int nshell1,
+                         gaussian_shell const * const B, int nshell2,
+                         gaussian_shell const * const C, int nshell3,
+                         gaussian_shell const * const D, int nshell4,
+                         double * const integrals, bool normalize)
+{
+    int inorm = (normalize ? 1 : 0);
+
+    const int am1 = A[0].am;
+    const int am2 = B[0].am;
+    const int am3 = C[0].am;
+    const int am4 = D[0].am;
+
+    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
+
+    for(int i = 0; i < nshell1; i++)
+    {
+        const int idxstart = i * n234;
+        int idx = 0;
+
+        for(int j = 0; j < nshell2; j++)
+        for(int k = 0; k < nshell3; k++)
+        for(int l = 0; l < nshell4; l++)
+        {
+            long double vA[3] = { A[i].x, A[i].y, A[i].z };
+            long double vB[3] = { B[j].x, B[j].y, B[j].z };
+            long double vC[3] = { C[k].x, C[k].y, C[k].z };
+            long double vD[3] = { D[l].x, D[l].y, D[l].z };
+
+            std::array<int, 3> g1{am1, 0, 0};
+            do
+            {
+                std::array<int, 3> g2{am2, 0, 0};
+                do
+                {
+                    std::array<int, 3> g3{am3, 0, 0};
+                    do
+                    {
+                        std::array<int, 3> g4{am4, 0, 0};
+                        do
+                        {
+                            double myint = 0.0;
+
+                            for(int m = 0; m < A[i].nprim; m++)
+                            for(int n = 0; n < B[j].nprim; n++)
+                            for(int o = 0; o < C[k].nprim; o++)
+                            for(int p = 0; p < D[l].nprim; p++)
+                            {
+
+                                double val = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+                                myint += val * A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p];
+
+                            }
+
+                            integrals[idxstart + idx] = myint;
+                            idx++;
+
+                        } while(IterateGaussian(g4));
+                    } while(IterateGaussian(g3));
+                } while(IterateGaussian(g2));
+            } while(IterateGaussian(g1));
+        }
+    }
 }

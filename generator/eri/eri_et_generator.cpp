@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
 
     ERIGeneratorInfo info(finalam, Compiler::Intel, cpuflags, options);
 
-    of << "#include \"eri/eri.h\"\n";
+    of << "#include \"simint/eri/eri.h\"\n";
 
     std::unique_ptr<ERI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 

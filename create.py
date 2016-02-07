@@ -116,31 +116,22 @@ if args.S and args.i:
 ####################################################
 # Create output directory
 ####################################################
-outdir_eri = os.path.join(args.outdir, "eri")
-outdir_erigen = os.path.join(outdir_eri, "gen")
-outdir_vec = os.path.join(args.outdir, "vectorization")
-outdir_boys = os.path.join(args.outdir, "boys")
-outdir_shell = os.path.join(args.outdir, "shell")
+outdir = os.path.join(args.outdir, "simint")
 outdir_test = os.path.join(args.outdir, "test")
+
+outdir_eri = os.path.join(outdir, "eri")
+outdir_erigen = os.path.join(outdir_eri, "gen")
+outdir_vec = os.path.join(outdir, "vectorization")
 
 if os.path.isdir(args.outdir):
   print("WARNING - output directory exists. Overwriting...")
-  shutil.rmtree(outdir_eri, ignore_errors=True)
-  shutil.rmtree(outdir_vec, ignore_errors=True)
-  shutil.rmtree(outdir_boys, ignore_errors=True)
-  shutil.rmtree(outdir_shell, ignore_errors=True)
+  shutil.rmtree(outdir, ignore_errors=True)
   shutil.rmtree(outdir_test, ignore_errors=True)
 
 
-shutil.copytree(os.path.join(skeldir, "eri"),           outdir_eri) 
-shutil.copytree(os.path.join(skeldir, "vectorization"), outdir_vec)
-shutil.copytree(os.path.join(skeldir, "boys"),          outdir_boys)
-shutil.copytree(os.path.join(skeldir, "shell"),         outdir_shell)
+shutil.copytree(os.path.join(skeldir, "simint"),        outdir) 
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
-shutil.copy(os.path.join(skeldir, "constants.h"),       args.outdir)
-shutil.copy(os.path.join(skeldir, "simint_init.h"),     args.outdir)
-shutil.copy(os.path.join(skeldir, "simint_init.c"),     args.outdir)
 
 
 
@@ -198,7 +189,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
   hfile.write("\n\n")
-  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
 
 
@@ -297,7 +288,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
   hfile.write("\n\n")
-  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
 
 
@@ -413,7 +404,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
   hfile.write("\n\n")
-  hfile.write("#include \"vectorization/vectorization.h\"\n")
+  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
 
 
@@ -524,8 +515,8 @@ with open(headerfile, 'w') as hfile:
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
   hfile.write("\n\n")
-  hfile.write("#include \"vectorization/vectorization.h\"\n")
-  hfile.write("#include \"shell/shell.h\"\n")
+  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
+  hfile.write("#include \"simint/shell/shell.h\"\n")
   hfile.write("\n")
 
 
@@ -630,7 +621,7 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 # Vectorization config header
 ####################################################
-vinfofile = os.path.join(outdir_vec, "simint_vectorinfo.h")
+vinfofile = os.path.join(outdir, "simint_vectorinfo.h")
 with open(vinfofile, 'w') as vf:
 
   # Parse the cpu flags
@@ -642,10 +633,10 @@ with open(vinfofile, 'w') as vf:
 
 
   if "avx" in cpuflags:
-    vf.write("#include \"vectorization/intrinsics_avx.h\"\n")
+    vf.write("#include \"simint/vectorization/intrinsics_avx.h\"\n")
     vf.write("#define SIMINT_SIMD_LEN 4\n")
   elif "sse2" in cpuflags:
-    vf.write("#include \"vectorization/intrinsics_sse.h\"\n")
+    vf.write("#include \"simint/vectorization/intrinsics_sse.h\"\n")
     vf.write("#define SIMINT_SIMD_LEN 2\n")
   else:
     vf.write("#define SIMINT_SIMD_LEN 1\n")
@@ -657,7 +648,7 @@ with open(vinfofile, 'w') as vf:
 ####################################################
 # Overall config header
 ####################################################
-sinfofile = os.path.join(args.outdir, "simint_config.h")
+sinfofile = os.path.join(outdir, "simint_config.h")
 with open(sinfofile, 'w') as sf:
 
   # Parse the cpu flags
