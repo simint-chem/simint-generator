@@ -22,7 +22,7 @@ typedef std::map<int, GaussianVec> ShellMap;
 
 /*! \brief Checks to see if a quartet is valid for calculation
  *
- * ie, checks that am[0] < am[1], am[2] < am[3], and (am[1]+am[2] < am[3]+am[4])
+ * ie, checks that am[0] >= am[1], am[2] >= am[3], and (am[1]+am[2] >= am[3]+am[4])
  */
 bool ValidQuartet(std::array<int, 4> am);
 

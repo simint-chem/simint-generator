@@ -133,8 +133,10 @@ if os.path.isdir(args.outdir):
 
 shutil.copytree(os.path.join(skeldir, "simint"),        outdir) 
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
-shutil.copytree(os.path.join(skeldir, "examples"),          outdir_examples)
+shutil.copytree(os.path.join(skeldir, "examples"),      outdir_examples)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
+shutil.copy(os.path.join(skeldir, "README"),            args.outdir)
+shutil.copy(os.path.join(skeldir, "LICENSE"),           args.outdir)
 
 
 
