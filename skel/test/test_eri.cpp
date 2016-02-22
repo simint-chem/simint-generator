@@ -319,7 +319,7 @@ int main(int argc, char ** argv)
         free_multishell_pair(Q);
 
         // print out the errors for this quartet
-        printf("( %2d %2d | %2d %2d )  ", i, k, k, l);
+        printf("( %2d %2d | %2d %2d )  ", i, j, k, l);
 
         // should be the same order as the header, right?
         for(const auto & it : errors)
