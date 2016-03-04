@@ -1,0 +1,26 @@
+/////////////////////////
+// MAINPAGE            //
+/////////////////////////
+/*! \mainpage
+
+\section Description
+
+\todo Description
+
+\section main_sec Contents
+
+  - \ref compiling_page
+  - \ref testing_page
+  - \ref usage_page
+  - \ref developers_page
+
+
+\section Authors
+
+\todo Authors
+
+\section license_sec License
+
+\todo License info
+
+*/

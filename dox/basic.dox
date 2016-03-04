@@ -1,0 +1,151 @@
+/*! \page dox_basic_page Basics
+
+\section dox_generator_intro Introduction
+
+The main part of Simint is a generator, which is used to create
+efficient code for integral calculations. The generator is
+written in C++ and requires C++11. However, it does not need to
+be compiled with the same compiler as the generated code or even
+on the same system. The generated code iteself is generated as plain C99 code.
+
+The generator is split into a few parts
+
+  - Generation and writing of the Boys function
+    - BoysGenerator and derived classes
+  - Generation of ERI
+    - Algorithms for determining the order within recurrence relations
+      - ERI_VRR_Algorithm_Base
+      - ERI_ET_Algorithm_Base
+      - ERI_HRR_Algorithm_Base
+    - Writers for writing out the results of the algorithms
+      - ERI_VRR_Writer
+      - ERI_ET_Writer
+      - ERI_HRR_Writer
+
+
+Overall, the generator works backwards. Given a quartet of angular
+momentum \f$(a b | c d)\f$, obtain all the steps to form all required quartets
+of the form
+
+  1. \f$(a b | y 0)^{(0)}\f$ from \f$(a b | c d)^{(0)}\f$ via horizontal recurrence in the ket part (ERI_HRR_Algorithm_Base::Create)
+  2. \f$(w 0 | y 0)^{(0)}\f$ from \f$(a b | y 0)^{(0)}\f$ via horizontal recurrence in the bra part (ERI_HRR_Algorithm_Base::Create)
+  3. \f$(i 0 | 0 0)^{(m)}\f$ from \f$(w 0 | y 0)^{(0)}\f$ via vertical recurrence or electron transfer (ERI_VRR_Algorithm_Base::Create or ERI_ET_Algorithm_Base::Create)
+  4. \f$(0 0 | 0 0)^{(m)}\f$ from \f$(i 0 | y 0)^{(0)}\f$ via vertical recurrence (ERI_VRR_Algorithm_Base::Create)
+
+where \f$(0 0 | 0 0)^{(m)}\f$ can be formed via the Boys function. The generator then writes
+out the steps in reverse, starting with the Boys function and vertical recurrence.
+It then inserts steps for contraction, after which the horizontal recurrence steps are written.
+
+
+\subsection dox_internal_external Internal vs. External
+
+Recurrence relations can be written in "internal" or "external" form. With "internal",
+the steps are written directly in the output file for the given quartet. "External"
+writes a call to another function to perform that step instead. Obviously, for high
+angular momentum, "external" is usually preferred as the source file for a quartet
+may become too large to efficiently compile or may become too complicated for the
+compiler to perform optimizations.
+
+
+\subsection dox_output_dir Output Directories
+
+On generation, the contents of the "skel" directory are copied straight
+to the destination directory. This skeleton directory contains the
+gaussian_shell and multishell_pair structures, functions for calculating
+the Boys function, various constants, initialization and finalization,
+etc, that would be shared among all the different generated code.
+
+ERI functions are generated in the "simint/eri/gen" subdirectory of the output directory,
+with, in general, one source file per quartet. Other source files correspond to the
+"external" recurrence steps.
+
+
+\subsection dox_generator_info Options and Generator Info
+
+Options, CPU flags, etc, are stored in a GeneratorInfoBase class (and classes derived from that).
+This includes a VectorInfo class that describes the vector intrinsics and how mathematical
+expressions should be written.
+
+
+
+\section dox_generator_boys The Boys Function
+
+The Boys function is given as
+
+\f[
+    F_m(x) = \int_0^1 t^{2m} e^{-xt^2} dt
+\f]
+
+where \f$x = \rho R\f$ depends on various factors of the basis functions. Currently,
+the best way to evaluate this function is via the "split" scheme, which involves
+partitioning the range of \f$x\f$ into two regimes. For large \f$x\f$, it can be evaluated accurately by
+
+\f[
+    F_m(x) \approx \frac{(2m-1)!!}{2^{m+1}}\sqrt{\frac{\pi}{x^{2^m+1}}}, \qquad x > x_\mathrm{large}
+\f] 
+
+For smaller \f$x\f$, a Taylor series approximation is used.
+
+The Boys function is stored within an array of SIMD vectors with the primitive index \f$m\f$ being the fastest index. That is,
+for four primitive integrals, A vector for the Boys function will be
+
+\image html boysvector.png "Array of SIMD vectors containing the Boys function"
+
+
+
+Functions to calculate the Boys function are stored in the skel directory. In the output for a quartet,
+the Boys function is output as a simple call to the appropriate function. These functions work by
+taking in an array SIMD vectors and striding over the primitives.
+
+
+
+\section dox_generator_vrr The Vertical Recurrence Relations
+
+The two main VRR equations are
+
+\f[
+\Theta_{i+1,0,k,0}^{(m)} =  X_{PA}\Theta_{i0k0}^{(m)} - \frac{\alpha}{p} X_{PQ}\Theta_{i0k0}^{(m+1)}
+                          + \frac{i}{2p}\left(\Theta_{i-1,0,k,0}^{(m)} - \frac{\alpha}{p}\Theta_{i-1,0,k,0}^{(m+1)}\right)
+                          + \frac{k}{2(p+q)}\Theta_{i,0,k-1,0}^{(m+1)}
+\f]
+
+\f[
+\Theta_{i,0,k+1,0}^{(m)} =  X_{QC}\Theta_{i0k0}^{(m)} - \frac{\alpha}{q} X_{PQ}\Theta_{i0k0}^{(m+1)}
+                          + \frac{k}{2q}\left(\Theta_{i,0,k-1,0}^{(m)} - \frac{\alpha}{q}\Theta_{i,0,k-1,0}^{(m+1)}\right)
+                          + \frac{k}{2(p+q)}\Theta_{i-1,0,k,0}^{(m+1)}
+\f]
+
+where the \f$ijkl\f$ subscripts of \f$\Theta\f$ represent the exponents on the of a particular \f$x,y,z\f$ direction in the
+basis function.
+
+Integrals are formed by looping over required \f$(m)\f$ and forming all the different cartesian integrals
+by taking a SIMD vector (containing multiple primitives) and using the equations as written, using previously-formed
+integrals (or values from the Boys function) as needed. Since they are all aligned and stored in the same manner, this
+process should be 100% vectorized. 
+
+\image html psssvector.png "Array of SIMD vectors containing primitive integrals"
+
+
+
+\section dox_generator_et The Electron Transfer Relations
+\todo Not correctly implemented
+
+
+\section dox_generator_hrr The Horizontal Recurrence Relations
+
+HRR is also given by two equations. One for the bra side, and one for the ket side
+
+\f[
+\Theta_{i,j+1,k,l}^{(m)} = \Theta_{i+1,j,k,l}^{(m)} - X_{AB}\Theta_{ijkl}^{(m)}
+\f]
+
+\f[
+\Theta_{i,j,k+1,l}^{(m)} = \Theta_{i,j,k+1,l}^{(m)} - X_{CD}\Theta_{ijkl}^{(m)}
+\f]
+
+
+
+
+
+
+*/

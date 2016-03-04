@@ -769,7 +769,8 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = generator
+INPUT                  = generator \
+                         skel
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1468,7 +1469,7 @@ FORMULA_TRANSPARENT    = YES
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-USE_MATHJAX            = YES
+USE_MATHJAX            = NO
 
 # When MathJax is enabled you can set the default output format to be used for
 # the MathJax output. See the MathJax site (see:
@@ -2360,6 +2361,5 @@ DOT_CLEANUP            = YES
 
 
 # Include other doxygen configuration
-#@INCLUDE = developers.doxcfg
-
+@INCLUDE = dox/other.doxcfg
 

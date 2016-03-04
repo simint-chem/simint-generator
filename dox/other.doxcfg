@@ -1,0 +1,3 @@
+INPUT += dox/basic.dox
+
+INPUT += dox/mainpage.dox
