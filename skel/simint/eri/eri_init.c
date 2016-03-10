@@ -111,6 +111,8 @@ void simint_eri_init(void)
 
 
     #if SIMINT_ERI_MAXAM >= 3
+    simint_erifunc_sharedwork_array[2][2][3][0] = eri_sharedwork_d_d_f_s;
+    simint_erifunc_array[2][2][3][0] = eri_d_d_f_s;
     simint_erifunc_sharedwork_array[3][0][0][0] = eri_sharedwork_f_s_s_s;
     simint_erifunc_array[3][0][0][0] = eri_f_s_s_s;
     simint_erifunc_sharedwork_array[3][0][1][0] = eri_sharedwork_f_s_p_s;
@@ -181,6 +183,12 @@ void simint_eri_init(void)
 
 
     #if SIMINT_ERI_MAXAM >= 4
+    simint_erifunc_sharedwork_array[3][2][4][0] = eri_sharedwork_f_d_g_s;
+    simint_erifunc_array[3][2][4][0] = eri_f_d_g_s;
+    simint_erifunc_sharedwork_array[3][3][4][0] = eri_sharedwork_f_f_g_s;
+    simint_erifunc_array[3][3][4][0] = eri_f_f_g_s;
+    simint_erifunc_sharedwork_array[3][3][4][1] = eri_sharedwork_f_f_g_p;
+    simint_erifunc_array[3][3][4][1] = eri_f_f_g_p;
     simint_erifunc_sharedwork_array[4][0][0][0] = eri_sharedwork_g_s_s_s;
     simint_erifunc_array[4][0][0][0] = eri_g_s_s_s;
     simint_erifunc_sharedwork_array[4][0][1][0] = eri_sharedwork_g_s_p_s;
@@ -309,6 +317,20 @@ void simint_eri_init(void)
 
 
     #if SIMINT_ERI_MAXAM >= 5
+    simint_erifunc_sharedwork_array[3][3][5][0] = eri_sharedwork_f_f_h_s;
+    simint_erifunc_array[3][3][5][0] = eri_f_f_h_s;
+    simint_erifunc_sharedwork_array[4][2][5][0] = eri_sharedwork_g_d_h_s;
+    simint_erifunc_array[4][2][5][0] = eri_g_d_h_s;
+    simint_erifunc_sharedwork_array[4][3][5][0] = eri_sharedwork_g_f_h_s;
+    simint_erifunc_array[4][3][5][0] = eri_g_f_h_s;
+    simint_erifunc_sharedwork_array[4][3][5][1] = eri_sharedwork_g_f_h_p;
+    simint_erifunc_array[4][3][5][1] = eri_g_f_h_p;
+    simint_erifunc_sharedwork_array[4][4][5][0] = eri_sharedwork_g_g_h_s;
+    simint_erifunc_array[4][4][5][0] = eri_g_g_h_s;
+    simint_erifunc_sharedwork_array[4][4][5][1] = eri_sharedwork_g_g_h_p;
+    simint_erifunc_array[4][4][5][1] = eri_g_g_h_p;
+    simint_erifunc_sharedwork_array[4][4][5][2] = eri_sharedwork_g_g_h_d;
+    simint_erifunc_array[4][4][5][2] = eri_g_g_h_d;
     simint_erifunc_sharedwork_array[5][0][0][0] = eri_sharedwork_h_s_s_s;
     simint_erifunc_array[5][0][0][0] = eri_h_s_s_s;
     simint_erifunc_sharedwork_array[5][0][1][0] = eri_sharedwork_h_s_p_s;
@@ -521,6 +543,32 @@ void simint_eri_init(void)
 
 
     #if SIMINT_ERI_MAXAM >= 6
+    simint_erifunc_sharedwork_array[4][3][6][0] = eri_sharedwork_g_f_i_s;
+    simint_erifunc_array[4][3][6][0] = eri_g_f_i_s;
+    simint_erifunc_sharedwork_array[4][4][6][0] = eri_sharedwork_g_g_i_s;
+    simint_erifunc_array[4][4][6][0] = eri_g_g_i_s;
+    simint_erifunc_sharedwork_array[4][4][6][1] = eri_sharedwork_g_g_i_p;
+    simint_erifunc_array[4][4][6][1] = eri_g_g_i_p;
+    simint_erifunc_sharedwork_array[5][2][6][0] = eri_sharedwork_h_d_i_s;
+    simint_erifunc_array[5][2][6][0] = eri_h_d_i_s;
+    simint_erifunc_sharedwork_array[5][3][6][0] = eri_sharedwork_h_f_i_s;
+    simint_erifunc_array[5][3][6][0] = eri_h_f_i_s;
+    simint_erifunc_sharedwork_array[5][3][6][1] = eri_sharedwork_h_f_i_p;
+    simint_erifunc_array[5][3][6][1] = eri_h_f_i_p;
+    simint_erifunc_sharedwork_array[5][4][6][0] = eri_sharedwork_h_g_i_s;
+    simint_erifunc_array[5][4][6][0] = eri_h_g_i_s;
+    simint_erifunc_sharedwork_array[5][4][6][1] = eri_sharedwork_h_g_i_p;
+    simint_erifunc_array[5][4][6][1] = eri_h_g_i_p;
+    simint_erifunc_sharedwork_array[5][4][6][2] = eri_sharedwork_h_g_i_d;
+    simint_erifunc_array[5][4][6][2] = eri_h_g_i_d;
+    simint_erifunc_sharedwork_array[5][5][6][0] = eri_sharedwork_h_h_i_s;
+    simint_erifunc_array[5][5][6][0] = eri_h_h_i_s;
+    simint_erifunc_sharedwork_array[5][5][6][1] = eri_sharedwork_h_h_i_p;
+    simint_erifunc_array[5][5][6][1] = eri_h_h_i_p;
+    simint_erifunc_sharedwork_array[5][5][6][2] = eri_sharedwork_h_h_i_d;
+    simint_erifunc_array[5][5][6][2] = eri_h_h_i_d;
+    simint_erifunc_sharedwork_array[5][5][6][3] = eri_sharedwork_h_h_i_f;
+    simint_erifunc_array[5][5][6][3] = eri_h_h_i_f;
     simint_erifunc_sharedwork_array[6][0][0][0] = eri_sharedwork_i_s_s_s;
     simint_erifunc_array[6][0][0][0] = eri_i_s_s_s;
     simint_erifunc_sharedwork_array[6][0][1][0] = eri_sharedwork_i_s_p_s;
@@ -849,6 +897,50 @@ void simint_eri_init(void)
 
 
     #if SIMINT_ERI_MAXAM >= 7
+    simint_erifunc_sharedwork_array[4][4][7][0] = eri_sharedwork_g_g_j_s;
+    simint_erifunc_array[4][4][7][0] = eri_g_g_j_s;
+    simint_erifunc_sharedwork_array[5][3][7][0] = eri_sharedwork_h_f_j_s;
+    simint_erifunc_array[5][3][7][0] = eri_h_f_j_s;
+    simint_erifunc_sharedwork_array[5][4][7][0] = eri_sharedwork_h_g_j_s;
+    simint_erifunc_array[5][4][7][0] = eri_h_g_j_s;
+    simint_erifunc_sharedwork_array[5][4][7][1] = eri_sharedwork_h_g_j_p;
+    simint_erifunc_array[5][4][7][1] = eri_h_g_j_p;
+    simint_erifunc_sharedwork_array[5][5][7][0] = eri_sharedwork_h_h_j_s;
+    simint_erifunc_array[5][5][7][0] = eri_h_h_j_s;
+    simint_erifunc_sharedwork_array[5][5][7][1] = eri_sharedwork_h_h_j_p;
+    simint_erifunc_array[5][5][7][1] = eri_h_h_j_p;
+    simint_erifunc_sharedwork_array[5][5][7][2] = eri_sharedwork_h_h_j_d;
+    simint_erifunc_array[5][5][7][2] = eri_h_h_j_d;
+    simint_erifunc_sharedwork_array[6][2][7][0] = eri_sharedwork_i_d_j_s;
+    simint_erifunc_array[6][2][7][0] = eri_i_d_j_s;
+    simint_erifunc_sharedwork_array[6][3][7][0] = eri_sharedwork_i_f_j_s;
+    simint_erifunc_array[6][3][7][0] = eri_i_f_j_s;
+    simint_erifunc_sharedwork_array[6][3][7][1] = eri_sharedwork_i_f_j_p;
+    simint_erifunc_array[6][3][7][1] = eri_i_f_j_p;
+    simint_erifunc_sharedwork_array[6][4][7][0] = eri_sharedwork_i_g_j_s;
+    simint_erifunc_array[6][4][7][0] = eri_i_g_j_s;
+    simint_erifunc_sharedwork_array[6][4][7][1] = eri_sharedwork_i_g_j_p;
+    simint_erifunc_array[6][4][7][1] = eri_i_g_j_p;
+    simint_erifunc_sharedwork_array[6][4][7][2] = eri_sharedwork_i_g_j_d;
+    simint_erifunc_array[6][4][7][2] = eri_i_g_j_d;
+    simint_erifunc_sharedwork_array[6][5][7][0] = eri_sharedwork_i_h_j_s;
+    simint_erifunc_array[6][5][7][0] = eri_i_h_j_s;
+    simint_erifunc_sharedwork_array[6][5][7][1] = eri_sharedwork_i_h_j_p;
+    simint_erifunc_array[6][5][7][1] = eri_i_h_j_p;
+    simint_erifunc_sharedwork_array[6][5][7][2] = eri_sharedwork_i_h_j_d;
+    simint_erifunc_array[6][5][7][2] = eri_i_h_j_d;
+    simint_erifunc_sharedwork_array[6][5][7][3] = eri_sharedwork_i_h_j_f;
+    simint_erifunc_array[6][5][7][3] = eri_i_h_j_f;
+    simint_erifunc_sharedwork_array[6][6][7][0] = eri_sharedwork_i_i_j_s;
+    simint_erifunc_array[6][6][7][0] = eri_i_i_j_s;
+    simint_erifunc_sharedwork_array[6][6][7][1] = eri_sharedwork_i_i_j_p;
+    simint_erifunc_array[6][6][7][1] = eri_i_i_j_p;
+    simint_erifunc_sharedwork_array[6][6][7][2] = eri_sharedwork_i_i_j_d;
+    simint_erifunc_array[6][6][7][2] = eri_i_i_j_d;
+    simint_erifunc_sharedwork_array[6][6][7][3] = eri_sharedwork_i_i_j_f;
+    simint_erifunc_array[6][6][7][3] = eri_i_i_j_f;
+    simint_erifunc_sharedwork_array[6][6][7][4] = eri_sharedwork_i_i_j_g;
+    simint_erifunc_array[6][6][7][4] = eri_i_i_j_g;
     simint_erifunc_sharedwork_array[7][0][0][0] = eri_sharedwork_j_s_s_s;
     simint_erifunc_array[7][0][0][0] = eri_j_s_s_s;
     simint_erifunc_sharedwork_array[7][0][1][0] = eri_sharedwork_j_s_p_s;
@@ -1640,8 +1732,6 @@ void simint_eri_init(void)
     simint_erifunc_array[2][2][1][3] = eri_d_d_p_f;
     simint_erifunc_sharedwork_array[2][2][2][3] = eri_sharedwork_d_d_d_f;
     simint_erifunc_array[2][2][2][3] = eri_d_d_d_f;
-    simint_erifunc_sharedwork_array[2][2][3][0] = eri_sharedwork_d_d_f_s;
-    simint_erifunc_array[2][2][3][0] = eri_d_d_f_s;
     simint_erifunc_sharedwork_array[2][2][3][1] = eri_sharedwork_d_d_f_p;
     simint_erifunc_array[2][2][3][1] = eri_d_d_f_p;
     simint_erifunc_sharedwork_array[2][2][3][2] = eri_sharedwork_d_d_f_d;
@@ -2156,8 +2246,6 @@ void simint_eri_init(void)
     simint_erifunc_array[3][2][2][4] = eri_f_d_d_g;
     simint_erifunc_sharedwork_array[3][2][3][4] = eri_sharedwork_f_d_f_g;
     simint_erifunc_array[3][2][3][4] = eri_f_d_f_g;
-    simint_erifunc_sharedwork_array[3][2][4][0] = eri_sharedwork_f_d_g_s;
-    simint_erifunc_array[3][2][4][0] = eri_f_d_g_s;
     simint_erifunc_sharedwork_array[3][2][4][1] = eri_sharedwork_f_d_g_p;
     simint_erifunc_array[3][2][4][1] = eri_f_d_g_p;
     simint_erifunc_sharedwork_array[3][2][4][2] = eri_sharedwork_f_d_g_d;
@@ -2174,10 +2262,6 @@ void simint_eri_init(void)
     simint_erifunc_array[3][3][2][4] = eri_f_f_d_g;
     simint_erifunc_sharedwork_array[3][3][3][4] = eri_sharedwork_f_f_f_g;
     simint_erifunc_array[3][3][3][4] = eri_f_f_f_g;
-    simint_erifunc_sharedwork_array[3][3][4][0] = eri_sharedwork_f_f_g_s;
-    simint_erifunc_array[3][3][4][0] = eri_f_f_g_s;
-    simint_erifunc_sharedwork_array[3][3][4][1] = eri_sharedwork_f_f_g_p;
-    simint_erifunc_array[3][3][4][1] = eri_f_f_g_p;
     simint_erifunc_sharedwork_array[3][3][4][2] = eri_sharedwork_f_f_g_d;
     simint_erifunc_array[3][3][4][2] = eri_f_f_g_d;
     simint_erifunc_sharedwork_array[3][3][4][3] = eri_sharedwork_f_f_g_f;
@@ -2986,8 +3070,6 @@ void simint_eri_init(void)
     simint_erifunc_array[3][3][3][5] = eri_f_f_f_h;
     simint_erifunc_sharedwork_array[3][3][4][5] = eri_sharedwork_f_f_g_h;
     simint_erifunc_array[3][3][4][5] = eri_f_f_g_h;
-    simint_erifunc_sharedwork_array[3][3][5][0] = eri_sharedwork_f_f_h_s;
-    simint_erifunc_array[3][3][5][0] = eri_f_f_h_s;
     simint_erifunc_sharedwork_array[3][3][5][1] = eri_sharedwork_f_f_h_p;
     simint_erifunc_array[3][3][5][1] = eri_f_f_h_p;
     simint_erifunc_sharedwork_array[3][3][5][2] = eri_sharedwork_f_f_h_d;
@@ -3146,8 +3228,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][2][3][5] = eri_g_d_f_h;
     simint_erifunc_sharedwork_array[4][2][4][5] = eri_sharedwork_g_d_g_h;
     simint_erifunc_array[4][2][4][5] = eri_g_d_g_h;
-    simint_erifunc_sharedwork_array[4][2][5][0] = eri_sharedwork_g_d_h_s;
-    simint_erifunc_array[4][2][5][0] = eri_g_d_h_s;
     simint_erifunc_sharedwork_array[4][2][5][1] = eri_sharedwork_g_d_h_p;
     simint_erifunc_array[4][2][5][1] = eri_g_d_h_p;
     simint_erifunc_sharedwork_array[4][2][5][2] = eri_sharedwork_g_d_h_d;
@@ -3168,10 +3248,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][3][3][5] = eri_g_f_f_h;
     simint_erifunc_sharedwork_array[4][3][4][5] = eri_sharedwork_g_f_g_h;
     simint_erifunc_array[4][3][4][5] = eri_g_f_g_h;
-    simint_erifunc_sharedwork_array[4][3][5][0] = eri_sharedwork_g_f_h_s;
-    simint_erifunc_array[4][3][5][0] = eri_g_f_h_s;
-    simint_erifunc_sharedwork_array[4][3][5][1] = eri_sharedwork_g_f_h_p;
-    simint_erifunc_array[4][3][5][1] = eri_g_f_h_p;
     simint_erifunc_sharedwork_array[4][3][5][2] = eri_sharedwork_g_f_h_d;
     simint_erifunc_array[4][3][5][2] = eri_g_f_h_d;
     simint_erifunc_sharedwork_array[4][3][5][3] = eri_sharedwork_g_f_h_f;
@@ -3190,12 +3266,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][4][3][5] = eri_g_g_f_h;
     simint_erifunc_sharedwork_array[4][4][4][5] = eri_sharedwork_g_g_g_h;
     simint_erifunc_array[4][4][4][5] = eri_g_g_g_h;
-    simint_erifunc_sharedwork_array[4][4][5][0] = eri_sharedwork_g_g_h_s;
-    simint_erifunc_array[4][4][5][0] = eri_g_g_h_s;
-    simint_erifunc_sharedwork_array[4][4][5][1] = eri_sharedwork_g_g_h_p;
-    simint_erifunc_array[4][4][5][1] = eri_g_g_h_p;
-    simint_erifunc_sharedwork_array[4][4][5][2] = eri_sharedwork_g_g_h_d;
-    simint_erifunc_array[4][4][5][2] = eri_g_g_h_d;
     simint_erifunc_sharedwork_array[4][4][5][3] = eri_sharedwork_g_g_h_f;
     simint_erifunc_array[4][4][5][3] = eri_g_g_h_f;
     simint_erifunc_sharedwork_array[4][4][5][4] = eri_sharedwork_g_g_h_g;
@@ -4608,8 +4678,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][3][4][6] = eri_g_f_g_i;
     simint_erifunc_sharedwork_array[4][3][5][6] = eri_sharedwork_g_f_h_i;
     simint_erifunc_array[4][3][5][6] = eri_g_f_h_i;
-    simint_erifunc_sharedwork_array[4][3][6][0] = eri_sharedwork_g_f_i_s;
-    simint_erifunc_array[4][3][6][0] = eri_g_f_i_s;
     simint_erifunc_sharedwork_array[4][3][6][1] = eri_sharedwork_g_f_i_p;
     simint_erifunc_array[4][3][6][1] = eri_g_f_i_p;
     simint_erifunc_sharedwork_array[4][3][6][2] = eri_sharedwork_g_f_i_d;
@@ -4634,10 +4702,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][4][4][6] = eri_g_g_g_i;
     simint_erifunc_sharedwork_array[4][4][5][6] = eri_sharedwork_g_g_h_i;
     simint_erifunc_array[4][4][5][6] = eri_g_g_h_i;
-    simint_erifunc_sharedwork_array[4][4][6][0] = eri_sharedwork_g_g_i_s;
-    simint_erifunc_array[4][4][6][0] = eri_g_g_i_s;
-    simint_erifunc_sharedwork_array[4][4][6][1] = eri_sharedwork_g_g_i_p;
-    simint_erifunc_array[4][4][6][1] = eri_g_g_i_p;
     simint_erifunc_sharedwork_array[4][4][6][2] = eri_sharedwork_g_g_i_d;
     simint_erifunc_array[4][4][6][2] = eri_g_g_i_d;
     simint_erifunc_sharedwork_array[4][4][6][3] = eri_sharedwork_g_g_i_f;
@@ -4836,8 +4900,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][2][4][6] = eri_h_d_g_i;
     simint_erifunc_sharedwork_array[5][2][5][6] = eri_sharedwork_h_d_h_i;
     simint_erifunc_array[5][2][5][6] = eri_h_d_h_i;
-    simint_erifunc_sharedwork_array[5][2][6][0] = eri_sharedwork_h_d_i_s;
-    simint_erifunc_array[5][2][6][0] = eri_h_d_i_s;
     simint_erifunc_sharedwork_array[5][2][6][1] = eri_sharedwork_h_d_i_p;
     simint_erifunc_array[5][2][6][1] = eri_h_d_i_p;
     simint_erifunc_sharedwork_array[5][2][6][2] = eri_sharedwork_h_d_i_d;
@@ -4862,10 +4924,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][3][4][6] = eri_h_f_g_i;
     simint_erifunc_sharedwork_array[5][3][5][6] = eri_sharedwork_h_f_h_i;
     simint_erifunc_array[5][3][5][6] = eri_h_f_h_i;
-    simint_erifunc_sharedwork_array[5][3][6][0] = eri_sharedwork_h_f_i_s;
-    simint_erifunc_array[5][3][6][0] = eri_h_f_i_s;
-    simint_erifunc_sharedwork_array[5][3][6][1] = eri_sharedwork_h_f_i_p;
-    simint_erifunc_array[5][3][6][1] = eri_h_f_i_p;
     simint_erifunc_sharedwork_array[5][3][6][2] = eri_sharedwork_h_f_i_d;
     simint_erifunc_array[5][3][6][2] = eri_h_f_i_d;
     simint_erifunc_sharedwork_array[5][3][6][3] = eri_sharedwork_h_f_i_f;
@@ -4888,12 +4946,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][4][4][6] = eri_h_g_g_i;
     simint_erifunc_sharedwork_array[5][4][5][6] = eri_sharedwork_h_g_h_i;
     simint_erifunc_array[5][4][5][6] = eri_h_g_h_i;
-    simint_erifunc_sharedwork_array[5][4][6][0] = eri_sharedwork_h_g_i_s;
-    simint_erifunc_array[5][4][6][0] = eri_h_g_i_s;
-    simint_erifunc_sharedwork_array[5][4][6][1] = eri_sharedwork_h_g_i_p;
-    simint_erifunc_array[5][4][6][1] = eri_h_g_i_p;
-    simint_erifunc_sharedwork_array[5][4][6][2] = eri_sharedwork_h_g_i_d;
-    simint_erifunc_array[5][4][6][2] = eri_h_g_i_d;
     simint_erifunc_sharedwork_array[5][4][6][3] = eri_sharedwork_h_g_i_f;
     simint_erifunc_array[5][4][6][3] = eri_h_g_i_f;
     simint_erifunc_sharedwork_array[5][4][6][4] = eri_sharedwork_h_g_i_g;
@@ -4914,14 +4966,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][5][4][6] = eri_h_h_g_i;
     simint_erifunc_sharedwork_array[5][5][5][6] = eri_sharedwork_h_h_h_i;
     simint_erifunc_array[5][5][5][6] = eri_h_h_h_i;
-    simint_erifunc_sharedwork_array[5][5][6][0] = eri_sharedwork_h_h_i_s;
-    simint_erifunc_array[5][5][6][0] = eri_h_h_i_s;
-    simint_erifunc_sharedwork_array[5][5][6][1] = eri_sharedwork_h_h_i_p;
-    simint_erifunc_array[5][5][6][1] = eri_h_h_i_p;
-    simint_erifunc_sharedwork_array[5][5][6][2] = eri_sharedwork_h_h_i_d;
-    simint_erifunc_array[5][5][6][2] = eri_h_h_i_d;
-    simint_erifunc_sharedwork_array[5][5][6][3] = eri_sharedwork_h_h_i_f;
-    simint_erifunc_array[5][5][6][3] = eri_h_h_i_f;
     simint_erifunc_sharedwork_array[5][5][6][4] = eri_sharedwork_h_h_i_g;
     simint_erifunc_array[5][5][6][4] = eri_h_h_i_g;
     simint_erifunc_sharedwork_array[5][5][6][5] = eri_sharedwork_h_h_i_h;
@@ -6878,8 +6922,6 @@ void simint_eri_init(void)
     simint_erifunc_array[4][4][5][7] = eri_g_g_h_j;
     simint_erifunc_sharedwork_array[4][4][6][7] = eri_sharedwork_g_g_i_j;
     simint_erifunc_array[4][4][6][7] = eri_g_g_i_j;
-    simint_erifunc_sharedwork_array[4][4][7][0] = eri_sharedwork_g_g_j_s;
-    simint_erifunc_array[4][4][7][0] = eri_g_g_j_s;
     simint_erifunc_sharedwork_array[4][4][7][1] = eri_sharedwork_g_g_j_p;
     simint_erifunc_array[4][4][7][1] = eri_g_g_j_p;
     simint_erifunc_sharedwork_array[4][4][7][2] = eri_sharedwork_g_g_j_d;
@@ -7186,8 +7228,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][3][5][7] = eri_h_f_h_j;
     simint_erifunc_sharedwork_array[5][3][6][7] = eri_sharedwork_h_f_i_j;
     simint_erifunc_array[5][3][6][7] = eri_h_f_i_j;
-    simint_erifunc_sharedwork_array[5][3][7][0] = eri_sharedwork_h_f_j_s;
-    simint_erifunc_array[5][3][7][0] = eri_h_f_j_s;
     simint_erifunc_sharedwork_array[5][3][7][1] = eri_sharedwork_h_f_j_p;
     simint_erifunc_array[5][3][7][1] = eri_h_f_j_p;
     simint_erifunc_sharedwork_array[5][3][7][2] = eri_sharedwork_h_f_j_d;
@@ -7216,10 +7256,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][4][5][7] = eri_h_g_h_j;
     simint_erifunc_sharedwork_array[5][4][6][7] = eri_sharedwork_h_g_i_j;
     simint_erifunc_array[5][4][6][7] = eri_h_g_i_j;
-    simint_erifunc_sharedwork_array[5][4][7][0] = eri_sharedwork_h_g_j_s;
-    simint_erifunc_array[5][4][7][0] = eri_h_g_j_s;
-    simint_erifunc_sharedwork_array[5][4][7][1] = eri_sharedwork_h_g_j_p;
-    simint_erifunc_array[5][4][7][1] = eri_h_g_j_p;
     simint_erifunc_sharedwork_array[5][4][7][2] = eri_sharedwork_h_g_j_d;
     simint_erifunc_array[5][4][7][2] = eri_h_g_j_d;
     simint_erifunc_sharedwork_array[5][4][7][3] = eri_sharedwork_h_g_j_f;
@@ -7246,12 +7282,6 @@ void simint_eri_init(void)
     simint_erifunc_array[5][5][5][7] = eri_h_h_h_j;
     simint_erifunc_sharedwork_array[5][5][6][7] = eri_sharedwork_h_h_i_j;
     simint_erifunc_array[5][5][6][7] = eri_h_h_i_j;
-    simint_erifunc_sharedwork_array[5][5][7][0] = eri_sharedwork_h_h_j_s;
-    simint_erifunc_array[5][5][7][0] = eri_h_h_j_s;
-    simint_erifunc_sharedwork_array[5][5][7][1] = eri_sharedwork_h_h_j_p;
-    simint_erifunc_array[5][5][7][1] = eri_h_h_j_p;
-    simint_erifunc_sharedwork_array[5][5][7][2] = eri_sharedwork_h_h_j_d;
-    simint_erifunc_array[5][5][7][2] = eri_h_h_j_d;
     simint_erifunc_sharedwork_array[5][5][7][3] = eri_sharedwork_h_h_j_f;
     simint_erifunc_array[5][5][7][3] = eri_h_h_j_f;
     simint_erifunc_sharedwork_array[5][5][7][4] = eri_sharedwork_h_h_j_g;
@@ -7494,8 +7524,6 @@ void simint_eri_init(void)
     simint_erifunc_array[6][2][5][7] = eri_i_d_h_j;
     simint_erifunc_sharedwork_array[6][2][6][7] = eri_sharedwork_i_d_i_j;
     simint_erifunc_array[6][2][6][7] = eri_i_d_i_j;
-    simint_erifunc_sharedwork_array[6][2][7][0] = eri_sharedwork_i_d_j_s;
-    simint_erifunc_array[6][2][7][0] = eri_i_d_j_s;
     simint_erifunc_sharedwork_array[6][2][7][1] = eri_sharedwork_i_d_j_p;
     simint_erifunc_array[6][2][7][1] = eri_i_d_j_p;
     simint_erifunc_sharedwork_array[6][2][7][2] = eri_sharedwork_i_d_j_d;
@@ -7524,10 +7552,6 @@ void simint_eri_init(void)
     simint_erifunc_array[6][3][5][7] = eri_i_f_h_j;
     simint_erifunc_sharedwork_array[6][3][6][7] = eri_sharedwork_i_f_i_j;
     simint_erifunc_array[6][3][6][7] = eri_i_f_i_j;
-    simint_erifunc_sharedwork_array[6][3][7][0] = eri_sharedwork_i_f_j_s;
-    simint_erifunc_array[6][3][7][0] = eri_i_f_j_s;
-    simint_erifunc_sharedwork_array[6][3][7][1] = eri_sharedwork_i_f_j_p;
-    simint_erifunc_array[6][3][7][1] = eri_i_f_j_p;
     simint_erifunc_sharedwork_array[6][3][7][2] = eri_sharedwork_i_f_j_d;
     simint_erifunc_array[6][3][7][2] = eri_i_f_j_d;
     simint_erifunc_sharedwork_array[6][3][7][3] = eri_sharedwork_i_f_j_f;
@@ -7554,12 +7578,6 @@ void simint_eri_init(void)
     simint_erifunc_array[6][4][5][7] = eri_i_g_h_j;
     simint_erifunc_sharedwork_array[6][4][6][7] = eri_sharedwork_i_g_i_j;
     simint_erifunc_array[6][4][6][7] = eri_i_g_i_j;
-    simint_erifunc_sharedwork_array[6][4][7][0] = eri_sharedwork_i_g_j_s;
-    simint_erifunc_array[6][4][7][0] = eri_i_g_j_s;
-    simint_erifunc_sharedwork_array[6][4][7][1] = eri_sharedwork_i_g_j_p;
-    simint_erifunc_array[6][4][7][1] = eri_i_g_j_p;
-    simint_erifunc_sharedwork_array[6][4][7][2] = eri_sharedwork_i_g_j_d;
-    simint_erifunc_array[6][4][7][2] = eri_i_g_j_d;
     simint_erifunc_sharedwork_array[6][4][7][3] = eri_sharedwork_i_g_j_f;
     simint_erifunc_array[6][4][7][3] = eri_i_g_j_f;
     simint_erifunc_sharedwork_array[6][4][7][4] = eri_sharedwork_i_g_j_g;
@@ -7584,14 +7602,6 @@ void simint_eri_init(void)
     simint_erifunc_array[6][5][5][7] = eri_i_h_h_j;
     simint_erifunc_sharedwork_array[6][5][6][7] = eri_sharedwork_i_h_i_j;
     simint_erifunc_array[6][5][6][7] = eri_i_h_i_j;
-    simint_erifunc_sharedwork_array[6][5][7][0] = eri_sharedwork_i_h_j_s;
-    simint_erifunc_array[6][5][7][0] = eri_i_h_j_s;
-    simint_erifunc_sharedwork_array[6][5][7][1] = eri_sharedwork_i_h_j_p;
-    simint_erifunc_array[6][5][7][1] = eri_i_h_j_p;
-    simint_erifunc_sharedwork_array[6][5][7][2] = eri_sharedwork_i_h_j_d;
-    simint_erifunc_array[6][5][7][2] = eri_i_h_j_d;
-    simint_erifunc_sharedwork_array[6][5][7][3] = eri_sharedwork_i_h_j_f;
-    simint_erifunc_array[6][5][7][3] = eri_i_h_j_f;
     simint_erifunc_sharedwork_array[6][5][7][4] = eri_sharedwork_i_h_j_g;
     simint_erifunc_array[6][5][7][4] = eri_i_h_j_g;
     simint_erifunc_sharedwork_array[6][5][7][5] = eri_sharedwork_i_h_j_h;
@@ -7614,16 +7624,6 @@ void simint_eri_init(void)
     simint_erifunc_array[6][6][5][7] = eri_i_i_h_j;
     simint_erifunc_sharedwork_array[6][6][6][7] = eri_sharedwork_i_i_i_j;
     simint_erifunc_array[6][6][6][7] = eri_i_i_i_j;
-    simint_erifunc_sharedwork_array[6][6][7][0] = eri_sharedwork_i_i_j_s;
-    simint_erifunc_array[6][6][7][0] = eri_i_i_j_s;
-    simint_erifunc_sharedwork_array[6][6][7][1] = eri_sharedwork_i_i_j_p;
-    simint_erifunc_array[6][6][7][1] = eri_i_i_j_p;
-    simint_erifunc_sharedwork_array[6][6][7][2] = eri_sharedwork_i_i_j_d;
-    simint_erifunc_array[6][6][7][2] = eri_i_i_j_d;
-    simint_erifunc_sharedwork_array[6][6][7][3] = eri_sharedwork_i_i_j_f;
-    simint_erifunc_array[6][6][7][3] = eri_i_i_j_f;
-    simint_erifunc_sharedwork_array[6][6][7][4] = eri_sharedwork_i_i_j_g;
-    simint_erifunc_array[6][6][7][4] = eri_i_i_j_g;
     simint_erifunc_sharedwork_array[6][6][7][5] = eri_sharedwork_i_i_j_h;
     simint_erifunc_array[6][6][7][5] = eri_i_i_j_h;
     simint_erifunc_sharedwork_array[6][6][7][6] = eri_sharedwork_i_i_j_i;
@@ -8310,4 +8310,5 @@ void simint_eri_init(void)
 
 
     #endif
+
 }
