@@ -114,9 +114,11 @@ target_compile_options(test_common PRIVATE ${TESTS_CXX_FLAGS})
 # Various testing and benchmarking
 ADDTEST(test_eri test_eri.cpp)
 ADDTEST(benchmark_eri benchmark_eri.cpp)
+ADDTEST(plotnprim_eri plotnprim_eri.cpp)
 
 if(TESTS_ENABLE_LIBERD)
   ADDTEST(benchmark_erd benchmark_erd.cpp)
+  ADDTEST(plotnprim_erd plotnprim_erd.cpp)
 endif()
 
 if(TESTS_ENABLE_LIBINT2)

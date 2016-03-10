@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Base class for output writers
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef SIMINT_GUARD_GENERATOR__WRITERBASE_HPP_
 #define SIMINT_GUARD_GENERATOR__WRITERBASE_HPP_
 

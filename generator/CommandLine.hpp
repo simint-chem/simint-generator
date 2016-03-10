@@ -46,6 +46,7 @@ int GetIArg(int & i, int argc, char ** argv);
  *
  * \throw std::runtime_error if there is no more arguments
  * \param [inout] i Index to the argument on the command line
+ * \param [in] opt Options to parse 
  * \return The next argument on the command line (as an int)
  */
 std::string GetNextArg(size_t & i, const std::vector<std::string> & opt);
@@ -69,8 +70,9 @@ int GetIArg(size_t & i, const std::vector<std::string> & opt);
  * Results will be stored in the \p options parameter.
  *
  * \param [inout] options Options object to set the options in
- * \param [in] opt Vector of strings containing the command line arguments
- * \return Vector of strings containing any unhandled arguments 
+ * \param [in] argc Argument count from the command line
+ * \param [in] argv Arguments from the command line
+ * \return Any leftover options that haven't been parsed
  */
 std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char ** argv);
 

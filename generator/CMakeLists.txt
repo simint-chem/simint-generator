@@ -37,8 +37,6 @@ add_library(generator_common OBJECT
 
                          GeneratorInfoBase.cpp
                          Types.cpp
-                         Naming.cpp
-                         Printing.cpp
                          CommandLine.cpp
            )
 

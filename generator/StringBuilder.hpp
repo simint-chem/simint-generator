@@ -1,6 +1,6 @@
 /*! \file
  *
- * \brief String creation
+ * \brief Concatenation of different types to form a string
  * \author Benjamin Pritchard (ben@bennyp.org)
  */
 
@@ -11,7 +11,10 @@
 #include <string>
 #include <sstream>
 
-// by default, use std::to_string
+/*! \brief Concatenates all arguments to form a string
+ *
+ * Used for a single argument that can be converted via std::to_string
+ */
 template<typename T>
 std::string StringBuilder(const T & arg)
 {
@@ -19,7 +22,10 @@ std::string StringBuilder(const T & arg)
 }
 
 
-// overload for a double
+/*! \brief Concatenates all arguments to form a string
+ *
+ * Used for a double type
+ */
 inline std::string StringBuilder(const double & arg)
 {
     std::stringstream ss;
@@ -29,19 +35,29 @@ inline std::string StringBuilder(const double & arg)
 }
 
 
-// overload for string, since std::to_string(std::string) doesn't exist
+/*! \brief Concatenates all arguments to form a string
+ *
+ * Used for a std::string, since no std::to_string exists for that
+ */
 inline std::string StringBuilder(const std::string & arg)
 {
     return arg;
 }
 
-// overload for const char *, since std::to_string(const char *) doesn't exist
+
+/*! \brief Concatenates all arguments to form a string
+ *
+ * Used for a const char *, since no std::to_string exists for that
+ */
 inline std::string StringBuilder(const char * arg)
 {
     return std::string(arg);
 }
 
-// overload for char, so it doesn't get converted to an integer type
+/*! \brief Concatenates all arguments to form a string
+ *
+ * Used for a single character, so it doesn't get converted to an integer type
+ */
 inline std::string StringBuilder(const char & arg)
 {
     return std::string(1, arg);

@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Common types used in the generator, plus some helper functions (header)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef SIMINT_GUARD_GENERATOR__TYPES_HPP_
 #define SIMINT_GUARD_GENERATOR__TYPES_HPP_
 
@@ -12,19 +19,39 @@
 
 static const char * amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789";
 
+//! Doublet AM (ie, AM pair for bra or ket)
 typedef std::array<int, 2> DAM;
+
+//! Quartet AM (ie, AM pair for bra or ket)
 typedef std::array<int, 4> QAM;
+
+//! \brief Exponents on the xyz prefactor of a gaussian
 typedef std::array<int, 3> ExpList;
 
-// In Helpers.cpp
+
+
+/*! \brief Get the index of this gaussian in the standard order
+ *
+ * Ie, xxx = 0, xxy = 1, etc.
+ *
+ * \param [in] ijk Exponents
+ */
 int GaussianOrder(const ExpList & ijk);
 
+
+//! Type of doublet being stored/used
 enum class DoubletType
 {
     BRA,
     KET
 };
 
+
+/*! \brief Direction of the recurrence relation
+ *
+ * IJKL = Four angular momenta of a quartet. The letter
+ * represents the AM being increased (ie, K means form K+1).
+ */
 enum class RRStepType
 {
     I,
@@ -33,6 +60,9 @@ enum class RRStepType
     L
 };
 
+
+/*! \brief Cartesian direction of a recurrence step
+ */
 enum class XYZStep
 {
     STEP_X,
@@ -40,6 +70,12 @@ enum class XYZStep
     STEP_Z
 };
 
+
+/*! \brief Convert a step to a string
+ *
+ * \param [in] xyz Step to convert
+ * \return Step as a string ("x", "y", "z")
+ */
 inline std::string XYZStepToStr(XYZStep xyz)
 {
     if(xyz == XYZStep::STEP_X)
@@ -48,25 +84,34 @@ inline std::string XYZStepToStr(XYZStep xyz)
         return "y";
     else
         return "z";
-    
+
 }
 
+
+/*! \brief Write a step to an ostream
+ */
 inline std::ostream & operator<<(std::ostream & os, const XYZStep xyz)
 {
     os << XYZStepToStr(xyz);
     return os;
 }
 
+
+/*! \brief Convert an index (0,1,2) to an XYZ direction
+ */
 inline XYZStep IdxToXYZStep(int xyz)
 {
-    if(xyz == 0) 
+    if(xyz == 0)
         return XYZStep::STEP_X;
-    else if(xyz == 1) 
+    else if(xyz == 1)
         return XYZStep::STEP_Y;
     else
         return XYZStep::STEP_Z;
 }
 
+
+/*! \brief Convert an XYZ step direction to an index
+ */
 inline int XYZStepToIdx(XYZStep s)
 {
     if(s == XYZStep::STEP_X)
@@ -78,52 +123,76 @@ inline int XYZStepToIdx(XYZStep s)
 }
 
 
-
-
+/*! \brief A gaussian center of a particular AM
+ *
+ * \f[
+ * \chi_A = (r_x - A_x)^{i} (r_y-A_y)^{j} (r_z - A_z)^{k} e^{-a r^2}
+ * \f]
+ *
+ * Really we just need the ijk exponents here.
+ */
 struct Gaussian
 {
+    //! \brief Exponents on the XYZ prefactor of the gaussian
     ExpList ijk;
 
+    //! Get the AM of the Gaussian center
     int am(void) const { return ijk[0] + ijk[1] + ijk[2]; }
-    int index(void) const { return GaussianOrder(ijk); } 
+
+
+    //! Get index of this gaussian in the standard Gaussian ordering
+    int index(void) const { return GaussianOrder(ijk); }
+
+
+    //! Get the number of cartesian functions in a Gaussian of this AM
     int ncart(void) const { return ((am()+1)*(am()+2))/2; }
 
+    //! Get a string representing this Gaussian
     std::string str(void) const
     {
         std::stringstream ss;
-        
+
         if(*this)
             ss << amchar[am()] << "_" << ijk[0] << "_" << ijk[1] << "_" << ijk[2];
         else
             ss << "?_" << ijk[0] << ijk[1] << ijk[2];
-        return ss.str(); 
+        return ss.str();
     }
 
 
-    // notice the reversing of the exponents
+    //! Compare if this Gaussian comes before another in the standard ordering
     bool operator<(const Gaussian & rhs) const
     {
         if(am() < rhs.am())
             return true;
         else if(am() == rhs.am())
-        {
-            if(ijk > rhs.ijk)
-                return true;
-        }
+            return index() < rhs.index();
 
         return false;
     }
 
+
+    //! Compare if this Gaussian is the same as another
     bool operator==(const Gaussian & rhs) const
     {
         return (ijk == rhs.ijk);
     }
 
+
+    /*! \brief Check if this Gaussian is valid
+     *
+     * That is, are all ijkl >= 0
+     */
     operator bool(void) const
     {
         return (ijk[0] >= 0 && ijk[1] >= 0 && ijk[2] >= 0);
     }
-    
+
+
+    /*! \brief Make this the next gaussian in the standard ordering
+     *
+     * \return True if the resulting gaussian is valid
+     */
     bool Iterate(void)
     {
         if(ijk[2] == am())  // at the end
@@ -137,11 +206,24 @@ struct Gaussian
     }
 
 
+    /*! \brief Increase the exponent of a cartesian direction
+     *
+     * \param [in] step Which direction to increase
+     * \param [in] n Amount to increase by
+     * \return New Gaussian identical to this one except the exponent has been increased
+     */
     Gaussian StepUp(XYZStep step, int n = 1) const
     {
         return StepUp(XYZStepToIdx(step), n);
     }
 
+
+    /*! \brief Increase the exponent of a cartesian direction
+     *
+     * \param [in] idx Index of the cartesian direction to increase
+     * \param [in] n Amount to increase by
+     * \return New Gaussian identical to this one except the exponent has been increased
+     */
     Gaussian StepUp(int idx, int n = 1) const
     {
         Gaussian g(*this);
@@ -149,11 +231,24 @@ struct Gaussian
         return g;
     }
 
+    /*! \brief Decrease the exponent of a cartesian direction
+     *
+     * \param [in] step Which direction to decrease
+     * \param [in] n Amount to increase by
+     * \return New Gaussian identical to this one except the exponent has been decreased
+     */
     Gaussian StepDown(XYZStep step, int n = 1) const
     {
         return StepDown(XYZStepToIdx(step), n);
     }
 
+
+    /*! \brief Decrease the exponent of a cartesian direction
+     *
+     * \param [in] idx Index of the cartesian direction to decrease
+     * \param [in] n Amount to increase by
+     * \return New Gaussian identical to this one except the exponent has been decrease
+     */
     Gaussian StepDown(int idx, int n = 1) const
     {
         Gaussian g(*this);
@@ -163,6 +258,8 @@ struct Gaussian
 };
 
 
+/*! \brief Output a gaussian to an ostream
+ */
 inline std::ostream & operator<<(std::ostream & os, const Gaussian & g)
 {
     os << g.str();
@@ -178,7 +275,7 @@ struct Doublet
     Gaussian left;
     Gaussian right;
 
-    int am(void) const { return left.am() + right.am(); }    
+    int am(void) const { return left.am() + right.am(); }
     int index(void) const { return left.index() * right.ncart() + right.index(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
     DAM amlist(void) const { return {left.am(), right.am()}; }
@@ -191,7 +288,7 @@ struct Doublet
         else
           ss << "|" << left << "  " << right << ")";
 
-        return ss.str(); 
+        return ss.str();
     }
 
     bool operator<(const Doublet & rhs) const

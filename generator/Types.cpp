@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Common types used in the generator, plus some helper functions (source)
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #include <iostream>
 #include <map>
 
@@ -6,7 +13,6 @@
 
 using std::cout;
 
-static std::map<ExpList, int> ordermap_;
 
 
 QuartetSet GenerateInitialQuartetTargets(QAM amlst)
@@ -72,6 +78,9 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type)
 
 int GaussianOrder(const ExpList & ijk)
 {
+    // used internally for gaussian ordering
+    static std::map<ExpList, int> ordermap_;
+
     if(!ordermap_.size())
     {
         // generate the order map

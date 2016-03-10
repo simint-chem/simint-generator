@@ -1,3 +1,10 @@
+/*! \file
+ *
+ * \brief Output of vector operations
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
 #define SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
 

@@ -1,7 +1,14 @@
+/*! \file
+ *
+ * \brief Calculation of number of cartesian integrals for a given angular momentum
+ * \author Benjamin Pritchard (ben@bennyp.org)
+ */
+
+
 #ifndef SIMINT_GUARD_GENERATOR__NCART_HPP_
 #define SIMINT_GUARD_GENERATOR__NCART_HPP_
 
-#include <array>
+#include "generator/Types.hpp"
 
 #define NCART_(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
