@@ -4,12 +4,18 @@
 
 
 ###################
+# Options
+###################
+set(SIMINT_ORDERING "Psi4" CACHE STRING "Ordering of the resulting integrals")
+set_property(CACHE SIMINT_ORDERING PROPERTY STRINGS Psi4 GAMESS) 
+
+###################
 # Generator flags
 ###################
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
-if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
   # Globally-disabled diagnostics:
   #   981 : "operands are evaluated in unspecified order"
   #         seems to have lots of false positives, even when it should be obvious
@@ -28,6 +34,19 @@ endif()
 
 
 #################################
+# Determine the output ordering
+#################################
+if("${SIMINT_ORDERING}" MATCHES "Psi4")
+  set(SIMINT_ORDERING_FILE Ordering_Psi4.cpp)
+elseif("${SIMINT_ORDERING}" MATCHES "GAMESS")
+  set(SIMINT_ORDERING_FILE Ordering_GAMESS.cpp)
+else()
+  message(FATAL_ERROR "Unknown ordering ${SIMINT_ORDERING}")
+endif()
+
+
+
+#################################
 # Common generator functionality
 #################################
 add_library(generator_common OBJECT
@@ -36,8 +55,10 @@ add_library(generator_common OBJECT
                          BoysGenerator_split.cpp
 
                          GeneratorInfoBase.cpp
-                         Types.cpp
                          CommandLine.cpp
+                         Types.cpp
+
+                         ${SIMINT_ORDERING_FILE}
            )
 
 

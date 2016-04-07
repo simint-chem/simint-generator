@@ -119,7 +119,8 @@ void ERI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSe
         if(it.src[7])
             srcname[7] = StringBuilder(PrimVarName(it.src[7].amlist()), "[(n+1) * ", it.src[7].ncart(), " + ", it.src[7].index(), "]");
 
-        os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
+        // for debugging
+        //os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
 
         std::string aoppq, aover;
         std::string vrr_const0, vrr_const1, vrr_const2, vrr_const3;

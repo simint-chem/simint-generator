@@ -259,7 +259,7 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
 
     // start output to the file
     // we only need this one include
-    os_ << "#include \"eri/eri.h\"\n";
+    os_ << "#include \"simint/eri/eri.h\"\n";
     os_ << "\n";
 
     os_ << "\n\n";
@@ -729,11 +729,13 @@ void ERI_Writer_Basic::WriteFile(void) const
     std::string funcline2 = StringBuilder("eri_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
     std::string funcindent = std::string(funcline.length()+4, ' ');  // +4 for return type
     std::string funcindent2 = std::string(funcline2.length()+4, ' ');
-    std::stringstream ssig, ssig2;
-    ssig << "struct multishell_pair const P,\n"
-         << funcindent << "struct multishell_pair const Q,\n"
-         << funcindent << "double * const restrict contwork,\n"
-         << funcindent << "double * const restrict " << ArrVarName(am) << ")";
+    std::stringstream sscwork, ssig, ssig2;
+
+    // comment out contwork if its not needed
+    ssig  << "struct multishell_pair const P,\n"
+          << funcindent << "struct multishell_pair const Q,\n"
+          << funcindent << "double * const restrict contwork,\n"
+          << funcindent << "double * const restrict " << ArrVarName(am) << ")";
     ssig2 << "struct multishell_pair const P,\n"
           << funcindent2 << "struct multishell_pair const Q,\n"
           << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";

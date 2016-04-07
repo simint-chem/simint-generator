@@ -42,7 +42,8 @@ void ERI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList 
 
     for(const auto & it : steps)
     {
-        os << std::string(20, ' ') << "// " << it << "\n";
+        // For debugging
+        //os << std::string(20, ' ') << "// " << it << "\n";
     
         const char * xyztype = "hAB_";
         const char * sign = " + ";
@@ -73,7 +74,7 @@ void ERI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList 
         os << indent4 << "{\n"; 
         for(const auto & it : steps)
         {
-            os << std::string(20, ' ') << "// " << it << "\n";
+            //os << std::string(20, ' ') << "// " << it << "\n";
 
             const char * xyztype = "hCD_";
 

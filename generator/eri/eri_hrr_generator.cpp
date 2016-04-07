@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
     try {
 
     // Doublet we are calculating
-    DAM finalam;
+    DAM finalam{0,0};  // initialize to prevent compiler warnings
 
     // other stuff
     std::string fpath;

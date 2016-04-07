@@ -1,4 +1,5 @@
 #include "simint/simint_init.h"
+#include "simint/eri/eri_init.h"
 #include "simint/boys/boys_init.h"
 
 void simint_init(void)

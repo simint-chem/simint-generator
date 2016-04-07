@@ -28,6 +28,8 @@ typedef std::array<int, 4> QAM;
 //! \brief Exponents on the xyz prefactor of a gaussian
 typedef std::array<int, 3> ExpList;
 
+extern
+std::map<int, std::vector<ExpList>> gorder_map; // in Ordering.cpp
 
 
 /*! \brief Get the index of this gaussian in the standard order
@@ -195,14 +197,16 @@ struct Gaussian
      */
     bool Iterate(void)
     {
-        if(ijk[2] == am())  // at the end
-            return false;
+        size_t idx = static_cast<size_t>(index()) + 1;
+        const auto & v = gorder_map.at(am());
 
-        if(ijk[2] < (am() - ijk[0]))
-            ijk = {ijk[0],   ijk[1]-1,      ijk[2]+1 };
+        if(idx >= v.size())
+            return false;
         else
-            ijk = {ijk[0]-1, am()-ijk[0]+1, 0        };
-        return *this;
+        {
+            ijk = v.at(idx);
+            return *this;
+        }
     }
 
 

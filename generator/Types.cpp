@@ -7,11 +7,18 @@
 
 #include <iostream>
 #include <map>
+#include <algorithm>
 
 #include "generator/Types.hpp"
 #include "generator/Options.hpp"
 
 using std::cout;
+
+
+
+
+
+
 
 
 
@@ -78,34 +85,26 @@ DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type)
 
 int GaussianOrder(const ExpList & ijk)
 {
-    // used internally for gaussian ordering
-    static std::map<ExpList, int> ordermap_;
+    int am = ijk[0] + ijk[1] + ijk[2];
 
-    if(!ordermap_.size())
-    {
-        // generate the order map
-        for(int i = 0; i <= 32; i++)
-        {
-            int n = 0;
-            Gaussian g{i, 0, 0};
-            ordermap_[g.ijk] = n++;
-            
-            while(g.Iterate())
-                ordermap_[g.ijk] = n++;
-        }
-    }
+    const std::vector<ExpList> & v = gorder_map.at(am);
 
-    return ordermap_.at(ijk);
+    auto it = std::find(v.begin(), v.end(), ijk);
+    if(it == v.end())
+        throw std::runtime_error("Gaussian not found in gorder_map");
+
+    return std::distance(v.begin(), it);
 }
 
 
 GaussianSet AllGaussiansForAM(int am)
 {
     GaussianSet gs;
-    Gaussian g{am, 0, 0};
-    do {
-        gs.insert(g);
-    } while(g.Iterate());
+
+    const std::vector<ExpList> & v = gorder_map.at(am);
+
+    for(const auto & it : v)
+        gs.insert({it[0], it[1], it[2]});
 
     return gs;
 }
