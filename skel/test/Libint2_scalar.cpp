@@ -29,10 +29,9 @@ Libint2_ERI::~Libint2_ERI()
 
 
 
-std::pair<TimerType, TimerType>
-Libint2_ERI::Integrals(struct multishell_pair P,
-                       struct multishell_pair Q,
-                       double * integrals)
+TimeContrib Libint2_ERI::Integrals(struct multishell_pair P,
+                                   struct multishell_pair Q,
+                                   double * integrals)
 {
     Libint_eri_t * erival = erival_.data();
 
@@ -57,8 +56,9 @@ Libint2_ERI::Integrals(struct multishell_pair P,
     std::fill(integrals, integrals + P.nshell12 * Q.nshell12 * ncart1234, 0.0);
 
     // timing
-    std::pair<TimerType, TimerType> totaltime{0,0};
-    TimerType ticks0, ticks1;
+    TimeContrib times;
+    TimerType ticks_copy_0, ticks_copy_1;
+    TimerType ticks_boys_0, ticks_boys_1;
 
     int istart = 0;
     for(int a = 0, ab = 0; a < libint_P->nshell1; a++)
@@ -77,7 +77,7 @@ Libint2_ERI::Integrals(struct multishell_pair P,
             erival[0].contrdepth = nprim1234;
             int nprim = 0;
 
-            CLOCK(ticks0);
+            CLOCK(ticks_copy_0);
             for(int i = istart; i < iend; i++)
             for(int j = jstart; j < jend; j++)
             {
@@ -136,7 +136,11 @@ Libint2_ERI::Integrals(struct multishell_pair P,
 
 
                 // calculate the boys function
+                // NOTE - the time is also included in ticks_copy_*, so
+                // we have to remember to take care of that later
+                CLOCK(ticks_boys_0);
                 Boys_F_split(F, M, T); 
+                CLOCK(ticks_boys_1);
 
                 const double scale = sqrt(one_over_PQalpha_sum) * libint_Q->prefac[j] * libint_P->prefac[i];
 
@@ -262,23 +266,28 @@ Libint2_ERI::Integrals(struct multishell_pair P,
 
                 nprim++;
             }
-            CLOCK(ticks1);
-            totaltime.first += (ticks1 - ticks0);
+            CLOCK(ticks_copy_1);
+            times.boys += ticks_boys_1 - ticks_boys_0;
+            times.copy_data += (ticks_copy_1 - ticks_copy_0) - (ticks_boys_1 - ticks_boys_0); // time for calculating boys is included in copy
 
             double * intptr;
             if(permutePQ)  // ab loops through Q, cd loops through P
                 intptr = integrals + ( cd * Q.nshell12 + ab ) * ncart1234;
             else
                 intptr = integrals + ( ab * Q.nshell12 + cd ) * ncart1234;
-    
+   
+            TimerType ticks_integrals_0, ticks_integrals_1;
+ 
             if(M)
             {
-                CLOCK(ticks0);
+                CLOCK(ticks_integrals_0);
                 LIBINT2_PREFIXED_NAME(libint2_build_eri)[libint_P->am1][libint_P->am2][libint_Q->am1][libint_Q->am2](erival);
-                CLOCK(ticks1);
-                totaltime.second += (ticks1 - ticks0);
+                CLOCK(ticks_integrals_1);
+                times.integrals += (ticks_integrals_1 - ticks_integrals_0);
 
                 // permute
+                TimerType ticks_permute_0, ticks_permute_1;
+                CLOCK(ticks_permute_0);
                 if(permutePQ)
                 {
                     int nn = 0;
@@ -293,15 +302,18 @@ Libint2_ERI::Integrals(struct multishell_pair P,
                 }
                 else
                     std::copy(erival[0].targets[0], erival[0].targets[0] + ncart1234, intptr);
+                CLOCK(ticks_permute_1); // also include "not permuting" (ie copying)
+
+                times.permute += ticks_permute_1 - ticks_permute_0;
             }
             else
             {
-                CLOCK(ticks0); 
+                CLOCK(ticks_integrals_0);
                 intptr[0] = 0.0;
                 for(int i = 0; i < P.nprim12[ab]*Q.nprim12[cd]; ++i)
                     intptr[0] += erival[i].LIBINT_T_SS_EREP_SS(0)[0];
-                CLOCK(ticks1);
-                totaltime.second += (ticks1 - ticks0);
+                CLOCK(ticks_integrals_1);
+                times.integrals += (ticks_integrals_1 - ticks_integrals_0);
             }
 
             jstart = jend;
@@ -315,7 +327,7 @@ Libint2_ERI::Integrals(struct multishell_pair P,
         
     }
 
-    return totaltime;
+    return times;
 }
 
 

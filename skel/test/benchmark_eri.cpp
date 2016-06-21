@@ -55,15 +55,13 @@ int main(int argc, char ** argv)
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
-    // Timing header
-    printf("%13s %12s   %12s   %16s   %16s   %12s\n",
-                           "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
+    PrintTimingHeader();
 
     // running totals
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
-    std::pair<TimerType, TimerType> time_total{0,0};
+    TimeContrib time_total;
 
 
     for(int i = 0; i <= maxam; i++)
@@ -75,7 +73,7 @@ int main(int argc, char ** argv)
             continue;
 
         // total amount of time for this AM quartet
-        TimerType time_am = 0;
+        TimeContrib time_am;
 
         const size_t nshell3 = shellmap[k].size();
         const size_t nshell4 = shellmap[l].size();
@@ -84,12 +82,11 @@ int main(int argc, char ** argv)
         gaussian_shell const * const D = &shellmap[l][0];
 
         // time creation of Q
-        TimerType time_pair_34_0 = 0;
-        TimerType time_pair_34_1 = 0;
+        TimerType time_pair_34_0, time_pair_34_1 = 0;
         CLOCK(time_pair_34_0);
         struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
         CLOCK(time_pair_34_1);
-        time_am += time_pair_34_1 - time_pair_34_0;
+        time_am.fill_shell_pair += time_pair_34_1 - time_pair_34_0;
 
 
         #ifdef BENCHMARK_VALIDATE
@@ -113,16 +110,15 @@ int main(int argc, char ** argv)
             gaussian_shell const * const B = &shellmap[j][b];
 
             // time creation of P
-            TimerType time_pair_12_0 = 0;
-            TimerType time_pair_12_1 = 0;
+            TimerType time_pair_12_0, time_pair_12_1;
             CLOCK(time_pair_12_0);
             struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
             CLOCK(time_pair_12_1);
-            time_am += time_pair_12_1 - time_pair_12_0;
+            time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
 
 
             // actually calculate
-            time_am += Simint_Integral(P, Q, simint_work, res_ints);
+            time_am.integrals += Simint_Integral(P, Q, simint_work, res_ints);
 
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals
@@ -158,14 +154,9 @@ int main(int argc, char ** argv)
         ncont1234_total += ncont1234_am;
         nprim1234_total += nprim1234_am;
         nshell1234_total += nshell1234_am;
-        time_total.first += 0;
-        time_total.second += time_am;
+        time_total += time_am;
 
-        printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
-                                                                      i, j, k, l,
-                                                                      nshell1234_am, nprim1234_am,
-                                                                      0ull, time_am,
-                                                                      (double)(time_am)/(double)(nprim1234_am));
+        PrintAMTimingInfo(i, j, k, l, nshell1234_am, nprim1234_am, time_am);
 
 
         #ifdef BENCHMARK_VALIDATE
@@ -177,7 +168,7 @@ int main(int argc, char ** argv)
     printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
     printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
     printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
-    printf("Total ticks to calculate all:  %llu\n", time_total.first + time_total.second);
+    printf("Total ticks to calculate all:  %llu\n", time_total.TotalTime());
     printf("\n");
 
     FreeShellMap(shellmap);

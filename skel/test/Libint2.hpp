@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "simint/shell/shell.h"
-#include "test/Timer.h"
+#include "test/Common.hpp"
 
 // Disable intel diagnostics for libint
 // These happen in the libint header, so there's not much I can do about them
@@ -37,18 +37,18 @@ class Libint2_ERI
 
         ~Libint2_ERI();
 
-        std::pair<TimerType, TimerType>
-        Integrals(struct multishell_pair P,
-                  struct multishell_pair Q,
-                  double * integrals);
+        TimeContrib Integrals(struct multishell_pair P,
+                              struct multishell_pair Q,
+                              double * integrals);
 
     private:
         std::vector<Libint_eri_t> erival_;
 
-        TimerType IntegralsScalar_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        TimeContrib IntegralsScalar_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
 
         #ifdef TESTS_LIBINT2_SIMD
-        TimerType IntegralsSIMD_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        // TODO - broken for now?
+        TimeContrib IntegralsSIMD_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
 
         size_t worksize_;
         double *work_;

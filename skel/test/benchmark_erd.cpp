@@ -8,7 +8,7 @@
 
 
 #ifdef BENCHMARK_VALIDATE
-#include "test/valeev.hpp"
+#include "test/ValeevRef.hpp"
 #endif
 
 
@@ -59,15 +59,13 @@ int main(int argc, char ** argv)
     double * res_ref = (double *)ALLOC(maxsize * sizeof(double));
     #endif
 
-    // Timing header
-    printf("%13s %12s   %12s   %16s   %16s   %12s\n",
-                           "Quartet", "NCont", "NPrim", "Ticks(Prep)", "Ticks(Ints)", "Ticks/Prim");
+    PrintTimingHeader();
 
     // running totals
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
-    std::pair<TimerType, TimerType> time_total{0,0};
+    TimeContrib time_total;
 
 
     for(int i = 0; i <= maxam; i++)
@@ -79,7 +77,7 @@ int main(int argc, char ** argv)
             continue;
 
         // total amount of time for this AM quartet
-        TimerType time_am = 0;
+        TimeContrib time_am;
 
         const size_t nshell3 = shellmap_erd[k].size();
         const size_t nshell4 = shellmap_erd[l].size();
@@ -149,14 +147,9 @@ int main(int argc, char ** argv)
         ncont1234_total += ncont1234_am;
         nprim1234_total += nprim1234_am;
         nshell1234_total += nshell1234_am;
-        time_total.first += 0;
-        time_total.second += time_am;
+        time_total += time_am;
 
-        printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
-                                                                      i, j, k, l,
-                                                                      nshell1234_am, nprim1234_am,
-                                                                      0ull, time_am,
-                                                                      (double)(time_am)/(double)(nprim1234_am));
+        PrintAMTimingInfo(i, j, k, l, nshell1234_am, nprim1234_am, time_am);
 
 
         #ifdef BENCHMARK_VALIDATE
@@ -168,7 +161,7 @@ int main(int argc, char ** argv)
     printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
     printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
     printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
-    printf("Total ticks to calculate all:  %llu\n", time_total.first + time_total.second);
+    printf("Total ticks to calculate all:  %llu\n", time_total.TotalTime());
     printf("\n");
 
     FreeShellMap(shellmap_erd);

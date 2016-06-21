@@ -32,11 +32,11 @@ class ERD_ERI
 
 
 
-        TimerType Integrals(struct gaussian_shell const * const restrict A, int nshell1,
-                            struct gaussian_shell const * const restrict B, int nshell2,
-                            struct gaussian_shell const * const restrict C, int nshell3,
-                            struct gaussian_shell const * const restrict D, int nshell4,
-                            double * const integrals);
+        TimeContrib Integrals(struct gaussian_shell const * const restrict A, int nshell1,
+                              struct gaussian_shell const * const restrict B, int nshell2,
+                              struct gaussian_shell const * const restrict C, int nshell3,
+                              struct gaussian_shell const * const restrict D, int nshell4,
+                              double * const integrals);
 
 
 
@@ -55,11 +55,11 @@ class ERD_ERI
                    int am3, int nprim3, int ncgto3,
                    int am4, int nprim4, int ncgto4);
 
-        TimerType Compute_shell_(struct gaussian_shell const A,
-                                 struct gaussian_shell const B,
-                                 struct gaussian_shell const C,
-                                 struct gaussian_shell const D,
-                                 double * integrals);
+        TimeContrib Compute_shell_(struct gaussian_shell const A,
+                                   struct gaussian_shell const B,
+                                   struct gaussian_shell const C,
+                                   struct gaussian_shell const D,
+                                   double * integrals);
 };
 
 void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G);

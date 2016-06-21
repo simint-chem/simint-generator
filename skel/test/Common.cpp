@@ -20,7 +20,7 @@ bool ValidQuartet(std::array<int, 4> am)
         return false;
     if( (am[0] + am[1]) < (am[2] + am[3]) )
         return false;
-    if(am[0] < am[2])
+    if( (am[0] + am[1]) == (am[2] + am[3]) && (am[0] < am[2]) ) 
         return false;
     return true;
 }
@@ -255,5 +255,27 @@ std::pair<double, double> CalcError(double const * const restrict calc, double c
     return std::pair<double, double>(maxerr, maxrelerr);
 }
 
+    
 
+
+void PrintTimingHeader(void)
+{
+    // Timing header
+    printf("%13s %12s  %12s  %16s  %16s  %16s  %16s  %16s  %16s  %16s  %12s\n",
+                           "Quartet", "NCont", "NPrim", "Ticks(Fill)", "Ticks(Copy)", "Ticks(Boys)",
+                                                        "Ticks(Ints)", "Ticks(Perm)", "Ticks(Misc)",
+                                                        "Ticks(Total)", "Ticks/Prim");
+}
+
+
+void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t nprim1234, const TimeContrib & info)
+{
+        printf("( %d %d | %d %d ) %12lu  %12lu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %12.3f\n",
+                                                                      i, j, k, l,
+                                                                      nshell1234, nprim1234,
+                                                                      info.fill_shell_pair, info.copy_data,
+                                                                      info.boys, info.integrals, info.permute, info.misc,
+                                                                      info.TotalTime(),
+                                                                      (double)(info.TotalTime())/(double)(nprim1234));
+}
 

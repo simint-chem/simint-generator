@@ -10,7 +10,7 @@
 
 
 #ifdef BENCHMARK_VALIDATE
-#include "test/valeev.hpp"
+#include "test/ValeevRef.hpp"
 #endif
 
 
@@ -69,7 +69,7 @@ int main(int argc, char ** argv)
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
-    std::pair<TimerType, TimerType> time_total{0,0};
+    TimeContrib time_total;
 
 
     for(int i = 0; i <= maxam; i++)
@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
         std::map<size_t, std::vector<size_t>> ticksperprim;
 
         // total amount of time for this AM quartet
-        TimerType time_am = 0;
+        TimeContrib time_am;
 
         #ifdef BENCHMARK_VALIDATE
         std::pair<double, double> err{0.0, 0.0};
@@ -113,7 +113,7 @@ int main(int argc, char ** argv)
 
 
             // actually calculate
-            TimerType qtime = eri.Integrals(A, nshell1, B, nshell2,
+            TimeContrib qtime = eri.Integrals(A, nshell1, B, nshell2,
                                              C, nshell3, D, nshell4, res_ints);
             time_am += qtime;
 
@@ -149,15 +149,14 @@ int main(int argc, char ** argv)
             nshell1234_am += nshell1234;
 
             // add timings
-            ticksperprim[nprim1234].push_back(qtime);
+            ticksperprim[nprim1234].push_back(qtime.integrals);
         }
 
         // add primitive and shell count to overall running totals
         ncont1234_total += ncont1234_am;
         nprim1234_total += nprim1234_am;
         nshell1234_total += nshell1234_am;
-        time_total.first += 0;
-        time_total.second += time_am;
+        time_total += time_am;
 
         printf("( %d %d | %d %d ) %12lu   %12lu   %16llu   %16llu   %12.3f\n",
                                                                       i, j, k, l,

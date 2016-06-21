@@ -6,12 +6,62 @@
 #include <string>
 #include <map>
 #include <fstream>
-    
+
+#include "test/Timer.h" 
 #include "simint/shell/shell.h"
 
 #define RND_ZERO 1.0e-15
 
 #define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
+
+
+//! Contributions to timings
+struct TimeContrib
+{
+    TimerType fill_shell_pair;
+    TimerType copy_data;
+    TimerType boys;
+    TimerType integrals;
+    TimerType permute;
+    TimerType misc;
+
+    TimeContrib(const TimeContrib &) noexcept = default;
+    TimeContrib & operator=(const TimeContrib &) noexcept = default;
+    TimeContrib(TimeContrib &&) noexcept = default;
+    TimeContrib & operator=(TimeContrib &&) noexcept = default;
+
+    TimerType TotalTime(void) const noexcept
+    {
+        return fill_shell_pair + copy_data + boys +
+               integrals + permute + misc;
+    }
+
+    TimeContrib(void) noexcept
+    {
+        fill_shell_pair = copy_data = boys = integrals = permute = misc = 0;
+    }
+
+    TimeContrib & operator+=(const TimeContrib & rhs) noexcept
+    {
+        fill_shell_pair += rhs.fill_shell_pair;
+        copy_data += rhs.copy_data;
+        boys += rhs.boys;
+        integrals += rhs.integrals;
+        permute += rhs.permute;
+        misc += rhs.misc;
+        return *this;
+    }
+
+    TimeContrib operator+(const TimeContrib & rhs) const noexcept
+    {
+        TimeContrib tmp(*this);
+        tmp += rhs;
+        return tmp;
+    }
+};
+
+
+
 
 //! Just a vector of gaussian shells
 typedef std::vector<gaussian_shell> GaussianVec;
@@ -97,6 +147,10 @@ std::pair<double, double> CalcError(double const * const restrict calc,
                                     int ncalc);
 
 
+/*! \brief Print the header for timings */
+void PrintTimingHeader(void);
 
+/*! \brief Print a line with the timings for a particular AM quartet */
+void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t nprim1234, const TimeContrib & info);
 
 #endif

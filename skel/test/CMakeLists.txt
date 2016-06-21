@@ -45,11 +45,15 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND TESTS_CXX_FLAGS "-std=c++11")
   list(APPEND TESTS_CXX_FLAGS "-qopt-report=5;-w3;-wd10397;-wd981;-wd383")
   list(APPEND TESTS_CXX_FLAGS "-restrict")
+
 else()
   #list(APPEND TESTS_CXX_FLAGS "-Drestrict=__restrict__")
   message(FATAL_ERROR "Unsupported compiler (for now)")
 endif()
 
+if(TESTS_BENCHMARK_VALIDATE)
+    list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE;-g")
+endif()
 
 
 ##################################################
@@ -114,11 +118,11 @@ target_compile_options(test_common PRIVATE ${TESTS_CXX_FLAGS})
 # Various testing and benchmarking
 ADDTEST(test_eri test_eri.cpp)
 ADDTEST(benchmark_eri benchmark_eri.cpp)
-ADDTEST(plotnprim_eri plotnprim_eri.cpp)
+#ADDTEST(plotnprim_eri plotnprim_eri.cpp)
 
 if(TESTS_ENABLE_LIBERD)
   ADDTEST(benchmark_erd benchmark_erd.cpp)
-  ADDTEST(plotnprim_erd plotnprim_erd.cpp)
+  #ADDTEST(plotnprim_erd plotnprim_erd.cpp)
 endif()
 
 if(TESTS_ENABLE_LIBINT2)

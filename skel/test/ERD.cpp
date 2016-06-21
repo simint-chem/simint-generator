@@ -130,12 +130,16 @@ void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
 
 
 
-TimerType ERD_ERI::Compute_shell_(struct gaussian_shell const A,
-                                  struct gaussian_shell const B,
-                                  struct gaussian_shell const C,
-                                  struct gaussian_shell const D,
-                                  double * integrals)
+TimeContrib ERD_ERI::Compute_shell_(struct gaussian_shell const A,
+                                    struct gaussian_shell const B,
+                                    struct gaussian_shell const C,
+                                    struct gaussian_shell const D,
+                                    double * integrals)
 {
+    TimeContrib time;
+    TimerType ticks0, ticks1;
+
+    CLOCK(ticks0);
     // todo - general contraction?
     int ncgto1 = 1;
     int ncgto2 = 1;
@@ -165,12 +169,11 @@ TimerType ERD_ERI::Compute_shell_(struct gaussian_shell const A,
     int spheric = 0;
     int screen = 0;
     int buffer_offset = 0;
+    CLOCK(ticks1);
+    time.copy_data = ticks1 - ticks0;
 
-
-    TimerType ticks0, ticks1;
 
     CLOCK(ticks0);
-
     erd__gener_eri_batch_(&i_buffer_size, &d_buffer_size,
                           &npgto, &npgto, &ncgto,
                           &ncgto4, &ncgto3, &ncgto2, &ncgto1,
@@ -184,23 +187,27 @@ TimerType ERD_ERI::Compute_shell_(struct gaussian_shell const A,
                           iscratch, &nbatch, &buffer_offset, dscratch);
 
     CLOCK(ticks1);
+    time.integrals = ticks1 - ticks0;
 
     // remember, fortran has 1-based indexing
     //printf("ERD: %d integrals computed\n", nbatch); 
     //printf("Offset: %d\n", buffer_offset-1); 
 
+    CLOCK(ticks0);
     if(nbatch > 0)    
         memcpy(integrals, dscratch + buffer_offset - 1, nbatch * sizeof(double));
+    CLOCK(ticks1);
+    time.permute = ticks1 - ticks0;
 
-    return ticks1 - ticks0;
+    return time;
 }
 
 
-TimerType ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, int nshell1,
-                             struct gaussian_shell const * const restrict B, int nshell2,
-                             struct gaussian_shell const * const restrict C, int nshell3,
-                             struct gaussian_shell const * const restrict D, int nshell4,
-                             double * const integrals)
+TimeContrib ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, int nshell1,
+                               struct gaussian_shell const * const restrict B, int nshell2,
+                               struct gaussian_shell const * const restrict C, int nshell3,
+                               struct gaussian_shell const * const restrict D, int nshell4,
+                               double * const integrals)
 {
     const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
 
@@ -213,7 +220,7 @@ TimerType ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, int
     const int ncart = nshell1234 * ncart1234;
     std::fill(integrals, integrals + ncart, 0.0);
 
-    TimerType totaltime = 0;
+    TimeContrib totaltime;
 
     int idx = 0;
     for(int i = 0; i < nshell1; i++)

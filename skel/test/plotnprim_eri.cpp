@@ -10,7 +10,7 @@
 
 
 #ifdef BENCHMARK_VALIDATE
-#include "test/valeev.hpp"
+#include "test/ValeevRef.hpp"
 #endif
 
 
