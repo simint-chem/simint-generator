@@ -20,10 +20,10 @@ struct TimeContrib
 {
     TimerType fill_shell_pair;
     TimerType copy_data;
+    TimerType calc_pre;
     TimerType boys;
     TimerType integrals;
     TimerType permute;
-    TimerType misc;
 
     TimeContrib(const TimeContrib &) noexcept = default;
     TimeContrib & operator=(const TimeContrib &) noexcept = default;
@@ -32,23 +32,23 @@ struct TimeContrib
 
     TimerType TotalTime(void) const noexcept
     {
-        return fill_shell_pair + copy_data + boys +
-               integrals + permute + misc;
+        return fill_shell_pair + copy_data + calc_pre + boys +
+               integrals + permute;
     }
 
     TimeContrib(void) noexcept
     {
-        fill_shell_pair = copy_data = boys = integrals = permute = misc = 0;
+        fill_shell_pair = copy_data = calc_pre = boys = integrals = permute = 0;
     }
 
     TimeContrib & operator+=(const TimeContrib & rhs) noexcept
     {
         fill_shell_pair += rhs.fill_shell_pair;
         copy_data += rhs.copy_data;
+        calc_pre += rhs.calc_pre;
         boys += rhs.boys;
         integrals += rhs.integrals;
         permute += rhs.permute;
-        misc += rhs.misc;
         return *this;
     }
 

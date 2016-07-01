@@ -262,8 +262,8 @@ void PrintTimingHeader(void)
 {
     // Timing header
     printf("%13s %12s  %12s  %16s  %16s  %16s  %16s  %16s  %16s  %16s  %12s\n",
-                           "Quartet", "NCont", "NPrim", "Ticks(Fill)", "Ticks(Copy)", "Ticks(Boys)",
-                                                        "Ticks(Ints)", "Ticks(Perm)", "Ticks(Misc)",
+                           "Quartet", "NCont", "NPrim", "Ticks(Fill)", "Ticks(Copy)", "Ticks(Pre)",
+                                                        "Ticks(Boys)", "Ticks(Ints)", "Ticks(Perm)",
                                                         "Ticks(Total)", "Ticks/Prim");
 }
 
@@ -273,8 +273,8 @@ void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t npr
         printf("( %d %d | %d %d ) %12lu  %12lu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %12.3f\n",
                                                                       i, j, k, l,
                                                                       nshell1234, nprim1234,
-                                                                      info.fill_shell_pair, info.copy_data,
-                                                                      info.boys, info.integrals, info.permute, info.misc,
+                                                                      info.fill_shell_pair, info.copy_data, info.calc_pre,
+                                                                      info.boys, info.integrals, info.permute,
                                                                       info.TotalTime(),
                                                                       (double)(info.TotalTime())/(double)(nprim1234));
 }
