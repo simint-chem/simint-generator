@@ -1,5 +1,4 @@
-#ifndef SIMINT_AVX_H
-#define SIMINT_AVX_H
+#pragma once
 
 #include <immintrin.h>
 #include <stdint.h>
@@ -19,4 +18,3 @@ union offset_union
     uint8_t a[4];
 };
 
-#endif

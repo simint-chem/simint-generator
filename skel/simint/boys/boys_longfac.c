@@ -1,6 +1,6 @@
 /*
  Generated with:
-   python/boysgen_longfac.py --filename boys_longfac --max-n 31
+   ../../../python/boys/gen_boys_longfac.py --filename boys_longfac --max-n 31
 ------------------------------------
 Options for long Boys function factor sqrt(pi)*(2n-1)!!/(2**(n+1)):
     Max n: 31

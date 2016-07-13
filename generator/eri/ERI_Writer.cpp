@@ -264,8 +264,8 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
 
     os_ << "\n\n";
     os_ << funcline;
-    os_ << "struct multishell_pair P,\n";
-    os_ << indent << "struct multishell_pair Q,\n";
+    os_ << "struct simint_multi_shellpair P,\n";
+    os_ << indent << "struct simint_multi_shellpair Q,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
@@ -376,8 +376,8 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     os_ << "\n\n";
     os_ << funcline;
-    os_ << "struct multishell_pair const P,\n";
-    os_ << indent << "struct multishell_pair const Q,\n";
+    os_ << "struct simint_multi_shellpair const P,\n";
+    os_ << indent << "struct simint_multi_shellpair const Q,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
@@ -732,12 +732,12 @@ void ERI_Writer_Basic::WriteFile(void) const
     std::stringstream sscwork, ssig, ssig2;
 
     // comment out contwork if its not needed
-    ssig  << "struct multishell_pair const P,\n"
-          << funcindent << "struct multishell_pair const Q,\n"
+    ssig  << "struct simint_multi_shellpair const P,\n"
+          << funcindent << "struct simint_multi_shellpair const Q,\n"
           << funcindent << "double * const restrict contwork,\n"
           << funcindent << "double * const restrict " << ArrVarName(am) << ")";
-    ssig2 << "struct multishell_pair const P,\n"
-          << funcindent2 << "struct multishell_pair const Q,\n"
+    ssig2 << "struct simint_multi_shellpair const P,\n"
+          << funcindent2 << "struct simint_multi_shellpair const Q,\n"
           << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";
 
 

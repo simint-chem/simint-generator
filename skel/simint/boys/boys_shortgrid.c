@@ -1,6 +1,6 @@
 /*
  Generated with:
-   python/boysgen_shortgrid.py --file boys_shortgrid --max-n 31 --max-x 43 --spacing 0.1
+   ../../../python/boys/gen_boys_shortgrid.py --file boys_shortgrid --max-n 31 --max-x 43 --spacing 0.1
 ------------------------------------
 Options for Boys function Fn(x):
     Max n: 31

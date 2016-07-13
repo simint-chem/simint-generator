@@ -1,6 +1,6 @@
 /*
  Generated with:
-   ./shellgen_constants.py --filename shell_constants --max-l 12
+   ../../../python/gen_shellconstants.py --filename shell_constants --max-l 12
 ------------------------------------
 Options for ShellGen constants:
     Max l: 12
@@ -8,6 +8,9 @@ Options for ShellGen constants:
 ------------------------------------
 */
 
+/* A prefactor for normalization. c = pi**(3/2) * (2l-1)!! / 2**l
+   where l is the angular momentum
+*/
 const double norm_fac[13] = 
 {
 /* l =    0 */  5.56832799683170785             ,

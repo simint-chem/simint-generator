@@ -1,5 +1,4 @@
-#ifndef SIMINT__ERI_H
-#define SIMINT__ERI_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,9 +25,16 @@ extern "C" {
 #endif
 
 
-// Typedefs for eri functions
-typedef int (*simint_erifunc_sharedwork)(struct multishell_pair const, struct multishell_pair const, double * const restrict, double * const restrict);
-typedef int (*simint_erifunc)(struct multishell_pair const, struct multishell_pair const, double * const restrict);
+//! A pointer to a function that calculates ERI utilizing a shared workspace
+typedef int (*simint_erifunc_sharedwork)(struct simint_multi_shellpair const,
+                                         struct simint_multi_shellpair const,
+                                         double * const restrict,
+                                         double * const restrict);
+
+//! A pointer to a function that calculates ERI that allocates its own workspace
+typedef int (*simint_erifunc)(struct simint_multi_shellpair const,
+                              struct simint_multi_shellpair const,
+                              double * const restrict);
 
 
 // Stores pointers to the eri functions
@@ -38,16 +44,34 @@ extern simint_erifunc             simint_erifunc_array[SIMINT_ERI_MAXAM+1][SIMIN
 
 
 
-// Convenience
-inline int simint_compute_eri(struct multishell_pair const P,
-                              struct multishell_pair const Q,
+/*! \brief Compute an eri given shell pair information
+ *
+ * \param [in] P The shell pairs for the bra side of the integral 
+ * \param [in] Q The shell pairs for the ket side of the integral
+ * \param [inout] integrals Storage for the final integrals. Since size information
+ *                          is not passed, you are expected to ensure that this buffer
+ *                          is large enough
+ */
+inline int simint_compute_eri(struct simint_multi_shellpair const P,
+                              struct simint_multi_shellpair const Q,
                               double * const restrict integrals)
 {
     return simint_erifunc_array[P.am1][P.am2][Q.am1][Q.am2](P, Q, integrals);
 }
 
-inline int simint_compute_eri_sharedwork(struct multishell_pair const P,
-                                         struct multishell_pair const Q,
+
+
+/*! \brief Compute an eri given shell pair information
+ *
+ * \param [in] P The shell pairs for the bra side of the integral 
+ * \param [in] Q The shell pairs for the ket side of the integral
+ * \param [in] work Workspace to use in calculating the integrals
+ * \param [inout] integrals Storage for the final integrals. Since size information
+ *                          is not passed, you are expected to ensure that this buffer
+ *                          is large enough
+ */
+inline int simint_compute_eri_sharedwork(struct simint_multi_shellpair const P,
+                                         struct simint_multi_shellpair const Q,
                                          double * const restrict work,
                                          double * const restrict integrals)
 {
@@ -59,4 +83,3 @@ inline int simint_compute_eri_sharedwork(struct multishell_pair const P,
 }
 #endif
 
-#endif

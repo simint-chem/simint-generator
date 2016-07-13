@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 
     // normalize
     for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
+        simint_normalize_shells(it.second.size(), it.second.data());
 
 
     // find the max dimensions
@@ -76,13 +76,13 @@ int main(int argc, char ** argv)
         const size_t nshell3 = shellmap[k].size();
         const size_t nshell4 = shellmap[l].size();
 
-        gaussian_shell const * const C = &shellmap[k][0];
-        gaussian_shell const * const D = &shellmap[l][0];
+        simint_shell const * const C = &shellmap[k][0];
+        simint_shell const * const D = &shellmap[l][0];
 
         // time creation of Q
         TimerType time_pair_34_0, time_pair_34_1;
         CLOCK(time_pair_34_0);
-        struct multishell_pair Q = create_multishell_pair(nshell3, C, nshell4, D);
+        struct simint_multi_shellpair Q = simint_create_multi_shellpair(nshell3, C, nshell4, D);
         CLOCK(time_pair_34_1);
         time_am.fill_shell_pair += time_pair_34_1 - time_pair_34_0;
 
@@ -104,14 +104,14 @@ int main(int argc, char ** argv)
             const size_t nshell2 = 1;
 
 
-            gaussian_shell const * const A = &shellmap[i][a];
-            gaussian_shell const * const B = &shellmap[j][b];
+            simint_shell const * const A = &shellmap[i][a];
+            simint_shell const * const B = &shellmap[j][b];
 
             // time creation of P
             TimerType time_pair_12_0;
             TimerType time_pair_12_1;
             CLOCK(time_pair_12_0);
-            struct multishell_pair P = create_multishell_pair(nshell1, A, nshell2, B);
+            struct simint_multi_shellpair P = simint_create_multi_shellpair(nshell1, A, nshell2, B);
             CLOCK(time_pair_12_1);
             time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
 
@@ -140,7 +140,7 @@ int main(int argc, char ** argv)
             #endif
 
 
-            free_multishell_pair(P);
+            simint_free_multi_shellpair(P);
 
             // add primitive and shell count to running totals for this am
             ncont1234_am += ncont1234;
@@ -148,7 +148,7 @@ int main(int argc, char ** argv)
             nshell1234_am += nshell1234;
         }
 
-        free_multishell_pair(Q);
+        simint_free_multi_shellpair(Q);
 
         // add primitive and shell count to overall running totals
         ncont1234_total += ncont1234_am;

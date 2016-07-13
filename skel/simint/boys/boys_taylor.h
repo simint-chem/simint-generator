@@ -1,5 +1,4 @@
-#ifndef BOYS_TAYLOR_H
-#define BOYS_TAYLOR_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -112,4 +111,3 @@ inline double Boys_F_taylor_single(int n, double x)
 }
 #endif
 
-#endif

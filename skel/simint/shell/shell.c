@@ -7,10 +7,10 @@
 #include "simint/shell/shell_constants.h"
 
 
-// Disable intel diagnostics
-// 1338 : Pointer arithmetic on pointer to void. Done on purpose
-#ifdef __INTEL_COMPILER
-    #pragma warning(disable:1338)
+#if defined(__ICC) || defined(__INTEL_COMPILER)
+    #pragma warning(disable:1338)                  // Pointer arithmetic on void
+#elif defined(__GNUC__) || defined(__GNUG__)
+    #pragma GCC diagnostic ignored -Wpointer-arith // Pointer arithmetic on void
 #endif
 
 
@@ -19,28 +19,31 @@
 extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 // Allocate a gaussian shell with correct alignment
-void allocate_gaussian_shell(int nprim, struct gaussian_shell * const restrict G)
+void simint_allocate_shell(int nprim, struct simint_shell * const restrict G)
 {
     int prim_size = SIMINT_SIMD_ROUND(nprim);
-    size_t size = prim_size * sizeof(double);   
+    size_t size = 2 * prim_size * sizeof(double);   
 
-    double * mem = ALLOC(2*size);
+    double * mem = ALLOC(size);
     G->alpha = mem;
     G->coef = mem + prim_size;
+
+    G->ptr = mem;
+    G->memsize = size;
 }
 
 
-void free_gaussian_shell(struct gaussian_shell G)
+void simint_free_shell(struct simint_shell G)
 {
-    // only need to free G.alpha since only one memory space was used
-    FREE(G.alpha);
+    FREE(G.ptr);
+    G.ptr = NULL;
+    G.memsize = 0;
 }
 
-struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
+struct simint_shell simint_copy_shell(const struct simint_shell G)
 {
-    struct gaussian_shell G_copy;
-    allocate_gaussian_shell(G.nprim, &G_copy);
-
+    struct simint_shell G_copy;
+    simint_allocate_shell(G.nprim, &G_copy);
 
     G_copy.nprim = G.nprim;
     G_copy.am = G.am;
@@ -48,14 +51,12 @@ struct gaussian_shell copy_gaussian_shell(const struct gaussian_shell G)
     G_copy.y = G.y;
     G_copy.z = G.z;
 
-    // only need to copy once, since coef comes right after alpha in memory
-    size_t size = SIMINT_SIMD_ROUND(G.nprim)*sizeof(double); 
-    memcpy(G_copy.alpha, G.alpha, 2*size);
+    memcpy(G_copy.ptr, G.ptr, G.memsize);
     return G_copy;
 }
 
 
-void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
+void simint_normalize_shells(int n, struct simint_shell * const restrict G)
 {
     for(int i = 0; i < n; ++i)
     {
@@ -90,11 +91,9 @@ void normalize_gaussian_shells(int n, struct gaussian_shell * const restrict G)
 
 
 
-// Allocates a shell pair with correct alignment
-// Only fills in memsize member
-void allocate_multishell_pair(int na, struct gaussian_shell const * const restrict A,
-                              int nb, struct gaussian_shell const * const restrict B,
-                              struct multishell_pair * const restrict P)
+void simint_allocate_multi_shellpair(int na, struct simint_shell const * const restrict A,
+                                     int nb, struct simint_shell const * const restrict B,
+                                     struct simint_multi_shellpair * const restrict P)
 {
     int nprim = 0;
 
@@ -136,45 +135,47 @@ void allocate_multishell_pair(int na, struct gaussian_shell const * const restri
 
     int dcount = 0;
     // allocate one large space
-    void * mem = ALLOC(memsize); 
-    P->x          = mem + dprim_size*(dcount++);
-    P->y          = mem + dprim_size*(dcount++);
-    P->z          = mem + dprim_size*(dcount++);
-    P->PA_x       = mem + dprim_size*(dcount++);
-    P->PA_y       = mem + dprim_size*(dcount++);
-    P->PA_z       = mem + dprim_size*(dcount++);
-    P->PB_x       = mem + dprim_size*(dcount++);
-    P->PB_y       = mem + dprim_size*(dcount++);
-    P->PB_z       = mem + dprim_size*(dcount++);
-    P->alpha      = mem + dprim_size*(dcount++);
-    P->prefac     = mem + dprim_size*(dcount++);
+    P->ptr = ALLOC(memsize); 
+    P->x          = P->ptr + dprim_size*(dcount++);
+    P->y          = P->ptr + dprim_size*(dcount++);
+    P->z          = P->ptr + dprim_size*(dcount++);
+    P->PA_x       = P->ptr + dprim_size*(dcount++);
+    P->PA_y       = P->ptr + dprim_size*(dcount++);
+    P->PA_z       = P->ptr + dprim_size*(dcount++);
+    P->PB_x       = P->ptr + dprim_size*(dcount++);
+    P->PB_y       = P->ptr + dprim_size*(dcount++);
+    P->PB_z       = P->ptr + dprim_size*(dcount++);
+    P->alpha      = P->ptr + dprim_size*(dcount++);
+    P->prefac     = P->ptr + dprim_size*(dcount++);
 
     #ifdef SIMINT_ERI_USE_ET
-    P->bAB_x      = mem + dprim_size*(dcount++);
-    P->bAB_y      = mem + dprim_size*(dcount++);
-    P->bAB_z      = mem + dprim_size*(dcount++);
+    P->bAB_x      = P->ptr + dprim_size*(dcount++);
+    P->bAB_y      = P->ptr + dprim_size*(dcount++);
+    P->bAB_z      = P->ptr + dprim_size*(dcount++);
     #endif
     
 
     // below are unaligned
-    P->AB_x       = mem + 11*dprim_size;
-    P->AB_y       = mem + 11*dprim_size +   dshell12_size;
-    P->AB_z       = mem + 11*dprim_size + 2*dshell12_size;
-    P->nprim12    = mem + 11*dprim_size + 3*dshell12_size;
-    P->nbatchprim = mem + 11*dprim_size + 3*dshell12_size + ishell12_size;
+    P->AB_x       = P->ptr + 11*dprim_size;
+    P->AB_y       = P->ptr + 11*dprim_size +   dshell12_size;
+    P->AB_z       = P->ptr + 11*dprim_size + 2*dshell12_size;
+    P->nprim12    = P->ptr + 11*dprim_size + 3*dshell12_size;
+    P->nbatchprim = P->ptr + 11*dprim_size + 3*dshell12_size + ishell12_size;
 }
 
 
-void free_multishell_pair(struct multishell_pair P)
+void simint_free_multi_shellpair(struct simint_multi_shellpair P)
 {
    // Only need to free P.x since that points to the beginning of mem
-   FREE(P.x);
+   FREE(P.ptr);
+   P.ptr = NULL;
+   P.memsize = 0;
 }
 
 
-void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A,
-                          int nb, struct gaussian_shell const * const restrict B,
-                          struct multishell_pair * const restrict P)
+void simint_fill_multi_shellpair(int na, struct simint_shell const * const restrict A,
+                                 int nb, struct simint_shell const * const restrict B,
+                                 struct simint_multi_shellpair * const restrict P)
 {
     int i, j, sa, sb, sasb, idx, ibatch, batchprim;
 
@@ -273,13 +274,12 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
 }
 
 
-struct multishell_pair
-create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
-                       int nb, struct gaussian_shell const * const restrict B)
+struct simint_multi_shellpair
+simint_create_multi_shellpair(int na, struct simint_shell const * const restrict A,
+                              int nb, struct simint_shell const * const restrict B)
 {
-    struct multishell_pair P;
-    allocate_multishell_pair(na, A, nb, B, &P);
-    fill_multishell_pair(na, A, nb, B, &P);
+    struct simint_multi_shellpair P;
+    simint_allocate_multi_shellpair(na, A, nb, B, &P);
+    simint_fill_multi_shellpair(na, A, nb, B, &P);
     return P; 
 }
-

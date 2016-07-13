@@ -57,7 +57,7 @@ GaussianVec CopyGaussianVec(const GaussianVec & v)
     GaussianVec copy;
     copy.reserve(v.size());
     for(const auto & it : v)
-        copy.push_back(copy_gaussian_shell(it));
+        copy.push_back(simint_copy_shell(it));
     return copy;
 }
 
@@ -66,7 +66,7 @@ GaussianVec CopyGaussianVec(const GaussianVec & v)
 void FreeGaussianVec(GaussianVec & agv)
 {
     for(auto & it : agv)
-        free_gaussian_shell(it);
+        simint_free_shell(it);
     agv.clear();
 }
 
@@ -156,7 +156,7 @@ ShellMap ReadBasis(const std::string & file)
             GaussianVec gvec(ngen);
             for(auto & it : gvec)
             {
-                allocate_gaussian_shell(nprim, &it);
+                simint_allocate_shell(nprim, &it);
                 it.am = ammap[*itg];
                 it.nprim = nprim;
                 it.x = x;

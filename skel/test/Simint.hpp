@@ -1,5 +1,4 @@
-#ifndef SIMINT_TEST_SIMINT_HPP
-#define SIMINT_TEST_SIMINT_HPP
+#pragma once
 
 #include <utility>
 
@@ -10,9 +9,6 @@ void Simint_Init(void);
 
 void Simint_Finalize(void);
 
-TimerType Simint_Integral(struct multishell_pair const P, struct multishell_pair const Q,
+TimerType Simint_Integral(struct simint_multi_shellpair const P, struct simint_multi_shellpair const Q,
                           double * const restrict contwork, double * const restrict integrals);
-
-
-#endif
 

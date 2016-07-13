@@ -31,17 +31,6 @@ eps = mp.power(10, -args.eps)
 maxn = args.max_n
 npoints = int(maxx / inc) + 1
 
-print("------------------------------------")
-print("Options for Boys function Fn(x):")
-print("    Max n: {}".format(maxn))
-print("    Max x: {}".format(maxx))
-print("  Spacing: {}".format(inc))
-print("  npoints: {}".format(npoints))
-print("      DPS: {}".format(args.dps))
-print("      EPS: 10^({})".format(-args.eps))
-print("         = {}".format(eps))
-print("------------------------------------")
-
 # Start at x=0 and increment up
 x = mp.mpf(0)
 F = []
@@ -88,8 +77,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("};\n")
 
 with open(args.filename + ".h", 'w') as f: 
-  f.write("#ifndef {}_H\n".format(args.filename.upper()))
-  f.write("#define {}_H\n".format(args.filename.upper()))
+  f.write("#pragma once\n")
   f.write("\n")
   f.write("#define BOYS_SHORTGRID_MAXN {}\n".format(maxn))
   f.write("#define BOYS_SHORTGRID_MAXX {}\n".format(maxx))
@@ -98,4 +86,3 @@ with open(args.filename + ".h", 'w') as f:
   f.write("#define BOYS_SHORTGRID_LOOKUPFAC {}\n".format(1.0/inc))
   f.write("#define BOYS_SHORTGRID_LOOKUPFAC2 {}\n".format(0.5*inc))
   f.write("\n")
-  f.write("#endif\n")

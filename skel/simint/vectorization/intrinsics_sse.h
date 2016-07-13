@@ -1,5 +1,4 @@
-#ifndef SIMINT_SSE_H
-#define SIMINT_SSE_H
+#pragma once
 
 #include <emmintrin.h>
 
@@ -9,4 +8,3 @@ union double2
     double d[2];
 };
 
-#endif

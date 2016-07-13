@@ -1,5 +1,4 @@
-#ifndef BOYS_SHORTGRID_H
-#define BOYS_SHORTGRID_H
+#pragma once
 
 #define BOYS_SHORTGRID_MAXN 31
 #define BOYS_SHORTGRID_MAXX 43.0
@@ -8,4 +7,3 @@
 #define BOYS_SHORTGRID_LOOKUPFAC 10.0
 #define BOYS_SHORTGRID_LOOKUPFAC2 0.05
 
-#endif

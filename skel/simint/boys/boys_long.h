@@ -1,13 +1,13 @@
-#ifndef BOYS_LONG_H
-#define BOYS_LONG_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <math.h>
 #include "simint/boys/boys_longfac.h"
 #include "simint/vectorization/vectorization.h"
+
+#include <math.h>
 
 extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
@@ -47,4 +47,3 @@ inline double Boys_F_long_single(int n, double x)
 }
 #endif
 
-#endif

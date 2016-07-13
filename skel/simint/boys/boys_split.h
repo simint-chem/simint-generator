@@ -1,5 +1,4 @@
-#ifndef BOYS_SPLIT_H
-#define BOYS_SPLIT_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,4 +45,3 @@ inline void Boys_F_split_single(double * const restrict Farr, int n, double cons
 }
 #endif
 
-#endif

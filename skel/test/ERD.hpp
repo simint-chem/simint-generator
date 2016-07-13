@@ -1,10 +1,9 @@
-#ifndef SIMINT_ERD_H
-#define SIMINT_ERD_H
+#pragma once
 
 #include "test/Common.hpp"
 #include "test/Timer.h"
 
-typedef std::vector<gaussian_shell> GaussianVec;
+typedef std::vector<simint_shell> GaussianVec;
 
 class ERD_ERI
 {
@@ -12,10 +11,10 @@ class ERD_ERI
     public:
         ERD_ERI(int am, int nprim, int ncgto);
 
-        ERD_ERI(int na, struct gaussian_shell const * const restrict A,
-                int nb, struct gaussian_shell const * const restrict B,
-                int nc, struct gaussian_shell const * const restrict C,
-                int nd, struct gaussian_shell const * const restrict D);
+        ERD_ERI(int na, struct simint_shell const * const restrict A,
+                int nb, struct simint_shell const * const restrict B,
+                int nc, struct simint_shell const * const restrict C,
+                int nd, struct simint_shell const * const restrict D);
 
         ERD_ERI(int am1, int nprim1, int ncgto1,
                 int am2, int nprim2, int ncgto2,
@@ -32,10 +31,10 @@ class ERD_ERI
 
 
 
-        TimeContrib Integrals(struct gaussian_shell const * const restrict A, int nshell1,
-                              struct gaussian_shell const * const restrict B, int nshell2,
-                              struct gaussian_shell const * const restrict C, int nshell3,
-                              struct gaussian_shell const * const restrict D, int nshell4,
+        TimeContrib Integrals(struct simint_shell const * const restrict A, int nshell1,
+                              struct simint_shell const * const restrict B, int nshell2,
+                              struct simint_shell const * const restrict C, int nshell3,
+                              struct simint_shell const * const restrict D, int nshell4,
                               double * const integrals);
 
 
@@ -55,14 +54,14 @@ class ERD_ERI
                    int am3, int nprim3, int ncgto3,
                    int am4, int nprim4, int ncgto4);
 
-        TimeContrib Compute_shell_(struct gaussian_shell const A,
-                                   struct gaussian_shell const B,
-                                   struct gaussian_shell const C,
-                                   struct gaussian_shell const D,
+        TimeContrib Compute_shell_(struct simint_shell const A,
+                                   struct simint_shell const B,
+                                   struct simint_shell const C,
+                                   struct simint_shell const D,
                                    double * integrals);
 };
 
-void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G);
+void simint_normalize_shells_erd(int n, struct simint_shell * const restrict G);
 
 
 
@@ -91,5 +90,3 @@ void erd__memory_eri_batch_(const int *nalpha, const int *ncoeff,
                             int *imin, int *iopt, int *zmin, int *zopt);
 }
 
-
-#endif

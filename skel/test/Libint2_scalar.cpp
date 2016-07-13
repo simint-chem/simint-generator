@@ -29,16 +29,16 @@ Libint2_ERI::~Libint2_ERI()
 
 
 
-TimeContrib Libint2_ERI::Integrals(struct multishell_pair P,
-                                   struct multishell_pair Q,
+TimeContrib Libint2_ERI::Integrals(struct simint_multi_shellpair P,
+                                   struct simint_multi_shellpair Q,
                                    double * integrals)
 {
     Libint_eri_t * erival = erival_.data();
 
     // permute?
     // Libint requires Q.am >= P.am
-    struct multishell_pair * libint_P = &P;
-    struct multishell_pair * libint_Q = &Q;
+    struct simint_multi_shellpair * libint_P = &P;
+    struct simint_multi_shellpair * libint_Q = &Q;
     
     bool permutePQ = false;
     if( (P.am1 + P.am2) > (Q.am1 + Q.am2) )

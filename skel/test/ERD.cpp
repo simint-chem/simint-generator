@@ -32,10 +32,10 @@ ERD_ERI::ERD_ERI(int am, int nprim, int ncgto)
 
 
 
-ERD_ERI::ERD_ERI(int na, struct gaussian_shell const * const restrict A,
-                 int nb, struct gaussian_shell const * const restrict B,
-                 int nc, struct gaussian_shell const * const restrict C,
-                 int nd, struct gaussian_shell const * const restrict D)
+ERD_ERI::ERD_ERI(int na, struct simint_shell const * const restrict A,
+                 int nb, struct simint_shell const * const restrict B,
+                 int nc, struct simint_shell const * const restrict C,
+                 int nd, struct simint_shell const * const restrict D)
 {
     int am1 = A[0].am;
     int am2 = B[0].am;
@@ -130,10 +130,10 @@ void ERD_ERI::Init_(int am1, int nprim1, int ncgto1,
 
 
 
-TimeContrib ERD_ERI::Compute_shell_(struct gaussian_shell const A,
-                                    struct gaussian_shell const B,
-                                    struct gaussian_shell const C,
-                                    struct gaussian_shell const D,
+TimeContrib ERD_ERI::Compute_shell_(struct simint_shell const A,
+                                    struct simint_shell const B,
+                                    struct simint_shell const C,
+                                    struct simint_shell const D,
                                     double * integrals)
 {
     TimeContrib time;
@@ -203,10 +203,10 @@ TimeContrib ERD_ERI::Compute_shell_(struct gaussian_shell const A,
 }
 
 
-TimeContrib ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, int nshell1,
-                               struct gaussian_shell const * const restrict B, int nshell2,
-                               struct gaussian_shell const * const restrict C, int nshell3,
-                               struct gaussian_shell const * const restrict D, int nshell4,
+TimeContrib ERD_ERI::Integrals(struct simint_shell const * const restrict A, int nshell1,
+                               struct simint_shell const * const restrict B, int nshell2,
+                               struct simint_shell const * const restrict C, int nshell3,
+                               struct simint_shell const * const restrict D, int nshell4,
                                double * const integrals)
 {
     const int nshell1234 = nshell1 * nshell2 * nshell3 * nshell4;
@@ -236,7 +236,7 @@ TimeContrib ERD_ERI::Integrals(struct gaussian_shell const * const restrict A, i
 }
 
 
-void normalize_gaussian_shells_erd(int n, struct gaussian_shell * const restrict G)
+void simint_normalize_shells_erd(int n, struct simint_shell * const restrict G)
 {
     //df[i] = (i-1)!!
     const double df[] = {

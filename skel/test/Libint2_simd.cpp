@@ -77,8 +77,8 @@ Libint2_ERI::~Libint2_ERI()
 
 
 
-TimerType Libint2_ERI::Integrals(struct multishell_pair P,
-                                 struct multishell_pair Q,
+TimerType Libint2_ERI::Integrals(struct simint_multi_shellpair P,
+                                 struct simint_multi_shellpair Q,
                                  double * integrals)
 {
     Libint_eri_t * erival = erival_.data();

@@ -21,20 +21,20 @@ int main(int argc, char ** argv)
 
     ////////////////////////////////////////
     // 2. Create your shells
-    struct gaussian_shell s_shells[4];
-    struct gaussian_shell p_shells[1];
+    struct simint_shell s_shells[4];
+    struct simint_shell p_shells[1];
 
     // allocate the memory
-    // arguments to allocate_gaussian_shell
+    // arguments to simint_allocate_shell
     //    Number of primitives
     //    Pointer to the shell
     // Note that this doesn't actually set the
     // nprim member of the structure
-    allocate_gaussian_shell(3, &s_shells[0]);
-    allocate_gaussian_shell(3, &s_shells[1]);
-    allocate_gaussian_shell(3, &s_shells[2]);
-    allocate_gaussian_shell(3, &s_shells[3]);
-    allocate_gaussian_shell(3, &p_shells[0]);
+    simint_allocate_shell(3, &s_shells[0]);
+    simint_allocate_shell(3, &s_shells[1]);
+    simint_allocate_shell(3, &s_shells[2]);
+    simint_allocate_shell(3, &s_shells[3]);
+    simint_allocate_shell(3, &p_shells[0]);
 
     //
     // Coordinates are in atomic units!
@@ -75,19 +75,19 @@ int main(int argc, char ** argv)
 
     ////////////////////////////////////////
     // 3. Normalize
-    // Arguments to normalize_gaussian_shells:
+    // Arguments to simint_normalize_shells:
     //   number of shells
     //   pointer to array of shells
-    normalize_gaussian_shells(4, s_shells);
-    normalize_gaussian_shells(1, p_shells);
+    simint_normalize_shells(4, s_shells);
+    simint_normalize_shells(1, p_shells);
 
 
     ////////////////////////////////////////
     // 4. Create your multishell pairs
     // Could obviously be done on the fly if needed
-    struct multishell_pair ss_pair = create_multishell_pair(4, s_shells, 4, s_shells);
-    struct multishell_pair ps_pair = create_multishell_pair(1, p_shells, 4, s_shells);
-    struct multishell_pair pp_pair = create_multishell_pair(1, p_shells, 1, p_shells);
+    struct simint_multi_shellpair ss_pair = simint_create_multi_shellpair(4, s_shells, 4, s_shells);
+    struct simint_multi_shellpair ps_pair = simint_create_multi_shellpair(1, p_shells, 4, s_shells);
+    struct simint_multi_shellpair pp_pair = simint_create_multi_shellpair(1, p_shells, 1, p_shells);
 
 
     ////////////////////////////////////////
@@ -138,14 +138,14 @@ int main(int argc, char ** argv)
     ////////////////////////////////////////
     // 6. Clean up and finalize the library
     //
-    free_gaussian_shell(s_shells[0]);
-    free_gaussian_shell(s_shells[1]);
-    free_gaussian_shell(s_shells[2]);
-    free_gaussian_shell(s_shells[3]);
-    free_gaussian_shell(p_shells[0]);
-    free_multishell_pair(ss_pair);
-    free_multishell_pair(ps_pair);
-    free_multishell_pair(pp_pair);
+    simint_free_shell(s_shells[0]);
+    simint_free_shell(s_shells[1]);
+    simint_free_shell(s_shells[2]);
+    simint_free_shell(s_shells[3]);
+    simint_free_shell(p_shells[0]);
+    simint_free_multi_shellpair(ss_pair);
+    simint_free_multi_shellpair(ps_pair);
+    simint_free_multi_shellpair(pp_pair);
     FREE(targets);
     simint_finalize();
 

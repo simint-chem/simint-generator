@@ -406,11 +406,11 @@ void ValeevRef_Finalize(void)
 }
 
 
-// Helper for calculating via gaussian_shell structures
-void ValeevRef_Integrals(gaussian_shell const * const A, int nshell1,
-                         gaussian_shell const * const B, int nshell2,
-                         gaussian_shell const * const C, int nshell3,
-                         gaussian_shell const * const D, int nshell4,
+// Helper for calculating via simint_shell structures
+void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
+                         simint_shell const * const B, int nshell2,
+                         simint_shell const * const C, int nshell3,
+                         simint_shell const * const D, int nshell4,
                          double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);

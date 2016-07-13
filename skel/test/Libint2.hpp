@@ -1,5 +1,4 @@
-#ifndef TEST_LIBINT2_HPP
-#define TEST_LIBINT2_HPP
+#pragma once
 
 #include <vector>
 
@@ -37,18 +36,18 @@ class Libint2_ERI
 
         ~Libint2_ERI();
 
-        TimeContrib Integrals(struct multishell_pair P,
-                              struct multishell_pair Q,
+        TimeContrib Integrals(struct simint_multi_shellpair P,
+                              struct simint_multi_shellpair Q,
                               double * integrals);
 
     private:
         std::vector<Libint_eri_t> erival_;
 
-        TimeContrib IntegralsScalar_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        TimeContrib IntegralsScalar_(struct simint_multi_shellpair P, struct simint_multi_shellpair Q, double * integrals);
 
         #ifdef TESTS_LIBINT2_SIMD
         // TODO - broken for now?
-        TimeContrib IntegralsSIMD_(struct multishell_pair P, struct multishell_pair Q, double * integrals);
+        TimeContrib IntegralsSIMD_(struct simint_multi_shellpair P, struct simint_multi_shellpair Q, double * integrals);
 
         size_t worksize_;
         double *work_;
@@ -64,4 +63,3 @@ class Libint2_ERI
 
 };
 
-#endif

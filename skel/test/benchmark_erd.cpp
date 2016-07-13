@@ -31,12 +31,12 @@ int main(int argc, char ** argv)
     #ifdef BENCHMARK_VALIDATE
     ShellMap shellmap = CopyShellMap(shellmap_erd);
     for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
+        simint_normalize_shells(it.second.size(), it.second.data());
     #endif
 
 
     for(auto & it : shellmap_erd)
-        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
+        simint_normalize_shells_erd(it.second.size(), it.second.data());
 
 
 
@@ -82,8 +82,8 @@ int main(int argc, char ** argv)
         const size_t nshell3 = shellmap_erd[k].size();
         const size_t nshell4 = shellmap_erd[l].size();
 
-        gaussian_shell const * const C = &shellmap_erd[k][0];
-        gaussian_shell const * const D = &shellmap_erd[l][0];
+        simint_shell const * const C = &shellmap_erd[k][0];
+        simint_shell const * const D = &shellmap_erd[l][0];
 
 
         #ifdef BENCHMARK_VALIDATE
@@ -102,8 +102,8 @@ int main(int argc, char ** argv)
             const size_t nshell1 = 1;
             const size_t nshell2 = 1;
 
-            gaussian_shell const * const A = &shellmap_erd[i][a];
-            gaussian_shell const * const B = &shellmap_erd[j][b];
+            simint_shell const * const A = &shellmap_erd[i][a];
+            simint_shell const * const B = &shellmap_erd[j][b];
 
 
 

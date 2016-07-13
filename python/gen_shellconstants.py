@@ -55,6 +55,10 @@ with open(args.filename + ".c", 'w') as f:
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
+  
+  f.write("/* A prefactor for normalization. c = pi**(3/2) * (2l-1)!! / 2**l\n")
+  f.write("   where l is the angular momentum\n")
+  f.write("*/\n")
   f.write("const double norm_fac[{}] = \n".format(maxl+1))
   f.write("{\n")
 
@@ -63,9 +67,10 @@ with open(args.filename + ".c", 'w') as f:
   f.write("};\n")
 
 with open(args.filename + ".h", 'w') as f: 
-  f.write("#ifndef {}_H\n".format(args.filename.upper()))
-  f.write("#define {}_H\n".format(args.filename.upper()))
+  f.write("#pragma once\n")
   f.write("\n")
+  f.write("/*! The maximum value of L for which we have precomputed a\n")
+  f.write("*  part of the normalization\n")
+  f.write("*/\n")
   f.write("#define SHELL_PRIM_NORMFAC_MAXL {}\n".format(maxl))
   f.write("\n")
-  f.write("#endif\n")

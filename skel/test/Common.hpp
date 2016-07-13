@@ -1,5 +1,4 @@
-#ifndef SIMINT_TEST_COMMON_HPP
-#define SIMINT_TEST_COMMON_HPP
+#pragma once
 
 #include <array>
 #include <vector>
@@ -64,7 +63,7 @@ struct TimeContrib
 
 
 //! Just a vector of gaussian shells
-typedef std::vector<gaussian_shell> GaussianVec;
+typedef std::vector<simint_shell> GaussianVec;
 
 //! Maps a vector of gaussians to their am
 typedef std::map<int, GaussianVec> ShellMap;
@@ -153,4 +152,3 @@ void PrintTimingHeader(void);
 /*! \brief Print a line with the timings for a particular AM quartet */
 void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t nprim1234, const TimeContrib & info);
 
-#endif

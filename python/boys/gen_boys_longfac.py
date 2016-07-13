@@ -31,12 +31,6 @@ mp.dps = args.dps
 # Convert stuff to mpmath
 maxn = args.max_n
 
-print("------------------------------------")
-print("Options for long Boys function factor sqrt(pi)*(2n-1)!!/(2**(n+1)):")
-print("    Max n: {}".format(maxn))
-print("      DPS: {}".format(args.dps))
-print("------------------------------------")
-
 
 # Generate fac = sqrt(pi)*(2n-1)!!/(2**(n+1))
 
@@ -68,9 +62,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("};\n")
 
 with open(args.filename + ".h", 'w') as f: 
-  f.write("#ifndef {}_H\n".format(args.filename.upper()))
-  f.write("#define {}_H\n".format(args.filename.upper()))
+  f.write("#pragma once\n")
   f.write("\n")
   f.write("#define BOYS_LONGFAC_MAXN {}\n".format(maxn))
   f.write("\n")
-  f.write("#endif\n")

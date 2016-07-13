@@ -57,13 +57,13 @@ int main(int argc, char ** argv)
     #ifdef TESTS_ENABLE_LIBERD
     ShellMap shellmap_erd = CopyShellMap(shellmap);
     for(auto & it : shellmap_erd)
-        normalize_gaussian_shells_erd(it.second.size(), it.second.data());
+        simint_normalize_shells_erd(it.second.size(), it.second.data());
     #endif
 
 
     // normalize the original
     for(auto & it : shellmap)
-        normalize_gaussian_shells(it.second.size(), it.second.data());
+        simint_normalize_shells(it.second.size(), it.second.data());
 
 
     // find the max dimensions
@@ -173,8 +173,8 @@ int main(int argc, char ** argv)
         const int nshell4 = shellmap[l].size();
 
         // create a multishell pair for all | k l ) quartets
-        struct multishell_pair Q = create_multishell_pair(nshell3, shellmap[k].data(),
-                                                          nshell4, shellmap[l].data());
+        struct simint_multi_shellpair Q = simint_create_multi_shellpair(nshell3, shellmap[k].data(),
+                                                                        nshell4, shellmap[l].data());
 
         // do bra one at a time
         #pragma omp parallel for
@@ -197,8 +197,8 @@ int main(int argc, char ** argv)
             const int nshell1 = 1;
             const int nshell2 = 1;
 
-            struct multishell_pair P = create_multishell_pair(nshell1, &shellmap[i][a],
-                                                              nshell2, &shellmap[j][b]);
+            struct simint_multi_shellpair P = simint_create_multi_shellpair(nshell1, &shellmap[i][a],
+                                                                            nshell2, &shellmap[j][b]);
 
 
             const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
@@ -309,14 +309,14 @@ int main(int argc, char ** argv)
             }
 
 
-            free_multishell_pair(P);
+            simint_free_multi_shellpair(P);
 
             ncont += arrlen;
 
         } // end threaded loop over a,b
 
 
-        free_multishell_pair(Q);
+        simint_free_multi_shellpair(Q);
 
         // print out the errors for this quartet
         printf("( %2d %2d | %2d %2d )  ", i, j, k, l);
