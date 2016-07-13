@@ -97,7 +97,7 @@ int main(int argc, char ** argv)
     // since we are exploiting some symmetry)
 
     // Argument is the number of doubles
-    double * targets = simint_allocate_target(7*7*7*7);
+    double * targets = ALLOC(7*7*7*7 * sizeof(double));
     int ncomputed = 0;
     int ntotal = 0;
 
@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
     free_multishell_pair(ss_pair);
     free_multishell_pair(ps_pair);
     free_multishell_pair(pp_pair);
-    simint_free_target(targets);
+    FREE(targets);
     simint_finalize();
 
     return 0;

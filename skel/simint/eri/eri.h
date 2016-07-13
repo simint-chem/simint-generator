@@ -1,5 +1,5 @@
-#ifndef ERI_H
-#define ERI_H
+#ifndef SIMINT__ERI_H
+#define SIMINT__ERI_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,18 +24,6 @@ extern "C" {
 #ifdef __INTEL_COMPILER
     #pragma warning(pop)
 #endif
-
-// Allocation helpers
-// (to ensure alignment)
-inline double * simint_allocate_target(size_t ndoubles)
-{
-    return (double *)ALLOC(ndoubles * sizeof(double));
-}
-
-inline void simint_free_target(double * ptr)
-{
-    FREE(ptr);
-}
 
 
 // Typedefs for eri functions

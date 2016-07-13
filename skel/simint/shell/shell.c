@@ -176,15 +176,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
                           int nb, struct gaussian_shell const * const restrict B,
                           struct multishell_pair * const restrict P)
 {
-    ASSUME_ALIGN_DBL(P->x);
-    ASSUME_ALIGN_DBL(P->y);
-    ASSUME_ALIGN_DBL(P->z);
-    ASSUME_ALIGN_DBL(P->PA_x);
-    ASSUME_ALIGN_DBL(P->PA_y);
-    ASSUME_ALIGN_DBL(P->PA_z);
-    ASSUME_ALIGN_DBL(P->alpha);
-    ASSUME_ALIGN_DBL(P->prefac);
-
     int i, j, sa, sb, sasb, idx, ibatch, batchprim;
 
     P->nshell1 = na;
@@ -216,11 +207,6 @@ void fill_multishell_pair(int na, struct gaussian_shell const * const restrict A
             const double Xab_y = A[sa].y - B[sb].y;
             const double Xab_z = A[sa].z - B[sb].z;
             const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
-
-            ASSUME_ALIGN_DBL(A[sa].alpha);
-            ASSUME_ALIGN_DBL(A[sa].coef);
-            ASSUME_ALIGN_DBL(B[sb].alpha);
-            ASSUME_ALIGN_DBL(B[sb].coef);
 
             for(i = 0; i < A[sa].nprim; ++i)
             {

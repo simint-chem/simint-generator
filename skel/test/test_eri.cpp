@@ -156,7 +156,7 @@ int main(int argc, char ** argv)
 
 
     // Number of contracted integrals calculated
-    std::atomic<long> ncont = 0;
+    std::atomic<long> ncont(0);
 
 
     // loop over all AM quartets, choosing only valid ones

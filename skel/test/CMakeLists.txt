@@ -6,7 +6,7 @@ macro(ADDTEST TNAME TFILES)
   if(TESTS_ENABLE_LIBERD AND "${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
     target_link_libraries(${TNAME} PRIVATE ifcore)
   else()
-    target_link_libraries(${TNAME} PRIVATE gfortran)
+    target_link_libraries(${TNAME} PRIVATE gfortran m)
   endif()
     
 
@@ -16,6 +16,7 @@ macro(ADDTEST TNAME TFILES)
   endif()
 
   target_include_directories(${TNAME} PRIVATE ${TESTS_CXX_INCLUDES})
+  target_include_directories(${TNAME} SYSTEM PRIVATE ${TESTS_CXX_SYSTEM_INCLUDES})
   target_compile_options(${TNAME} PRIVATE ${TESTS_CXX_FLAGS})
 
   if( NOT ("${TESTS_LINK_FLAGS}" STREQUAL "") )
@@ -47,13 +48,22 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND TESTS_CXX_FLAGS "-restrict")
 
 else()
-  #list(APPEND TESTS_CXX_FLAGS "-Drestrict=__restrict__")
-  message(FATAL_ERROR "Unsupported compiler (for now)")
+  list(APPEND TESTS_CXX_FLAGS "-Drestrict=__restrict__")
+  list(APPEND TESTS_CXX_FLAGS "-std=c++11")
+  list(APPEND TESTS_CXX_FLAGS "-Wall;-Wextra;-pedantic")
 endif()
 
 if(TESTS_BENCHMARK_VALIDATE)
     list(APPEND TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE;-g")
 endif()
+
+
+##################################################
+# OpenMP dependency
+##################################################
+list(APPEND TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
+list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
+
 
 
 ##################################################
@@ -68,9 +78,8 @@ set(TESTS_ENABLE_LIBERD FALSE)
 # Did the user specify the path to libint2 ?
 if(NOT(LIBINT2_PATH STREQUAL ""))
   # Add include path / library
-  list(APPEND TESTS_CXX_INCLUDES "${LIBINT2_PATH}/include/libint2")
+  list(APPEND TESTS_CXX_SYSTEM_INCLUDES "${LIBINT2_PATH}/include/libint2")
   list(APPEND TESTS_CXX_LIBRARIES "${LIBINT2_PATH}/lib/libint2.a")
-  list(APPEND TESTS_CXX_ADDITIONAL_SOURCES "ERD.cpp") 
 
   # Set some other variables
   set(TESTS_ENABLE_LIBINT2 TRUE)
@@ -94,12 +103,6 @@ endif()
 
 
 
-##################################################
-# OpenMP dependency
-##################################################
-list(APPEND TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
-list(APPEND TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
-
 
 
 ###########################
@@ -112,6 +115,7 @@ add_library(test_common OBJECT Common.cpp
                                ${TESTS_CXX_ADDITIONAL_SOURCES})
 
 target_include_directories(test_common PRIVATE ${TESTS_CXX_INCLUDES})
+target_include_directories(test_common SYSTEM PRIVATE ${TESTS_CXX_SYSTEM_INCLUDES})
 target_compile_options(test_common PRIVATE ${TESTS_CXX_FLAGS})
 
 

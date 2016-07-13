@@ -1,5 +1,4 @@
-#ifndef SIMINT_SHELL_H
-#define SIMINT_SHELL_H
+#pragma once
 
 #include "simint/simint_config.h" // for USE_ET define
 
@@ -10,12 +9,16 @@
 extern "C" {
 #endif
 
+
+/*! \brief Information about a gaussian shell */
 struct gaussian_shell
 {
-    int am;
-    int nprim;
+    int am;          //!< Angular momentum (0 = s, etc)
+    int nprim;       //!< Number of primitives in this shell
 
-    double x, y, z;
+    double x;        //!< X
+    double y;
+    double z;
 
     double * alpha;
     double * coef;
@@ -86,7 +89,5 @@ create_multishell_pair(int na, struct gaussian_shell const * const restrict A,
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
