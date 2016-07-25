@@ -79,6 +79,7 @@ inline int simint_compute_eri_sharedwork(struct simint_multi_shellpair const P,
 }
 
 
+
 #ifdef __cplusplus
 }
 #endif

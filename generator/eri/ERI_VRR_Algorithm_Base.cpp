@@ -25,6 +25,12 @@ QAMList ERI_VRR_Algorithm_Base::GetAMOrder(void) const
     return amorder_; 
 }
 
+RRStepType ERI_VRR_Algorithm_Base::GetRRStep(QAM am) const
+{
+    // should all be the same?
+    return vrrmap_.at(am).begin()->type;
+}
+
 QAMSet ERI_VRR_Algorithm_Base::GetAllAM(void) const
 {
     return allam_;
@@ -134,6 +140,31 @@ void ERI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
     q = qnew;
 }
 
+QuartetSet ERI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q, RRStepType rrstep) const
+{
+    // this function is a mess
+
+    // remove ssss
+    PruneQuartets_(q);
+ 
+    // now remove any where the rrstep index is 0
+    QuartetSet qnew;
+    QuartetSet qret;
+
+    int stepidx = static_cast<int>(rrstep);
+
+    for(const auto & it : q)
+    {
+        if(it && it.amlist()[stepidx] > 0)
+            qnew.insert(it);
+        else
+            qret.insert(it);
+    }
+
+    q = qnew;
+    return qret;
+}
+
 
 bool ERI_VRR_Algorithm_Base::HasVRR(void) const
 {
@@ -191,7 +222,7 @@ void ERI_VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM a
     if(std::find(order.begin(), order.end(), am) != order.end())
         return;
 
-    // skip if it's not done by ET
+    // skip if it's not done by VRR
     if(allam_.count(am) == 0 || am == QAM{0,0,0,0})
         return;
 
@@ -204,15 +235,64 @@ void ERI_VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM a
     order.push_back(am);
 }
 
-
-void ERI_VRR_Algorithm_Base::Create(QAM q)
+VRRStep ERI_VRR_Algorithm_Base::Create_Single_(Quartet q, RRStepType rrstep)
 {
-    Create(GenerateInitialQuartetTargets(q));
+    VRRStep vs = VRRStep_(q, rrstep);
+
+    // fill in the ijkl members
+    int istep = XYZStepToIdx(vs.xyz);
+    vs.ijkl = {0, 0, 0, 0};
+    if(rrstep == RRStepType::I)
+    {
+        if(vs.src[2] || vs.src[3])
+            vs.ijkl[0] = q.bra.left.ijk[istep]-1;
+        if(vs.src[4] || vs.src[5])
+            vs.ijkl[1] = q.bra.right.ijk[istep];
+        if(vs.src[6])
+            vs.ijkl[2] = q.ket.left.ijk[istep];
+        if(vs.src[7])
+            vs.ijkl[3] = q.ket.right.ijk[istep];
+    }
+    else if(rrstep == RRStepType::J)
+    {
+        if(vs.src[2] || vs.src[3])
+            vs.ijkl[0] = q.bra.left.ijk[istep];
+        if(vs.src[4] || vs.src[5])
+            vs.ijkl[1] = q.bra.right.ijk[istep]-1;
+        if(vs.src[6])
+            vs.ijkl[2] = q.ket.left.ijk[istep];
+        if(vs.src[7])
+            vs.ijkl[3] = q.ket.right.ijk[istep];
+    }
+    else if(rrstep == RRStepType::K)
+    {
+        if(vs.src[2] || vs.src[3])
+            vs.ijkl[2] = q.ket.left.ijk[istep]-1;
+        if(vs.src[4] || vs.src[5])
+            vs.ijkl[3] = q.ket.right.ijk[istep];
+        if(vs.src[6])
+            vs.ijkl[0] = q.bra.left.ijk[istep];
+        if(vs.src[7])
+            vs.ijkl[1] = q.bra.right.ijk[istep];
+    }
+    else
+    {
+        if(vs.src[2] || vs.src[3])
+            vs.ijkl[2] = q.ket.left.ijk[istep];
+        if(vs.src[4] || vs.src[5])
+            vs.ijkl[3] = q.ket.right.ijk[istep]-1;
+        if(vs.src[6])
+            vs.ijkl[0] = q.bra.left.ijk[istep];
+        if(vs.src[7])
+            vs.ijkl[1] = q.bra.right.ijk[istep];
+    }
+
+    return vs;
 }
 
 
 
-void ERI_VRR_Algorithm_Base::Create(const QuartetSet & q)
+void ERI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder idx_order)
 {
     // holds the requirements for each am
     // so store what we initially want
@@ -227,81 +307,53 @@ void ERI_VRR_Algorithm_Base::Create(const QuartetSet & q)
     QuartetSet targets = q;
     PruneQuartets_(targets);
 
-
-    while(targets.size())
+    for(int i = 0; i < 4; i++)
     {
-        QuartetSet newtargets;
+        // check if we should stop
+        if(idx_order[i] < 0)
+            break;
 
-        for(const auto & it : targets)
+        RRStepType rrstep = static_cast<RRStepType>(idx_order[i]);
+
+        QuartetSet my_targets = targets;
+
+        // set targets to be everything we aren't doing 
+        targets = PruneQuartets_(my_targets, rrstep);
+
+        while(my_targets.size())
         {
-            VRRStep vs = VRRStep_(it);
-            QAM qam = it.amlist();
+            QuartetSet newtargets;
 
-            // fill in the ijkl members
-            int istep = XYZStepToIdx(vs.xyz);
-            vs.ijkl = {0, 0, 0, 0};
-            if(vs.type == RRStepType::I)
+            for(const auto & it : my_targets)
             {
-                if(vs.src[2] || vs.src[3])
-                    vs.ijkl[0] = it.bra.left.ijk[istep]-1;
-                if(vs.src[4] || vs.src[5])
-                    vs.ijkl[1] = it.bra.right.ijk[istep];
-                if(vs.src[6])
-                    vs.ijkl[2] = it.ket.left.ijk[istep];
-                if(vs.src[7])
-                    vs.ijkl[3] = it.ket.right.ijk[istep];
-            }
-            else if(vs.type == RRStepType::J)
-            {
-                if(vs.src[2] || vs.src[3])
-                    vs.ijkl[0] = it.bra.left.ijk[istep];
-                if(vs.src[4] || vs.src[5])
-                    vs.ijkl[1] = it.bra.right.ijk[istep]-1;
-                if(vs.src[6])
-                    vs.ijkl[2] = it.ket.left.ijk[istep];
-                if(vs.src[7])
-                    vs.ijkl[3] = it.ket.right.ijk[istep];
-            }
-            else if(vs.type == RRStepType::K)
-            {
-                if(vs.src[2] || vs.src[3])
-                    vs.ijkl[2] = it.ket.left.ijk[istep]-1;
-                if(vs.src[4] || vs.src[5])
-                    vs.ijkl[3] = it.ket.right.ijk[istep];
-                if(vs.src[6])
-                    vs.ijkl[0] = it.bra.left.ijk[istep];
-                if(vs.src[7])
-                    vs.ijkl[1] = it.bra.right.ijk[istep];
-            }
-            else
-            {
-                if(vs.src[2] || vs.src[3])
-                    vs.ijkl[2] = it.ket.left.ijk[istep];
-                if(vs.src[4] || vs.src[5])
-                    vs.ijkl[3] = it.ket.right.ijk[istep]-1;
-                if(vs.src[6])
-                    vs.ijkl[0] = it.bra.left.ijk[istep];
-                if(vs.src[7])
-                    vs.ijkl[1] = it.bra.right.ijk[istep];
-            }
-            
-            // add new targets
-            for(const auto & it2 : vs.src)
-            {
-                if(it2)
+                QAM qam = it.amlist();
+
+                VRRStep vs = Create_Single_(it, rrstep);
+
+                // add new targets
+                for(const auto & it2 : vs.src)
                 {
-                    if(solvedquartets.count(it2) == 0)
-                        newtargets.insert(it2);
+                    if(it2)
+                    {
+                        if(solvedquartets.count(it2) == 0)
+                            newtargets.insert(it2);
+                    }
                 }
+
+                newmap[qam].insert(vs);
+                solvedquartets.insert(it);
             }
 
-            newmap[qam].insert(vs);
-            solvedquartets.insert(it);
+            // now get what I need to do
+            my_targets = newtargets;
+            QuartetSet not_for_me = PruneQuartets_(my_targets, rrstep);
+
+            // add anything that is not my responsibility to the
+            // main targets list. These might not be a part of
+            // that list right now. 
+            targets.insert(not_for_me.begin(),
+                           not_for_me.end());
         }
-
-        PruneQuartets_(newtargets);
-
-        targets = newtargets;
     } 
 
     // save the solved quartets
@@ -450,5 +502,40 @@ void ERI_VRR_Algorithm_Base::Create(const QuartetSet & q)
     for(const auto & it : q) 
         AMOrder_AddWithDependencies_(amorder_, it.amlist());
 
+} 
+
+
+void ERI_VRR_Algorithm_Base::Create(const QuartetSet & q)
+{
+    // Find where the lowest AM is first. This is our initial RR
+    QAM qam_max{0,0,0,0};
+    for(const Quartet & iq : q)
+    {
+        QAM aml = iq.amlist();
+        for(int i = 0; i < 4; i++)
+            qam_max[i] = std::max(qam_max[i], aml[i]);
+    }
+
+
+    // reversed, so we end up with a more "traditional" order
+    // (ie, form dsss, then dsps).
+    IdxOrder idx_order{3, 2, 1, 0}; 
+
+    std::stable_sort(idx_order.begin(), idx_order.end(),
+                     [ & qam_max ] ( int i, int j ) { return qam_max[i] < qam_max[j]; });
+
+    Create_WithOrder(q, idx_order);
 }
+
+
+void ERI_VRR_Algorithm_Base::Create_WithOrder(QAM q, IdxOrder idx_order)
+{
+    Create_WithOrder(GenerateInitialQuartetTargets(q), idx_order);
+}
+
+void ERI_VRR_Algorithm_Base::Create(QAM q)
+{
+    Create(GenerateInitialQuartetTargets(q));
+}
+
 

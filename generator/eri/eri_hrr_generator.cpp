@@ -75,12 +75,11 @@ int main(int argc, char ** argv)
     ERIGeneratorInfo info(am, Compiler::Intel, cpuflags, options);
 
     // The algorithm to use
-    std::unique_ptr<ERI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
+    Makowski_HRR hrralgo(options);
+    hrralgo.Create(am);
 
-    hrralgo->Create(am);
-
-    std::unique_ptr<ERI_HRR_Writer> hrr_writer(new ERI_HRR_Writer_External(*hrralgo, info));
-    hrr_writer->WriteHRRFile(of, ofh);
+    ERI_HRR_Writer_External hrr_writer(hrralgo, info);
+    hrr_writer.WriteHRRFile(of, ofh);
 
     }
     catch(std::exception & ex)

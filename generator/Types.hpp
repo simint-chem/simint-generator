@@ -56,10 +56,10 @@ enum class DoubletType
  */
 enum class RRStepType
 {
-    I,
-    J,
-    K,
-    L
+    I = 0,
+    J = 1,
+    K = 2,
+    L = 3
 };
 
 

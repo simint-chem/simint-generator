@@ -264,8 +264,8 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
 
     os_ << "\n\n";
     os_ << funcline;
-    os_ << "struct simint_multi_shellpair P,\n";
-    os_ << indent << "struct simint_multi_shellpair Q,\n";
+    os_ << "struct simint_multi_shellpair const P,\n";
+    os_ << indent << "struct simint_multi_shellpair const Q,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
@@ -273,28 +273,37 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
     os_ << indent1 << "// and calling another function\n";
     os_ << indent1 << "// Note that the struct was passed by copy\n";
     os_ << "\n";
-    os_ << indent1 << "double * tmp;\n";
+
+
+    const char * P_var = "P";
+    const char * Q_var = "Q";
+
     if(swap_ab)
     {
-        os_ << indent1 << "tmp = P.PA_x;   P.PA_x = P.PB_x;   P.PB_x = tmp;\n";
-        os_ << indent1 << "tmp = P.PA_y;   P.PA_y = P.PB_y;   P.PB_y = tmp;\n";
-        os_ << indent1 << "tmp = P.PA_z;   P.PA_z = P.PB_z;   P.PB_z = tmp;\n";
-    }
-    if(swap_cd)
-    {
-        os_ << indent1 << "tmp = Q.PA_x;   Q.PA_x = Q.PB_x;   Q.PB_x = tmp;\n";
-        os_ << indent1 << "tmp = Q.PA_y;   Q.PA_y = Q.PB_y;   Q.PB_y = tmp;\n";
-        os_ << indent1 << "tmp = Q.PA_z;   Q.PA_z = Q.PB_z;   Q.PB_z = tmp;\n";
+    	os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
+        os_ << indent1 << "P_tmp.PA_x = P.PB_x;  P_tmp.PA_y = P.PB_y;  P_tmp.PA_z = P.PB_z;\n";
+        os_ << indent1 << "P_tmp.PB_x = P.PA_x;  P_tmp.PB_y = P.PA_y;  P_tmp.PB_z = P.PA_z;\n";
+        P_var = "P_tmp";
     }
 
+    if(swap_cd)
+    {
+    	os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
+		os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
+        os_ << indent1 << "Q_tmp.PB_x = Q.PA_x;  Q_tmp.PB_y = Q.PA_y;  Q_tmp.PB_z = Q.PA_z;\n";
+	    Q_var = "Q_tmp";
+    }
+
+ 
     os_ << indent1 << "return eri_sharedwork_" << amchar[tocall[0]] << "_" 
                                                << amchar[tocall[1]] << "_" 
                                                << amchar[tocall[2]] << "_" 
-                                               << amchar[tocall[3]] << "(P, Q, contwork, " << ArrVarName(am) << ");\n"; 
-
+                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var 
+                                                                    << ", contwork, " << ArrVarName(am) << ");\n"; 
 
     os_ << "}\n";
     os_ << "\n";
+
 }
 
 
@@ -651,7 +660,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent5 << "// Boys function section\n";
     os_ << indent5 << "// Maximum v value: " << info_.L() << "\n";
     os_ << indent5 << "//////////////////////////////////////////////\n";
-    os_ << indent5 << "// The paremeter to the boys function\n";
+    os_ << indent5 << "// The parameter to the boys function\n";
     os_ << indent5 << cdbltype << " F_x = R2 * alpha;\n";
     os_ << "\n";
     os_ << "\n";

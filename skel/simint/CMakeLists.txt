@@ -12,6 +12,10 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
                         boys/boys_shortgrid.c
 
                         eri/eri_init.c
+                        eri/general_X_s_s_s.c
+                        eri/general_X_s_X_s.c
+                        eri/general_vrr.c
+                        eri/recur_lookup.c
 
                         shell/shell.c
                         shell/shell_constants.c
@@ -21,7 +25,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
 # Create the main library
 add_library(simint ${SIMINT_LIBRARY_TYPE} ${SIMINT_LIBRARY_FILES})
 target_include_directories(simint PRIVATE ${SIMINT_C_INCLUDES})
-target_compile_options(simint PRIVATE ${SIMINT_C_FLAGS})
+target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${SIMINT_CXX_FLAGS}> $<$<COMPILE_LANGUAGE:C>:${SIMINT_C_FLAGS}>)
 
 install(TARGETS simint ARCHIVE DESTINATION lib
                        LIBRARY DESTINATION lib)

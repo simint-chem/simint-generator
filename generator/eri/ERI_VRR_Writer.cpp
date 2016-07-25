@@ -4,6 +4,13 @@
 #include "generator/Naming.hpp"
 
 
+// map from RRStepType to a character, for creating function names
+static const std::map<RRStepType, char> rrstep_char{ {RRStepType::I, 'I'},
+                                                     {RRStepType::J, 'J'},
+                                                     {RRStepType::K, 'K'},
+                                                     {RRStepType::L, 'L'} };
+
+
 ///////////////////////////////
 // Base VRR Writer
 ///////////////////////////////
@@ -85,6 +92,7 @@ void ERI_VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 
 void ERI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
 {
+    os << "\n";
     os << indent5 << "// Forming " << PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
 
     os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
@@ -313,7 +321,12 @@ void ERI_VRR_Writer_External::WriteVRR(std::ostream & os) const
     {
         if(am != QAM{0,0,0,0})
         {
-            os << indent5 << "VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+            RRStepType rrstep = vrr_algo_.GetRRStep(am);
+
+            os << indent5 << "VRR_" << rrstep_char.at(rrstep) << "_" 
+                          << amchar[am[0]] << "_" << amchar[am[1]] << "_"
+                          << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
             os << indent7 << PrimVarName(am) << ",\n";
 
             for(const auto & it : vrr_algo_.GetAMReq(am))
@@ -339,8 +352,15 @@ void ERI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh
     os << "// VRR: ( " << amchar[am[0]] << " " << amchar[am[1]] << " | " << amchar[am[2]] << " " << amchar[am[3]] << " )\n";
     os << "//////////////////////////////////////////////\n";
 
+    RRStepType rrstep = vrr_algo_.GetRRStep(am);
+
     std::stringstream prototype;
-    prototype << "void VRR_" << amchar[am[0]] << "_" << amchar[am[1]] << "_" << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+
+    char stepchar = rrstep_char.at(rrstep);
+
+    prototype << "void VRR_" << stepchar << "_"
+              << amchar[am[0]] << "_" << amchar[am[1]] << "_"
+              << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
     prototype << indent3 << vinfo_.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
@@ -387,10 +407,17 @@ void ERI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh
         if(am[2] == 0)
             std::swap(tocall[2], tocall[3]);
 
+        if(rrstep == RRStepType::J)
+            stepchar = 'I';
+        else if(rrstep == RRStepType::L)
+            stepchar = 'K';
+
         os << indent1 << "// Routines are identical except for swapping of\n";
         os << indent1 << "// PA_x with PB_x and QC_x with QD_x\n";
         os << "\n";
-        os << indent1 << "VRR_" << amchar[tocall[0]] << "_" << amchar[tocall[1]] << "_" << amchar[tocall[2]] << "_" << amchar[tocall[3]]  << "(\n";
+        os << indent1 << "VRR_" << stepchar << "_"
+                      << amchar[tocall[0]] << "_" << amchar[tocall[1]] << "_"
+                      << amchar[tocall[2]] << "_" << amchar[tocall[3]]  << "(\n";
     
         // final target
         os << indent3 << PrimVarName(am) << ",\n";

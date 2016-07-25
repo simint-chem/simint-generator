@@ -78,14 +78,40 @@ int main(int argc, char ** argv)
     // Include the main eri file
     of << "#include \"simint/eri/eri.h\"\n";
 
-    // create the algorithm
-    std::unique_ptr<ERI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-    vrralgo->Create(finalam);
+    // create the algorithm and write the file
+    if(finalam[0] > 0)
+    {
+        Makowski_VRR vrralgo_i(options);
+        vrralgo_i.Create_WithOrder(finalam, {0, -1, -1, -1});
+        ERI_VRR_Writer_External vrr_writer_i(vrralgo_i, info);
+        vrr_writer_i.WriteVRRFile(of, ofh);
+    }
 
-    // create the writer and write it
-    std::unique_ptr<ERI_VRR_Writer> vrr_writer(new ERI_VRR_Writer_External(*vrralgo, info));
-    vrr_writer->WriteVRRFile(of, ofh);
-    
+    if(finalam[1] > 0)
+    {
+        Makowski_VRR vrralgo_j(options);
+        vrralgo_j.Create_WithOrder(finalam, {1, -1, -1, -1});
+        ERI_VRR_Writer_External vrr_writer_j(vrralgo_j, info);
+        vrr_writer_j.WriteVRRFile(of, ofh);
+    }
+
+
+    if(finalam[2] > 0)
+    {
+        Makowski_VRR vrralgo_k(options);
+        vrralgo_k.Create_WithOrder(finalam, {2, -1, -1, -1});
+        ERI_VRR_Writer_External vrr_writer_k(vrralgo_k, info);
+        vrr_writer_k.WriteVRRFile(of, ofh);
+    }
+
+    if(finalam[3] > 0)
+    {
+        Makowski_VRR vrralgo_l(options);
+        vrralgo_l.Create_WithOrder(finalam, {3, -1, -1, -1});
+        ERI_VRR_Writer_External vrr_writer_l(vrralgo_l, info);
+        vrr_writer_l.WriteVRRFile(of, ofh);
+    }
+
 
     } // close try block
     catch(std::exception & ex)

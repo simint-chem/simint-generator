@@ -395,7 +395,7 @@ void ERI_HRR_Writer_External::WriteHRRFile(std::ostream & of, std::ostream & ofh
         const char * steptypestr = (ketsteptype == RRStepType::L ? "L" : "K");
 
         of << "//////////////////////////////////////////////\n";
-        of << "// KET: ( " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " |\n";
+        of << "// KET: | " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " )\n";
         of << "// Steps: " << ketsteps.size() << "\n";
         of << "//////////////////////////////////////////////\n";
         of << "\n";

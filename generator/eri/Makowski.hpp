@@ -92,25 +92,20 @@ class Makowski_VRR : public ERI_VRR_Algorithm_Base
 
 
     private:
-        virtual VRRStep VRRStep_(const Quartet & q)
+        virtual VRRStep VRRStep_(const Quartet & q, RRStepType rrstep)
         {
-            // if there is a ket part, we do that
-            if(q.ket.am() > 0)
-            {
-                const Gaussian * g;
-                VRRStep vs;
+            const Gaussian * g;
+            VRRStep vs;
+            vs.type = rrstep;
 
+            // if there is a ket part, we do that
+            if(rrstep == RRStepType::L || rrstep == RRStepType::K)
+            {
                 // which center?
-                if(q.ket.right.am() > 0)
-                {
-                    vs.type = RRStepType::L;
+                if(rrstep == RRStepType::L)
                     g = &q.ket.right;
-                }
-                else
-                {
-                    vs.type = RRStepType::K;
+                else if(rrstep == RRStepType::K)
                     g = &q.ket.left;
-                }
 
                 // lowest exponent, favoring the far right if equal
                 // idx is the xyz index
@@ -176,20 +171,10 @@ class Makowski_VRR : public ERI_VRR_Algorithm_Base
             }
             else
             {
-                const Gaussian * g;
-                VRRStep vs;
-
-                // which center?
-                if(q.bra.right.am() > 0)
-                {
-                    vs.type = RRStepType::J;
+                if(rrstep == RRStepType::J)
                     g = &q.bra.right;
-                }
-                else
-                {
-                    vs.type = RRStepType::I;
+                else if(rrstep == RRStepType::I)
                     g = &q.bra.left;
-                }
 
                 // lowest exponent, favoring the far right if equal
                 // idx is the xyz index

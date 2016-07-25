@@ -21,6 +21,9 @@ typedef std::map<QAM, IntSet> VRR_IntReqMap;
 // Maps factors/variables (as strings) for a target AM
 typedef std::map<QAM, StringSet> VRR_VarReqMap;
 
+// Order we are doing the centers
+typedef std::array<int, 4> IdxOrder;
+
 class ERI_VRR_Algorithm_Base
 {
     public:
@@ -28,9 +31,12 @@ class ERI_VRR_Algorithm_Base
 
         void Create(const QuartetSet & q);
         void Create(QAM q);
+        void Create_WithOrder(const QuartetSet & q, IdxOrder idx_order);
+        void Create_WithOrder(const QAM q, IdxOrder idx_order);
 
         QAMList GetAMOrder(void) const;
         QAMSet GetAllAM(void) const;
+        RRStepType GetRRStep(QAM am) const;
 
         int GetMaxFm(void) const;
 
@@ -94,9 +100,11 @@ class ERI_VRR_Algorithm_Base
         QAMSet allam_;
 
         void PruneQuartets_(QuartetSet & q) const;
+        QuartetSet PruneQuartets_(QuartetSet & q, RRStepType rrstep) const;
         void AMOrder_AddWithDependencies_(QAMList & order, QAM am) const;
 
-        virtual VRRStep VRRStep_(const Quartet & q) = 0;
+        virtual VRRStep VRRStep_(const Quartet & q, RRStepType rrstep) = 0;
+        VRRStep Create_Single_(Quartet q, RRStepType rrstep);
 };
 
 
