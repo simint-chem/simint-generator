@@ -136,6 +136,9 @@ int eri_sharedwork_X_s_s_s(struct simint_multi_shellpair const P,
                     // NOTE: Minus sign!
                     const __m256d a_over_p =  -alpha * one_over_p;     // a/p from MEST
 
+                    __m256d aop_PQ[3] = { a_over_p * PQ_x,
+                                          a_over_p * PQ_y,
+                                          a_over_p * PQ_z };
 
                     //////////////////////////////////////////////
                     // Boys function section
@@ -155,15 +158,14 @@ int eri_sharedwork_X_s_s_s(struct simint_multi_shellpair const P,
                     //////////////////////////////////////////////
 
                     __m256d PA[3] = {P_PA_x, P_PA_y, P_PA_z};
-                    __m256d PQ[3] = {PQ_x, PQ_y, PQ_z};
 
                     // do the first vrr, forming p_s_s_s
-                    general_vrr1(1, L-1, one_over_2p, a_over_p, PA, PQ,
+                    general_vrr1(1, L-1, one_over_2p, a_over_p, aop_PQ, PA,
                                  prim_ptr[0], NULL, prim_ptr[1]);
 
                     // now do all the rest
                     for(n = 2; n <= L; n++)
-                        general_vrr1(n, L-n, one_over_2p, a_over_p, PA, PQ,
+                        general_vrr1(n, L-n, one_over_2p, a_over_p, aop_PQ, PA,
                                      prim_ptr[n-1], prim_ptr[n-2], prim_ptr[n]);
                     
                                  

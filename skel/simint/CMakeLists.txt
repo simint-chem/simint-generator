@@ -12,10 +12,6 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
                         boys/boys_shortgrid.c
 
                         eri/eri_init.c
-                        eri/general_X_s_s_s.c
-                        eri/general_X_s_X_s.c
-                        eri/general_vrr.c
-                        eri/recur_lookup.c
 
                         shell/shell.c
                         shell/shell_constants.c

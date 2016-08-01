@@ -40,33 +40,68 @@ int eri_sharedwork_X_s_X_s(struct simint_multi_shellpair const P,
     // Size of arrays needed in the stack
     size_t arr_stack_size = 0;
 
-    // for ( (i+k) 0 | 0 0 )
-    for(n1 = 0; n1 <= L1; n1++)
-        arr_stack_size += ( ((n1+1)*(n1+2) )/2 ) * (L1+L2-n1+1);
 
 
-    // for ( i 0 | k 0 ) 
-    for(n1 = (L1-L2+1); n1 <= L1; n1++)
-    for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
-        arr_stack_size += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L2 - n2 + 1);
+    if(L1 >= L2)
+    {
+        // for ( i 0 | 0 0 )
+        for(n1 = 0; n1 <= L1; n1++)
+           arr_stack_size += ( ((n1+1)*(n1+2) )/2 ) * (L1+L2-n1+1);
+
+        // for ( i 0 | k 0 )
+        for(n1 = (L1-L2+1); n1 <= L1; n1++)
+        for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
+            arr_stack_size += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L2 - n2 + 1);
+    }
+    else
+    {
+        // for ( 0 0 | (i+k) 0 )
+        for(n2 = 0; n2 <= L2; n2++)
+           arr_stack_size += ( ((n2+1)*(n2+2) )/2 ) * (L1+L2-n2+1);
+
+        // for ( i 0 | k 0 )
+        for(n2 = (L2-L1+1); n2 <= L2; n2++)
+        for(n1 = 1; n1 <= (n2-(L2-L1)); n1++)
+            arr_stack_size += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L1 - n1 + 1);
+    }
 
 
     __m256d * arr_stack = (__m256d *)(ALLOC(arr_stack_size * sizeof(__m256d)));
     __m256d * prim_ptr[L1+1][L2+1];
-
     __m256d * pos = arr_stack;
-    for(n1 = 0; n1 <= L1; n1++)
+
+
+    if(L1 >= L2)
     {
-        prim_ptr[n1][0] = pos;
-        pos += ( ((n1+1)*(n1+2))/2 ) * (L1+L2-n1+1);
+        for(n1 = 0; n1 <= L1; n1++)
+        {
+            prim_ptr[n1][0] = pos;
+            pos += ( ((n1+1)*(n1+2))/2 ) * (L1+L2-n1+1);
+        }
+
+        for(n1 = (L1-L2+1); n1 <= L1; n1++)
+        for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
+        {
+            prim_ptr[n1][n2] = pos;
+            pos += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L2 - n2 + 1);
+        }
+    }
+    else
+    {
+        for(n2 = 0; n2 <= L2; n2++)
+        {
+            prim_ptr[0][n2] = pos;
+            pos += ( ((n2+1)*(n2+2))/2 ) * (L1+L2-n2+1);
+        }
+
+        for(n2 = (L2-L1+1); n2 <= L2; n2++)
+        for(n1 = 1; n1 <= (n2-(L2-L1)); n1++)
+        {
+            prim_ptr[n1][n2] = pos;
+            pos += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L1 - n1 + 1);
+        }
     }
 
-    for(n1 = (L1-L2+1); n1 <= L1; n1++)
-    for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
-    {
-        prim_ptr[n1][n2] = pos;
-        pos += ( ((n1+1)*(n1+2) )/2 ) * ( ((n2+1)*(n2+2))/2 ) * (L2 - n2 + 1);
-    }
 
 
     ////////////////////////////////////////
@@ -103,7 +138,7 @@ int eri_sharedwork_X_s_X_s(struct simint_multi_shellpair const P,
                 const __m256d P_PA_x = _mm256_set1_pd(P.PA_x[i]);
                 const __m256d P_PA_y = _mm256_set1_pd(P.PA_y[i]);
                 const __m256d P_PA_z = _mm256_set1_pd(P.PA_z[i]);
- 
+
 
                 for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)
                 {
@@ -182,37 +217,77 @@ int eri_sharedwork_X_s_X_s(struct simint_multi_shellpair const P,
 
                     __m256d PA[3] = {P_PA_x, P_PA_y, P_PA_z};
                     __m256d QC[3] = {Q_PA_x, Q_PA_y, Q_PA_z};
-                    __m256d PQ[3] = {PQ_x, PQ_y, PQ_z};
 
-                    // do the first vrr, forming X_s_X_s
-                    general_vrr1(1, L-1, one_over_2p, a_over_p, PA, PQ,
-                                 prim_ptr[0][0], NULL, prim_ptr[1][0]);
+                    __m256d aop_PQ[3] = { a_over_p * PQ_x,
+                                          a_over_p * PQ_y,
+                                          a_over_p * PQ_z };
 
-                    // now do all the rest
-                    for(n1 = 2; n1 <= L1; n1++)
-                        general_vrr1(n1, L-n1, one_over_2p, a_over_p, PA, PQ,
-                                     prim_ptr[n1-1][0], prim_ptr[n1-2][0], prim_ptr[n1][0]);
-                    
-    
-                    // up the ket                             
-                    for(n1 = (L1-L2+1); n1 <= L1; n1++)
-                    for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
+                    __m256d aoq_PQ[3] = { -a_over_q * PQ_x,
+                                          -a_over_q * PQ_y,
+                                          -a_over_q * PQ_z };
+
+                    if( L1 >= L2 )
                     {
-                        if(n2 == 1)
+                        // do the first vrr, forming p_s_s_s
+                        general_vrr1(1, L-1, one_over_2p, a_over_p, aop_PQ, PA,
+                                     prim_ptr[0][0], NULL, prim_ptr[1][0]);
+
+                        // now do all the rest, forming X_s_s_s
+                        for(n1 = 2; n1 <= L1; n1++)
+                            general_vrr1(n1, L-n1, one_over_2p, a_over_p, aop_PQ, PA,
+                                         prim_ptr[n1-1][0], prim_ptr[n1-2][0], prim_ptr[n1][0]);
+
+
+                        // up the ket
+                        for(n1 = (L1-L2+1); n1 <= L1; n1++)
+                        for(n2 = 1; n2 <= (n1-(L1-L2)); n2++)
                         {
-                            general_vrr2(n1, 1, L2-1,
-                                         one_over_2q, one_over_2pq, a_over_q,
-                                         QC, PQ,
-                                         prim_ptr[n1][0], NULL, prim_ptr[n1-1][0],
-                                         prim_ptr[n1][1]);
+                            if(n2 == 1)
+                            {
+                                general_vrr2_k(n1, 1, L2-1,
+                                               one_over_2q, one_over_2pq, a_over_q, aoq_PQ, QC,
+                                               prim_ptr[n1][0], NULL, prim_ptr[n1-1][0],
+                                               prim_ptr[n1][1]);
+                            }
+                            else
+                            {
+                                general_vrr2_k(n1, n2, L2 - n2,
+                                               one_over_2q, one_over_2pq, a_over_q, aoq_PQ, QC,
+                                               prim_ptr[n1][n2-1], prim_ptr[n1][n2-2], prim_ptr[n1-1][n2-1],
+                                               prim_ptr[n1][n2]);
+                            }
                         }
-                        else
+                    }
+                    else
+                    {
+                        // do the first vrr, forming s_s_p_s
+                        general_vrr1(1, L-1, one_over_2q, a_over_q, aoq_PQ, QC,
+                                     prim_ptr[0][0], NULL, prim_ptr[0][1]);
+
+                        // now do all the rest, forming s_s_X_s
+                        for(n2 = 2; n2 <= L2; n2++)
+                            general_vrr1(n2, L-n2, one_over_2q, a_over_q, aoq_PQ, QC,
+                                         prim_ptr[0][n2-1], prim_ptr[0][n2-2], prim_ptr[0][n2]);
+
+
+                        // up the bra
+                        for(n2 = (L2-L1+1); n2 <= L2; n2++)
+                        for(n1 = 1; n1 <= (n2-(L2-L1)); n1++)
                         {
-                            general_vrr2(n1, n2, L2 - n2,
-                                         one_over_2q, one_over_2pq, a_over_q,
-                                         QC, PQ,
-                                         prim_ptr[n1][n2-1], prim_ptr[n1][n2-2], prim_ptr[n1-1][n2-1],
-                                         prim_ptr[n1][n2]);
+                            if(n1 == 1)
+                            {
+                                general_vrr2_i(1, n2, L1-1,
+                                               one_over_2p, one_over_2pq, a_over_p, aop_PQ, PA,
+                                               prim_ptr[0][n2], NULL, prim_ptr[0][n2-1],
+                                               prim_ptr[1][n2]);
+                            }
+                            else
+                            {
+                                general_vrr2_i(n1, n2, L1 - n1,
+                                               one_over_2p, one_over_2pq, a_over_p, aop_PQ, PA,
+                                               prim_ptr[n1-1][n2], prim_ptr[n1-2][n2], prim_ptr[n1-1][n2-1],
+                                               prim_ptr[n1][n2]);
+                            }
                         }
                     }
 
@@ -230,15 +305,15 @@ int eri_sharedwork_X_s_X_s(struct simint_multi_shellpair const P,
                     }
 
                     const int lastoffset = shelloffsets[SIMINT_SIMD_LEN-1];
-                    PRIM_PTR_INT__X_s_X_s += lastoffset*ncart1234; 
+                    PRIM_PTR_INT__X_s_X_s += lastoffset*ncart1234;
 
                 }  // close loop over j
             }  // close loop over i
-            
+
             //Advance to the next batch
             jstart = SIMINT_SIMD_ROUND(jend);
             abcd += nshellbatch;
-            
+
 
             cd += nshellbatch;
         }   // close loop cdbatch
