@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include <atomic>
 
 #include "test/Timer.h" 
 #include "simint/shell/shell.h"
@@ -17,17 +18,28 @@
 //! Contributions to timings
 struct TimeContrib
 {
-    TimerType fill_shell_pair;
-    TimerType copy_data;
-    TimerType calc_pre;
-    TimerType boys;
-    TimerType integrals;
-    TimerType permute;
+    std::atomic<TimerType> fill_shell_pair;
+    std::atomic<TimerType> copy_data;
+    std::atomic<TimerType> calc_pre;
+    std::atomic<TimerType> boys;
+    std::atomic<TimerType> integrals;
+    std::atomic<TimerType> permute;
 
-    TimeContrib(const TimeContrib &) noexcept = default;
-    TimeContrib & operator=(const TimeContrib &) noexcept = default;
-    TimeContrib(TimeContrib &&) noexcept = default;
-    TimeContrib & operator=(TimeContrib &&) noexcept = default;
+    TimeContrib(const TimeContrib & rhs) noexcept
+      : fill_shell_pair(rhs.fill_shell_pair.load()),
+        copy_data(rhs.copy_data.load()),
+        calc_pre(rhs.calc_pre.load()),
+        boys(rhs.boys.load()),
+        integrals(rhs.integrals.load()),
+        permute(rhs.permute.load())
+    { }
+
+    TimeContrib(TimeContrib && rhs) noexcept
+        : TimeContrib(static_cast<const TimeContrib &>(rhs))
+    { }
+
+    TimeContrib & operator=(const TimeContrib &) noexcept = delete;
+    TimeContrib & operator=(TimeContrib &&) noexcept = delete;
 
     TimerType TotalTime(void) const noexcept
     {
@@ -49,13 +61,6 @@ struct TimeContrib
         integrals += rhs.integrals;
         permute += rhs.permute;
         return *this;
-    }
-
-    TimeContrib operator+(const TimeContrib & rhs) const noexcept
-    {
-        TimeContrib tmp(*this);
-        tmp += rhs;
-        return tmp;
     }
 };
 

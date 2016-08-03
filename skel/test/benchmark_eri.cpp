@@ -97,9 +97,9 @@ int main(int argc, char ** argv)
         #endif
 
         // running totals for this am
-        size_t nprim1234_am = 0;
-        size_t nshell1234_am = 0;
-        size_t ncont1234_am = 0;
+        std::atomic<size_t> nprim1234_am = 0;
+        std::atomic<size_t> nshell1234_am = 0;
+        std::atomic<size_t> ncont1234_am = 0;
 
 	    const auto & shellmap_i = shellmap[i];
 	    const auto & shellmap_j = shellmap[j];
@@ -162,20 +162,18 @@ int main(int argc, char ** argv)
             simint_free_multi_shellpair(P);
 
 
-            #pragma omp critical
-            {
-                // add primitive and shell count to running totals for this am
-                ncont1234_am += ncont1234;
-                nprim1234_am += nprim1234;
-                nshell1234_am += nshell1234;
-                time_am.integrals += my_time_am;
-                time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
-            }
+            // add primitive and shell count to running totals for this am
+            ncont1234_am += ncont1234;
+            nprim1234_am += nprim1234;
+            nshell1234_am += nshell1234;
+            time_am.integrals += my_time_am;
+            time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
         }
 
         simint_free_multi_shellpair(Q);
 
 		// add primitive and shell count to overall running totals
+		// threadsafe since these are std::atomic
 		ncont1234_total += ncont1234_am;
 		nprim1234_total += nprim1234_am;
 		nshell1234_total += nshell1234_am;

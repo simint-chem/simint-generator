@@ -9,11 +9,11 @@
 #include "test/ValeevRef.hpp"
 #include "test/Simint.hpp"
 
-#ifdef TESTS_ENABLE_LIBERD
+#ifdef SIMINT_TESTS_ENABLE_LIBERD
   #include "test/ERD.hpp"
 #endif
 
-#ifdef TESTS_ENABLE_LIBINT2
+#ifdef SIMINT_TESTS_ENABLE_LIBINT2
   #include "test/Libint2.hpp"
 #endif
 
@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
 
     // copy and normalize for liberd
     // (MUST BE DONE BEFORE NORMALIZING THE ORIGINAL)
-    #ifdef TESTS_ENABLE_LIBERD
+    #ifdef SIMINT_TESTS_ENABLE_LIBERD
     ShellMap shellmap_erd = CopyShellMap(shellmap);
     for(auto & it : shellmap_erd)
         simint_normalize_shells_erd(it.second.size(), it.second.data());
@@ -112,7 +112,7 @@ int main(int argc, char ** argv)
     ///////////////////////////////////////////////
     // initialize and allocate space for liberd
     ///////////////////////////////////////////////
-    #ifdef TESTS_ENABLE_LIBERD
+    #ifdef SIMINT_TESTS_ENABLE_LIBERD
     double * all_res_liberd = (double *)ALLOC(nthread * maxsize * sizeof(double));
 
     std::vector<std::unique_ptr<ERD_ERI>> erd;
@@ -126,7 +126,7 @@ int main(int argc, char ** argv)
     ///////////////////////////////////////////////
     // initialize and allocate space for libint2
     ///////////////////////////////////////////////
-    #ifdef TESTS_ENABLE_LIBINT2
+    #ifdef SIMINT_TESTS_ENABLE_LIBINT2
     double * all_res_libint2 = (double *)ALLOC(nthread * maxsize * sizeof(double));
     LIBINT2_PREFIXED_NAME(libint2_static_init)();
 
@@ -187,10 +187,10 @@ int main(int argc, char ** argv)
             double * simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
             double * res_valeev = all_res_valeev + ithread * maxsize;
 
-            #ifdef TESTS_ENABLE_LIBERD
+            #ifdef SIMINT_TESTS_ENABLE_LIBERD
             double * res_liberd = all_res_liberd + ithread * maxsize;
             #endif
-            #ifdef TESTS_ENABLE_LIBINT2
+            #ifdef SIMINT_TESTS_ENABLE_LIBINT2
             double * res_libint2 = all_res_libint2 + ithread * maxsize;
             #endif
 
@@ -228,7 +228,7 @@ int main(int argc, char ** argv)
             /////////////////////////////////
             // Calculate with liberd
             /////////////////////////////////
-            #ifdef TESTS_ENABLE_LIBERD
+            #ifdef SIMINT_TESTS_ENABLE_LIBERD
             erd.at(ithread)->Integrals(&shellmap_erd[i][a], nshell1,
                           &shellmap_erd[j][b], nshell2,
                           &shellmap_erd[k][0], nshell3,
@@ -240,7 +240,7 @@ int main(int argc, char ** argv)
             /////////////////////////////////
             // Calculate with libint2
             /////////////////////////////////
-            #ifdef TESTS_ENABLE_LIBINT2
+            #ifdef SIMINT_TESTS_ENABLE_LIBINT2
             libint.at(ithread)->Integrals(P, Q, res_libint2);
             #endif
 
@@ -252,10 +252,10 @@ int main(int argc, char ** argv)
             {
                 UpdateErrorMap(errors, "Simint", {i, j, k, l}, CalcError(res_simint, res_valeev, arrlen));
 
-                #ifdef TESTS_ENABLE_LIBERD
+                #ifdef SIMINT_TESTS_ENABLE_LIBERD
                 UpdateErrorMap(errors, "LibERD", {i, j, k, l}, CalcError(res_liberd, res_valeev, arrlen));
                 #endif
-                #ifdef TESTS_ENABLE_LIBINT2
+                #ifdef SIMINT_TESTS_ENABLE_LIBINT2
                 UpdateErrorMap(errors, "Libint2", {i, j, k, l}, CalcError(res_libint2, res_valeev, arrlen));
                 #endif
             }
@@ -280,12 +280,12 @@ int main(int argc, char ** argv)
                 double diff_libint2 = 0;
                 double rdiff_libint2 = 0;
 
-                #ifdef TESTS_ENABLE_LIBERD
+                #ifdef SIMINT_TESTS_ENABLE_LIBERD
                 diff_liberd = fabs(res_valeev[m] - res_liberd[m]);
                 rdiff_liberd = fabs(diff_liberd / res_liberd[m]);
                 #endif
 
-                #ifdef TESTS_ENABLE_LIBINT2
+                #ifdef SIMINT_TESTS_ENABLE_LIBINT2
                 diff_libint2 = fabs(res_valeev[m] - res_libint2[m]);
                 rdiff_libint2 = fabs(diff_libint2 / res_valeev[m]);
                 #endif
@@ -298,10 +298,10 @@ int main(int argc, char ** argv)
                     printf(" [%d/%d] %d %d %d %d : %d %d %d %d", ithread, nthread, int(a+m1), int(b+m2), m3, m4, c1, c2, c3, c4);
 
                     printf("   %25.16e  %25.16e  %25.16e", res_simint[m], diff_simint, rdiff_simint);
-                    #ifdef TESTS_ENABLE_LIBERD
+                    #ifdef SIMINT_TESTS_ENABLE_LIBERD
                     printf("   %25.16e  %25.16e  %25.16e", res_liberd[m], diff_liberd, rdiff_liberd);
                     #endif
-                    #ifdef TESTS_ENABLE_LIBINT2
+                    #ifdef SIMINT_TESTS_ENABLE_LIBINT2
                     printf("   %25.16e  %25.16e  %25.16e", res_libint2[m], diff_libint2, rdiff_libint2);
                     #endif
                     printf("\n");
@@ -335,12 +335,12 @@ int main(int argc, char ** argv)
 
     FreeShellMap(shellmap);
 
-    #ifdef TESTS_ENABLE_LIBERD
+    #ifdef SIMINT_TESTS_ENABLE_LIBERD
     FreeShellMap(shellmap_erd);
     FREE(all_res_liberd);
     #endif
 
-    #ifdef TESTS_ENABLE_LIBINT2
+    #ifdef SIMINT_TESTS_ENABLE_LIBINT2
     FREE(all_res_libint2);
     #endif
 

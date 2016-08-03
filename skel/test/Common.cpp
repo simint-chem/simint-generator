@@ -273,8 +273,12 @@ void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t npr
         printf("( %d %d | %d %d ) %12lu  %12lu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %16llu  %12.3f\n",
                                                                       i, j, k, l,
                                                                       nshell1234, nprim1234,
-                                                                      info.fill_shell_pair, info.copy_data, info.calc_pre,
-                                                                      info.boys, info.integrals, info.permute,
+                                                                      info.fill_shell_pair.load(),
+                                                                      info.copy_data.load(),
+                                                                      info.calc_pre.load(),
+                                                                      info.boys.load(),
+                                                                      info.integrals.load(),
+                                                                      info.permute.load(),
                                                                       info.TotalTime(),
                                                                       (double)(info.TotalTime())/(double)(nprim1234));
 }
