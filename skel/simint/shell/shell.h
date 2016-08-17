@@ -47,8 +47,6 @@ struct simint_multi_shellpair
     int nprim;          //!< Total number of primitive combinations stored
     int nprim_length;   //!< Acutal length of primitive arrays (alpha, etc), including padding
 
-    int nshell1;        //!< Number of shells in the first position
-    int nshell2;        //!< Number of shells in the second position
     int nshell12;       //!< Total number of shell pair (nshell1 * nshell2)
     int * nprim12;      //!< Number of primitive combinations for each shell pair (length nshell12) 
 
@@ -132,6 +130,18 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * const r
                                      struct simint_multi_shellpair * const restrict P);
 
 
+/*! \brief Allocate space in a multi shellpair structure
+ *
+ * Only sets up the pointers in \P and fills in the \p memsize and \p ptr members.
+ *
+ * \param [in] npair Number of shell pairs in the array
+ * \param [in] AB Pairs of shells to place in the shell pair
+ * \param [inout] P The structure in which to allocate the memory
+ */
+void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * const restrict AB,
+                                      struct simint_multi_shellpair * const restrict P);
+
+
 /*! \brief Frees memory associated with a multi shellpair structure
  *
  * The \p ptr member will be set to NULL and the memsize will be set to zero.
@@ -141,7 +151,8 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair P);
 
 /*! \brief Computes and fills in values for a multi shellpair
  *
- * This calculates the values for all the members of a simint_multishellpair structure
+ * This calculates the values for all the members of a simint_multishellpair structure by
+ * looping over all combinations of A and B and forming the shell pair information.
  *
  * \param [in] na Number of shells in the first position
  * \param [in] A Shells in the first position of this multi_shellpair
@@ -154,6 +165,28 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair P);
 void simint_fill_multi_shellpair(int na, struct simint_shell const * const restrict A,
                                  int nb, struct simint_shell const * const restrict B,
                                  struct simint_multi_shellpair * const restrict P);
+
+
+
+/*! \brief Computes and fills in values for a multi shellpair
+ *
+ * This calculates the values for all the members of a simint_multishellpair structure by
+ * looping through the array of pairs.
+ *
+ * The array is expected to be 2*npair in length, with the pairs being adjacent. Ie,
+ *
+ * AB = [A1 B1 A1 B2 A2 B1 A2 B2]  with npair = 4
+ *
+ * \param [in] npair Number of shell pairs in the array
+ * \param [in] AB Pairs of shells to place in the shell pair
+ * \param [inout] P The structure that will hold the shell pair data
+ *
+ * \warning \p P must already be allocated (via simint_allocate_multi_shellpair)
+ */
+void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const restrict AB,
+                                  struct simint_multi_shellpair * const restrict P);
+
+
 
 
 /*! \brief Allocates and fills a multi shellpair structure
@@ -169,6 +202,17 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * const restr
 struct simint_multi_shellpair
 simint_create_multi_shellpair(int na, struct simint_shell const * const restrict A,
                               int nb, struct simint_shell const * const restrict B);
+
+/*! \brief Allocates and fills a multi shellpair structure
+ *
+ * For convenience. Creates a new simint_multi_shellpair structure,
+ * allocates it, and then calculates all the data.
+ *
+ * \param [in] npair Number of shell pairs in the array
+ * \param [in] AB Pairs of shells to place in the shell pair
+ */
+struct simint_multi_shellpair
+simint_create_multi_shellpair2(int npair, struct simint_shell const * const restrict AB);
 
 
 #ifdef __cplusplus

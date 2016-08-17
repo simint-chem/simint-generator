@@ -95,25 +95,44 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * const r
                                      int nb, struct simint_shell const * const restrict B,
                                      struct simint_multi_shellpair * const restrict P)
 {
-    int nprim = 0;
+    struct simint_shell AB[2*na*nb];
 
-    int nanb = 0;
-    int batchprim = 0;
+    int ij = 0;
     for(int i = 0; i < na; ++i)
     for(int j = 0; j < nb; ++j)
     {
-        batchprim += A[i].nprim * B[j].nprim;
-        nanb++;
+        AB[ij] = A[i];
+        AB[ij+1] = B[j];
+        ij += 2;
+    }
 
-        if((nanb % SIMINT_NSHELL_SIMD) == 0 || nanb >= na*nb)
+    simint_allocate_multi_shellpair2(na*nb, AB, P);
+}
+
+
+void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * const restrict AB,
+                                      struct simint_multi_shellpair * const restrict P)
+{
+    int nprim = 0;
+
+    int batchprim = 0;
+    int ij = 0;
+    for(int i = 0; i < npair; i++)
+    {
+        batchprim += AB[ij].nprim * AB[ij+1].nprim;
+
+        int ip1 = i+1;
+        if((ip1 % SIMINT_NSHELL_SIMD) == 0 || ip1 >= npair)
         {        
             nprim += SIMINT_SIMD_ROUND(batchprim);
             batchprim = 0;
         }
+
+        ij += 2;
     }
 
 
-    int nshell12 = na*nb;
+    int nshell12 = npair;
     int nbatch = nshell12 / SIMINT_NSHELL_SIMD;
     if(nbatch % SIMINT_NSHELL_SIMD)
         nbatch++;
@@ -177,11 +196,27 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * const restr
                                  int nb, struct simint_shell const * const restrict B,
                                  struct simint_multi_shellpair * const restrict P)
 {
-    int i, j, sa, sb, sasb, idx, ibatch, batchprim;
+    struct simint_shell AB[2*na*nb];
 
-    P->nshell1 = na;
-    P->nshell2 = nb;
-    P->nshell12 = na * nb;
+    int ij = 0;
+    for(int i = 0; i < na; ++i)
+    for(int j = 0; j < nb; ++j)
+    {
+        AB[ij] = A[i];
+        AB[ij+1] = B[j];
+        ij += 2;
+    }
+
+    simint_fill_multi_shellpair2(na*nb, AB, P);
+}
+
+
+void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const restrict AB,
+                                  struct simint_multi_shellpair * const restrict P)
+{
+    int i, j, ij, sasb, idx, ibatch, batchprim;
+
+    P->nshell12 = npair;
     P->nprim = 0;
 
     P->nbatch = P->nshell12 / SIMINT_NSHELL_SIMD;
@@ -189,87 +224,91 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * const restr
         P->nbatch++;
 
     // zero out
-    memset(P->x, 0, P->memsize);
+    memset(P->ptr, 0, P->memsize);
 
     sasb = 0;
     idx = 0;
     ibatch = 0;
     batchprim = 0;
-    for(sa = 0; sa < na; ++sa)
+
+    ij = 0;
+    for(sasb = 0; sasb < npair; sasb++)
     {
-        P->am1 = A[sa].am;
+        struct simint_shell const * A = &AB[ij];
+        struct simint_shell const * B = &AB[ij+1];
 
-        for(sb = 0; sb < nb; ++sb)
+        P->am1 = A->am;
+        P->am2 = B->am;
+
+        // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
+        const double Xab_x = A->x - B->x;
+        const double Xab_y = A->y - B->y;
+        const double Xab_z = A->z - B->z;
+        const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
+
+        for(i = 0; i < A->nprim; ++i)
         {
-            P->am2 = B[sb].am;
+            const double AxAa = A->x * A->alpha[i];
+            const double AyAa = A->y * A->alpha[i];
+            const double AzAa = A->z * A->alpha[i];
 
-            // do Xab = (Xab_x **2 + Xab_y ** 2 + Xab_z **2)
-            const double Xab_x = A[sa].x - B[sb].x;
-            const double Xab_y = A[sa].y - B[sb].y;
-            const double Xab_z = A[sa].z - B[sb].z;
-            const double Xab = Xab_x*Xab_x + Xab_y*Xab_y + Xab_z*Xab_z;
-
-            for(i = 0; i < A[sa].nprim; ++i)
+            for(j = 0; j < B->nprim; ++j)
             {
-                const double AxAa = A[sa].x * A[sa].alpha[i];
-                const double AyAa = A[sa].y * A[sa].alpha[i];
-                const double AzAa = A[sa].z * A[sa].alpha[i];
+                const double p_ab = A->alpha[i] + B->alpha[j];
+                const double ABalpha = A->alpha[i] * B->alpha[j];
 
-                for(j = 0; j < B[sb].nprim; ++j)
-                {
-                    const double p_ab = A[sa].alpha[i] + B[sb].alpha[j];
-                    const double ABalpha = A[sa].alpha[i] * B[sb].alpha[j];
+                P->prefac[idx] = A->coef[i] * B->coef[j]
+                                 * exp(-Xab * ABalpha / p_ab)
+                                 * SQRT_TWO_PI_52 / p_ab;
 
-                    P->prefac[idx] = A[sa].coef[i] * B[sb].coef[j]
-                                     * exp(-Xab * ABalpha / p_ab)
-                                     * SQRT_TWO_PI_52 / p_ab;
+                P->x[idx] = (AxAa + B->alpha[j]*B->x)/p_ab;
+                P->y[idx] = (AyAa + B->alpha[j]*B->y)/p_ab;
+                P->z[idx] = (AzAa + B->alpha[j]*B->z)/p_ab;
+                P->PA_x[idx] = P->x[idx] - A->x;
+                P->PA_y[idx] = P->y[idx] - A->y;
+                P->PA_z[idx] = P->z[idx] - A->z;
+                P->PB_x[idx] = P->x[idx] - B->x;
+                P->PB_y[idx] = P->y[idx] - B->y;
+                P->PB_z[idx] = P->z[idx] - B->z;
 
-                    P->x[idx] = (AxAa + B[sb].alpha[j]*B[sb].x)/p_ab;
-                    P->y[idx] = (AyAa + B[sb].alpha[j]*B[sb].y)/p_ab;
-                    P->z[idx] = (AzAa + B[sb].alpha[j]*B[sb].z)/p_ab;
-                    P->PA_x[idx] = P->x[idx] - A[sa].x;
-                    P->PA_y[idx] = P->y[idx] - A[sa].y;
-                    P->PA_z[idx] = P->z[idx] - A[sa].z;
-                    P->PB_x[idx] = P->x[idx] - B[sb].x;
-                    P->PB_y[idx] = P->y[idx] - B[sb].y;
-                    P->PB_z[idx] = P->z[idx] - B[sb].z;
+                #ifdef SIMINT_ERI_USE_ET
+                P->bAB_x[idx] = B->alpha[j]*Xab_x;
+                P->bAB_y[idx] = B->alpha[j]*Xab_y;
+                P->bAB_z[idx] = B->alpha[j]*Xab_z;
+                #endif
 
-                    #ifdef SIMINT_ERI_USE_ET
-                    P->bAB_x[idx] = B[sb].alpha[j]*Xab_x;
-                    P->bAB_y[idx] = B[sb].alpha[j]*Xab_y;
-                    P->bAB_z[idx] = B[sb].alpha[j]*Xab_z;
-                    #endif
-
-                    P->alpha[idx] = p_ab;
-                    ++idx;
-                }
-
+                P->alpha[idx] = p_ab;
+                ++idx;
             }
 
-            P->nprim12[sasb] = A[sa].nprim*B[sb].nprim;
-            P->nprim += A[sa].nprim*B[sb].nprim;
-
-            P->AB_x[sasb] = Xab_x;
-            P->AB_y[sasb] = Xab_y;
-            P->AB_z[sasb] = Xab_z;
-
-            batchprim += P->nprim12[sasb]; 
-
-            sasb++;
-
-            if((sasb % SIMINT_NSHELL_SIMD) == 0 || sasb >= na*nb)
-            {
-                // fill in alpha = 1 until next boundary
-                while(idx < SIMINT_SIMD_ROUND(idx))
-                    P->alpha[idx++] = 1.0;
-
-                // increment the batch and store the number of primitives
-                // in this batch
-                P->nbatchprim[ibatch] = SIMINT_SIMD_ROUND(batchprim);
-                batchprim = 0;
-                ibatch++;
-            }
         }
+
+
+        P->nprim12[sasb] = A->nprim*B->nprim;
+        P->nprim += A->nprim*B->nprim;
+
+        P->AB_x[sasb] = Xab_x;
+        P->AB_y[sasb] = Xab_y;
+        P->AB_z[sasb] = Xab_z;
+
+        batchprim += P->nprim12[sasb]; 
+
+        int sasbp1 = sasb + 1;
+
+        if((sasbp1 % SIMINT_NSHELL_SIMD) == 0 || sasbp1 >= npair)
+        {
+            // fill in alpha = 1 until next boundary
+            while(idx < SIMINT_SIMD_ROUND(idx))
+                P->alpha[idx++] = 1.0;
+
+            // increment the batch and store the number of primitives
+            // in this batch
+            P->nbatchprim[ibatch] = SIMINT_SIMD_ROUND(batchprim);
+            batchprim = 0;
+            ibatch++;
+        }
+
+        ij += 2;
     }
 }
 
@@ -282,4 +321,14 @@ simint_create_multi_shellpair(int na, struct simint_shell const * const restrict
     simint_allocate_multi_shellpair(na, A, nb, B, &P);
     simint_fill_multi_shellpair(na, A, nb, B, &P);
     return P; 
+}
+
+
+struct simint_multi_shellpair
+simint_create_multi_shellpair2(int npair, struct simint_shell const * const restrict AB)
+{
+    struct simint_multi_shellpair P;
+    simint_allocate_multi_shellpair2(npair, AB, &P);
+    simint_fill_multi_shellpair2(npair, AB, &P);
+    return P;
 }
