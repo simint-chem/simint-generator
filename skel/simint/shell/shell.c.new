@@ -35,7 +35,9 @@ void simint_allocate_shell(int nprim, struct simint_shell * const restrict G)
 
 void simint_free_shell(struct simint_shell G)
 {
-    FREE(G.ptr);
+    if(G.ptr != NULL)
+        FREE(G.ptr);
+
     G.ptr = NULL;
     G.memsize = 0;
 }
@@ -197,7 +199,9 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * con
 
 void simint_free_multi_shellpair(struct simint_multi_shellpair P)
 {
-   FREE(P.ptr);
+   if(P.ptr != NULL)
+       FREE(P.ptr);
+
    P.ptr = NULL;
    P.memsize = 0;
 }
@@ -228,8 +232,11 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const r
     int i, j, ij, sasb, idx, ibatch, batchprim;
 
     P->nshell12 = npair;
-    P->nshell12_slice = npair; // by default, it's the same
     P->nprim = 0;
+
+    P->nbatch = P->nshell12 / SIMINT_NSHELL_SIMD;
+    if(P->nshell12 % SIMINT_NSHELL_SIMD)
+        P->nbatch++;
 
     // zero out
     memset(P->ptr, 0, P->memsize);

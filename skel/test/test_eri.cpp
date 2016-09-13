@@ -173,8 +173,10 @@ int main(int argc, char ** argv)
         const int nshell4 = shellmap[l].size();
 
         // create a multishell pair for all | k l ) quartets
-        struct simint_multi_shellpair Q = simint_create_multi_shellpair(nshell3, shellmap[k].data(),
-                                                                        nshell4, shellmap[l].data());
+        struct simint_multi_shellpair Q;
+        simint_initialize_multi_shellpair(&Q);
+        simint_create_multi_shellpair(nshell3, shellmap[k].data(),
+                                      nshell4, shellmap[l].data(), &Q);
 
         // do bra one at a time
         #pragma omp parallel for
@@ -197,8 +199,10 @@ int main(int argc, char ** argv)
             const int nshell1 = 1;
             const int nshell2 = 1;
 
-            struct simint_multi_shellpair P = simint_create_multi_shellpair(nshell1, &shellmap[i][a],
-                                                                            nshell2, &shellmap[j][b]);
+            struct simint_multi_shellpair P;
+            simint_initialize_multi_shellpair(&P);
+            simint_create_multi_shellpair(nshell1, &shellmap[i][a],
+                                          nshell2, &shellmap[j][b], &P);
 
 
             const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);

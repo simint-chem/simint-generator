@@ -78,7 +78,7 @@ void ERI_Writer_Basic::WriteShellOffsets(void) const
     os_ << indent5 << "// these are the offset from the shell pointed to by cd\n";
     os_ << indent5 << "// for each element\n";
     os_ << indent5 << "int shelloffsets[SIMINT_SIMD_LEN] = {0};\n";
-    os_ << indent5 << "int hasoffset = 0;\n";
+    os_ << indent5 << "int lastoffset = 0;\n";
     os_ << indent5 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
     os_ << indent5 << "{\n";
 
@@ -97,8 +97,8 @@ void ERI_Writer_Basic::WriteShellOffsets(void) const
     os_ << indent6 << "{\n";
     os_ << indent7 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
     os_ << indent7 << "{\n";
-    os_ << indent8 << "hasoffset = 1;\n";
     os_ << indent8 << "shelloffsets[n] = shelloffsets[n-1] + 1;\n";
+    os_ << indent8 << "lastoffset++;\n";
     os_ << indent8 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     os_ << indent7 << "}\n";
     os_ << indent7 << "else\n";
@@ -133,104 +133,28 @@ void ERI_Writer_Basic::WriteAccumulation(void) const
     os_ << indent5 << "////////////////////////////////////\n";
     os_ << indent5 << "// Accumulate contracted integrals\n";
     os_ << indent5 << "////////////////////////////////////\n";
-    if(info_.Vectorized())
+    os_ << indent5 << "if(lastoffset == 0)\n";
+    os_ << indent5 << "{\n";
+
+    for(const auto qam : info_.GetContQ())
     {
-        os_ << indent5 << "if(hasoffset == 0)\n";
-        os_ << indent5 << "{\n";
-
-        for(const auto qam : info_.GetContQ())
-        {
-            int ncart = NCART(qam);
-
-            if(info_.HasCPUFlag("avx"))
-            {
-                if(ncart > 3)
-                {
-                    os_ << indent6 << "for(n = 0; n < " << (ncart/4)*4 << "; n += 4)\n";
-                    os_ << indent6 << "{\n";
-                    os_ << indent7 << "__m256d t1 = _mm256_hadd_pd(" << PrimVarName(qam) << "[n], " << PrimVarName(qam) << "[n+1]);\n";
-                    os_ << indent7 << "__m256d t2 = _mm256_hadd_pd(" << PrimVarName(qam) << "[n+2], " << PrimVarName(qam) << "[n+3]);\n";
-                    os_ << indent7 << "__m256d t3 = _mm256_set_m128d(  _mm256_extractf128_pd(t2, 0) + _mm256_extractf128_pd(t2, 1), _mm256_extractf128_pd(t1, 0) + _mm256_extractf128_pd(t1, 1));\n";
-                    os_ << indent7 << "_mm256_storeu_pd(" << PrimPtrName(qam) << " + n, _mm256_loadu_pd(" << PrimPtrName(qam) << " + n) + t3);\n";
-                    os_ << indent6 << "}\n";
-                }
-
-                if((ncart%4) > 1)
-                {
-                    int n = (ncart/4)*4;
-
-                    std::string tmpname = StringBuilder("tmp_", PrimVarName(qam));
-                    std::string ssename = StringBuilder("sse_", PrimVarName(qam));
-
-                    os_ << indent6 << "__m256d " << tmpname << " = _mm256_hadd_pd(" << PrimVarName(qam) << "[" << n << "], " 
-                                  << PrimVarName(qam) << "[" << n+1 << "]);\n";
-
-                    os_ << indent6 << "__m128d " << ssename << " = _mm256_extractf128_pd("
-                                  << tmpname << ", 0) + _mm256_extractf128_pd(" << tmpname << ", 1);\n";
-                    os_ << indent6 << "_mm_storeu_pd(" << PrimPtrName(qam) << " + " << n << ", _mm_loadu_pd(" << PrimPtrName(qam)
-                                  << " + " << n << ") + " << ssename << ");\n";
-                }
-                if((ncart%2) > 0)
-                {
-                    int n = ncart-1;
-                    std::string vecname = StringBuilder("vec_", PrimVarName(qam));
-
-                    os_ << indent6 << "union double4 " << vecname
-                                 << " = (union double4)" << PrimVarName(qam) << "[" << n << "];\n";    
-                    os_ << indent6 << PrimPtrName(qam) << "[" << n << "] += "
-                                  << vecname << ".d[0] + " << vecname << ".d[1] + "
-                                  << vecname << ".d[2] + " << vecname << ".d[3];\n";
-                }
-            }
-            else    // assume everyone has at least sse3
-            {
-                if(ncart > 1)
-                {
-                    os_ << indent6 << "for(n = 0; n < " << (ncart/2)*2 << "; n+=2)\n";  // integer division on purpose
-                    os_ << indent6 << "{\n";
-                    os_ << indent7 << "__m128d t1 = _mm_hadd_pd(" << PrimVarName(qam) << "[n], " << PrimVarName(qam) << "[n+1]);\n";
-                    os_ << indent7 << "_mm_storeu_pd(" << PrimPtrName(qam) << " + n, _mm_loadu_pd(" << PrimPtrName(qam) << " + n) + t1);\n";
-                    os_ << indent6 << "}\n";
-                }
-                if((ncart % 2) > 0)
-                {
-                    int n = (ncart/2)*2;
-                    std::string vecname = StringBuilder("vec_", PrimVarName(qam));
-
-                    os_ << indent6 << "union double2 " << vecname
-                                 << " = (" << vinfo_.UnionType() << ")" << PrimVarName(qam) << "[" << n << "];\n";    
-                    os_ << indent6 << PrimPtrName(qam) << "[" << n << "] += " << vecname << ".d[0] + " << vecname << ".d[1];\n";
-                }
-            }
-        }
-        os_ << indent5 << "}\n";
-        os_ << indent5 << "else\n";
-        os_ << indent5 << "{\n";
-
-        for(const auto qam : info_.GetContQ())
-        {
-            int ncart = NCART(qam);
-            os_ << indent6 << "for(np = 0; np < " << ncart << "; ++np)\n";
-            os_ << indent6 << "{\n";
-            os_ << indent7 << vinfo_.ConstUnionType() << " tmp = (" << vinfo_.UnionType() << ")" << PrimVarName(qam) << "[np];\n";
-            os_ << indent7 << PrimPtrName(qam) << "[np] += tmp.d[0];   // first offset is always zero\n";
-            os_ << indent7 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
-            os_ << indent8 << PrimPtrName(qam) << "[shelloffsets[n]*" << ncart << "+np] += tmp.d[n];\n";
-            os_ << indent6 << "}\n";
-            os_ << indent6 << PrimPtrName(qam) << " += shelloffsets[SIMINT_SIMD_LEN-1]*" << ncart << ";\n";
-        }
-
-        os_ << indent5 << "}\n";
+        int ncart = NCART(qam);
+        os_ << indent6 << "contract_all(SIMINT_SIMD_LEN, " << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
     }
-    else
+    os_ << indent5 << "}\n";
+    os_ << indent5 << "else\n";
+    os_ << indent5 << "{\n";
+
+    for(const auto qam : info_.GetContQ())
     {
-        for(const auto qam : info_.GetContQ())
-        {
-            int ncart = NCART(qam);
-            os_ << indent6 << "for(n = 0; n < " << ncart << "; n++)\n";
-                os_ << indent7 << PrimPtrName(qam) << "[n] += " << PrimVarName(qam) << "[n];\n";
-        }
+        int ncart = NCART(qam);
+        os_ << indent6 << "contract(SIMINT_SIMD_LEN, " << ncart << ", shelloffsets, " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
     }
+
+    for(const auto qam : info_.GetContQ())
+        os_ << indent6 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+
+    os_ << indent5 << "}\n";
 }
 
 
@@ -337,7 +261,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
     // add includes
-    IncludeSet includes{"<string.h>", "<math.h>", "\"simint/eri/eri.h\""};
+    IncludeSet includes{"<string.h>", "<math.h>", "\"simint/eri/eri.h\"", "\"simint/eri/eri_contract.h\""};
     for(const auto & it : bg_.GetIncludes())
         includes.insert(it);
 
@@ -416,12 +340,6 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent1 << "int real_abcd;\n";
 
 
-    // Needed for determining offsets
-    // But that's only if we are vectorizing
-    if(info_.Vectorized())
-        os_ << indent1 << "int np;\n";
-    
-
     // Needed only if we are doing inline HRR
     if(inline_hrr)
     {
@@ -460,6 +378,13 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent1 << "// Loop over shells and primitives\n";
     os_ << indent1 << "////////////////////////////////////////\n";
     os_ << "\n";
+
+    os_ << indent1 << "// Number of batches of Q\n";
+    os_ << indent1 << "int nbatch_Q = Q.nshell12_slice / SIMINT_NSHELL_SIMD;\n";
+    os_ << indent1 << "if(Q.nshell12_slice % SIMINT_NSHELL_SIMD)\n";
+    os_ << indent2 << "    nbatch_Q++;\n\n";
+
+
     if(hashrr)
         os_ << indent1 << "real_abcd = 0;\n";
     else
@@ -476,7 +401,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent2 << "jstart = 0;\n";
     os_ << "\n";
 
-    os_ << indent2 << "for(cdbatch = 0; cdbatch < Q.nbatch; ++cdbatch)\n";
+    os_ << indent2 << "for(cdbatch = 0; cdbatch < nbatch_Q; ++cdbatch)\n";
     os_ << indent2 << "{\n";
     os_ << indent3 << "const int nshellbatch = ((cd + SIMINT_NSHELL_SIMD) > Q.nshell12) ? Q.nshell12 - cd : SIMINT_NSHELL_SIMD;\n";
 
