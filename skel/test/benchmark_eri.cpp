@@ -164,7 +164,7 @@ int main(int argc, char ** argv)
             #endif
 
             // free this here, since we are done with it
-            simint_free_multi_shellpair(P);
+            simint_free_multi_shellpair(&P);
 
 
             // add primitive and shell count to running totals for this am
@@ -175,7 +175,7 @@ int main(int argc, char ** argv)
             time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
         }
 
-        simint_free_multi_shellpair(Q);
+        simint_free_multi_shellpair(&Q);
 
 		// add primitive and shell count to overall running totals
 		// threadsafe since these are std::atomic

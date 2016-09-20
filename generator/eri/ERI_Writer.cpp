@@ -79,6 +79,8 @@ void ERI_Writer_Basic::WriteShellOffsets(void) const
     os_ << indent5 << "// for each element\n";
     os_ << indent5 << "int shelloffsets[SIMINT_SIMD_LEN] = {0};\n";
     os_ << indent5 << "int lastoffset = 0;\n";
+    os_ << indent5 << "const int nlane = ( ((j + SIMINT_SIMD_LEN) < jend) ? SIMINT_SIMD_LEN : (jend - j));\n";
+    os_ << "\n";
     os_ << indent5 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
     os_ << indent5 << "{\n";
 
@@ -133,28 +135,40 @@ void ERI_Writer_Basic::WriteAccumulation(void) const
     os_ << indent5 << "////////////////////////////////////\n";
     os_ << indent5 << "// Accumulate contracted integrals\n";
     os_ << indent5 << "////////////////////////////////////\n";
-    os_ << indent5 << "if(lastoffset == 0)\n";
-    os_ << indent5 << "{\n";
 
-    for(const auto qam : info_.GetContQ())
+    if(info_.Vectorized())
     {
-        int ncart = NCART(qam);
-        os_ << indent6 << "contract_all(SIMINT_SIMD_LEN, " << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
-    }
-    os_ << indent5 << "}\n";
-    os_ << indent5 << "else\n";
-    os_ << indent5 << "{\n";
+        os_ << indent5 << "if(lastoffset == 0)\n";
+        os_ << indent5 << "{\n";
 
-    for(const auto qam : info_.GetContQ())
+        for(const auto qam : info_.GetContQ())
+        {
+            int ncart = NCART(qam);
+            os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+        }
+        os_ << indent5 << "}\n";
+        os_ << indent5 << "else\n";
+        os_ << indent5 << "{\n";
+
+        for(const auto qam : info_.GetContQ())
+        {
+            int ncart = NCART(qam);
+            os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+        }
+
+        for(const auto qam : info_.GetContQ())
+            os_ << indent6 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+
+        os_ << indent5 << "}\n";
+    }
+    else
     {
-        int ncart = NCART(qam);
-        os_ << indent6 << "contract(SIMINT_SIMD_LEN, " << ncart << ", shelloffsets, " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+        for(const auto qam : info_.GetContQ())
+        {
+            int ncart = NCART(qam);
+            os_ << indent6 << "contract(" << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+        }
     }
-
-    for(const auto qam : info_.GetContQ())
-        os_ << indent6 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
-
-    os_ << indent5 << "}\n";
 }
 
 
@@ -324,12 +338,12 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     // If there is no HRR, integrals are accumulated from inside the primitive loop
     // directly into the final integral array that was passed into this function, so it must be zeroed first
     if(!hashrr)
-        os_ << indent1 << "memset(" << ArrVarName(am) << ", 0, P.nshell12 * Q.nshell12 * " << ncart << " * sizeof(double));\n";
+        os_ << indent1 << "memset(" << ArrVarName(am) << ", 0, P.nshell12_clip * Q.nshell12_clip * " << ncart << " * sizeof(double));\n";
     os_ << "\n";
 
 
     // abcd = index within simd loop, 
-    os_ << indent1 << "int ab, cd, cdbatch, abcd;\n";
+    os_ << indent1 << "int ab, cd, abcd;\n";
     os_ << indent1 << "int istart, jstart;\n";
     os_ << indent1 << "int iprimcd, nprim_icd, icd;\n";
     os_ << indent1 << "int i, j, n;\n";
@@ -379,19 +393,13 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent1 << "////////////////////////////////////////\n";
     os_ << "\n";
 
-    os_ << indent1 << "// Number of batches of Q\n";
-    os_ << indent1 << "int nbatch_Q = Q.nshell12_slice / SIMINT_NSHELL_SIMD;\n";
-    os_ << indent1 << "if(Q.nshell12_slice % SIMINT_NSHELL_SIMD)\n";
-    os_ << indent2 << "    nbatch_Q++;\n\n";
-
-
     if(hashrr)
         os_ << indent1 << "real_abcd = 0;\n";
     else
         os_ << indent1 << "abcd = 0;\n";
 
     os_ << indent1 << "istart = 0;\n";
-    os_ << indent1 << "for(ab = 0; ab < P.nshell12; ++ab)\n";
+    os_ << indent1 << "for(ab = 0; ab < P.nshell12_clip; ++ab)\n";
     os_ << indent1 << "{\n";
 
     os_ << indent2 << "const int iend = istart + P.nprim12[ab];\n";
@@ -401,11 +409,13 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent2 << "jstart = 0;\n";
     os_ << "\n";
 
-    os_ << indent2 << "for(cdbatch = 0; cdbatch < nbatch_Q; ++cdbatch)\n";
+    os_ << indent2 << "for(cd = 0; cd < Q.nshell12_clip; cd += SIMINT_NSHELL_SIMD)\n";
     os_ << indent2 << "{\n";
-    os_ << indent3 << "const int nshellbatch = ((cd + SIMINT_NSHELL_SIMD) > Q.nshell12) ? Q.nshell12 - cd : SIMINT_NSHELL_SIMD;\n";
+    os_ << indent3 << "const int nshellbatch = ((cd + SIMINT_NSHELL_SIMD) > Q.nshell12_clip) ? Q.nshell12_clip - cd : SIMINT_NSHELL_SIMD;\n";
 
-    os_ << indent3 << "const int jend = jstart + Q.nbatchprim[cdbatch];\n";
+    os_ << indent3 << "int jend = jstart;\n";
+    os_ << indent3 << "for(i = 0; i < nshellbatch; i++)\n";
+    os_ << indent4 << "jend += Q.nprim12[cd+i];\n";
 
 
     if(hashrr)
@@ -590,6 +600,22 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
     os_ << "\n";
 
+    if(info_.HasCPUFlag("avx"))
+    {
+        os_ << indent5 << "union double4 Q_prefac_u = (union double4)_mm256_load_pd(Q.prefac + j);\n";
+        os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
+        os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
+        os_ << indent5 << "const __m256d Q_prefac = Q_prefac_u.d_256;\n";
+    }
+    else if(info_.HasCPUFlag("sse"))
+    {
+        // TODO
+    }
+    else
+        os_ << indent5 << "const double Q_prefac = Q.prefac[j];\n";
+    os_ << "\n\n"; 
+
+
     bg_.WriteBoys(os_);
 
     if(vrr_writer_.HasVRR())
@@ -615,10 +641,6 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     if(hrr_writer_.HasHRR())
         hrr_writer_.WriteHRR(os_);
 
-    os_ << "\n";
-
-    os_ << indent3 << "cd += nshellbatch;\n";
-
     os_ << indent2 << "}   // close loop cdbatch\n";
 
     os_ << "\n";
@@ -636,7 +658,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
 
 
-    os_ << indent1 << "return P.nshell12 * Q.nshell12;\n";
+    os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
     os_ << "\n";
 }

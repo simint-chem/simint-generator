@@ -20,7 +20,7 @@ def ValidQuartet(q):
     return False
 
   if (q[0] + q[1]) == (q[2]+q[3]) and (q[0] < q[2]):
-    return False 
+    return False
 
   return True
 
@@ -131,7 +131,7 @@ if os.path.isdir(args.outdir):
   shutil.rmtree(outdir_examples, ignore_errors=True)
 
 
-shutil.copytree(os.path.join(skeldir, "simint"),        outdir) 
+shutil.copytree(os.path.join(skeldir, "simint"),        outdir)
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
 shutil.copytree(os.path.join(skeldir, "examples"),      outdir_examples)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
@@ -185,7 +185,7 @@ print()
 
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper()) 
+defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
   hfile.write("#ifndef {}\n".format(defineline))
   hfile.write("#define {}\n".format(defineline))
@@ -284,7 +284,7 @@ print("Header file: {}".format(headerfile))
 print()
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper()) 
+defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
   hfile.write("#ifndef {}\n".format(defineline))
   hfile.write("#define {}\n".format(defineline))
@@ -365,12 +365,12 @@ if args.et:
     valid.add((i, 0, 0, 0))
 
     if args.p:
-      valid.add((0, 0, i, 0)) 
+      valid.add((0, 0, i, 0))
 
     # TODO - more are probably needed here
 
 else:
-  # also need (X s | X s), etc 
+  # also need (X s | X s), etc
   for i in range(0, args.l*2+1):
     for j in range(0, args.l*2+1):
       if i == 0 and j == 0: # skip ssss
@@ -400,7 +400,7 @@ print("Header file: {}".format(headerfile))
 print()
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper()) 
+defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
   hfile.write("#ifndef {}\n".format(defineline))
   hfile.write("#define {}\n".format(defineline))
@@ -511,7 +511,7 @@ print("Header file: {}".format(headerfile))
 print()
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper()) 
+defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
   hfile.write("#ifndef {}\n".format(defineline))
   hfile.write("#define {}\n".format(defineline))
@@ -624,33 +624,6 @@ with open(headerfile, 'a') as hfile:
 
 
 ####################################################
-# Vectorization config header
-####################################################
-vinfofile = os.path.join(outdir, "simint_vectorinfo.h")
-with open(vinfofile, 'w') as vf:
-
-  # Parse the cpu flags
-  cpuflags = args.c.lower().split(',')
-    
-
-  vf.write("#ifndef SIMINT_VECTORINFO_H\n")
-  vf.write("#define SIMINT_VECTORINFO_H\n\n\n")
-
-
-  if "avx" in cpuflags:
-    vf.write("#include \"simint/vectorization/intrinsics_avx.h\"\n")
-    vf.write("#define SIMINT_SIMD_LEN 4\n")
-  elif "sse2" in cpuflags:
-    vf.write("#include \"simint/vectorization/intrinsics_sse.h\"\n")
-    vf.write("#define SIMINT_SIMD_LEN 2\n")
-  else:
-    vf.write("#define SIMINT_SIMD_LEN 1\n")
-  
-
-  vf.write("\n\n#endif\n")
-
-
-####################################################
 # Overall config header
 ####################################################
 sinfofile = os.path.join(outdir, "simint_config.h")
@@ -658,10 +631,21 @@ with open(sinfofile, 'w') as sf:
 
   # Parse the cpu flags
   cpuflags = args.c.lower().split(',')
-    
 
-  sf.write("#ifndef SIMINT_CONFIG_H\n")
-  sf.write("#define SIMINT_CONFIG_H\n\n\n")
+
+  sf.write("#pragma once\n")
+
+  if "avx" in cpuflags:
+    sf.write("#include \"simint/vectorization/intrinsics_avx.h\"\n")
+    sf.write("#define SIMINT_SIMD_LEN 4\n")
+    sf.write("#define SIMINT_AVX\n")
+  elif "sse2" in cpuflags:
+    sf.write("#include \"simint/vectorization/intrinsics_sse.h\"\n")
+    sf.write("#define SIMINT_SIMD_LEN 2\n")
+    sf.write("#define SIMINT_SSE\n")
+  else:
+    sf.write("#define SIMINT_SIMD_LEN 1\n")
+    sf.write("#define SIMINT_SCALAR\n")
 
   if args.et:
     sf.write("#define SIMINT_ERI_USE_ET\n")
@@ -669,10 +653,11 @@ with open(sinfofile, 'w') as sf:
     sf.write("#define SIMINT_ERI_NO_ET\n")
 
   if args.p:
-    sf.write("#define SIMINT_ERI_PERMUTATIONS")
+    sf.write("#define SIMINT_ERI_PERMUTATIONS\n")
   else:
-    sf.write("#define SIMINT_ERI_NO_PERMUTATIONS")
-  
+    sf.write("#define SIMINT_ERI_NO_PERMUTATIONS\n")
 
-  sf.write("\n\n#endif\n")
+  sf.write("\n\n")
+
+
 

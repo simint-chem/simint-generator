@@ -24,6 +24,14 @@ int main(int argc, char ** argv)
     struct simint_shell s_shells[4];
     struct simint_shell p_shells[1];
 
+    // initialize the shells
+    simint_initialize_shell(&s_shells[0]);
+    simint_initialize_shell(&s_shells[1]);
+    simint_initialize_shell(&s_shells[2]);
+    simint_initialize_shell(&s_shells[3]);
+    simint_initialize_shell(&p_shells[0]);
+
+
     // allocate the memory
     // arguments to simint_allocate_shell
     //    Number of primitives
@@ -144,14 +152,14 @@ int main(int argc, char ** argv)
     ////////////////////////////////////////
     // 6. Clean up and finalize the library
     //
-    simint_free_shell(s_shells[0]);
-    simint_free_shell(s_shells[1]);
-    simint_free_shell(s_shells[2]);
-    simint_free_shell(s_shells[3]);
-    simint_free_shell(p_shells[0]);
-    simint_free_multi_shellpair(ss_pair);
-    simint_free_multi_shellpair(ps_pair);
-    simint_free_multi_shellpair(pp_pair);
+    simint_free_shell(&s_shells[0]);
+    simint_free_shell(&s_shells[1]);
+    simint_free_shell(&s_shells[2]);
+    simint_free_shell(&s_shells[3]);
+    simint_free_shell(&p_shells[0]);
+    simint_free_multi_shellpair(&ss_pair);
+    simint_free_multi_shellpair(&ps_pair);
+    simint_free_multi_shellpair(&pp_pair);
     FREE(targets);
     simint_finalize();
 

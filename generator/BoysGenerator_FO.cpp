@@ -158,7 +158,7 @@ void BoysFO::WriteBoysSingle_(std::ostream & os, int m, bool prefac) const
     // apply prefac and power
     // calculate the prefactor if this is the first time it's needed
     if(prefac && m == 0)
-        os << indent5 << vinfo_.ConstDoubleType() << " prefac = P_prefac * " << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " prefac = P_prefac * Q_prefac;\n";
 
 
 
@@ -214,7 +214,7 @@ void BoysFO::WriteBoys(std::ostream & os) const
 
 
         // add prefac now
-        os << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * " << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
+        os << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * Q_prefac;\n";
  
         os << "\n";
         os << indent5 << "for(n = 0; n <= " << L << "; ++n)\n";

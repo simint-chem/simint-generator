@@ -66,7 +66,7 @@ GaussianVec CopyGaussianVec(const GaussianVec & v)
 void FreeGaussianVec(GaussianVec & agv)
 {
     for(auto & it : agv)
-        simint_free_shell(it);
+        simint_free_shell(&it);
     agv.clear();
 }
 
@@ -156,6 +156,7 @@ ShellMap ReadBasis(const std::string & file)
             GaussianVec gvec(ngen);
             for(auto & it : gvec)
             {
+                simint_initialize_shell(&it);
                 simint_allocate_shell(nprim, &it);
                 it.am = ammap[*itg];
                 it.nprim = nprim;

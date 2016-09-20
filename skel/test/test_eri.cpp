@@ -178,6 +178,7 @@ int main(int argc, char ** argv)
         simint_create_multi_shellpair(nshell3, shellmap[k].data(),
                                       nshell4, shellmap[l].data(), &Q);
 
+
         // do bra one at a time
         #pragma omp parallel for
         for(size_t a = 0; a < shellmap[i].size(); a++)
@@ -313,14 +314,15 @@ int main(int argc, char ** argv)
             }
 
 
-            simint_free_multi_shellpair(P);
+            simint_free_multi_shellpair(&P);
 
             ncont += arrlen;
+
 
         } // end threaded loop over a,b
 
 
-        simint_free_multi_shellpair(Q);
+        simint_free_multi_shellpair(&Q);
 
         // print out the errors for this quartet
         printf("( %2d %2d | %2d %2d )  ", i, j, k, l);

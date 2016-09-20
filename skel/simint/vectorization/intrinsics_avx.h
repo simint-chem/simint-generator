@@ -12,9 +12,3 @@ union double4
     double d[4];
 };
 
-union offset_union
-{
-    uint32_t i;
-    uint8_t a[4];
-};
-
