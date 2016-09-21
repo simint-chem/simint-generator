@@ -60,20 +60,18 @@ void simint_free_shell(struct simint_shell * const G)
     simint_initialize_shell(G);
 }
 
-struct simint_shell simint_copy_shell(const struct simint_shell G)
+void simint_copy_shell(struct simint_shell const * const src,
+                       struct simint_shell * const dest)
 {
-    struct simint_shell G_copy;
-    simint_initialize_shell(&G_copy);
-    simint_allocate_shell(G.nprim, &G_copy);
+    simint_allocate_shell(src->nprim, dest);
 
-    G_copy.nprim = G.nprim;
-    G_copy.am = G.am;
-    G_copy.x = G.x;
-    G_copy.y = G.y;
-    G_copy.z = G.z;
+    dest->nprim = src->nprim;
+    dest->am = src->am;
+    dest->x = src->x;
+    dest->y = src->y;
+    dest->z = src->z;
 
-    memcpy(G_copy.ptr, G.ptr, G_copy.memsize);
-    return G_copy;
+    memcpy(dest->ptr, src->ptr, dest->memsize);
 }
 
 

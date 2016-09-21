@@ -107,9 +107,11 @@ void simint_free_shell(struct simint_shell * const G);
 
 /*! \brief Copies a shell structure
  *
- * Memory will be allocated for a new shell and all the data copied from \p G
+ * Memory will be allocated for a new shell and all the data copied from \p src
+ * to \p dest
  */
-struct simint_shell simint_copy_shell(const struct simint_shell G);
+void simint_copy_shell(struct simint_shell const * const src,
+                       struct simint_shell * const dest);
 
 
 /*! \brief Normalize the coefficients of shells

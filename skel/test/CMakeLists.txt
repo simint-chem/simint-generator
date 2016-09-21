@@ -3,18 +3,6 @@ macro(ADDTEST TNAME TFILES)
 
   target_link_libraries(${TNAME} PRIVATE simint ${SIMINT_TESTS_CXX_LIBRARIES})
                                  
-  if(SIMINT_TESTS_ENABLE_LIBERD AND "${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-    target_link_libraries(${TNAME} PRIVATE ifcore)
-  else()
-    target_link_libraries(${TNAME} PRIVATE gfortran m)
-  endif()
-    
-
-  # Add extra libraries for native MIC
-  if(SIMINT_MIC)
-    target_link_libraries(${TNAME} PRIVATE intlc imf)
-  endif()
-
   target_include_directories(${TNAME} PRIVATE ${SIMINT_TESTS_CXX_INCLUDES})
   target_include_directories(${TNAME} SYSTEM PRIVATE ${SIMINT_TESTS_CXX_SYSTEM_INCLUDES})
   target_compile_options(${TNAME} PRIVATE ${SIMINT_TESTS_CXX_FLAGS})
@@ -68,34 +56,6 @@ list(APPEND SIMINT_TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}")
 ##################################################
 # Comparison with other packages
 ##################################################
-set(LIBINT2_PATH "" CACHE FILEPATH "Path to libint2 directory")
-set(LIBERD_PATH "" CACHE FILEPATH "Path to liberd lib directory")
-
-set(SIMINT_TESTS_ENABLE_LIBINT2 FALSE)
-set(SIMINT_TESTS_ENABLE_LIBERD FALSE)
-
-# Did the user specify the path to libint2 ?
-if(NOT(LIBINT2_PATH STREQUAL ""))
-  # Add include path / library
-  list(APPEND SIMINT_TESTS_CXX_SYSTEM_INCLUDES "${LIBINT2_PATH}/include/libint2")
-  list(APPEND SIMINT_TESTS_CXX_LIBRARIES "${LIBINT2_PATH}/lib/libint2.a")
-
-  # Set some other variables
-  set(SIMINT_TESTS_ENABLE_LIBINT2 TRUE)
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-DSIMINT_TESTS_ENABLE_LIBINT2")
-  list(APPEND SIMINT_TESTS_CXX_ADDITIONAL_SOURCES "Libint2_scalar.cpp")
-endif()
-
-
-# Did the user specify the path to liberd ?
-if(NOT(LIBERD_PATH STREQUAL ""))
-  set(SIMINT_TESTS_ENABLE_LIBERD TRUE)
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-DSIMINT_TESTS_ENABLE_LIBERD")
-  list(APPEND SIMINT_TESTS_CXX_ADDITIONAL_SOURCES "ERD.cpp")
-  list(APPEND SIMINT_TESTS_CXX_LIBRARIES "${LIBERD_PATH}/lib/liberd.a")
-endif()
-
-
 message(STATUS "       SIMINT_TESTS_CXX_INCLUDES: ${SIMINT_TESTS_CXX_INCLUDES}")
 message(STATUS "SIMINT_TESTS_CXX_SYSTEM_INCLUDES: ${SIMINT_TESTS_CXX_SYSTEM_INCLUDES}")
 message(STATUS "          SIMINT_TESTS_CXX_FLAGS: ${SIMINT_TESTS_CXX_FLAGS}")
@@ -121,11 +81,3 @@ target_compile_options(test_common PRIVATE ${SIMINT_TESTS_CXX_FLAGS})
 # Various testing and benchmarking
 ADDTEST(test_eri test_eri.cpp)
 ADDTEST(benchmark_eri benchmark_eri.cpp)
-
-if(SIMINT_TESTS_ENABLE_LIBERD)
-  ADDTEST(benchmark_erd benchmark_erd.cpp)
-endif()
-
-if(SIMINT_TESTS_ENABLE_LIBINT2)
-  ADDTEST(benchmark_libint2 benchmark_libint2.cpp)
-endif()

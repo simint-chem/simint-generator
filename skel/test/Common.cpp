@@ -57,7 +57,12 @@ GaussianVec CopyGaussianVec(const GaussianVec & v)
     GaussianVec copy;
     copy.reserve(v.size());
     for(const auto & it : v)
-        copy.push_back(simint_copy_shell(it));
+    {
+        simint_shell sh;
+        simint_initialize_shell(&sh);
+        simint_copy_shell(&it, &sh);
+        copy.push_back(sh);
+    }
     return copy;
 }
 
