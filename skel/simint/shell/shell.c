@@ -20,14 +20,14 @@
 extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 
-static int compare_shell(struct simint_shell const * const A,
-                          struct simint_shell const * const B)
+static int compare_shell(struct simint_shell const * A,
+                          struct simint_shell const * B)
 {
     return A->nprim == B->nprim && A->ptr == B->ptr;
 }
 
 
-void simint_initialize_shell(struct simint_shell * const G)
+void simint_initialize_shell(struct simint_shell * G)
 {
     G->ptr = NULL;
     G->memsize = 0;
@@ -35,7 +35,7 @@ void simint_initialize_shell(struct simint_shell * const G)
 
 
 // Allocate a gaussian shell with correct alignment
-void simint_allocate_shell(int nprim, struct simint_shell * const G)
+void simint_allocate_shell(int nprim, struct simint_shell * G)
 {
     const size_t memsize = 2 * nprim * sizeof(double);   
 
@@ -52,7 +52,7 @@ void simint_allocate_shell(int nprim, struct simint_shell * const G)
 }
 
 
-void simint_free_shell(struct simint_shell * const G)
+void simint_free_shell(struct simint_shell * G)
 {
     if(G->ptr != NULL)
         free(G->ptr);
@@ -60,8 +60,8 @@ void simint_free_shell(struct simint_shell * const G)
     simint_initialize_shell(G);
 }
 
-void simint_copy_shell(struct simint_shell const * const src,
-                       struct simint_shell * const dest)
+void simint_copy_shell(struct simint_shell const * src,
+                       struct simint_shell * dest)
 {
     simint_allocate_shell(src->nprim, dest);
 
@@ -75,7 +75,7 @@ void simint_copy_shell(struct simint_shell const * const src,
 }
 
 
-void simint_normalize_shells(int n, struct simint_shell * const G)
+void simint_normalize_shells(int n, struct simint_shell * G)
 {
     for(int i = 0; i < n; ++i)
     {
@@ -109,9 +109,9 @@ void simint_normalize_shells(int n, struct simint_shell * const G)
 
 
 void simint_create_shell(int nprim, int am, double x, double y, double z,
-                         double const * const alpha,
-                         double const * const coef,
-                         struct simint_shell * const G)
+                         double const * alpha,
+                         double const * coef,
+                         struct simint_shell * G)
 {
     simint_allocate_shell(nprim, G);
     G->am = am;
@@ -124,16 +124,16 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
 }
 
 
-void simint_initialize_multi_shellpair(struct simint_multi_shellpair * const P)
+void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P)
 {
     P->ptr = NULL;
     P->memsize = 0;
 }
 
 
-void simint_allocate_multi_shellpair(int na, struct simint_shell const * const A,
-                                     int nb, struct simint_shell const * const B,
-                                     struct simint_multi_shellpair * const P)
+void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
+                                     int nb, struct simint_shell const * B,
+                                     struct simint_multi_shellpair * P)
 {
     struct simint_shell AB[2*na*nb];
 
@@ -150,8 +150,8 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * const A
 }
 
 
-void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * const AB,
-                                      struct simint_multi_shellpair * const P)
+void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
+                                      struct simint_multi_shellpair * P)
 {
     int nprim = 0;
 
@@ -227,7 +227,7 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * con
 }
 
 
-void simint_free_multi_shellpair(struct simint_multi_shellpair * const P)
+void simint_free_multi_shellpair(struct simint_multi_shellpair * P)
 {
     if(P->ptr != NULL)
         FREE(P->ptr);
@@ -236,9 +236,9 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair * const P)
 }
 
 
-void simint_fill_multi_shellpair(int na, struct simint_shell const * const A,
-                                 int nb, struct simint_shell const * const B,
-                                 struct simint_multi_shellpair * const P)
+void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
+                                 int nb, struct simint_shell const * B,
+                                 struct simint_multi_shellpair * P)
 {
     struct simint_shell AB[2*na*nb];
 
@@ -255,8 +255,8 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * const A,
 }
 
 
-void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const AB,
-                                  struct simint_multi_shellpair * const P)
+void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
+                                  struct simint_multi_shellpair * P)
 {
     int i, j, ij, sasb, idx;
 
@@ -355,9 +355,9 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const A
 }
 
 
-void simint_create_multi_shellpair(int na, struct simint_shell const * const A,
-                                   int nb, struct simint_shell const * const B,
-                                   struct simint_multi_shellpair * const P)
+void simint_create_multi_shellpair(int na, struct simint_shell const * A,
+                                   int nb, struct simint_shell const * B,
+                                   struct simint_multi_shellpair * P)
 {
     simint_allocate_multi_shellpair(na, A, nb, B, P);
     simint_fill_multi_shellpair(na, A, nb, B, P);
@@ -365,8 +365,8 @@ void simint_create_multi_shellpair(int na, struct simint_shell const * const A,
 
 
 void simint_create_multi_shellpair2(int npair,
-                                    struct simint_shell const * const AB,
-                                    struct simint_multi_shellpair * const P)
+                                    struct simint_shell const * AB,
+                                    struct simint_multi_shellpair * P)
 {
     simint_allocate_multi_shellpair2(npair, AB, P);
     simint_fill_multi_shellpair2(npair, AB, P);

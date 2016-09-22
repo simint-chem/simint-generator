@@ -86,7 +86,7 @@ struct simint_multi_shellpair
  *
  * \param [inout] G The structure to initialize
  */
-void simint_initialize_shell(struct simint_shell * const G);
+void simint_initialize_shell(struct simint_shell * G);
 
 
 /*! \brief Allocate memory in a shell
@@ -95,14 +95,14 @@ void simint_initialize_shell(struct simint_shell * const G);
  * the \p alpha and \coef pointers. This also sets the \p ptr and \p memsize
  * members of \p G
  */
-void simint_allocate_shell(int nprim, struct simint_shell * const G);
+void simint_allocate_shell(int nprim, struct simint_shell * G);
 
 
 /*! \brief Frees memory associated with a shell structure
  *
  * The \p ptr member will be set to NULL and the memsize will be set to zero.
  */
-void simint_free_shell(struct simint_shell * const G);
+void simint_free_shell(struct simint_shell * G);
 
 
 /*! \brief Copies a shell structure
@@ -110,8 +110,8 @@ void simint_free_shell(struct simint_shell * const G);
  * Memory will be allocated for a new shell and all the data copied from \p src
  * to \p dest
  */
-void simint_copy_shell(struct simint_shell const * const src,
-                       struct simint_shell * const dest);
+void simint_copy_shell(struct simint_shell const * src,
+                       struct simint_shell * dest);
 
 
 /*! \brief Normalize the coefficients of shells
@@ -121,7 +121,7 @@ void simint_copy_shell(struct simint_shell const * const src,
  * \param [in] n The number of shells to normalize
  * \param [inout] G Pointer to the shells to normalize
  */
-void simint_normalize_shells(int n, struct simint_shell * const G);
+void simint_normalize_shells(int n, struct simint_shell * G);
 
 
 /*! \brief Create a simint shell
@@ -144,9 +144,9 @@ void simint_normalize_shells(int n, struct simint_shell * const G);
  * \param [inout] G The gaussian shell to use
  */
 void simint_create_shell(int nprim, int am, double x, double y, double z,
-                         double const * const alpha,
-                         double const * const coef,
-                         struct simint_shell * const G);
+                         double const * alpha,
+                         double const * coef,
+                         struct simint_shell * G);
 
 
 
@@ -158,7 +158,7 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
  *
  * \param [inout] P The structure to initialize
  */
-void simint_initialize_multi_shellpair(struct simint_multi_shellpair * const P);
+void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P);
 
 
 /*! \brief Allocate space in a multi shellpair structure
@@ -171,9 +171,9 @@ void simint_initialize_multi_shellpair(struct simint_multi_shellpair * const P);
  * \param [in] B Shells that will be stored in the second position of this multi_shellpair
  * \param [inout] P The structure in which to allocate the memory
  */
-void simint_allocate_multi_shellpair(int na, struct simint_shell const * const A,
-                                     int nb, struct simint_shell const * const B,
-                                     struct simint_multi_shellpair * const P);
+void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
+                                     int nb, struct simint_shell const * B,
+                                     struct simint_multi_shellpair * P);
 
 
 /*! \brief Allocate space in a multi shellpair structure
@@ -184,15 +184,15 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * const A
  * \param [in] AB Pairs of shells to place in the shell pair
  * \param [inout] P The structure in which to allocate the memory
  */
-void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * const AB,
-                                      struct simint_multi_shellpair * const P);
+void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
+                                      struct simint_multi_shellpair * P);
 
 
 /*! \brief Frees memory associated with a multi shellpair structure
  *
  * The \p ptr member will be set to NULL and the memsize will be set to zero.
  */
-void simint_free_multi_shellpair(struct simint_multi_shellpair * const P);
+void simint_free_multi_shellpair(struct simint_multi_shellpair * P);
 
 
 /*! \brief Computes and fills in values for a multi shellpair
@@ -208,9 +208,9 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair * const P);
  *
  * \warning \p P must already be allocated (via simint_allocate_multi_shellpair)
  */
-void simint_fill_multi_shellpair(int na, struct simint_shell const * const A,
-                                 int nb, struct simint_shell const * const B,
-                                 struct simint_multi_shellpair * const P);
+void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
+                                 int nb, struct simint_shell const * B,
+                                 struct simint_multi_shellpair * P);
 
 
 
@@ -229,8 +229,8 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * const A,
  *
  * \warning \p P must already be allocated (via simint_allocate_multi_shellpair)
  */
-void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const AB,
-                                  struct simint_multi_shellpair * const P);
+void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
+                                  struct simint_multi_shellpair * P);
 
 
 
@@ -247,9 +247,9 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * const A
  * \param [inout] P The structure that will hold the shell pair data
  */
 void
-simint_create_multi_shellpair(int na, struct simint_shell const * const A,
-                              int nb, struct simint_shell const * const B,
-                              struct simint_multi_shellpair * const P);
+simint_create_multi_shellpair(int na, struct simint_shell const * A,
+                              int nb, struct simint_shell const * B,
+                              struct simint_multi_shellpair * P);
 
 /*! \brief Allocates and fills a multi shellpair structure
  *
@@ -262,8 +262,8 @@ simint_create_multi_shellpair(int na, struct simint_shell const * const A,
  */
 void
 simint_create_multi_shellpair2(int npair,
-                               struct simint_shell const * const AB,
-                               struct simint_multi_shellpair * const P);
+                               struct simint_shell const * AB,
+                               struct simint_multi_shellpair * P);
 
 
 #ifdef __cplusplus

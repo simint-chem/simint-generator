@@ -13,7 +13,8 @@ void Simint_Finalize(void)
     simint_finalize();
 }
 
-TimerType Simint_Integral(struct simint_multi_shellpair const P, struct simint_multi_shellpair const Q,
+TimerType Simint_Integral(struct simint_multi_shellpair const * P,
+                          struct simint_multi_shellpair const * Q,
                           double * const restrict contwork,
                           double * const restrict integrals)
 {

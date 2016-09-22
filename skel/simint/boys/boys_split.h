@@ -10,7 +10,8 @@ extern "C" {
 /////////////////////////
 // Inline functions
 /////////////////////////
-inline void Boys_F_split(double * const restrict F, int n, double x)
+static inline
+void Boys_F_split(double * restrict F, int n, double x)
 {
     if(x < BOYS_SHORTGRID_MAXX)
         Boys_F_taylor(F, n, x);
@@ -18,7 +19,8 @@ inline void Boys_F_split(double * const restrict F, int n, double x)
         Boys_F_long(F, n, x); 
 }
 
-inline void Boys_F_split_simd(double * const restrict Farr, int n, double const * const restrict xvec)
+static inline
+void Boys_F_split_simd(double * restrict Farr, int n, double const * restrict xvec)
 {
     for(int i = 0; i < SIMINT_SIMD_LEN; i++)
     {
@@ -30,7 +32,8 @@ inline void Boys_F_split_simd(double * const restrict Farr, int n, double const 
 }
 
 
-inline void Boys_F_split_single(double * const restrict Farr, int n, double const * const restrict xvec)
+static inline
+void Boys_F_split_single(double * restrict Farr, int n, double const * restrict xvec)
 {
     for(int i = 0; i < SIMINT_SIMD_LEN; i++)
     {

@@ -137,7 +137,7 @@ int main(int argc, char ** argv)
             double * const simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
 
             // actually calculate
-            TimerType my_time_am = Simint_Integral(P, Q, simint_work, res_ints);
+            TimerType my_time_am = Simint_Integral(&P, &Q, simint_work, res_ints);
 
             // acutal number of primitives and shells calculated
             // TODO - replace with return values from Integrals

@@ -152,7 +152,7 @@ int main(int argc, char ** argv)
             ////////////////////////////
             // Calculate with my code
             ////////////////////////////
-            Simint_Integral(P, Q, simint_work, res_simint);
+            Simint_Integral(&P, &Q, simint_work, res_simint);
 
             /////////////////////////////////
             // Update the error map

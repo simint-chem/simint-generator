@@ -12,13 +12,14 @@ extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];
 /////////////////////////
 // Inline functions
 /////////////////////////
-inline void Boys_F_taylor(double * const restrict F, int n, double x)
+static inline
+void Boys_F_taylor(double * restrict F, int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
     const double dx = xi-x;   // -delta x
 
-    double const * const restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
+    double const * restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
 
     for(int i = 0; i <= n; ++i)
     {
@@ -44,13 +45,14 @@ inline void Boys_F_taylor(double * const restrict F, int n, double x)
 }
 
 
-inline void Boys_F_taylor_simd(double * restrict F, int n, double x)
+static inline
+void Boys_F_taylor_simd(double * restrict F, int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
     const double dx = xi-x;   // -delta x
 
-    double const * const restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
+    double const * restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
 
     for(int i = 0; i <= n; ++i)
     {
@@ -78,13 +80,14 @@ inline void Boys_F_taylor_simd(double * restrict F, int n, double x)
 }
 
 
-inline double Boys_F_taylor_single(int n, double x)
+static inline
+double Boys_F_taylor_single(int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
     const double dx = xi-x;   // -delta x
 
-    double const * const restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
+    double const * restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
 
     const double f0xi = gridpts[n];
     const double f1xi = gridpts[n+1];
