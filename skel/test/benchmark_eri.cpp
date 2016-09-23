@@ -72,9 +72,6 @@ int main(int argc, char ** argv)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
     {
-        if(!ValidQuartet({i,j,k,l}))
-            continue;
-
         // total amount of time for this AM quartet
         TimeContrib time_am;
 

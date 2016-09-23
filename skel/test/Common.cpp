@@ -12,28 +12,6 @@
 #include "test/Common.hpp"
 
 
-bool ValidQuartet(std::array<int, 4> am)
-{
-    if(am[0] < am[1])
-        return false;
-    if(am[2] < am[3])
-        return false;
-    if( (am[0] + am[1]) < (am[2] + am[3]) )
-        return false;
-    if( (am[0] + am[1]) == (am[2] + am[3]) && (am[0] < am[2]) ) 
-        return false;
-    return true;
-}
-
-
-
-bool ValidQuartet(int i, int j, int k, int l)
-{
-    return ValidQuartet({i, j, k, l});
-}
-
-
-
 bool IterateGaussian(std::array<int, 3> & g)
 {
     int am = g[0] + g[1] + g[2];

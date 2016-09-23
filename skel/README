@@ -6,21 +6,15 @@ Horizontally-vectorized electron repulsion integrals
 ----------
 WARNING
 ----------
-This is still a pretty experimental library. I haven't even given it
-a version number yet.
+This is still a somewhat experimental library.
 I've validated it as much as possible, but there still may be bugs. In addition,
 the API may change in the future.
 
 ----------
 WARNING 2
 ----------
-This currently supports only up to (f f | f f) integrals.
-Angular momentum requirements:  (a b | c d)
-  a >= b
-  c >= d
-  a >= c
-  a+b >= c+d
-
+This currently supports only up to (g g | g g) integrals.
+Any permutation of angular momentum is supported
 
 
 -------------
@@ -28,7 +22,7 @@ Requirements
 -------------
 
 Intel Compiler v15 or above
-CMake 3.0 or above
+CMake 3.0.2 or above
 Intel CPU
 
 
@@ -67,27 +61,15 @@ Generally, from within the extracted directory:
 
 Other options (besides CMake standard options):
 
-    -DSIMINT_CXX_FLAGS="flag1;flag2"
+    -DSIMINT_TESTS_CXX_FLAGS="flag1;flag2"
     -DSIMINT_C_FLAGS="flag1;flag2"
 
         Additional flags to pass to Simint, separated by semicolon. For example,
-            -DSIMINT_CXX_FLAGS="-xavx"                  required for AVX builds
-            -DSIMINT_C_FLAGS="-xavx"                    required for AVX builds
-            -DSIMINT_CXX_FLAGS="-no-vec;-no-simd"       disable compiler-generated vectorization
-            -DSIMINT_C_FLAGS="-no-vec;-no-simd"         disable compiler-generated vectorization
+            -DSIMINT_C_FLAGS="-xavx"                      required for AVX builds
+            -DSIMINT_TESTS_CXX_FLAGS="-xavx"              required for AVX builds
+            -DSIMINT_C_FLAGS="-no-vec;-no-simd"           disable compiler-generated vectorization
+            -DSIMINT_TESTS_CXX_FLAGS="-no-vec;-no-simd"   disable compiler-generated vectorization
    
-
-    -DLIBINT2_PATH=/libint/install/prefix
-        (not required)
-        Enable comparison/benchmarks with Libint2 (https://github.com/evaleev/libint).
-        Path should be to install directory
-        (directory should contain "include" and "lib" subdirectories)
-
-    -DLIBERD_PATH=/liberd/install/path
-        (not required)
-        Enable comparison/benchmarks with LibERD
-        Path should contain a "lib" subdirectory with "liberd.a" file
-
 
 ---------------------------
 Building
@@ -105,8 +87,6 @@ molecules and basis sets.
 
     test_eri           - Validate accuracy
     benchmark_eri      - Benchmark simint 
-    benchmark_erd      - Benchmark LibERD
-    benchmark_libint2  - Benchmark the Libint2 library
 
 Examples:
 

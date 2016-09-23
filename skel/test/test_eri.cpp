@@ -97,10 +97,6 @@ int main(int argc, char ** argv)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
     {
-        if(!ValidQuartet(i, j, k, l))
-            continue;
-
-
         const int nshell3 = shellmap[k].size();
         const int nshell4 = shellmap[l].size();
 

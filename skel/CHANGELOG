@@ -1,0 +1,8 @@
+v0.3
+Released 2016-09-23
+---------------------
+* Interface changes: Consistent function names and arguments
+* Workaround for bug in Intel 2017 compiler
+* Removed benchmark/testing interface to libint/liberd
+* Added permutations of angular momentum (ie, ( s p | s s ), etc)
+* Benchmark code is now threaded

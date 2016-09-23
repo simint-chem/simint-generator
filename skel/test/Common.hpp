@@ -74,20 +74,6 @@ typedef std::vector<simint_shell> GaussianVec;
 typedef std::map<int, GaussianVec> ShellMap;
 
 
-/*! \brief Checks to see if a quartet is valid for calculation
- *
- * ie, checks that am[0] >= am[1], am[2] >= am[3], and (am[1]+am[2] >= am[3]+am[4])
- */
-bool ValidQuartet(std::array<int, 4> am);
-
-
-/*! \brief Checks to see if a quartet is valid for calculation
- *
- * ie, checks that i < j, k < l, and (i+j < k+l)
- */
-bool ValidQuartet(int i, int j, int k, int l);
-
-
 /*! \brief Iterate over cartesian components of a gaussian
  *
  * The elements of the array represent the exponents on x, y, and z.

@@ -73,9 +73,6 @@ int main(int argc, char ** argv)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
     {
-        if(!ValidQuartet({i,j,k,l}))
-            continue;
-
         std::map<size_t, std::vector<size_t>> ticksperprim;
 
         // total amount of time for this AM quartet
