@@ -634,7 +634,7 @@ with open(sinfofile, 'w') as sf:
   cpuflags = args.c.lower().split(',')
 
 
-  sf.write("#pragma once\n")
+  sf.write("#pragma once\n\n")
 
   if "avx" in cpuflags:
     sf.write("#include \"simint/vectorization/intrinsics_avx.h\"\n")
