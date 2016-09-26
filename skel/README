@@ -14,7 +14,7 @@ the API may change in the future.
 WARNING 2
 ----------
 This currently supports only up to (g g | g g) integrals.
-Any permutation of angular momentum is supported
+Any permutation of angular momentum *is* supported
 
 
 -------------
@@ -60,6 +60,10 @@ Generally, from within the extracted directory:
     CC=icc CXX=icpc cmake -DCMAKE_BUILD_TYPE=Release (...other options...)  ../
 
 Other options (besides CMake standard options):
+
+    -DSIMINT_BUILD_SHARED:Bool=True
+        Build shared library, rather than a static library (default is static library)
+
 
     -DSIMINT_TESTS_CXX_FLAGS="flag1;flag2"
     -DSIMINT_C_FLAGS="flag1;flag2"
