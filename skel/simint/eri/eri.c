@@ -31,9 +31,3 @@ int simint_compute_eri_sharedwork(struct simint_multi_shellpair const * P,
     return simint_erifunc_sharedwork_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, work, integrals);
 }
 
-
-
-#ifdef __cplusplus
-}
-#endif
-
