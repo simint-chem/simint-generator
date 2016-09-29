@@ -9,16 +9,16 @@ extern simint_erifunc             simint_erifunc_array[SIMINT_ERI_MAXAM+1][SIMIN
 
 int simint_compute_eri(struct simint_multi_shellpair const * P,
                        struct simint_multi_shellpair const * Q,
+                       double screen_tol,
                        double * restrict integrals)
 {
-    if(P->screened && Q->screened)
-    {
-        double screen_tol = (P->screen_tol > Q->screen_tol ? Q->screen_tol : P->screen_tol);
-        if( (P->screen_max * Q->screen_max) < screen_tol )
-            return -1;
-    }
+    // don't forget that we don't include the square root in the screen values
+    // stored in the shell pair
+    double screen_tol2 = screen_tol * screen_tol;
+    if(screen_tol > 0.0 && (P->screen_max * Q->screen_max) < screen_tol2 )
+        return -1;
 
-    return simint_erifunc_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, integrals);
+    return simint_erifunc_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, screen_tol2, integrals);
 }
 
 
@@ -34,16 +34,16 @@ int simint_compute_eri(struct simint_multi_shellpair const * P,
  */
 int simint_compute_eri_sharedwork(struct simint_multi_shellpair const * P,
                                   struct simint_multi_shellpair const * Q,
+                                  double screen_tol,
                                   double * restrict work,
                                   double * restrict integrals)
 {
-    if(P->screened && Q->screened)
-    {
-        double screen_tol = (P->screen_tol > Q->screen_tol ? Q->screen_tol : P->screen_tol);
-        if( (P->screen_max * Q->screen_max) < screen_tol )
-            return -1;
-    }
+    // don't forget that we don't include the square root in the screen values
+    // stored in the shell pair
+    double screen_tol2 = screen_tol * screen_tol;
+    if(screen_tol > 0.0 && (P->screen_max * Q->screen_max) < screen_tol2 )
+        return -1;
 
-    return simint_erifunc_sharedwork_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, work, integrals);
+    return simint_erifunc_sharedwork_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, screen_tol2, work, integrals);
 }
 

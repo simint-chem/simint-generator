@@ -1,22 +1,14 @@
 #include <math.h> // for fabs()
-#include <float.h> // for DBL_MAX
+
 #include "simint/eri/eri.h"
+#include "simint/shell/shell_screen.h"
 
 
-void
+double
 simint_primscreen_schwarz_max(struct simint_shell const * A,
                               struct simint_shell const * B,
                               double * out)
 {
-    // bail early if this only has one primitive
-    // (this should be handled elsewhere, ie this
-    // shell shouldn't be included)
-    if(A->nprim == 1 && B->nprim == 1)
-    {
-        out[0] = DBL_MAX;
-        return;
-    }
-
     // here, we basically uncontract the shells
     struct simint_shell new_A, new_B;
     simint_initialize_shell(&new_A);
@@ -34,6 +26,8 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
     const int ncart1234 = ncart12*ncart12;
 
     double * integrals = (double *)ALLOC(ncart1234 * sizeof(double));
+
+    double total_max = 0.0;
 
     int idx = 0;
     for(int i = 0; i < A->nprim; i++)
@@ -53,10 +47,10 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
 
             // create a shell pair
             // Note - we aren't screening this. That would be a infinite loop.
-            simint_create_multi_shellpair(1, &new_A, 1, &new_B, &P, 0, 0.0); 
+            simint_create_multi_shellpair(1, &new_A, 1, &new_B, &P, 0); 
 
             // calculate (ab|ab)
-            simint_compute_eri(&P, &P, integrals);
+            simint_compute_eri(&P, &P, 0.0, integrals);
 
             // find the maximum value and store in the output array
             double max = 0;
@@ -66,8 +60,10 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
                 max = ( abint > max ? abint : max );
             }
 
-            // we avoid doing the sqrt by squaring the tolerance
+            // we avoid doing the sqrt by squaring the tolerance later
             out[idx++] = max;
+            if(max > total_max)
+                total_max = max;
         }
 
     }
@@ -76,4 +72,6 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
     simint_free_shell(&new_A);
     simint_free_shell(&new_B);
     FREE(integrals);
+
+    return total_max;
 }

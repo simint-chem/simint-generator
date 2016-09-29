@@ -100,7 +100,7 @@ int main(int argc, char ** argv)
 
         struct simint_multi_shellpair Q;
         simint_initialize_multi_shellpair(&Q);
-        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q, 1, 1e-12);
+        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q, SIMINT_SCREEN);
         CLOCK(time_pair_34_1);
         time_am.fill_shell_pair += time_pair_34_1 - time_pair_34_0;
 
@@ -136,7 +136,7 @@ int main(int argc, char ** argv)
             CLOCK(time_pair_12_0);
             struct simint_multi_shellpair P;
             simint_initialize_multi_shellpair(&P);
-            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P, SIMINT_SCREEN, SIMINT_SCREEN_TOL);
+            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P, SIMINT_SCREEN);
             CLOCK(time_pair_12_1);
 
             // acutal number of primitives and shells that
@@ -153,7 +153,7 @@ int main(int argc, char ** argv)
             // actually calculate
             TimerType simint_ticks_0, simint_ticks_1;
             CLOCK(simint_ticks_0);
-            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, simint_work, res_ints);
+            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_ints);
             CLOCK(simint_ticks_1);
 
             // if the return is < 0, it didn't calculate anything

@@ -24,9 +24,9 @@ add_executable(eri_vrr_generator eri_vrr_generator.cpp $<TARGET_OBJECTS:generato
 target_include_directories(eri_vrr_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
 target_compile_options(eri_vrr_generator PRIVATE ${GENERATOR_CXX_FLAGS})
 
-add_executable(eri_et_generator eri_et_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:eri_generator_common>)
-target_include_directories(eri_et_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
-target_compile_options(eri_et_generator PRIVATE ${GENERATOR_CXX_FLAGS})
+#add_executable(eri_et_generator eri_et_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:eri_generator_common>)
+#target_include_directories(eri_et_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
+#target_compile_options(eri_et_generator PRIVATE ${GENERATOR_CXX_FLAGS})
 
 add_executable(eri_hrr_generator eri_hrr_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:eri_generator_common>)
 target_include_directories(eri_hrr_generator PRIVATE ${GENERATOR_CXX_INCLUDES})

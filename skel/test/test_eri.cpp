@@ -109,7 +109,7 @@ int main(int argc, char ** argv)
         simint_initialize_multi_shellpair(&Q);
         simint_create_multi_shellpair(nshell3, shellmap[k].data(),
                                       nshell4, shellmap[l].data(), &Q,
-                                      SIMINT_SCREEN, SIMINT_SCREEN_TOL);
+                                      SIMINT_SCREEN);
 
 
         // do bra one at a time
@@ -130,7 +130,7 @@ int main(int argc, char ** argv)
             simint_initialize_multi_shellpair(&P);
             simint_create_multi_shellpair(nshell1, &shellmap[i][a],
                                           nshell2, &shellmap[j][b], &P,
-                                          SIMINT_SCREEN, SIMINT_SCREEN_TOL);
+                                          SIMINT_SCREEN);
 
 
             // acutal number of primitives and shells that
@@ -155,7 +155,7 @@ int main(int argc, char ** argv)
             ////////////////////////////
             // Calculate the integrals
             ////////////////////////////
-            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, simint_work, res_simint);
+            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_simint);
 
             // if the return is < 0, it didn't calculate anything
             // (everything was screened)

@@ -197,13 +197,14 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
 
     // start output to the file
     // we only need this one include
-    os_ << "#include \"simint/eri/eri.h\"\n";
+    os_ << "#include \"simint/eri/gen/eri_generated.h\"\n";
     os_ << "\n";
 
     os_ << "\n\n";
     os_ << funcline;
     os_ << "struct simint_multi_shellpair const P,\n";
     os_ << indent << "struct simint_multi_shellpair const Q,\n";
+    os_ << indent << "double screen_tol,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
@@ -236,8 +237,8 @@ void ERI_Writer_Basic::WriteFile_Permute_(void) const
     os_ << indent1 << "return eri_sharedwork_" << amchar[tocall[0]] << "_" 
                                                << amchar[tocall[1]] << "_" 
                                                << amchar[tocall[2]] << "_" 
-                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var 
-                                                                    << ", contwork, " << ArrVarName(am) << ");\n"; 
+                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var << ", screen_tol, "
+                                                                    << "contwork, " << ArrVarName(am) << ");\n"; 
 
     os_ << "}\n";
     os_ << "\n";
@@ -275,7 +276,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
     // add includes
-    IncludeSet includes{"<string.h>", "<math.h>", "\"simint/eri/eri.h\"", "\"simint/eri/eri_contract.h\""};
+    IncludeSet includes{"<string.h>", "<math.h>", "\"simint/eri/gen/eri_generated.h\"", "\"simint/eri/eri_contract.h\""};
     for(const auto & it : bg_.GetIncludes())
         includes.insert(it);
 
@@ -325,6 +326,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << funcline;
     os_ << "struct simint_multi_shellpair const P,\n";
     os_ << indent << "struct simint_multi_shellpair const Q,\n";
+    os_ << indent << "double screen_tol,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
     os_ << "{\n";
@@ -347,8 +349,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent1 << "int istart, jstart;\n";
     os_ << indent1 << "int iprimcd, nprim_icd, icd;\n";
     os_ << indent1 << "int not_screened;\n";
-    os_ << indent1 << "const double screen_tol = (P.screen_tol > Q.screen_tol ? Q.screen_tol : P.screen_tol);\n";
-    os_ << indent1 << "const int check_screen = P.screened && Q.screened;\n";
+    os_ << indent1 << "const int check_screen = (screen_tol > 0.0);\n";
     os_ << indent1 << "int i, j;\n";
 
     if(info_.Vectorized())
@@ -710,10 +711,12 @@ void ERI_Writer_Basic::WriteFile(void) const
     // comment out contwork if its not needed
     ssig  << "struct simint_multi_shellpair const P,\n"
           << funcindent << "struct simint_multi_shellpair const Q,\n"
+          << funcindent << "double screen_tol,\n"
           << funcindent << "double * const restrict contwork,\n"
           << funcindent << "double * const restrict " << ArrVarName(am) << ")";
     ssig2 << "struct simint_multi_shellpair const P,\n"
           << funcindent2 << "struct simint_multi_shellpair const Q,\n"
+          << funcindent << "double screen_tol,\n"
           << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";
 
 
@@ -723,7 +726,7 @@ void ERI_Writer_Basic::WriteFile(void) const
     os_ << "{\n";
     size_t contmem = info_.ContMemoryReq();
     if(contmem == 0)
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, NULL, ", ArrVarName(am), ");");
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, NULL, ", ArrVarName(am), ");");
     else
     {
         size_t contnel = info_.ContNElements();
@@ -734,7 +737,7 @@ void ERI_Writer_Basic::WriteFile(void) const
         else
             os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, contwork, ", ArrVarName(am), ");");
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, contwork, ", ArrVarName(am), ");");
 
     }
 

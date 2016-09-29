@@ -168,7 +168,6 @@ void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P)
 {
     P->ptr = NULL;
     P->memsize = 0;
-    P->screened = 0;
 }
 
 
@@ -268,7 +267,7 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair * P)
 void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  int nb, struct simint_shell const * B,
                                  struct simint_multi_shellpair * P,
-                                 int screen, double screen_tol)
+                                 int screen)
 {
     struct simint_shell AB[2*na*nb];
 
@@ -281,23 +280,19 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
         ij += 2;
     }
 
-    simint_fill_multi_shellpair2(na*nb, AB, P, screen, screen_tol);
+    simint_fill_multi_shellpair2(na*nb, AB, P, screen);
 }
 
 
 void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                                   struct simint_multi_shellpair * P,
-                                  int screen, double screen_tol)
+                                  int screen)
 {
     int i, j, ij, sasb, idx;
 
     P->nshell12 = npair;
     P->nshell12_clip = npair; // by default, it's the same
     P->nprim = 0;
-    P->screened = screen;
-
-    // we avoid a sqrt later by squaring the tolerance
-    P->screen_tol = screen_tol*screen_tol; 
 
     // zero out
     memset(P->ptr, 0, P->memsize);
@@ -313,7 +308,9 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 
         // compute the screening information
         if(screen)
-            simint_primscreen_schwarz_max(A, B, P->screen + idx);
+            P->screen_max = simint_primscreen_schwarz_max(A, B, P->screen + idx);
+        else
+            P->screen_max = 0.0;
 
         // are these the same shells?
         const int same_shell = compare_shell(A, B);
@@ -406,19 +403,19 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 void simint_create_multi_shellpair(int na, struct simint_shell const * A,
                                    int nb, struct simint_shell const * B,
                                    struct simint_multi_shellpair * P,
-                                   int screen, double screen_tol)
+                                   int screen)
 {
     simint_allocate_multi_shellpair(na, A, nb, B, P);
-    simint_fill_multi_shellpair(na, A, nb, B, P, screen, screen_tol);
+    simint_fill_multi_shellpair(na, A, nb, B, P, screen);
 }
 
 
 void simint_create_multi_shellpair2(int npair,
                                     struct simint_shell const * AB,
                                     struct simint_multi_shellpair * P,
-                                    int screen, double screen_tol)
+                                    int screen)
 {
     simint_allocate_multi_shellpair2(npair, AB, P);
-    simint_fill_multi_shellpair2(npair, AB, P, screen, screen_tol);
+    simint_fill_multi_shellpair2(npair, AB, P, screen);
 }
 

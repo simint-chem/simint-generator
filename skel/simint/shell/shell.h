@@ -41,13 +41,11 @@ struct simint_multi_shellpair
 {
     int am1;            //!< Angular momentum of the first position
     int am2;            //!< Angular momentum of the second position
-    int nprim;          //!< Total number of primitive combinations stored
-    int screened;       //!< Has this structure been screened
-    double screen_tol;  //!< The tolerance for screening
+    int nprim;          //!< Total number of primitive combinations stored (including padding)
 
     int nshell12;       //!< Total number of shell pair (nshell1 * nshell2)
     int nshell12_clip;  //!< Total number of shell pair to actual calculate (should be <= nshell12)
-    int * nprim12;      //!< Number of primitive combinations for each shell pair (length nshell12) 
+    int * nprim12;      //!< Number of primitive combinations for each shell pair, including padding (length nshell12) 
 
     double * AB_x;      //!< X distance between the centers for a shell (Ax - Bx) (length nshell12).
     double * AB_y;      //!< Y distance between the centers for a shell (Ay - By) (length nshell12).
@@ -66,6 +64,7 @@ struct simint_multi_shellpair
     double * alpha;     //!< New coefficients (from GPT)
     double * prefac;    //!< Prefactors for each primitive pair, including coefficients and other factors
     double * screen;    //!< Screening information (value of g_{abab} for all primitive shell pair)
+    double screen_max;  //!< Maximum value in the screen array
 
 
     size_t memsize;     //!< Total memory for storing various data in this structure (in bytes)
@@ -214,7 +213,7 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair * P);
 void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  int nb, struct simint_shell const * B,
                                  struct simint_multi_shellpair * P,
-                                 int screen, double screen_tol);
+                                 int screen);
 
 
 
@@ -235,7 +234,7 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
  */
 void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                                   struct simint_multi_shellpair * P,
-                                  int screen, double screen_tol);
+                                  int screen);
 
 
 
@@ -255,7 +254,7 @@ void
 simint_create_multi_shellpair(int na, struct simint_shell const * A,
                               int nb, struct simint_shell const * B,
                               struct simint_multi_shellpair * P,
-                              int screen, double screen_tol);
+                              int screen);
 
 /*! \brief Allocates and fills a multi shellpair structure
  *
@@ -270,15 +269,7 @@ void
 simint_create_multi_shellpair2(int npair,
                                struct simint_shell const * AB,
                                struct simint_multi_shellpair * P,
-                               int screen, double screen_tol);
-
-
-
-/*! \brief Calculate screening information for a shell pair */
-void
-simint_primscreen_schwarz_max(struct simint_shell const * A,
-                              struct simint_shell const * B,
-                              double * out);
+                               int screen);
 
 
 #ifdef __cplusplus

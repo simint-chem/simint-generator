@@ -50,7 +50,6 @@ parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 parser.add_argument("-c", type=str, required=False, default="", help="CPU Flags (comma separated)")
 parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
 
-parser.add_argument("-et", required=False, action='store_true', help="Use electron transfer rather than second VRR")
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
 parser.add_argument("-ee", required=False, type=int, default=1000, help="External ET for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
@@ -79,7 +78,6 @@ skeldir = os.path.join(topdir, "skel")
 # paths to generator programs
 eri_gen = os.path.join(args.g, "eri_generator")
 hrr_gen = os.path.join(args.g, "eri_hrr_generator")
-et_gen = os.path.join(args.g, "eri_et_generator")
 vrr_gen = os.path.join(args.g, "eri_vrr_generator")
 
 if not os.path.isdir(args.d):
@@ -92,10 +90,6 @@ if not os.path.isfile(eri_gen):
 
 if not os.path.isfile(hrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
-  quit(1)
-
-if not os.path.isfile(et_gen):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(et_gen))
   quit(1)
 
 if not os.path.isfile(vrr_gen):
@@ -186,11 +180,8 @@ print()
 
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
-  hfile.write("#ifndef {}\n".format(defineline))
-  hfile.write("#define {}\n".format(defineline))
-  hfile.write("\n")
+  hfile.write("#pragma once\n\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
@@ -244,108 +235,6 @@ with open(headerfile, 'a') as hfile:
   hfile.write("}\n")
   hfile.write("#endif\n")
   hfile.write("\n")
-  hfile.write("#endif // {}\n".format(defineline))
-  hfile.write("\n")
-
-
-
-####################################################
-# Generate the external ET source
-####################################################
-print("-------------------------------")
-print("Generating ET")
-print("-------------------------------")
-
-valid = set()
-invalid = set()
-
-print()
-
-if args.et:
-  for i in range(0, 2*args.l+4):
-    for j in range(1, 2*args.l+4):
-      valid.add((i,0,j,0))
-else:
-  print("Skipping ET...")
-print()
-
-print("Valid: {}".format(len(valid)))
-for q in valid:
-  print("  {}".format(QStr(q)))
-
-print()
-print("==========================================================================================")
-print()
-
-headerbase = "et_generated.h"
-headerfile = os.path.join(outdir_erigen, headerbase)
-
-print()
-print("Header file: {}".format(headerfile))
-print()
-
-# Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper())
-with open(headerfile, 'w') as hfile:
-  hfile.write("#ifndef {}\n".format(defineline))
-  hfile.write("#define {}\n".format(defineline))
-  hfile.write("\n")
-  hfile.write("#ifdef __cplusplus\n")
-  hfile.write("extern \"C\" {\n")
-  hfile.write("#endif\n")
-  hfile.write("\n\n")
-  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
-  hfile.write("\n")
-
-
-for q in valid:
-    filebase = "et_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    outfile = os.path.join(outdir_erigen, filebase + ".c")
-    logfile = os.path.join(outdir_erigen, filebase + ".log")
-    print("Creating ET: {}".format(filebase))
-    print("      Output: {}".format(outfile))
-    print("     Logfile: {}".format(logfile))
-
-    with open(logfile, 'w') as lf:
-      cmdline = [et_gen]
-      cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
-      cmdline.extend(["-o", outfile])
-      cmdline.extend(["-oh", headerfile])
-
-      if args.c:
-          cmdline.extend(["-c", str(args.c)])
-      if args.i:
-          cmdline.append("-i")
-      if args.S:
-          cmdline.append("-S")
-
-      print()
-      print("Command line:")
-      print(' '.join(cmdline))
-      print()
-
-      ret = subprocess.call(cmdline, stdout=lf)
-
-      if ret != 0:
-        print("\n")
-        print("*********************************")
-        print("When generating vrr sources")
-        print("Subprocess returned {} - aborting".format(ret))
-        print("*********************************")
-        print("\n")
-        quit(1)
-
-    print()
-
-# Close out the header file
-with open(headerfile, 'a') as hfile:
-  hfile.write("\n")
-  hfile.write("#ifdef __cplusplus\n")
-  hfile.write("}\n")
-  hfile.write("#endif\n")
-  hfile.write("\n")
-  hfile.write("#endif // {}\n".format(defineline))
-  hfile.write("\n")
 
 
 
@@ -361,27 +250,17 @@ invalid = set()
 
 print()
 
-if args.et:
-  for i in range(1, args.l*4+1):
-    valid.add((i, 0, 0, 0))
+# also need (X s | X s), etc
+for i in range(0, args.l*2+1):
+  for j in range(0, args.l*2+1):
+    if i == 0 and j == 0: # skip ssss
+      continue
+    valid.add((i, 0, j, 0))
 
     if args.p:
-      valid.add((0, 0, i, 0))
-
-    # TODO - more are probably needed here
-
-else:
-  # also need (X s | X s), etc
-  for i in range(0, args.l*2+1):
-    for j in range(0, args.l*2+1):
-      if i == 0 and j == 0: # skip ssss
-        continue
-      valid.add((i, 0, j, 0))
-
-      if args.p:
-        valid.add((0, i, 0, j))
-        valid.add((i, 0, 0, j))
-        valid.add((0, i, j, 0))
+      valid.add((0, i, 0, j))
+      valid.add((i, 0, 0, j))
+      valid.add((0, i, j, 0))
 
 print()
 
@@ -401,11 +280,8 @@ print("Header file: {}".format(headerfile))
 print()
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
-  hfile.write("#ifndef {}\n".format(defineline))
-  hfile.write("#define {}\n".format(defineline))
-  hfile.write("\n")
+  hfile.write("#pragma once\n\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
@@ -461,8 +337,6 @@ with open(headerfile, 'a') as hfile:
   hfile.write("}\n")
   hfile.write("#endif\n")
   hfile.write("\n")
-  hfile.write("#endif // {}\n".format(defineline))
-  hfile.write("\n")
 
 
 ####################################################
@@ -512,10 +386,8 @@ print("Header file: {}".format(headerfile))
 print()
 
 # Start the header file
-defineline = re.sub('[\W]', '_', headerbase.upper())
 with open(headerfile, 'w') as hfile:
-  hfile.write("#ifndef {}\n".format(defineline))
-  hfile.write("#define {}\n".format(defineline))
+  hfile.write("#pragma once\n\n")
   hfile.write("\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("extern \"C\" {\n")
@@ -523,6 +395,9 @@ with open(headerfile, 'w') as hfile:
   hfile.write("\n\n")
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("#include \"simint/shell/shell.h\"\n")
+  hfile.write("#include \"simint/eri/gen/vrr_generated.h\"\n")
+  hfile.write("#include \"simint/eri/gen/hrr_generated.h\"\n")
+
   hfile.write("\n")
 
 
@@ -540,15 +415,6 @@ for q in valid:
   else:
     vrrtype = "Inline";
   print("         VRR: {}".format(vrrtype))
-
-  if not args.et:
-    ettype = "Skipping"
-  elif sum(q) >= args.ee:
-    ettype = "External"
-  else:
-    ettype = "Inline";
-  print("          ET: {}".format(ettype))
-
 
   if sum(q) >= args.he:
     hrrtype = "External"
@@ -570,8 +436,6 @@ for q in valid:
         cmdline.extend(["-c", str(args.c)])
     if vrrtype == "External":
         cmdline.append("-ve")
-    if ettype == "External":
-        cmdline.append("-ee")
     if hrrtype == "External":
         cmdline.append("-he")
 
@@ -579,8 +443,6 @@ for q in valid:
         cmdline.append("-i")
     if args.S:
         cmdline.append("-S")
-    if args.et:
-        cmdline.append("-et")
 
     print()
     print("Command line:")
@@ -619,8 +481,6 @@ with open(headerfile, 'a') as hfile:
   hfile.write("}\n")
   hfile.write("#endif\n")
   hfile.write("\n")
-  hfile.write("#endif // {}\n".format(defineline))
-  hfile.write("\n")
 
 
 
@@ -647,11 +507,6 @@ with open(sinfofile, 'w') as sf:
   else:
     sf.write("#define SIMINT_SIMD_LEN 1\n")
     sf.write("#define SIMINT_SCALAR\n")
-
-  if args.et:
-    sf.write("#define SIMINT_ERI_USE_ET\n")
-  else:
-    sf.write("#define SIMINT_ERI_NO_ET\n")
 
   if args.p:
     sf.write("#define SIMINT_ERI_PERMUTATIONS\n")

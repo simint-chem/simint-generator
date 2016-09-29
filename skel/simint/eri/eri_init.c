@@ -12,7 +12,8 @@ simint_erifunc            simint_erifunc_array[SIMINT_ERI_MAXAM+1][SIMINT_ERI_MA
 static
 int siminteri_notyetimplemented(struct simint_multi_shellpair const P,
                                 struct simint_multi_shellpair const Q,
-                                double * restrict dummy)
+                                double dummy1,
+                                double * restrict dummy2)
 {
     printf("****************************\n");
     printf("*** NOT YET IMPLEMENTED! ***\n");
@@ -26,8 +27,9 @@ int siminteri_notyetimplemented(struct simint_multi_shellpair const P,
 static
 int siminteri_shared_notyetimplemented(struct simint_multi_shellpair const P,
                                        struct simint_multi_shellpair const Q,
-                                       double * restrict dummy1,
-                                       double * restrict dummy2)
+                                       double dummy1,
+                                       double * restrict dummy2,
+                                       double * restrict dummy3)
 {
     printf("****************************\n");
     printf("*** NOT YET IMPLEMENTED! ***\n");

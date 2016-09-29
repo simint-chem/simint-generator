@@ -99,9 +99,9 @@ int main(int argc, char ** argv)
     simint_initialize_multi_shellpair(&ss_pair);
     simint_initialize_multi_shellpair(&ps_pair);
     simint_initialize_multi_shellpair(&pp_pair);
-    simint_create_multi_shellpair(4, s_shells, 4, s_shells, &ss_pair, 0, 0.0);
-    simint_create_multi_shellpair(1, p_shells, 4, s_shells, &ps_pair, 0, 0.0);
-    simint_create_multi_shellpair(1, p_shells, 1, p_shells, &pp_pair, 0, 0.0);
+    simint_create_multi_shellpair(4, s_shells, 4, s_shells, &ss_pair, 0);
+    simint_create_multi_shellpair(1, p_shells, 4, s_shells, &ps_pair, 0);
+    simint_create_multi_shellpair(1, p_shells, 1, p_shells, &pp_pair, 0);
 
 
     ////////////////////////////////////////
@@ -115,31 +115,31 @@ int main(int argc, char ** argv)
     int ncomputed = 0;
     int ntotal = 0;
 
-    ncomputed = simint_compute_eri(&ss_pair, &ss_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&ss_pair, &ss_pair, 0.0, targets+ntotal);
     printf("Computed %d contracted ssss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&ps_pair, &ss_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&ps_pair, &ss_pair, 0.0, targets+ntotal);
     ncomputed *= 3;
     printf("Computed %d contracted psss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&ps_pair, &ps_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&ps_pair, &ps_pair, 0.0, targets+ntotal);
     ncomputed *= 9;
     printf("Computed %d contracted psps integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &ss_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &ss_pair, 0.0, targets+ntotal);
     ncomputed *= 9;
     printf("Computed %d contracted ppss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &ps_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &ps_pair, 0.0, targets+ntotal);
     ncomputed *= 27;
     printf("Computed %d contracted ppps integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &pp_pair, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &pp_pair, 0.0, targets+ntotal);
     ncomputed *= 81;
     printf("Computed %d contracted pppp integrals\n", ncomputed);
     ntotal += ncomputed;
