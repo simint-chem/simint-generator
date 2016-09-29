@@ -104,7 +104,8 @@ int main(int argc, char ** argv)
         struct simint_multi_shellpair Q;
         simint_initialize_multi_shellpair(&Q);
         simint_create_multi_shellpair(nshell3, shellmap[k].data(),
-                                      nshell4, shellmap[l].data(), &Q);
+                                      nshell4, shellmap[l].data(), &Q,
+                                      1, 1e-15);
 
 
         // do bra one at a time
@@ -124,7 +125,8 @@ int main(int argc, char ** argv)
             struct simint_multi_shellpair P;
             simint_initialize_multi_shellpair(&P);
             simint_create_multi_shellpair(nshell1, &shellmap[i][a],
-                                          nshell2, &shellmap[j][b], &P);
+                                          nshell2, &shellmap[j][b], &P,
+                                          1, 1e-15);
 
 
             const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);

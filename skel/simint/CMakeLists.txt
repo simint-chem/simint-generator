@@ -17,6 +17,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
                          eri/eri.c
 
                          shell/shell.c
+                         shell/shell_screen.c
                          shell/shell_constants.c
     )
 

@@ -346,7 +346,15 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent1 << "int ab, cd, abcd;\n";
     os_ << indent1 << "int istart, jstart;\n";
     os_ << indent1 << "int iprimcd, nprim_icd, icd;\n";
-    os_ << indent1 << "int i, j, n;\n";
+    os_ << indent1 << "int not_screened;\n";
+    os_ << indent1 << "const double screen_tol = (P.screen_tol > Q.screen_tol ? Q.screen_tol : P.screen_tol);\n";
+    os_ << indent1 << "const int check_screen = P.screened && Q.screened;\n";
+    os_ << indent1 << "int i, j;\n";
+
+    if(info_.Vectorized())
+        os_ << indent1 << "int n;\n";
+
+    
 
     // real_abcd is the absolute actual abcd in terms of all the shells that we are doing
     // (only needed if we do HRR)
@@ -446,6 +454,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_x", "P.x[i]") << ";\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_y", "P.y[i]") << ";\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_z", "P.z[i]") << ";\n";
+    os_ << indent4 << vinfo_.NewConstDoubleSet1("bra_screen_max", "P.screen[i]") << ";\n";
 
     if(hasbravrr)
     {
@@ -481,7 +490,23 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     else
         WriteShellOffsets_Scalar();
 
-    os_ << "\n";
+
+    os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
+    os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
+    os_ << indent5 << "if(check_screen)\n";
+    os_ << indent5 << "{\n";
+    os_ << indent6 << "union double4 screen_max = (union double4)(bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
+    os_ << indent6 << "not_screened = 0;\n";
+    os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
+    os_ << indent7 << "not_screened = ( screen_max.d[n] >= screen_tol ? 1 : not_screened );\n";
+
+    os_ << indent6 << "if(not_screened == 0)\n";
+    os_ << indent6 << "{\n";
+    for(const auto qam : info_.GetContQ())
+        os_ << indent7 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+    os_ << indent7 << "continue;\n";
+    os_ << indent6 << "}\n";
+    os_ << indent5 << "}\n\n";
 
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
@@ -633,7 +658,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     os_ << indent3 << "\n";
     os_ << indent3 << "//Advance to the next batch\n";
-    os_ << indent3 << "jstart = SIMINT_SIMD_ROUND(jend);\n";
+    os_ << indent3 << "jstart = jend;\n";
     if(!hashrr)
         os_ << indent3 << "abcd += nshellbatch;\n";
     os_ << indent3 << "\n";
@@ -645,11 +670,6 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     os_ << "\n";
     os_ << indent2 << "istart = iend;\n";
-
-    os_ << indent2 << "// if this is the end of a batch in the bra part, skip the padding\n";
-    os_ << indent2 << "if( ((ab+1) % SIMINT_NSHELL_SIMD) == 0)\n";
-    os_ << indent3 << "istart = SIMINT_SIMD_ROUND(istart);\n";
-    os_ << "\n";
 
     os_ << indent1 << "}  // close loop over ab\n";
     os_ << "\n";

@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
 
         struct simint_multi_shellpair Q;
         simint_initialize_multi_shellpair(&Q);
-        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q);
+        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q, 1, 1e-15);
         CLOCK(time_pair_34_1);
         time_am.fill_shell_pair += time_pair_34_1 - time_pair_34_0;
 
@@ -126,7 +126,7 @@ int main(int argc, char ** argv)
             CLOCK(time_pair_12_0);
             struct simint_multi_shellpair P;
             simint_initialize_multi_shellpair(&P);
-            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P);
+            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P, 1, 1e-15);
             CLOCK(time_pair_12_1);
 
             int ithread = omp_get_thread_num();

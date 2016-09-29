@@ -19,19 +19,11 @@
 struct TimeContrib
 {
     std::atomic<TimerType> fill_shell_pair;
-    std::atomic<TimerType> copy_data;
-    std::atomic<TimerType> calc_pre;
-    std::atomic<TimerType> boys;
     std::atomic<TimerType> integrals;
-    std::atomic<TimerType> permute;
 
     TimeContrib(const TimeContrib & rhs) noexcept
       : fill_shell_pair(rhs.fill_shell_pair.load()),
-        copy_data(rhs.copy_data.load()),
-        calc_pre(rhs.calc_pre.load()),
-        boys(rhs.boys.load()),
-        integrals(rhs.integrals.load()),
-        permute(rhs.permute.load())
+        integrals(rhs.integrals.load())
     { }
 
     TimeContrib(TimeContrib && rhs) noexcept
@@ -43,23 +35,18 @@ struct TimeContrib
 
     TimerType TotalTime(void) const noexcept
     {
-        return fill_shell_pair + copy_data + calc_pre + boys +
-               integrals + permute;
+        return fill_shell_pair + integrals; 
     }
 
     TimeContrib(void) noexcept
     {
-        fill_shell_pair = copy_data = calc_pre = boys = integrals = permute = 0;
+        fill_shell_pair = integrals = 0;
     }
 
     TimeContrib & operator+=(const TimeContrib & rhs) noexcept
     {
         fill_shell_pair += rhs.fill_shell_pair;
-        copy_data += rhs.copy_data;
-        calc_pre += rhs.calc_pre;
-        boys += rhs.boys;
         integrals += rhs.integrals;
-        permute += rhs.permute;
         return *this;
     }
 };
