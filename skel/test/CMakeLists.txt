@@ -69,7 +69,6 @@ message(STATUS "     SIMINT_TESTS_CXX_LINK_FLAGS: ${SIMINT_TESTS_CXX_LINK_FLAGS}
 ###########################
 # Add common object files
 add_library(test_common OBJECT Common.cpp
-                               Simint.cpp
                                ValeevRef.cpp
                                ${SIMINT_TESTS_CXX_ADDITIONAL_SOURCES})
 

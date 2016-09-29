@@ -7,7 +7,13 @@
 
 #include "test/Common.hpp"
 #include "test/ValeevRef.hpp"
-#include "test/Simint.hpp"
+
+#include "simint/eri/eri.h"
+#include "simint/simint_init.h"
+
+#define SIMINT_SCREEN 0
+#define SIMINT_SCREEN_TOL 0.0
+
 
 typedef std::array<int, 4> QAM;
 typedef std::pair<double, double> ErrorPair;
@@ -27,7 +33,7 @@ static void UpdateErrorMap(ErrorMap & m, QAM am, ErrorPair p)
 int main(int argc, char ** argv)
 {
     // set up the function pointers
-    Simint_Init();
+    simint_init();
 
     // parse command line
     if(argc != 2)
@@ -49,18 +55,16 @@ int main(int argc, char ** argv)
 
 
     // find the max dimensions
-    std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = (maxparams[0] > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams[0]);
-    //const int maxnprim = maxparams[1];
-    const int maxsize = maxparams[2];
+    std::pair<int, int> maxparams = FindMaxParams(shellmap);
+    const int maxam = (maxparams.first > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams.first);
+    const int max_ncart = ( (maxam+1)*(maxam+2) )/2;
+    const int maxsize = maxparams.second * maxparams.second * max_ncart * max_ncart;
 
     // get the number of threads
     int nthread = omp_get_max_threads();
 
-
     /* contracted workspace */
     double * all_simint_work = (double *)ALLOC(nthread * SIMINT_ERI_MAX_WORKMEM);
-
 
     /* Storage of integrals */
     double * all_res_simint = (double *)ALLOC(nthread * maxsize * sizeof(double));
@@ -105,7 +109,7 @@ int main(int argc, char ** argv)
         simint_initialize_multi_shellpair(&Q);
         simint_create_multi_shellpair(nshell3, shellmap[k].data(),
                                       nshell4, shellmap[l].data(), &Q,
-                                      1, 1e-15);
+                                      SIMINT_SCREEN, SIMINT_SCREEN_TOL);
 
 
         // do bra one at a time
@@ -126,13 +130,14 @@ int main(int argc, char ** argv)
             simint_initialize_multi_shellpair(&P);
             simint_create_multi_shellpair(nshell1, &shellmap[i][a],
                                           nshell2, &shellmap[j][b], &P,
-                                          1, 1e-15);
+                                          SIMINT_SCREEN, SIMINT_SCREEN_TOL);
 
 
+            // acutal number of primitives and shells that
+            // will be calculated
             const int ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
-
             const int nshell1234 = P.nshell12 * Q.nshell12;
-            const int arrlen = nshell1234 * ncart1234;
+            const int ncont1234 = nshell1234 * ncart1234;
 
 
             /////////////////////////////////
@@ -148,16 +153,21 @@ int main(int argc, char ** argv)
 
 
             ////////////////////////////
-            // Calculate with my code
+            // Calculate the integrals
             ////////////////////////////
-            Simint_Integral(&P, &Q, simint_work, res_simint);
+            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, simint_work, res_simint);
+
+            // if the return is < 0, it didn't calculate anything
+            // (everything was screened)
+            if(simint_ret < 0)
+                std::fill(res_simint, res_simint + nshell1234, 0.0);
 
             /////////////////////////////////
             // Update the error map
             /////////////////////////////////
             #pragma omp critical
             {
-                UpdateErrorMap(errors, {i, j, k, l}, CalcError(res_simint, res_valeev, arrlen));
+                UpdateErrorMap(errors, {i, j, k, l}, CalcError(res_simint, res_valeev, ncont1234));
             }
 
 
@@ -188,7 +198,7 @@ int main(int argc, char ** argv)
 
             simint_free_multi_shellpair(&P);
 
-            ncont += arrlen;
+            ncont += ncont1234;
 
 
         } // end threaded loop over a,b
@@ -209,7 +219,7 @@ int main(int argc, char ** argv)
 
     FreeShellMap(shellmap);
     ValeevRef_Finalize();
-    Simint_Finalize();
+    simint_finalize();
 
     FREE(all_res_simint);
     FREE(all_simint_work);

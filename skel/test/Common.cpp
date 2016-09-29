@@ -177,30 +177,27 @@ ShellMap ReadBasis(const std::string & file)
 
 
 
-std::array<int, 3> FindMapMaxParams(const ShellMap & m)
+std::pair<int, int> FindMaxParams(const ShellMap & m)
 {
-    int maxnprim = 0;
     int maxam = 0;
     int maxel = 0;
+
     for(auto & it : m)
     {
-        const int nca = NCART(it.first);
-        const int nsh = it.second.size();
-        const int n = nca * nsh;
-        if(n > maxel)
-            maxel = n;
+        // it.first = am
+        // it.second = shells with am of it.first
 
         if(it.first > maxam)
             maxam = it.first;
 
-        for(auto & it2 : it.second)
-        {
-            if(it2.nprim > maxnprim)
-                maxnprim = it2.nprim;
-        }
+        const int ncart = NCART(it.first);
+        const int nshell = it.second.size(); // nshell with this AM
+        const int n = ncart * nshell;
+        if(n > maxel)
+            maxel = n;
     }
 
-    return {maxam, maxnprim, maxel*maxel*NCART(maxam)*NCART(maxam)};
+    return {maxam, maxel};
 }
 
 
@@ -261,4 +258,19 @@ void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t npr
                                                                       info.TotalTime(),
                                                                       (double)(info.TotalTime())/(double)(nprim1234));
 }
+
+bool UniqueQuartet(int i, int j, int k, int l)
+{
+    if(i < j)
+        return false;
+    if(k < l)
+        return false;
+    if( (i + j) < (k + l) )
+        return false;
+    if( (i + j) == (k + l) && (i < k) ) 
+        return false;
+    return true;
+}
+
+
 

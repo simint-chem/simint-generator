@@ -52,6 +52,13 @@ struct TimeContrib
 };
 
 
+/*! \brief Checks to see if a quartet is a unique permutation
+ *
+ * ie, checks that i >= j, k >= l, and (i+j) >= (k+l)
+ */
+bool UniqueQuartet(int i, int j, int k, int l);
+
+
 
 
 //! Just a vector of gaussian shells
@@ -97,10 +104,9 @@ ShellMap ReadBasis(const std::string & file);
  *
  * Returns an array containing
  *   0.) maximum angular momentum
- *   1.) maximum number of primitives found in a shell
- *   2.) maximum storage needed for cartesians of a shell of a given angular momentum
+ *   1.) maximum storage needed for cartesians of a shell of a given angular momentum
  */
-std::array<int, 3> FindMapMaxParams(const ShellMap & m);
+std::pair<int, int> FindMaxParams(const ShellMap & m);
 
 
 

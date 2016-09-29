@@ -1,8 +1,7 @@
 #include <cstdio>
 
-#include "simint/vectorization/vectorization.h"
 #include "simint/eri/eri.h"
-#include "test/Simint.hpp"
+#include "simint/simint_init.h"
 #include "test/Common.hpp"
 #include "test/Timer.h"
 
@@ -12,11 +11,13 @@
 #include "test/ValeevRef.hpp"
 #endif
 
+#define SIMINT_SCREEN 0
+#define SIMINT_SCREEN_TOL 0.0
 
 int main(int argc, char ** argv)
 {
     // set up the function pointers
-    Simint_Init();
+    simint_init();
 
     if(argc != 2)
     {
@@ -39,9 +40,10 @@ int main(int argc, char ** argv)
 
 
     // find the max dimensions
-    std::array<int, 3> maxparams = FindMapMaxParams(shellmap);
-    const int maxam = (maxparams[0] > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams[0]);
-    const int maxsize = maxparams[2];
+    std::pair<int, int> maxparams = FindMaxParams(shellmap);
+    const int maxam = (maxparams.first > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams.first);
+    const int max_ncart = ( (maxam+1)*(maxam+2) )/2;
+    const int maxsize = maxparams.second * maxparams.second * max_ncart * max_ncart;
 
     /* Storage of integrals */
     double * all_res_ints = (double *)ALLOC(nthread * maxsize * sizeof(double));
@@ -64,6 +66,7 @@ int main(int argc, char ** argv)
     size_t ncont1234_total = 0;
     size_t nprim1234_total = 0;
     size_t nshell1234_total = 0;
+    size_t skipped_total = 0;
     TimeContrib time_total;
 
 
@@ -72,6 +75,15 @@ int main(int argc, char ** argv)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
     {
+        if(!UniqueQuartet(i, j, k, l))
+            continue;
+
+        #ifdef BENCHMARK_VALIDATE
+        std::pair<double, double> err{0.0, 0.0};
+        #endif
+
+        const size_t ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
+
         // total amount of time for this AM quartet
         TimeContrib time_am;
 
@@ -82,19 +94,16 @@ int main(int argc, char ** argv)
         simint_shell const * const D = &shellmap[l][0];
 
         // time creation of Q
-        TimerType time_pair_34_0, time_pair_34_1 = 0;
+        TimerType time_pair_34_0, time_pair_34_1;
         CLOCK(time_pair_34_0);
+
 
         struct simint_multi_shellpair Q;
         simint_initialize_multi_shellpair(&Q);
-        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q, 1, 1e-15);
+        simint_create_multi_shellpair(nshell3, C, nshell4, D, &Q, 1, 1e-12);
         CLOCK(time_pair_34_1);
         time_am.fill_shell_pair += time_pair_34_1 - time_pair_34_0;
 
-
-        #ifdef BENCHMARK_VALIDATE
-        std::pair<double, double> err{0.0, 0.0};
-        #endif
 
         // running totals for this am
         std::atomic<size_t> nprim1234_am = 0;
@@ -112,6 +121,7 @@ int main(int argc, char ** argv)
         #pragma omp parallel for schedule(dynamic)
         for(size_t ab = 0; ab < brasize; ab++)
         {
+
 	        size_t a = ab / j_size;
     	    size_t b = ab % j_size;
 
@@ -126,22 +136,31 @@ int main(int argc, char ** argv)
             CLOCK(time_pair_12_0);
             struct simint_multi_shellpair P;
             simint_initialize_multi_shellpair(&P);
-            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P, 1, 1e-15);
+            simint_create_multi_shellpair(nshell1, A, nshell2, B, &P, SIMINT_SCREEN, SIMINT_SCREEN_TOL);
             CLOCK(time_pair_12_1);
 
-            int ithread = omp_get_thread_num();
-            double * const res_ints = all_res_ints + ithread * maxsize;
-            double * const simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
-
-            // actually calculate
-            TimerType my_time_am = Simint_Integral(&P, &Q, simint_work, res_ints);
-
-            // acutal number of primitives and shells calculated
-            // TODO - replace with return values from Integrals
+            // acutal number of primitives and shells that
+            // will be calculated
             const size_t nprim1234 = P.nprim * Q.nprim;
             const size_t nshell1234 = P.nshell12 * Q.nshell12;
-            const size_t ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
             const size_t ncont1234 = nshell1234 * ncart1234;
+
+            int ithread = omp_get_thread_num();
+            double * res_ints = all_res_ints + ithread * maxsize;
+            double * const simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
+
+
+            // actually calculate
+            TimerType simint_ticks_0, simint_ticks_1;
+            CLOCK(simint_ticks_0);
+            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, simint_work, res_ints);
+            CLOCK(simint_ticks_1);
+
+            // if the return is < 0, it didn't calculate anything
+            // (everything was screened)
+            if(simint_ret < 0)
+                std::fill(res_ints, res_ints + ncont1234, 0.0);
+
 
             #ifdef BENCHMARK_VALIDATE
             double * res_ref = all_res_ref + ithread * maxsize;
@@ -157,8 +176,10 @@ int main(int argc, char ** argv)
             {
                 err.first = std::max(err.first, err2.first);
                 err.second = std::max(err.second, err2.second);
+                if(simint_ret < 0)
+                    skipped_total += ncont1234;            
             }
-            #endif
+            #endif // closes BENCHMARK_VALIDATE
 
             // free this here, since we are done with it
             simint_free_multi_shellpair(&P);
@@ -168,7 +189,7 @@ int main(int argc, char ** argv)
             ncont1234_am += ncont1234;
             nprim1234_am += nprim1234;
             nshell1234_am += nshell1234;
-            time_am.integrals += my_time_am;
+            time_am.integrals += (simint_ticks_1 - simint_ticks_0);
             time_am.fill_shell_pair += time_pair_12_1 - time_pair_12_0;
         }
 
@@ -190,10 +211,12 @@ int main(int argc, char ** argv)
     }
 
     printf("\n");
-    printf("Calculated %ld contracted integrals\n", static_cast<long>(ncont1234_total));
-    printf("Calculated %ld contracted shells\n", static_cast<long>(nshell1234_total));
-    printf("Calculated %ld primitive integrals\n", static_cast<long>(nprim1234_total));
+    printf("Calculated %lu contracted integrals\n", static_cast<unsigned long>(ncont1234_total));
+    printf("Calculated %lu contracted shells\n", static_cast<unsigned long>(nshell1234_total));
+    printf("Calculated %lu primitive integrals\n", static_cast<unsigned long>(nprim1234_total));
     printf("Total ticks to calculate all:  %llu\n", time_total.TotalTime());
+    printf("Skipped %lu top-level contracted shells\n", static_cast<unsigned long>(skipped_total));
+
     printf("\n");
 
     FreeShellMap(shellmap);
@@ -208,7 +231,7 @@ int main(int argc, char ** argv)
     #endif
     
     // Finalize stuff 
-    Simint_Finalize();
+    simint_finalize();
 
     return 0;
 }
