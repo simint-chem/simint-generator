@@ -36,7 +36,7 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
     {
         int swapped;
 
-        do { 
+        do {
             swapped = 0;
             for(int i = 0; i < (P->nprim12[ab]-1); i++)
             {
@@ -60,9 +60,48 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
             }
         } while(swapped);
 
-        
+
         idx += P->nprim12[ab];
-    }    
+    }
+}
+
+
+static void simint_allocate_multi_shellpair_base(int npair, int nprim,
+                                                 struct simint_multi_shellpair * P)
+{
+    const size_t dprim_size = nprim * sizeof(double);
+    const size_t ishell12_size = npair * sizeof(int);
+    const size_t dshell12_size = npair * sizeof(double);
+
+    const size_t memsize = dprim_size*12 + dshell12_size*3 + ishell12_size;
+
+    // Allocate one large space.
+    // Only allocate if the currently allocated memory is too small
+    if(P->memsize < memsize)
+    {
+        simint_free_multi_shellpair(P);
+        P->ptr = ALLOC(memsize);
+        P->memsize = memsize;
+    }
+
+    int dcount = 0;
+    P->x          = P->ptr + dprim_size*(dcount++);
+    P->y          = P->ptr + dprim_size*(dcount++);
+    P->z          = P->ptr + dprim_size*(dcount++);
+    P->PA_x       = P->ptr + dprim_size*(dcount++);
+    P->PA_y       = P->ptr + dprim_size*(dcount++);
+    P->PA_z       = P->ptr + dprim_size*(dcount++);
+    P->PB_x       = P->ptr + dprim_size*(dcount++);
+    P->PB_y       = P->ptr + dprim_size*(dcount++);
+    P->PB_z       = P->ptr + dprim_size*(dcount++);
+    P->alpha      = P->ptr + dprim_size*(dcount++);
+    P->prefac     = P->ptr + dprim_size*(dcount++);
+    P->screen     = P->ptr + dprim_size*(dcount++);
+
+    P->AB_x       = P->ptr + 12*dprim_size;
+    P->AB_y       = P->ptr + 12*dprim_size +   dshell12_size;
+    P->AB_z       = P->ptr + 12*dprim_size + 2*dshell12_size;
+    P->nprim12    = P->ptr + 12*dprim_size + 3*dshell12_size;
 }
 
 
@@ -77,13 +116,12 @@ void simint_initialize_shell(struct simint_shell * G)
 // Allocate a gaussian shell with correct alignment
 void simint_allocate_shell(int nprim, struct simint_shell * G)
 {
-    const size_t memsize = 2 * nprim * sizeof(double);   
+    const size_t memsize = 2 * nprim * sizeof(double);
 
     if(G->memsize < memsize)
     {
         simint_free_shell(G);
         G->ptr = malloc(memsize);
-        memset(G->ptr, 0, memsize); // need to zero padding
         G->memsize = memsize;
     }
 
@@ -171,6 +209,8 @@ void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P)
 }
 
 
+
+
 void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
                                      int nb, struct simint_shell const * B,
                                      struct simint_multi_shellpair * P)
@@ -206,7 +246,7 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
 
         int ip1 = i+1;
         if((ip1 % SIMINT_NSHELL_SIMD) == 0 || ip1 >= npair)
-        {        
+        {
             nprim += SIMINT_SIMD_ROUND(batchprim);
             batchprim = 0;
         }
@@ -214,44 +254,7 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
         ij += 2;
     }
 
-
-    int nshell12 = npair;
-
-    const size_t dprim_size = nprim * sizeof(double);
-    const size_t ishell12_size = nshell12 * sizeof(int);
-    const size_t dshell12_size = nshell12 * sizeof(double);
-
-    const size_t memsize = dprim_size*12 + dshell12_size*3 + ishell12_size;
-
-    // Allocate one large space.
-    // Only allocate if the currently allocated memory is too small
-    if(P->memsize < memsize)
-    {
-        simint_free_multi_shellpair(P);
-        P->ptr = ALLOC(memsize); 
-        memset(P->ptr, 0, memsize);
-        P->memsize = memsize;
-    }
-
-    int dcount = 0;
-    P->x          = P->ptr + dprim_size*(dcount++);
-    P->y          = P->ptr + dprim_size*(dcount++);
-    P->z          = P->ptr + dprim_size*(dcount++);
-    P->PA_x       = P->ptr + dprim_size*(dcount++);
-    P->PA_y       = P->ptr + dprim_size*(dcount++);
-    P->PA_z       = P->ptr + dprim_size*(dcount++);
-    P->PB_x       = P->ptr + dprim_size*(dcount++);
-    P->PB_y       = P->ptr + dprim_size*(dcount++);
-    P->PB_z       = P->ptr + dprim_size*(dcount++);
-    P->alpha      = P->ptr + dprim_size*(dcount++);
-    P->prefac     = P->ptr + dprim_size*(dcount++);
-    P->screen     = P->ptr + dprim_size*(dcount++);
-
-    // below are unaligned
-    P->AB_x       = P->ptr + 12*dprim_size;
-    P->AB_y       = P->ptr + 12*dprim_size +   dshell12_size;
-    P->AB_z       = P->ptr + 12*dprim_size + 2*dshell12_size;
-    P->nprim12    = P->ptr + 12*dprim_size + 3*dshell12_size;
+    simint_allocate_multi_shellpair_base(npair, nprim, P);
 }
 
 
@@ -365,8 +368,8 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
             }
         }
 
-        
-        
+
+
 
 
         int nprim = (same_shell ? (A->nprim * (A->nprim+1))/2 : A->nprim * B->nprim);
@@ -417,5 +420,71 @@ void simint_create_multi_shellpair2(int npair,
 {
     simint_allocate_multi_shellpair2(npair, AB, P);
     simint_fill_multi_shellpair2(npair, AB, P, screen);
+}
+
+
+void
+simint_prune_multi_shellpair(struct simint_multi_shellpair const * P,
+                             struct simint_multi_shellpair * out,
+                             double screen_max, double screen_tol)
+{
+    const double screen_tol2 = screen_tol * screen_tol;
+    const double screen_val = screen_tol2 / screen_max;
+
+    simint_allocate_multi_shellpair_base(P->nshell12, P->nprim, out);
+    memset(out->ptr, 0, out->memsize);
+    out->am1 = P->am1;
+    out->am2 = P->am2;
+    out->nshell12 = P->nshell12;
+    out->nshell12_clip = P->nshell12_clip;
+    out->screen_max = P->screen_max;
+
+    int read_idx = 0;  // index we are currently reading from
+    int write_idx = 0; // index we are currently writing to
+
+    for(int ab = 0; ab < P->nshell12; ab++)
+    {
+        out->AB_x[ab] = P->AB_x[ab];
+        out->AB_y[ab] = P->AB_y[ab];
+        out->AB_z[ab] = P->AB_z[ab];
+
+        int shell_nprim = 0;
+        for(int i = 0; i < P->nprim12[ab]; i++)
+        {
+            if(P->screen[read_idx] > screen_val)
+            {
+                out->x[write_idx] = P->x[read_idx];
+                out->y[write_idx] = P->y[read_idx];
+                out->z[write_idx] = P->z[read_idx];
+                out->PA_x[write_idx] = P->PA_x[read_idx];
+                out->PA_y[write_idx] = P->PA_y[read_idx];
+                out->PA_z[write_idx] = P->PA_z[read_idx];
+                out->PB_x[write_idx] = P->PB_x[read_idx];
+                out->PB_y[write_idx] = P->PB_y[read_idx];
+                out->PB_z[write_idx] = P->PB_z[read_idx];
+                out->alpha[write_idx] = P->alpha[read_idx];
+                out->prefac[write_idx] = P->prefac[read_idx];
+                out->screen[write_idx] = P->screen[read_idx];
+                write_idx++;
+                shell_nprim++;
+            }
+            read_idx++;
+        }
+
+        int ab1 = ab+1;
+        if((ab1 % SIMINT_NSHELL_SIMD) == 0 || ab1 >= P->nshell12)
+        {
+            // coefficients should be zero due to the memset above
+            while(write_idx < SIMINT_SIMD_ROUND(write_idx))
+            {
+                out->alpha[write_idx++] = 1.0;
+                shell_nprim++;
+            }
+        }
+
+        out->nprim12[ab] = shell_nprim;
+    }
+
+    out->nprim = write_idx;
 }
 

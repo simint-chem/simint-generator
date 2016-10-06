@@ -272,6 +272,20 @@ simint_create_multi_shellpair2(int npair,
                                int screen);
 
 
+
+/*! \brief Remove all insignificant primitive pairs
+ *
+ *
+ * \param [in] npair Number of shell pairs in the array
+ * \param [in] AB Pairs of shells to place in the shell pair
+ * \param [inout] P The structure that will hold the shell pair data
+ */
+void
+simint_prune_multi_shellpair(struct simint_multi_shellpair const * P,
+                             struct simint_multi_shellpair * out,
+                             double screen_max, double screen_tol);
+
+
 #ifdef __cplusplus
 }
 #endif

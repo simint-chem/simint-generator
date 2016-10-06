@@ -3,12 +3,52 @@
 #include "simint/eri/eri.h"
 #include "simint/shell/shell_screen.h"
 
+double
+simint_shellscreen_schwarz_max(struct simint_shell const * A,
+                               struct simint_shell const * B)
+{
+    const int ncart1 = ((A->am+1) * (A->am+2))/2;
+    const int ncart2 = ((B->am+1) * (B->am+2))/2;
+    const int ncart12 = ncart1*ncart2;
+    const int ncart1234 = ncart12*ncart12;
+
+    // holds the calculated integrals
+    double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+
+    struct simint_multi_shellpair P;
+    simint_initialize_multi_shellpair(&P);
+    simint_create_multi_shellpair(1, A, 1, B, &P, 0);
+
+    // calculate (ab|ab)
+    simint_compute_eri(&P, &P, 0.0, integrals);
+
+    // find the max value
+    double max = 0;
+    for(int n = 0; n < ncart1234; n++)
+    {
+        double abint = fabs(integrals[n]);
+        max = ( abint > max ? abint : max );
+    }
+
+    simint_free_multi_shellpair(&P);
+
+    return max;
+}
+
 
 double
 simint_primscreen_schwarz_max(struct simint_shell const * A,
                               struct simint_shell const * B,
                               double * out)
 {
+    const int ncart1 = ((A->am+1) * (A->am+2))/2;
+    const int ncart2 = ((B->am+1) * (B->am+2))/2;
+    const int ncart12 = ncart1*ncart2;
+    const int ncart1234 = ncart12*ncart12;
+
+    // holds the calculated integrals
+    double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+
     // here, we basically uncontract the shells
     struct simint_shell new_A, new_B;
     simint_initialize_shell(&new_A);
@@ -19,13 +59,6 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
     struct simint_multi_shellpair P;
     simint_initialize_multi_shellpair(&P);
 
-    // holds the calculated integrals
-    const int ncart1 = ((A->am+1) * (A->am+2))/2;
-    const int ncart2 = ((B->am+1) * (B->am+2))/2;
-    const int ncart12 = ncart1*ncart2;
-    const int ncart1234 = ncart12*ncart12;
-
-    double * integrals = (double *)ALLOC(ncart1234 * sizeof(double));
 
     double total_max = 0.0;
 
@@ -61,7 +94,9 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
             }
 
             // we avoid doing the sqrt by squaring the tolerance later
-            out[idx++] = max;
+            if(out != NULL)
+                out[idx++] = max;
+
             if(max > total_max)
                 total_max = max;
         }
@@ -71,7 +106,6 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
     simint_free_multi_shellpair(&P);
     simint_free_shell(&new_A);
     simint_free_shell(&new_B);
-    FREE(integrals);
 
     return total_max;
 }
