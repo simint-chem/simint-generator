@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <atomic>
-#include <memory>
 #include <cmath>
 
 #include <omp.h>
