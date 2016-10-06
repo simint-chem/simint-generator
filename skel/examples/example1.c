@@ -99,6 +99,8 @@ int main(int argc, char ** argv)
     simint_initialize_multi_shellpair(&ss_pair);
     simint_initialize_multi_shellpair(&ps_pair);
     simint_initialize_multi_shellpair(&pp_pair);
+
+    // Last argument - set to non-zero to enable screening
     simint_create_multi_shellpair(4, s_shells, 4, s_shells, &ss_pair, 0);
     simint_create_multi_shellpair(1, p_shells, 4, s_shells, &ps_pair, 0);
     simint_create_multi_shellpair(1, p_shells, 1, p_shells, &pp_pair, 0);
@@ -115,6 +117,7 @@ int main(int argc, char ** argv)
     int ncomputed = 0;
     int ntotal = 0;
 
+    // 3rd argument is the screening tolerance. Set to 0.0 to disable
     ncomputed = simint_compute_eri(&ss_pair, &ss_pair, 0.0, targets+ntotal);
     printf("Computed %d contracted ssss integrals\n", ncomputed);
     ntotal += ncomputed;

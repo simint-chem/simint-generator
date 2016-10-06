@@ -1,0 +1,8 @@
+if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+  list(APPEND SIMINT_C_FLAGS "-xavx")
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-xavx")
+elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
+  message(FATAL_ERROR "Unsupported compiler")
+else()
+  message(FATAL_ERROR "Unsupported compiler")
+endif()

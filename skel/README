@@ -57,7 +57,7 @@ Configuration and building is done via CMake (www.cmake.org).
 Generally, from within the extracted directory:
 
     mkdir build; cd build
-    CC=icc CXX=icpc cmake -DCMAKE_BUILD_TYPE=Release (...other options...)  ../
+    CC=icc CXX=icpc cmake (...other options...)  ../
 
 Other options (besides CMake standard options):
 
@@ -69,8 +69,6 @@ Other options (besides CMake standard options):
     -DSIMINT_C_FLAGS="flag1;flag2"
 
         Additional flags to pass to Simint, separated by semicolon. For example,
-            -DSIMINT_C_FLAGS="-xavx"                      required for AVX builds
-            -DSIMINT_TESTS_CXX_FLAGS="-xavx"              required for AVX builds
             -DSIMINT_C_FLAGS="-no-vec;-no-simd"           disable compiler-generated vectorization
             -DSIMINT_TESTS_CXX_FLAGS="-no-vec;-no-simd"   disable compiler-generated vectorization
    
@@ -87,12 +85,13 @@ Tests
 ---------------------------
 
 Can run tests from the build directory. See tests/dat for available
-molecules and basis sets.
+molecules and basis sets. By default, tests will use all available threads.
+To change this, set the OMP_NUM_THREADS environment variable.
 
     test_eri           - Validate accuracy
     benchmark_eri      - Benchmark simint 
 
-Examples:
+Examples (run from the build directory):
 
     test/test_eri ../test/dat/H2O.STO-3G.mol
     test/test_eri ../test/dat/ETHANE.AUG-CC-PVTZ.mol

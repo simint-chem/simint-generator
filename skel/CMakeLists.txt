@@ -6,6 +6,7 @@ enable_language(CXX)
 # Flags passed in
 ##################################################
 set(SIMINT_C_FLAGS         CACHE STRING "Additional compilation flags for Simint")
+set(SIMINT_C_LINK_FLAGS    CACHE STRING "Additional linker flags for the Simint library")
 set(SIMINT_TESTS_CXX_FLAGS CACHE STRING "Additional compilation flags for Simint testing/benchmarking")
 set(SIMINT_BUILD_SHARED    FALSE CACHE BOOL "Build a shared library, rather than a static library")
 
@@ -15,40 +16,28 @@ set(SIMINT_BUILD_SHARED    FALSE CACHE BOOL "Build a shared library, rather than
 ##################################################
 list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
 
-
-##################################################
-# Flags for warnings (and disabling warnings)
-##################################################
-if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  # Globally-disabled diagnostics:
-  # 10397 : Remark about creating .optrpt files
-  #   981 : "operands are evaluated in unspecified order"
-  #         seems to have lots of false positives, even when it should be obvious
-  #   869 : parameter "xxx" never referenced (ok, but try compiling without it sometimes)
-  list(APPEND SIMINT_C_FLAGS "-std=c99")
-  list(APPEND SIMINT_C_FLAGS "-qopt-report=5;-w3")
-  list(APPEND SIMINT_C_FLAGS "-wd10397;-wd981;-wd869")
-
-elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
-  list(APPEND SIMINT_C_FLAGS "-std=c99")
-  list(APPEND SIMINT_C_FLAGS "-Wall;-Wextra;-pedantic")
-  list(APPEND SIMINT_C_FLAGS "-Wno-unused-parameter")
-
-else()
-  message(FATAL_ERROR "Unsupported compiler")
+# Default to "Release"
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Release")
 endif()
+
+##################################################
+# Read the default flags and generated flags file
+##################################################
+include(cmake/DefaultFlags.cmake)
+include(cmake/DefaultFlags_generated.cmake)
 
 
 ##################################################
 # OpenMP dependency
 ##################################################
 find_package(OpenMP REQUIRED)
-list(APPEND SIMINT_C_FLAGS "${OpenMP_C_FLAGS}") 
 list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
 
 
-message(STATUS " SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
-message(STATUS "    SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
+message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
+message(STATUS "       SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
+message(STATUS "  SIMINT_C_LINK_FLAGS: ${SIMINT_C_LINK_FLAGS}")
 
 
 if(SIMINT_BUILD_SHARED)

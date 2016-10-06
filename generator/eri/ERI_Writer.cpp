@@ -122,10 +122,10 @@ void ERI_Writer_Basic::WriteShellOffsets_Scalar(void) const
     os_ << indent6 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     
     for(const auto qam : info_.GetContQ())
-        os_ << indent7 << PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
+        os_ << indent6 << PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
 
     os_ << indent5 << "}\n";
-    os_ << indent5 << "iprimcd++;\n";
+    os_ << indent5 << "iprimcd++;\n\n";
 }
 
 
@@ -259,6 +259,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     bool hasbravrr = vrr_writer_.HasBraVRR();
     bool hasketvrr = vrr_writer_.HasKetVRR();
+    bool hasvrr = (hasbravrr || hasketvrr);
 
     //bool haset = et_writer_.HasET();
     bool hasbraet = et_writer_.HasBraET(); 
@@ -348,13 +349,14 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent1 << "int ab, cd, abcd;\n";
     os_ << indent1 << "int istart, jstart;\n";
     os_ << indent1 << "int iprimcd, nprim_icd, icd;\n";
-    os_ << indent1 << "int not_screened;\n";
     os_ << indent1 << "const int check_screen = (screen_tol > 0.0);\n";
     os_ << indent1 << "int i, j;\n";
 
-    if(info_.Vectorized())
-        os_ << indent1 << "int n;\n";
+    if(info_.Vectorized() || hasvrr)
+    os_ << indent1 << "int n;\n";
 
+    if(info_.Vectorized())
+        os_ << indent1 << "int not_screened;\n";
     
 
     // real_abcd is the absolute actual abcd in terms of all the shells that we are doing
@@ -492,22 +494,32 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
         WriteShellOffsets_Scalar();
 
 
-    os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
-    os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
-    os_ << indent5 << "if(check_screen)\n";
-    os_ << indent5 << "{\n";
-    os_ << indent6 << "union double4 screen_max = (union double4)(bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
-    os_ << indent6 << "not_screened = 0;\n";
-    os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
-    os_ << indent7 << "not_screened = ( screen_max.d[n] >= screen_tol ? 1 : not_screened );\n";
+    if(info_.Vectorized())
+    {
+        os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
+        os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
+        os_ << indent5 << "if(check_screen)\n";
+        os_ << indent5 << "{\n";
+        os_ << indent6 << vinfo_.UnionType() << " screen_max = ("
+                       << vinfo_.UnionType() << ")(bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
+        os_ << indent6 << "not_screened = 0;\n";
+        os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
+        os_ << indent7 << "not_screened = ( screen_max.d[n] >= screen_tol ? 1 : not_screened );\n";
 
-    os_ << indent6 << "if(not_screened == 0)\n";
-    os_ << indent6 << "{\n";
-    for(const auto qam : info_.GetContQ())
-        os_ << indent7 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
-    os_ << indent7 << "continue;\n";
-    os_ << indent6 << "}\n";
-    os_ << indent5 << "}\n\n";
+        os_ << indent6 << "if(not_screened == 0)\n";
+        os_ << indent6 << "{\n";
+        for(const auto qam : info_.GetContQ())
+            os_ << indent7 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+        os_ << indent7 << "continue;\n";
+        os_ << indent6 << "}\n";
+        os_ << indent5 << "}\n\n";
+    }
+    else
+    {
+        os_ << indent5 << "// Skip if screened out\n";
+        os_ << indent5 << "if(check_screen && ( (bra_screen_max * Q.screen[j]) < screen_tol ) )\n";
+        os_ << indent6 << "continue;\n\n";
+    }
 
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
@@ -626,16 +638,14 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
     os_ << "\n";
 
-    if(info_.HasCPUFlag("avx"))
+    // we need to zero out any that are beyond the end of the batch (that's been clipped)
+    if(info_.Vectorized())
     {
-        os_ << indent5 << "union double4 Q_prefac_u = (union double4)_mm256_load_pd(Q.prefac + j);\n";
+        os_ << indent5 << vinfo_.UnionType() << " Q_prefac_u = (" << vinfo_.UnionType() << ")"
+                       << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
         os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
         os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
-        os_ << indent5 << "const __m256d Q_prefac = Q_prefac_u.d_256;\n";
-    }
-    else if(info_.HasCPUFlag("sse"))
-    {
-        // TODO
+        os_ << indent5 << cdbltype << " Q_prefac = Q_prefac_u." << vinfo_.UnionMember() << ";\n";
     }
     else
         os_ << indent5 << "const double Q_prefac = Q.prefac[j];\n";

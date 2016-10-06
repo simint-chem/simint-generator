@@ -24,22 +24,6 @@ set(SIMINT_TESTS_BENCHMARK_VALIDATE FALSE CACHE BOOL "Validate integrals in benc
 ###################
 list(APPEND SIMINT_TESTS_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
-if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
-  # Globally-disabled diagnostics:
-  # 10397 : Remark about creating .optrpt files
-  #   981 : "operands are evaluated in unspecified order"
-  #         seems to have lots of false positives, even when it should be obvious
-  #   383 : value copied to temporary, reference to temporary used
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-qopt-report=5;-w3;-wd10397;-wd981;-wd383")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-restrict")
-
-else()
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-Drestrict=__restrict__")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wall;-Wextra;-pedantic")
-endif()
-
 if(SIMINT_TESTS_BENCHMARK_VALIDATE)
     list(APPEND SIMINT_TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE;-g")
 endif()
@@ -52,10 +36,6 @@ list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}")
 list(APPEND SIMINT_TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
 
 
-
-##################################################
-# Comparison with other packages
-##################################################
 message(STATUS "       SIMINT_TESTS_CXX_INCLUDES: ${SIMINT_TESTS_CXX_INCLUDES}")
 message(STATUS "SIMINT_TESTS_CXX_SYSTEM_INCLUDES: ${SIMINT_TESTS_CXX_SYSTEM_INCLUDES}")
 message(STATUS "          SIMINT_TESTS_CXX_FLAGS: ${SIMINT_TESTS_CXX_FLAGS}")

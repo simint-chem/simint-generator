@@ -113,6 +113,7 @@ if args.S and args.i:
 outdir = os.path.join(args.outdir, "simint")
 outdir_test = os.path.join(args.outdir, "test")
 outdir_examples = os.path.join(args.outdir, "examples")
+outdir_cmake = os.path.join(args.outdir, "cmake")
 
 outdir_eri = os.path.join(outdir, "eri")
 outdir_erigen = os.path.join(outdir_eri, "gen")
@@ -123,11 +124,13 @@ if os.path.isdir(args.outdir):
   shutil.rmtree(outdir, ignore_errors=True)
   shutil.rmtree(outdir_test, ignore_errors=True)
   shutil.rmtree(outdir_examples, ignore_errors=True)
+  shutil.rmtree(outdir_cmake, ignore_errors=True)
 
 
 shutil.copytree(os.path.join(skeldir, "simint"),        outdir)
 shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
 shutil.copytree(os.path.join(skeldir, "examples"),      outdir_examples)
+shutil.copytree(os.path.join(skeldir, "cmake"),         outdir_cmake)
 shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
 shutil.copy(os.path.join(skeldir, "README"),            args.outdir)
 shutil.copy(os.path.join(skeldir, "LICENSE"),           args.outdir)
@@ -487,11 +490,11 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 # Overall config header
 ####################################################
+cpuflags = args.c.lower().split(',')
 sinfofile = os.path.join(outdir, "simint_config.h")
 with open(sinfofile, 'w') as sf:
 
   # Parse the cpu flags
-  cpuflags = args.c.lower().split(',')
 
 
   sf.write("#pragma once\n\n")
@@ -514,6 +517,21 @@ with open(sinfofile, 'w') as sf:
     sf.write("#define SIMINT_ERI_NO_PERMUTATIONS\n")
 
   sf.write("\n\n")
+
+
+####################################################
+# Cmake flags file
+####################################################
+cmflagfile = os.path.join(outdir_cmake, "DefaultFlags_generated.cmake")
+with open(cmflagfile, 'w') as sf:
+
+  if "avx" in cpuflags:
+    sf.write("include(cmake/DefaultFlags_avx.cmake)")
+  elif "sse2" in cpuflags:
+    sf.write("include(cmake/DefaultFlags_sse.cmake)")
+  else:
+    sf.write("include(cmake/DefaultFlags_scalar.cmake)")
+  sf.write("\n")
 
 
 

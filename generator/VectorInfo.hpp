@@ -15,10 +15,12 @@ class VectorInfo
 {
 public:
     // all default constructors, etc, ok
+    virtual ~VectorInfo() = default;
 
     // To be implemented by derived classes
     virtual std::string DoubleType(void) const = 0;
     virtual std::string UnionType(void) const = 0;
+    virtual std::string UnionMember(void) const = 0;
     virtual std::string DoubleSet1(const std::string & dbl) const = 0;
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const = 0;
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const = 0;
@@ -75,6 +77,8 @@ public:
 
     virtual std::string UnionType(void) const { return ""; }
 
+    virtual std::string UnionMember(void) const { return ""; }
+
     virtual std::string DoubleSet1(const std::string & dbl) const { return dbl; }
 
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "]"; }
@@ -125,16 +129,23 @@ class BasicIntelSIMDVector : public VectorInfo
 public:
     BasicIntelSIMDVector(int width)
         : width_(width), dwidth_(width/64)
-    {}
+    {
+        if(width == 128)
+            swidth_ = "";
+        else
+            swidth_ = std::to_string(width);
+    }
 
 
     virtual std::string DoubleType(void) const { return StringBuilder("__m", width_, "d"); }
 
     virtual std::string UnionType(void) const { return StringBuilder("union double", dwidth_); }
 
+    virtual std::string UnionMember(void) const { return StringBuilder("d_", width_); }
+
     virtual std::string DoubleSet1(const std::string & dbl) const
     {
-        return StringBuilder("_mm", width_, "_set1_pd(" + dbl + ")");
+        return StringBuilder("_mm", swidth_, "_set1_pd(" + dbl + ")");
     }
 
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const
@@ -142,7 +153,7 @@ public:
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("_mm", width_, "_load_pd(", ptrstr, ")");
+        return StringBuilder("_mm", swidth_, "_load_pd(", ptrstr, ")");
     }
 
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const
@@ -150,22 +161,22 @@ public:
         std::string ptrstr(ptr);
         if(idx.size())
             ptrstr += " + " + idx;
-        return StringBuilder("_mm", width_, "_store_pd(", ptrstr, ", ", var, ")");
+        return StringBuilder("_mm", swidth_, "_store_pd(", ptrstr, ", ", var, ")");
     }
 
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("_mm", width_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
+        return StringBuilder("_mm", swidth_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
     }
 
     virtual std::string FMSub(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("_mm", width_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
+        return StringBuilder("_mm", swidth_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
     }
 
     virtual std::string Sqrt(const std::string & val) const
     {
-        return StringBuilder("_mm", width_, "_sqrt_pd(", val, ")");
+        return StringBuilder("_mm", swidth_, "_sqrt_pd(", val, ")");
     }
 
     virtual std::string RSqrt(const std::string & val) const
@@ -175,12 +186,12 @@ public:
 
     virtual std::string Power(const std::string & base, const std::string & exp) const
     {
-        return StringBuilder("_mm", width_, "_pow_pd(", base, ",", exp, ")");
+        return StringBuilder("_mm", swidth_, "_pow_pd(", base, ",", exp, ")");
     }
 
     virtual std::string Exp(const std::string & exp) const
     {
-        return StringBuilder("_mm", width_, "_exp_pd(", exp, ")");
+        return StringBuilder("_mm", swidth_, "_exp_pd(", exp, ")");
     }
 
     virtual std::string IntConstant(int i) const
@@ -190,6 +201,7 @@ public:
 
 private:
     int width_;
+    std::string swidth_; // for 128, is empty (_mm_set1_pd, etc)
     int dwidth_;
 };
 

@@ -25,7 +25,8 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
 # Create the main library
 add_library(simint ${SIMINT_LIBRARY_TYPE} ${SIMINT_LIBRARY_FILES})
 target_include_directories(simint PRIVATE ${SIMINT_C_INCLUDES})
-target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:C>:${SIMINT_C_FLAGS}>)
+target_compile_options(simint PRIVATE ${SIMINT_C_FLAGS})
+target_link_libraries(simint PRIVATE ${SIMINT_C_LINK_FLAGS})
 
 install(TARGETS simint ARCHIVE DESTINATION lib
                        LIBRARY DESTINATION lib)

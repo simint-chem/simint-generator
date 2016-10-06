@@ -1,4 +1,17 @@
 v0.3
+Released 2016-TBD
+---------------------
+* Implemented screening (Schwarz screening)
+* Interface changes: Add screening arguments to some functions
+* Fix miscellaneous rough edges in the build
+  * Now CMAKE_BUILD_TYPE and arguments such as "-xavx" do not need to be
+    passed explicitly to cmake 
+  * OpenMP is not needed to build the library itself
+* SSE version is re-enabled
+* Static linking of Intel + MKL
+
+
+v0.3
 Released 2016-09-23
 ---------------------
 * Interface changes: Consistent function names and arguments
