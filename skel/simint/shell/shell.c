@@ -311,7 +311,10 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 
         // compute the screening information
         if(screen)
-            P->screen_max = simint_primscreen_schwarz_max(A, B, P->screen + idx);
+        {
+            double m = simint_primscreen_schwarz_max(A, B, P->screen + idx);
+            P->screen_max = (m > P->screen_max ? m : P->screen_max);
+        }
         else
             P->screen_max = 0.0;
 

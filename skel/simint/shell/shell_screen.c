@@ -87,10 +87,20 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
 
             // find the maximum value and store in the output array
             double max = 0;
-            for(int n = 0; n < ncart1234; n++)
+            for(int m = 0; m < ncart1; m++)
             {
-                double abint = fabs(integrals[n]);
-                max = ( abint > max ? abint : max );
+                const int idx_m = m*ncart2*ncart1*ncart2 +
+                                  m*ncart2;
+
+                for(int n = 0; n < ncart2; n++)
+                {
+                    const int idx_mn = idx_m +
+                                    n*ncart1*ncart2 +
+                                    n;
+
+                    double abint = fabs(integrals[idx_mn]);
+                    max = ( abint > max ? abint : max );
+                }
             }
 
             // we avoid doing the sqrt by squaring the tolerance later

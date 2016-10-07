@@ -427,6 +427,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent3 << "int jend = jstart;\n";
     os_ << indent3 << "for(i = 0; i < nshellbatch; i++)\n";
     os_ << indent4 << "jend += Q.nprim12[cd+i];\n";
+    os_ << "\n";
 
 
     if(hashrr)
@@ -436,9 +437,14 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << "\n";
     }
 
+    os_ << "\n";
     os_ << indent3 << "for(i = istart; i < iend; ++i)\n";
     os_ << indent3 << "{\n";
     os_ << "\n";
+
+    os_ << indent4 << "// Skip this whole thing if always insignificant\n";
+    os_ << indent4 << "if(check_screen && (P.screen[i] * Q.screen_max) < screen_tol)\n";
+    os_ << indent5 << "continue;\n\n";
 
     os_ << indent4 << "icd = 0;\n";
     os_ << indent4 << "iprimcd = 0;\n";
@@ -458,6 +464,7 @@ void ERI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_y", "P.y[i]") << ";\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_z", "P.z[i]") << ";\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("bra_screen_max", "P.screen[i]") << ";\n";
+    os_ << "\n";
 
     if(hasbravrr)
     {
