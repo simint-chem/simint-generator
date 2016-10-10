@@ -13,7 +13,7 @@ extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];
 // Inline functions
 /////////////////////////
 static inline
-void Boys_F_taylor(double * restrict F, int n, double x)
+void boys_F_taylor(double * restrict F, int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
@@ -46,7 +46,7 @@ void Boys_F_taylor(double * restrict F, int n, double x)
 
 
 static inline
-void Boys_F_taylor_simd(double * restrict F, int n, double x)
+void boys_F_taylor_simd(double * restrict F, int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
@@ -81,7 +81,7 @@ void Boys_F_taylor_simd(double * restrict F, int n, double x)
 
 
 static inline
-double Boys_F_taylor_single(int n, double x)
+double boys_F_taylor_single(int n, double x)
 {
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);

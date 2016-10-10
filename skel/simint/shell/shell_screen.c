@@ -1,7 +1,8 @@
 #include <math.h> // for fabs()
 
-#include "simint/eri/eri.h"
+#include "simint/simint_eri.h"
 #include "simint/shell/shell_screen.h"
+#include "simint/vectorization/vectorization.h"
 
 double
 simint_shellscreen_schwarz_max(struct simint_shell const * A,

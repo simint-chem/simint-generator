@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "simint/vectorization/vectorization.h"
 #include "simint/constants.h"
 #include "simint/shell/shell.h"
 #include "simint/shell/shell_screen.h"
 #include "simint/shell/shell_constants.h"
+#include "simint/vectorization/vectorization.h"
 
 
 #if defined(__ICC) || defined(__INTEL_COMPILER)
@@ -80,7 +80,7 @@ static void simint_allocate_multi_shellpair_base(int npair, int nprim,
     if(P->memsize < memsize)
     {
         simint_free_multi_shellpair(P);
-        P->ptr = ALLOC(memsize);
+        P->ptr = SIMINT_ALLOC(memsize);
         P->memsize = memsize;
     }
 
@@ -261,7 +261,7 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
 void simint_free_multi_shellpair(struct simint_multi_shellpair * P)
 {
     if(P->ptr != NULL)
-        FREE(P->ptr);
+        SIMINT_FREE(P->ptr);
 
     simint_initialize_multi_shellpair(P);
 }

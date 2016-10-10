@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-#include "simint/simint_init.h"
-#include "simint/eri/eri.h"
+#include "simint/simint.h"
 
 /* Quick and dirty example of using Simint
  *
@@ -113,7 +112,7 @@ int main(int argc, char ** argv)
     // since we are exploiting some symmetry)
 
     // Argument is the number of doubles
-    double * targets = ALLOC(7*7*7*7 * sizeof(double));
+    double * targets = SIMINT_ALLOC(7*7*7*7 * sizeof(double));
     int ncomputed = 0;
     int ntotal = 0;
 
@@ -163,7 +162,7 @@ int main(int argc, char ** argv)
     simint_free_multi_shellpair(&ss_pair);
     simint_free_multi_shellpair(&ps_pair);
     simint_free_multi_shellpair(&pp_pair);
-    FREE(targets);
+    SIMINT_FREE(targets);
     simint_finalize();
 
     return 0;

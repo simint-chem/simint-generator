@@ -4,11 +4,10 @@
 
 #include <omp.h>
 
+#include "simint/simint.h"
 #include "test/Common.hpp"
 #include "test/ValeevRef.hpp"
 
-#include "simint/eri/eri.h"
-#include "simint/simint_init.h"
 
 #define SIMINT_SCREEN 0
 #define SIMINT_SCREEN_TOL 0.0
@@ -55,7 +54,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::pair<int, int> maxparams = FindMaxParams(shellmap);
-    const int maxam = (maxparams.first > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams.first);
+    const int maxam = (maxparams.first > SIMINT_OSTEI_MAXAM ? SIMINT_OSTEI_MAXAM : maxparams.first);
     const int max_ncart = ( (maxam+1)*(maxam+2) )/2;
     const int maxsize = maxparams.second * maxparams.second * max_ncart * max_ncart;
 
@@ -63,11 +62,11 @@ int main(int argc, char ** argv)
     int nthread = omp_get_max_threads();
 
     /* contracted workspace */
-    double * all_simint_work = (double *)ALLOC(nthread * SIMINT_ERI_MAX_WORKMEM);
+    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * SIMINT_OSTEI_MAX_WORKMEM);
 
     /* Storage of integrals */
-    double * all_res_simint = (double *)ALLOC(nthread * maxsize * sizeof(double));
-    double * all_res_valeev = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_simint = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_valeev = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
 
 
     // Map containing the errors
@@ -119,7 +118,7 @@ int main(int argc, char ** argv)
             int ithread = omp_get_thread_num();
 
             double * res_simint = all_res_simint + ithread * maxsize;
-            double * simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
+            double * simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
             double * res_valeev = all_res_valeev + ithread * maxsize;
 
             const int nshell1 = 1;
@@ -220,9 +219,9 @@ int main(int argc, char ** argv)
     ValeevRef_Finalize();
     simint_finalize();
 
-    FREE(all_res_simint);
-    FREE(all_simint_work);
-    FREE(all_res_valeev);
+    SIMINT_FREE(all_res_simint);
+    SIMINT_FREE(all_simint_work);
+    SIMINT_FREE(all_res_valeev);
 
     return 0;
 }

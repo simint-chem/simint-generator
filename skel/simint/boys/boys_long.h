@@ -12,7 +12,7 @@ extern "C" {
 extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
 static inline
-void Boys_F_long(double * restrict F, int n, double x)
+void boys_F_long(double * restrict F, int n, double x)
 {
     const double x1 = 1.0/x;
     double x2 = sqrt(x1);
@@ -25,7 +25,7 @@ void Boys_F_long(double * restrict F, int n, double x)
 }
 
 static inline
-void Boys_F_long_simd(double * restrict F, int n, double x)
+void boys_F_long_simd(double * restrict F, int n, double x)
 {
     const double x1 = 1.0/x;
     double x2 = sqrt(x1);
@@ -40,7 +40,7 @@ void Boys_F_long_simd(double * restrict F, int n, double x)
 
 
 static inline
-double Boys_F_long_single(int n, double x)
+double boys_F_long_single(int n, double x)
 {
     return boys_longfac[n] * sqrt(1.0/x);
 }

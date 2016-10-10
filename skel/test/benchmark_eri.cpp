@@ -1,7 +1,6 @@
 #include <cstdio>
 
-#include "simint/eri/eri.h"
-#include "simint/simint_init.h"
+#include "simint/simint.h"
 #include "test/Common.hpp"
 #include "test/Timer.h"
 
@@ -41,15 +40,15 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::pair<int, int> maxparams = FindMaxParams(shellmap);
-    const int maxam = (maxparams.first > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams.first);
+    const int maxam = (maxparams.first > SIMINT_OSTEI_MAXAM ? SIMINT_OSTEI_MAXAM : maxparams.first);
     const int max_ncart = ( (maxam+1)*(maxam+2) )/2;
     const int maxsize = maxparams.second * maxparams.second * max_ncart * max_ncart;
 
     /* Storage of integrals */
-    double * all_res_ints = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_ints = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
 
     /* contracted workspace */
-    double * all_simint_work = (double *)ALLOC(nthread * SIMINT_ERI_MAX_WORKMEM);
+    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * SIMINT_OSTEI_MAX_WORKMEM);
 
 
     // initialize stuff
@@ -57,7 +56,7 @@ int main(int argc, char ** argv)
 
     #ifdef BENCHMARK_VALIDATE
     ValeevRef_Init();
-    double * all_res_ref = (double *)ALLOC(nthread * maxsize * sizeof(double));
+    double * all_res_ref = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
     #endif
 
     PrintTimingHeader();
@@ -147,7 +146,7 @@ int main(int argc, char ** argv)
 
             int ithread = omp_get_thread_num();
             double * res_ints = all_res_ints + ithread * maxsize;
-            double * const simint_work = all_simint_work + ithread * SIMINT_ERI_MAX_WORKSIZE;
+            double * const simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
 
 
             // actually calculate
@@ -221,12 +220,12 @@ int main(int argc, char ** argv)
 
     FreeShellMap(shellmap);
 
-    FREE(all_res_ints);
-    FREE(all_simint_work);
+    SIMINT_FREE(all_res_ints);
+    SIMINT_FREE(all_simint_work);
 
 
     #ifdef BENCHMARK_VALIDATE
-    FREE(all_res_ref);
+    SIMINT_FREE(all_res_ref);
     ValeevRef_Finalize();
     #endif
     

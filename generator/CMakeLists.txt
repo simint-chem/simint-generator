@@ -50,10 +50,6 @@ endif()
 # Common generator functionality
 #################################
 add_library(generator_common OBJECT
-                         BoysGenerator.cpp
-                         BoysGenerator_FO.cpp
-                         BoysGenerator_split.cpp
-
                          GeneratorInfoBase.cpp
                          CommandLine.cpp
                          Types.cpp
@@ -66,7 +62,7 @@ target_include_directories(generator_common PRIVATE ${GENERATOR_CXX_INCLUDES})
 target_compile_options(generator_common PRIVATE ${GENERATOR_CXX_FLAGS})
 
 
-#######################
-# Obara-Saika ERI
-#######################
-add_subdirectory(eri)
+#####################################
+# Obara-Saika Two-electron Integrals
+#####################################
+add_subdirectory(ostei)

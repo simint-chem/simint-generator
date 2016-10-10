@@ -2,19 +2,20 @@
 # and its header files
 
 
-# Find all the eri files
-file(GLOB SIMINT_ERI_FILES eri/gen/*.c)
+# Find all the generated files
+file(GLOB SIMINT_OSTEI_FILES ostei/gen/*.c)
 
 # All the files needed for the build
-set(SIMINT_LIBRARY_FILES ${SIMINT_ERI_FILES}
+set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
 
                          simint_init.c
+                         simint_eri.c
 
                          boys/boys_longfac.c
                          boys/boys_shortgrid.c
 
-                         eri/eri_init.c
-                         eri/eri.c
+                         ostei/ostei_init.c
+                         ostei/ostei.c
 
                          shell/shell.c
                          shell/shell_screen.c

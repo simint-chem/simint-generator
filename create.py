@@ -39,13 +39,10 @@ topdir = os.path.dirname(thisfile)
 
 # some helpers
 amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
-validboys = [ "FO", "split", "vref" ]
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
-parser.add_argument("-d", type=str, required=True, help="Path to dat directory")
-parser.add_argument("-b", type=str, required=True, help="Type of boys function")
 
 parser.add_argument("-c", type=str, required=False, default="", help="CPU Flags (comma separated)")
 parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
@@ -76,16 +73,12 @@ skeldir = os.path.join(topdir, "skel")
 
 
 # paths to generator programs
-eri_gen = os.path.join(args.g, "eri_generator")
-hrr_gen = os.path.join(args.g, "eri_hrr_generator")
-vrr_gen = os.path.join(args.g, "eri_vrr_generator")
+ostei_gen = os.path.join(args.g, "ostei_generator")
+hrr_gen = os.path.join(args.g, "ostei_hrr_generator")
+vrr_gen = os.path.join(args.g, "ostei_vrr_generator")
 
-if not os.path.isdir(args.d):
-  print("The directory \"{}\" does not exist or is not accessible".format(args.d))
-  quit(1)
-
-if not os.path.isfile(eri_gen):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(eri_gen))
+if not os.path.isfile(ostei_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_gen))
   quit(1)
 
 if not os.path.isfile(hrr_gen):
@@ -94,10 +87,6 @@ if not os.path.isfile(hrr_gen):
 
 if not os.path.isfile(vrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(vrr_gen))
-  quit(1)
-
-if not args.b in validboys:
-  print("Invalid boys function type \"{}\"".format(args.b))
   quit(1)
 
 
@@ -115,8 +104,8 @@ outdir_test = os.path.join(args.outdir, "test")
 outdir_examples = os.path.join(args.outdir, "examples")
 outdir_cmake = os.path.join(args.outdir, "cmake")
 
-outdir_eri = os.path.join(outdir, "eri")
-outdir_erigen = os.path.join(outdir_eri, "gen")
+outdir_ostei = os.path.join(outdir, "ostei")
+outdir_osteigen = os.path.join(outdir_ostei, "gen")
 outdir_vec = os.path.join(outdir, "vectorization")
 
 if os.path.isdir(args.outdir):
@@ -175,7 +164,7 @@ print("=========================================================================
 print()
 
 headerbase = "hrr_generated.h"
-headerfile = os.path.join(outdir_erigen, headerbase)
+headerfile = os.path.join(outdir_osteigen, headerbase)
 
 print()
 print("Header file: {}".format(headerfile))
@@ -196,8 +185,8 @@ with open(headerfile, 'w') as hfile:
 for q in valid:
     filebase = "hrr_{}_{}".format(amchar[q[0]], amchar[q[1]])
 
-    outfile = os.path.join(outdir_erigen, filebase + ".c")
-    logfile = os.path.join(outdir_erigen, filebase + ".log")
+    outfile = os.path.join(outdir_osteigen, filebase + ".c")
+    logfile = os.path.join(outdir_osteigen, filebase + ".log")
     print("Creating HRR: {}".format(filebase))
     print("      Output: {}".format(outfile))
     print("     Logfile: {}".format(logfile))
@@ -276,7 +265,7 @@ print("=========================================================================
 print()
 
 headerbase = "vrr_generated.h"
-headerfile = os.path.join(outdir_erigen, headerbase)
+headerfile = os.path.join(outdir_osteigen, headerbase)
 
 print()
 print("Header file: {}".format(headerfile))
@@ -295,8 +284,8 @@ with open(headerfile, 'w') as hfile:
 
 for q in valid:
     filebase = "vrr_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-    outfile = os.path.join(outdir_erigen, filebase + ".c")
-    logfile = os.path.join(outdir_erigen, filebase + ".log")
+    outfile = os.path.join(outdir_osteigen, filebase + ".c")
+    logfile = os.path.join(outdir_osteigen, filebase + ".log")
     print("Creating VRR: {}".format(filebase))
     print("      Output: {}".format(outfile))
     print("     Logfile: {}".format(logfile))
@@ -377,9 +366,9 @@ print()
 
 
 
-# Generate the eri
-headerbase = "eri_generated.h"
-headerfile = os.path.join(outdir_erigen, headerbase)
+# Generate the ostei
+headerbase = "ostei_generated.h"
+headerfile = os.path.join(outdir_osteigen, headerbase)
 
 # Maximum required contwork
 maxworksize = 0  # number of elements
@@ -391,23 +380,22 @@ print()
 # Start the header file
 with open(headerfile, 'w') as hfile:
   hfile.write("#pragma once\n\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"simint/ostei/ostei.h\"\n")
+  hfile.write("#include \"simint/ostei/gen/vrr_generated.h\"\n")
+  hfile.write("#include \"simint/ostei/gen/hrr_generated.h\"\n")
+
   hfile.write("\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("extern \"C\" {\n")
   hfile.write("#endif\n")
-  hfile.write("\n\n")
-  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
-  hfile.write("#include \"simint/shell/shell.h\"\n")
-  hfile.write("#include \"simint/eri/gen/vrr_generated.h\"\n")
-  hfile.write("#include \"simint/eri/gen/hrr_generated.h\"\n")
-
   hfile.write("\n")
 
 
 for q in valid:
-  filebase = "eri_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
-  outfile = os.path.join(outdir_erigen, filebase + ".c")
-  logfile = os.path.join(outdir_erigen, filebase + ".log")
+  filebase = "ostei_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+  outfile = os.path.join(outdir_osteigen, filebase + ".c")
+  logfile = os.path.join(outdir_osteigen, filebase + ".log")
   print("Creating: {}".format(filebase))
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
@@ -427,13 +415,11 @@ for q in valid:
 
 
   with open(logfile, 'w') as lf:
-    cmdline = [eri_gen];
+    cmdline = [ostei_gen];
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
-    cmdline.extend(["-b", args.b])
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
     cmdline.extend(["-s", str(args.s)])
-    cmdline.extend(["-d", args.d])
 
     if args.c:
         cmdline.extend(["-c", str(args.c)])
@@ -457,7 +443,7 @@ for q in valid:
     if ret != 0:
       print("\n")
       print("*********************************")
-      print("While generating eri")
+      print("While generating ostei")
       print("Subprocess returned {} - aborting".format(ret))
       print("*********************************")
       print("\n")
@@ -473,18 +459,36 @@ for q in valid:
 
 
 # Close out the header file
+
 with open(headerfile, 'a') as hfile:
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("}\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+
+
+######################
+# OSTEI config file
+######################
+headerbase = "ostei_config.h"
+headerfile = os.path.join(outdir_ostei, headerbase)
+with open(headerfile, 'w') as hfile:
+  hfile.write("#pragma once\n\n")
+  hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
   hfile.write("\n\n")
-  hfile.write("#define SIMINT_ERI_MAXAM {}\n".format(args.l))
-  hfile.write("#define SIMINT_ERI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
-  hfile.write("#define SIMINT_ERI_MAX_WORKMEM (SIMINT_ERI_MAX_WORKSIZE * sizeof(double))\n")
+  hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(args.l))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n\n")
   hfile.write("\n")
   hfile.write("#ifdef __cplusplus\n")
   hfile.write("}\n")
   hfile.write("#endif\n")
   hfile.write("\n")
-
 
 
 ####################################################
@@ -512,9 +516,9 @@ with open(sinfofile, 'w') as sf:
     sf.write("#define SIMINT_SCALAR\n")
 
   if args.p:
-    sf.write("#define SIMINT_ERI_PERMUTATIONS\n")
+    sf.write("#define SIMINT_OSTEI_PERMUTATIONS\n")
   else:
-    sf.write("#define SIMINT_ERI_NO_PERMUTATIONS\n")
+    sf.write("#define SIMINT_OSTEI_NO_PERMUTATIONS\n")
 
   sf.write("\n\n")
 

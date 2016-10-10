@@ -17,8 +17,8 @@
 
 
 // Aligned memory allocation
-#define ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
-#define FREE(x) _mm_free((x))
+#define SIMINT_ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
+#define SIMINT_FREE(x) _mm_free((x))
 
 
 // round up the number of elements to the nearest boundary
