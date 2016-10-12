@@ -17,32 +17,12 @@ void boys_F_long(double * restrict F, int n, double x)
     const double x1 = 1.0/x;
     double x2 = sqrt(x1);
 
-    for(int i = 0; i <= n; i++)
-    {
-        F[i] = boys_longfac[i] * x2;
-        x2 *= x1;
-    }
-}
-
-static inline
-void boys_F_long_simd(double * restrict F, int n, double x)
-{
-    const double x1 = 1.0/x;
-    double x2 = sqrt(x1);
-
      for(int i = 0; i <= n; i++)
      {
         *F = boys_longfac[i] * x2;
         x2 *= x1;
         F += SIMINT_SIMD_LEN;
      }
-}
-
-
-static inline
-double boys_F_long_single(int n, double x)
-{
-    return boys_longfac[n] * sqrt(1.0/x);
 }
 
 

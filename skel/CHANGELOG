@@ -1,8 +1,10 @@
-v0.3
+v0.4
 Released 2016-TBD
 ---------------------
-* Implemented screening (Schwarz screening)
-* Interface changes: Add screening arguments to some functions
+* Implemented primitive screening (Schwarz screening)
+* Interface changes
+    * Add screening arguments to some functions
+    * Convenience header "simint/simint.h"
 * Fix miscellaneous rough edges in the build
   * Now CMAKE_BUILD_TYPE and arguments such as "-xavx" do not need to be
     passed explicitly to cmake 

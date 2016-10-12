@@ -34,8 +34,9 @@ Selecting the right library
 There are currently three verions. Make sure you select
 the correct one for you CPU
 
-1.) simint-scalar
-    Should work with basically any CPU, but isn't vectorized...
+1.) simint-avxfma
+    Intel CPUs with AVX and FMA support
+      * Haswell
 
 2.) simint-avx
     Intel CPUs with AVX support
@@ -43,9 +44,12 @@ the correct one for you CPU
       * Ivy Bridge
       * Haswell
 
-3.) simint-avxfma
-    Intel CPUs with AVX and FMA support
-      * Haswell
+3.) simint-sse
+    Intel CPUs with SSSE3 support
+      * Basically any CPU make in the last 10 years
+
+4.) simint-scalar
+    Should work with basically any CPU, but isn't vectorized...
 
 
 
@@ -85,17 +89,20 @@ Tests
 ---------------------------
 
 Can run tests from the build directory. See tests/dat for available
-molecules and basis sets. By default, tests will use all available threads.
-To change this, set the OMP_NUM_THREADS environment variable.
+molecules and basis sets.
 
-    test_eri           - Validate accuracy
-    benchmark_eri      - Benchmark simint 
+
+    OMP_NUM_THREADS=1 test_eri           - Validate accuracy
+    OMP_NUM_THREADS=1 benchmark_eri      - Benchmark simint 
+
+You can of course change the number of threads to whatever you want. By default,
+it will use all available threads/cores.
 
 Examples (run from the build directory):
 
-    test/test_eri ../test/dat/H2O.STO-3G.mol
-    test/test_eri ../test/dat/ETHANE.AUG-CC-PVTZ.mol
-    test/benchmark_eri ../test/dat/C6H6.ANO.mol
+    OMP_NUM_THREADS=4 test/test_eri ../test/dat/H2O.STO-3G.mol
+    OMP_NUM_THREADS=4 test/test_eri ../test/dat/ETHANE.AUG-CC-PVTZ.mol
+    OMP_NUM_THREADS=4 test/benchmark_eri ../test/dat/C6H6.ANO.mol
 
 
 

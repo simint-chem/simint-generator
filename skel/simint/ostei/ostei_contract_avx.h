@@ -29,12 +29,12 @@ void contract(int ncart,
 }
 
 
-
 static inline
 void contract_all(int ncart,
                   __m256d const * restrict PRIM_INT,
                   double * restrict PRIM_PTR)
 {
+    #ifdef SIMINT_INTEL
     int n, n4;
     const int nbatch = ncart/4;
 
@@ -54,7 +54,15 @@ void contract_all(int ncart,
         union double4 tmp = (union double4)PRIM_INT[n];
         PRIM_PTR[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
     }
+    #else
+
+    // GCC is missing some instructions from the above block
+    int offsets[] = {0, 0, 0, 0};
+    contract(ncart, offsets, PRIM_INT, PRIM_PTR);
+
+    #endif
 }
+
 
 #ifdef __cplusplus
 }

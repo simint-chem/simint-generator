@@ -48,7 +48,6 @@ parser.add_argument("-c", type=str, required=False, default="", help="CPU Flags 
 parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
 
 parser.add_argument("-ve", required=False, type=int, default=1000, help="External VRR for this L value and above")
-parser.add_argument("-ee", required=False, type=int, default=1000, help="External ET for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
