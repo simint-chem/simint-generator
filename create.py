@@ -140,7 +140,6 @@ invalid = set()
 
 print()
 
-# TODO - generate too much here?
 for i in range(1, args.l+1):
   for j in range(1, i+1):
     valid.add((i,j));
@@ -149,9 +148,12 @@ for i in range(1, args.l+1):
 
 for i in range(args.l+1, 2*args.l):
   for j in range(1, 2*args.l-i+1):
-    valid.add((i,j));
-    if args.p:
+    ij = i + j
+    if ij >= args.he and ij < args.hg:
+      valid.add((i,j));
+      if args.p:
         valid.add((j, i))
+
 
 
 print()
@@ -248,12 +250,15 @@ for i in range(0, args.l*2+1):
   for j in range(0, args.l*2+1):
     if i == 0 and j == 0: # skip ssss
       continue
-    valid.add((i, 0, j, 0))
 
-    if args.p:
-      valid.add((0, i, 0, j))
-      valid.add((i, 0, 0, j))
-      valid.add((0, i, j, 0))
+    ij = i+j
+    if ij >= args.ve and ij < args.vg:
+      valid.add((i, 0, j, 0))
+
+      if args.p:
+        valid.add((0, i, 0, j))
+        valid.add((i, 0, 0, j))
+        valid.add((0, i, j, 0))
 
 print()
 
