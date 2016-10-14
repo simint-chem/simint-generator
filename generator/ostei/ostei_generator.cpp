@@ -92,29 +92,27 @@ int main(int argc, char ** argv)
     std::unique_ptr<OSTEI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
     std::unique_ptr<OSTEI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
 
-    // Writers
-    std::unique_ptr<OSTEI_HRR_Writer> hrr_writer;
-
     // Working backwards, I need:
     // 1.) HRR Steps
     hrralgo->Create(finalam);
-    if(options[Option::InlineHRR])
-        hrr_writer = std::unique_ptr<OSTEI_HRR_Writer>(new OSTEI_HRR_Writer_Inline(*hrralgo, info));
-    else
-        hrr_writer = std::unique_ptr<OSTEI_HRR_Writer>(new OSTEI_HRR_Writer_External(*hrralgo, info));
+    OSTEI_HRR_Writer hrr_writer(*hrralgo, info,
+                                options[Option::ExternalVRR],
+                                options[Option::GeneralVRR]);
 
     QuartetSet topquartets = hrralgo->TopQuartets();
 
     // 2.) VRR Steps
     vrralgo->Create(topquartets);
-    OSTEI_VRR_Writer vrr_writer(*vrralgo, info, options[Option::ExternalVRR], options[Option::GeneralVRR]);
+    OSTEI_VRR_Writer vrr_writer(*vrralgo, info,
+                                options[Option::ExternalVRR],
+                                options[Option::GeneralVRR]);
 
 
     // set the contracted quartets
     info.SetContQ(hrralgo->TopAM());
 
     // Create the OSTEI_Writer and write the file
-    OSTEI_Writer_Basic ostei_writer(of, ofh, info, vrr_writer, *hrr_writer);
+    OSTEI_Writer_Basic ostei_writer(of, ofh, info, vrr_writer, hrr_writer);
     ostei_writer.WriteFile();
 
 

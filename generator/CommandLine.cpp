@@ -71,7 +71,9 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
         else if(argstr == "-vg")
             options[Option::GeneralVRR] = GetIArg(i, argc, argv);
         else if(argstr == "-he")
-            options[Option::InlineHRR] = 0;
+            options[Option::ExternalHRR] = GetIArg(i, argc, argv);
+        else if(argstr == "-hg")
+            options[Option::GeneralHRR] = GetIArg(i, argc, argv);
         else if(argstr == "-s")
             options[Option::StackMem] = GetIArg(i, argc, argv);
         else

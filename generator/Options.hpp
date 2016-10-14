@@ -17,7 +17,8 @@ enum class Option
     StackMem,     //!< Limit of the amount of memory to consider when allocating on the stack
     ExternalVRR,  //!< Write external VRR at this L value and above
     GeneralVRR,   //!< Write general VRR at this L value and above
-    InlineHRR,    //!< Write HRR inline with the generated code (opposite is to use external functions)
+    ExternalHRR,  //!< Write external HRR at this L value and above
+    GeneralHRR,   //!< Write general HRR at this L value and above
 };
 
 
@@ -44,7 +45,8 @@ inline OptionMap DefaultOptions(void)
                       {Option::StackMem, 0},
                       {Option::ExternalVRR, 0},
                       {Option::GeneralVRR, 0},
-                      {Option::InlineHRR, 1},
+                      {Option::ExternalHRR, 0},
+                      {Option::GeneralHRR, 0},
                     };
 }
 

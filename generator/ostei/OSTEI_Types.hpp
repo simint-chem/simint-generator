@@ -5,7 +5,7 @@
 
 struct HRRDoubletStep
 {
-    RRStepType steptype;
+    RRStepType type;
     Doublet target;
     std::array<Doublet, 2> src;
     XYZStep xyz;    

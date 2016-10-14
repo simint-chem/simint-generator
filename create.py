@@ -49,7 +49,8 @@ parser.add_argument("-p", required=False, action='store_true', help="Generate co
 
 parser.add_argument("-ve", required=False, type=int, default=0, help="External VRR for this L value and above")
 parser.add_argument("-vg", required=False, type=int, default=0, help="General VRR for this L value and above")
-parser.add_argument("-he", required=False, type=int, default=1000, help="External HRR for this L value and above")
+parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
+parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
@@ -401,13 +402,6 @@ for q in valid:
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
 
-  if sum(q) >= args.he:
-    hrrtype = "External"
-  else:
-    hrrtype = "Inline";
-  print("         HRR: {}".format(hrrtype))
-
-
   with open(logfile, 'w') as lf:
     cmdline = [ostei_gen];
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
@@ -416,12 +410,11 @@ for q in valid:
     cmdline.extend(["-s", str(args.s)])
     cmdline.extend(["-ve", str(args.ve)]) 
     cmdline.extend(["-vg", str(args.vg)]) 
+    cmdline.extend(["-he", str(args.he)]) 
+    cmdline.extend(["-hg", str(args.hg)]) 
 
     if args.c:
         cmdline.extend(["-c", str(args.c)])
-
-    if hrrtype == "External":
-        cmdline.append("-he")
 
     if args.i:
         cmdline.append("-i")

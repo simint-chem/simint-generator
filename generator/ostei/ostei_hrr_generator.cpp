@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
     Makowski_HRR hrralgo(options);
     hrralgo.Create(am);
 
-    OSTEI_HRR_Writer_External hrr_writer(hrralgo, info);
+    OSTEI_HRR_Writer hrr_writer(hrralgo, info);
     hrr_writer.WriteHRRFile(of, ofh);
 
     }

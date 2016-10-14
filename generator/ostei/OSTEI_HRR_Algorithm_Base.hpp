@@ -21,6 +21,8 @@ class OSTEI_HRR_Algorithm_Base
         QAMSet TopAM(void) const;
         QuartetSet TopQuartets(void) const;
 
+        RRStepType GetBraRRStep(DAM am) const;
+        RRStepType GetKetRRStep(DAM am) const;
         DAMList GetBraAMOrder(void) const;
         DAMList GetKetAMOrder(void) const;
 

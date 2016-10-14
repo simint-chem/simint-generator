@@ -281,6 +281,16 @@ QuartetSet OSTEI_HRR_Algorithm_Base::TopQuartets(void) const
     return topquartets_;
 }
 
+RRStepType OSTEI_HRR_Algorithm_Base::GetBraRRStep(DAM dam) const
+{
+    return brasteps_.at(dam).begin()->type;
+}
+
+RRStepType OSTEI_HRR_Algorithm_Base::GetKetRRStep(DAM dam) const
+{
+    return ketsteps_.at(dam).begin()->type;
+}
+
 DAMSet OSTEI_HRR_Algorithm_Base::GetBraAMReq(DAM am) const
 {
     return brareq_.at(am);
