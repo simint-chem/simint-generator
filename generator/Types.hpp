@@ -67,9 +67,9 @@ enum class RRStepType
  */
 enum class XYZStep
 {
-    STEP_X,
-    STEP_Y,
-    STEP_Z
+    STEP_X = 0,
+    STEP_Y = 1,
+    STEP_Z = 2
 };
 
 
@@ -86,7 +86,6 @@ inline std::string XYZStepToStr(XYZStep xyz)
         return "y";
     else
         return "z";
-
 }
 
 

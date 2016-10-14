@@ -42,7 +42,7 @@ class OSTEI_VRR_Algorithm_Base
 
         VRR_StepSet GetSteps(QAM am) const;
         int GetMReq(QAM am) const;
-        QAMList GetAMReq(QAM am, bool all) const;
+        QAMList GetAMReq(QAM am) const;
         IntSet GetIntReq_2p(QAM am) const; 
         IntSet GetIntReq_2q(QAM am) const; 
         IntSet GetIntReq_2pq(QAM am) const; 
@@ -51,8 +51,8 @@ class OSTEI_VRR_Algorithm_Base
         IntSet GetAllInt_2q(void) const;
         IntSet GetAllInt_2pq(void) const;
 
-        StringSet GetVarReq(QAM am) const;
         StringSet GetAllVarReq(void) const;
+        StringSet GetVarReq(QAM am) const;
 
         bool HasVRROfType(RRStepType steptype) const;
 
@@ -88,7 +88,6 @@ class OSTEI_VRR_Algorithm_Base
         //  qamint_2p_ = constants multiplied by 1/2p
         //  qamint_2q_ = constants multiplied by 1/2q
         //  qamint_2pq_ = constants multiplied by 1/2(p+q)
-        VRR_VarReqMap varreq_;
         VRR_IntReqMap qamint_2p_, qamint_2q_, qamint_2pq_;
 
         // max int constant needed

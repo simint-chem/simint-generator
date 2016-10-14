@@ -260,14 +260,10 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     bool hasketvrr = vrr_writer_.HasKetVRR();
     //bool hasvrr = (hasbravrr || hasketvrr);
 
-    //bool haset = et_writer_.HasET();
-    bool hasbraet = et_writer_.HasBraET(); 
-    bool hasketet = et_writer_.HasKetET(); 
-
-    bool hasoneoverp = (hasbravrr || hasbraet);
-    bool hasoneoverq = (hasketvrr || hasketet);
-    bool hasoneover2p = (hasbraet || (hasbravrr && (am[0]+am[1]) > 1)); 
-    bool hasoneover2q = (hasketet || (hasketvrr && (am[2]+am[3]) > 1)); 
+    bool hasoneoverp = hasbravrr;
+    bool hasoneoverq = hasketvrr;
+    bool hasoneover2p = (hasbravrr && (am[0]+am[1]) > 1); 
+    bool hasoneover2q = (hasketvrr && (am[2]+am[3]) > 1); 
     bool hasoneover2pq = (hasketvrr && (am[0]+am[1]) > 0);
 
 
@@ -458,9 +454,10 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent4 << "// Load these one per loop over i\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_alpha", "P.alpha[i]") << ";\n";
     os_ << indent4 << vinfo_.NewConstDoubleSet1("P_prefac", "P.prefac[i]") << ";\n";
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("P_x", "P.x[i]") << ";\n";
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("P_y", "P.y[i]") << ";\n";
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("P_z", "P.z[i]") << ";\n";
+    os_ << indent4 << cdbltype << " Pxyz[3] = { " << vinfo_.DoubleSet1("P.x[i]") << ", "
+                                               << vinfo_.DoubleSet1("P.y[i]") << ", "
+                                               << vinfo_.DoubleSet1("P.z[i]") << " };\n";
+                             
     os_ << indent4 << vinfo_.NewConstDoubleSet1("bra_screen_max", "P.screen[i]") << ";\n";
     os_ << "\n";
 
@@ -468,23 +465,16 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     {
         if(vrr_writer_.HasVRR_I())
         {
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PA_x", "P.PA_x[i]") << ";\n";
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PA_y", "P.PA_y[i]") << ";\n";
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PA_z", "P.PA_z[i]") << ";\n";
+            os_ << indent4 << cdbltype << " P_PA[3] = { " << vinfo_.DoubleSet1("P.PA_x[i]") << ", "
+                                                          << vinfo_.DoubleSet1("P.PA_y[i]") << ", "
+                                                          << vinfo_.DoubleSet1("P.PA_z[i]") << " };\n";
         }
         else
         {
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PB_x", "P.PB_x[i]") << ";\n";
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PB_y", "P.PB_y[i]") << ";\n";
-            os_ << indent4 << vinfo_.NewConstDoubleSet1("P_PB_z", "P.PB_z[i]") << ";\n";
+            os_ << indent4 << cdbltype << " P_PB[3] = { " << vinfo_.DoubleSet1("P.PB_x[i]") << ", "
+                                                          << vinfo_.DoubleSet1("P.PB_y[i]") << ", "
+                                                          << vinfo_.DoubleSet1("P.PB_z[i]") << " };\n";
         }
-    }
-
-    if(hasketet)
-    {
-        os_ << indent4 << vinfo_.NewConstDoubleSet1("P_bAB_x", "P.bAB_x[i]") << ";\n";
-        os_ << indent4 << vinfo_.NewConstDoubleSet1("P_bAB_y", "P.bAB_y[i]") << ";\n";
-        os_ << indent4 << vinfo_.NewConstDoubleSet1("P_bAB_z", "P.bAB_z[i]") << ";\n";
     }
 
     os_ << "\n";
@@ -539,12 +529,12 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
     os_ << "\n";
     os_ << indent5 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
-    os_ << indent5 << cdbltype << " PQ_x = P_x - " << vinfo_.DoubleLoad("Q.x", "j") << ";\n";
-    os_ << indent5 << cdbltype << " PQ_y = P_y - " << vinfo_.DoubleLoad("Q.y", "j") << ";\n";
-    os_ << indent5 << cdbltype << " PQ_z = P_z - " << vinfo_.DoubleLoad("Q.z", "j") << ";\n";
+    os_ << indent5 << cdbltype << " PQ[3] = { Pxyz[0] - " << vinfo_.DoubleLoad("Q.x", "j") << ", "
+                                          << "Pxyz[1] - " << vinfo_.DoubleLoad("Q.y", "j") << ", "
+                                          << "Pxyz[2] - " << vinfo_.DoubleLoad("Q.z", "j") << " };\n";
 
 
-    os_ << indent5 << cdbltype << " R2 = PQ_x*PQ_x + PQ_y*PQ_y + PQ_z*PQ_z;\n";
+    os_ << indent5 << cdbltype << " R2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];\n";
     os_ << "\n";
     os_ << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
 
@@ -567,15 +557,15 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     {
         if(vrr_writer_.HasVRR_K())
         {
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PA_x", "Q.PA_x", "j") << ";\n";
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PA_y", "Q.PA_y", "j") << ";\n";
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PA_z", "Q.PA_z", "j") << ";\n";
+            os_ << indent5 << cdbltype << " Q_PA[3] = { " << vinfo_.DoubleLoad("Q.PA_x", "j") << ", "
+                                                          << vinfo_.DoubleLoad("Q.PA_y", "j") << ", "
+                                                          << vinfo_.DoubleLoad("Q.PA_z", "j") << " };\n";
         }
         else
         {
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PB_x", "Q.PB_x", "j") << ";\n";
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PB_y", "Q.PB_y", "j") << ";\n";
-            os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_PB_z", "Q.PB_z", "j") << ";\n";
+            os_ << indent5 << cdbltype << " Q_PB[3] = { " << vinfo_.DoubleLoad("Q.PB_x", "j") << ", "
+                                                          << vinfo_.DoubleLoad("Q.PB_y", "j") << ", "
+                                                          << vinfo_.DoubleLoad("Q.PB_z", "j") << " };\n";
         }
     }
 
@@ -584,52 +574,17 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << "\n";
         os_ << indent5 << "// NOTE: Minus sign!\n";
         os_ << indent5 << cdbltype << " a_over_p =  -alpha * one_over_p;     // a/p from MEST\n";
-        os_ << indent5 << cdbltype << " aop_PQ_x = a_over_p * PQ_x;\n"; 
-        os_ << indent5 << cdbltype << " aop_PQ_y = a_over_p * PQ_y;\n"; 
-        os_ << indent5 << cdbltype << " aop_PQ_z = a_over_p * PQ_z;\n"; 
+        os_ << indent5 << cdbltype << " aop_PQ[3] = { a_over_p * PQ[0], a_over_p * PQ[1], a_over_p * PQ[2] };\n"; 
     }
 
     if(hasketvrr)
     {
         os_ << "\n";
         os_ << indent5 << "// NOTE: Minus sign\n";
-        os_ << indent5 << "// NOTE2: Plus sign taken care of on aoq_PQ_x!\n";
+        os_ << indent5 << "// NOTE2: Plus sign taken care of on aoq_PQ!\n";
         os_ << indent5 << cdbltype << " a_over_q =  -alpha * one_over_q;     // a/q from MEST\n";
-        os_ << indent5 << cdbltype << " aoq_PQ_x = -a_over_q * PQ_x;\n"; 
-        os_ << indent5 << cdbltype << " aoq_PQ_y = -a_over_q * PQ_y;\n"; 
-        os_ << indent5 << cdbltype << " aoq_PQ_z = -a_over_q * PQ_z;\n"; 
+        os_ << indent5 << cdbltype << " aoq_PQ[3] = { -a_over_q * PQ[0], -a_over_q * PQ[1], -a_over_q * PQ[2] };\n"; 
 
-    }
-
-    if(hasketet || hasbraet)
-    {
-        os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_bAB_x", "Q.bAB_x", "j") << ";\n";
-        os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_bAB_y", "Q.bAB_y", "j") << ";\n";
-        os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_bAB_z", "Q.bAB_z", "j") << ";\n";
-    }
-
-    if(hasketet)
-    {
-        os_ << "\n";
-        os_ << indent5 << cdbltype << " p_over_q = P_alpha * one_over_q;\n";
-        os_ << indent5 << cdbltype << " etfac_k[3] = {\n";
-        os_ << indent6 << "-(P_bAB_x + Q_bAB_x) * one_over_q,\n";
-        os_ << indent6 << "-(P_bAB_y + Q_bAB_y) * one_over_q,\n";
-        os_ << indent6 << "-(P_bAB_z + Q_bAB_z) * one_over_q,\n";
-        os_ << indent6 << "};\n";
-        os_ << "\n";
-    }
-
-    if(hasbraet)
-    {
-        os_ << "\n";
-        os_ << indent5 << cdbltype << " q_over_p = Q_alpha * one_over_p;\n";
-        os_ << indent5 << cdbltype << " etfac_b[3] = {\n";
-        os_ << indent6 << "-(P_bAB_x + Q_bAB_x) * one_over_p,\n";
-        os_ << indent6 << "-(P_bAB_y + Q_bAB_y) * one_over_p,\n";
-        os_ << indent6 << "-(P_bAB_z + Q_bAB_z) * one_over_p,\n";
-        os_ << indent6 << "};\n";
-        os_ << "\n";
     }
 
     os_ << "\n";

@@ -10,6 +10,14 @@ static const std::map<RRStepType, char> rrstep_char{ {RRStepType::I, 'I'},
                                                      {RRStepType::K, 'K'},
                                                      {RRStepType::L, 'L'} };
 
+static bool IsPointer(const std::string & var)
+{
+    static const std::set<std::string> ptrvars{
+                "P_PA", "P_PB", "Q_PA", "Q_PB", "PQ", "Pxyz",
+                "aop_PQ", "aoq_PQ" };
+    return ptrvars.count(var);
+}
+
 
 ///////////////////////////////
 // Base VRR Writer
@@ -106,6 +114,7 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
     {
         // Get the stepping
         XYZStep step = it.xyz;
+        std::string stepdir = StringBuilder("[", static_cast<int>(step), "]");
 
         std::string primname = StringBuilder(PrimVarName(qam), "[n * ", NCART(qam), " + ", it.target.index(), "]");
         std::string srcname[8];
@@ -127,16 +136,13 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
         if(it.src[7])
             srcname[7] = StringBuilder(PrimVarName(it.src[7].amlist()), "[(n+1) * ", it.src[7].ncart(), " + ", it.src[7].index(), "]");
 
-        // for debugging
-        //os << indent6 << "//" << it.target <<  " : STEP: " << step << "\n";
-
         std::string aoppq, aover;
         std::string vrr_const0, vrr_const1, vrr_const2, vrr_const3;
 
         // Note - the signs on a_over_p, a_over_q, etc, are taken care of in FileWriter.cpp
         if(it.type == RRStepType::I || it.type == RRStepType::J)
         {
-            aoppq = std::string("aop_PQ_") + XYZStepToStr(step);
+            aoppq = StringBuilder("aop_PQ", stepdir);
             aover = "a_over_p";
             vrr_const0 = StringBuilder("vrr_const_", it.ijkl[0], "_over_2p");
             vrr_const1 = StringBuilder("vrr_const_", it.ijkl[1], "_over_2p");
@@ -145,7 +151,7 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
         }
         else
         {
-            aoppq = std::string("aoq_PQ_") + XYZStepToStr(step);
+            aoppq = StringBuilder("aoq_PQ", stepdir);
             aover = "a_over_q";
             vrr_const0 = StringBuilder("vrr_const_", it.ijkl[2], "_over_2q");
             vrr_const1 = StringBuilder("vrr_const_", it.ijkl[3], "_over_2q");
@@ -154,16 +160,15 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
         }
 
 
-
         if(info_.HasFMA())
         {
             if(it.type == RRStepType::I || it.type == RRStepType::J)
             {
                 os << indent6 << primname << " = ";
                 if(it.type == RRStepType::I)
-                    os << "P_PA_" << step;
+                    os << "P_PA" << stepdir; 
                 else
-                    os << "P_PB_" << step;
+                    os << "P_PB" << stepdir;
 
                 os << " * " << srcname[0] << ";\n";
             }
@@ -172,9 +177,9 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
                 os << indent6 << primname;
 
                 if(it.type == RRStepType::K)
-                    os << " = Q_PA_" << step;
+                    os << " = Q_PA" << stepdir;
                 else
-                    os << " = Q_PB_" << step;
+                    os << " = Q_PB" << stepdir;
 
                 os << " * " << srcname[0] << ";\n";
             }
@@ -197,9 +202,9 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
                 os << indent6 << primname;
 
                 if(it.type == RRStepType::I)
-                    os << " = P_PA_" << step;
-                else
-                    os << " = P_PB_" << step;
+                    os << " = P_PA" << stepdir;
+                else                            
+                    os << " = P_PB" << stepdir;
 
                 os << " * " << srcname[0];
             }
@@ -208,9 +213,9 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
                 os << indent6 << primname;
 
                 if(it.type == RRStepType::K)
-                    os << " = Q_PA_" << step;
+                    os << " = Q_PA" << stepdir;
                 else
-                    os << " = Q_PB_" << step;
+                    os << " = Q_PB" << stepdir;
 
                 os << " * " << srcname[0];
             }
@@ -329,7 +334,7 @@ void OSTEI_VRR_Writer_External::WriteVRR(std::ostream & os) const
 
             os << indent7 << PrimVarName(am) << ",\n";
 
-            for(const auto & it : vrr_algo_.GetAMReq(am, false))
+            for(const auto & it : vrr_algo_.GetAMReq(am))
                 os << indent7 << PrimVarName(it) << ",\n";
             
             for(const auto & it : vrr_algo_.GetVarReq(am))
@@ -365,11 +370,16 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
     // final target
     prototype << indent3 << vinfo_.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
 
-    for(const auto & it : vrr_algo_.GetAMReq(am, false))
+    for(const auto & it : vrr_algo_.GetAMReq(am))
         prototype << indent3 << vinfo_.ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
-        prototype << indent3 << vinfo_.ConstDoubleType() << " " << it << ",\n";
+    {
+        if(IsPointer(it))
+            prototype << indent3 << vinfo_.ConstDoubleType() << " * " << it << ",\n";
+        else
+            prototype << indent3 << vinfo_.ConstDoubleType() << " " << it << ",\n";
+    }
 
     prototype << indent3 << "const int num_n)";
 
@@ -386,13 +396,16 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
         os << "    int n = 0;\n";
 
         for(const auto & it : vrr_algo_.GetIntReq_2p(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " 
+                          << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2q(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = "
+                          << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
+            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = "
+               << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
 
         // Write out the steps
         WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n");
@@ -413,7 +426,7 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
             stepchar = 'K';
 
         os << indent1 << "// Routines are identical except for swapping of\n";
-        os << indent1 << "// PA_x with PB_x and QC_x with QD_x\n";
+        os << indent1 << "// PA with PB and QC with QD\n";
         os << "\n";
         os << indent1 << "VRR_" << stepchar << "_"
                       << amchar[tocall[0]] << "_" << amchar[tocall[1]] << "_"
@@ -422,7 +435,7 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
         // final target
         os << indent3 << PrimVarName(am) << ",\n";
         
-        for(const auto & it : vrr_algo_.GetAMReq(am, false))
+        for(const auto & it : vrr_algo_.GetAMReq(am))
             os << indent3 << PrimVarName(it) << ",\n";
     
         for(const auto & it : vrr_algo_.GetVarReq(am))

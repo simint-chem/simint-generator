@@ -10,6 +10,151 @@
 #include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp"
 
 
+static QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false)
+{
+    QAMList req;
+    switch(rrstep)
+    {
+        case RRStepType::I:
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  });
+            req.push_back({am[0]-2, am[1]  , am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
+            break;
+        case RRStepType::J:
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]  , am[1]-2, am[2]  , am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
+            break;
+        case RRStepType::K:
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]  , am[2]-2, am[3]  });
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
+            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
+            break;
+        case RRStepType::L:
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-2});
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
+            break;
+    }
+
+    // remove invalid quartets
+    if(!all)
+    {
+        QAMList req2;
+        for(const auto & it : req)
+        {
+            if(ValidQAM(it))
+                req2.push_back(it);
+        }
+        return req2;
+    }
+    else
+        return req;
+}
+
+static StringSet GenerateVarReq(RRStepType rrstep)
+{
+    StringSet req;
+
+    req.insert("one_over_2pq");
+
+    if(rrstep == RRStepType::I || rrstep == RRStepType::J)
+    {
+        req.insert("a_over_p");
+        req.insert("aop_PQ");
+        req.insert("one_over_2p");
+    }
+    else
+    {
+        req.insert("a_over_q");
+        req.insert("aoq_PQ");
+        req.insert("one_over_2q");
+    }
+
+    switch(rrstep)
+    {
+        case RRStepType::I:
+            req.insert("P_PA");
+            break;
+        case RRStepType::J:
+            req.insert("P_PB");
+            break;
+        case RRStepType::K:
+            req.insert("Q_PA");
+            break;
+        case RRStepType::L:
+            req.insert("Q_PB");
+            break;
+    }
+
+    return req;
+}
+
+
+static StringSet GenerateVarReq(QAM am, RRStepType rrstep)
+{
+    auto amreq = GenerateAMReq(am, rrstep, true);
+
+    StringSet req;
+
+
+    if(rrstep == RRStepType::I || rrstep == RRStepType::J)
+    {
+        if(ValidQAM(amreq[0]))
+        {
+            if(rrstep == RRStepType::I)
+                req.insert("P_PA");
+            else
+                req.insert("P_PB");
+
+            req.insert("aop_PQ");
+        }
+
+        if(ValidQAM(amreq[1]) || ValidQAM(amreq[2]))
+        {
+            req.insert("one_over_2p");
+            req.insert("a_over_p");
+        }
+
+        if(ValidQAM(amreq[3]) || ValidQAM(amreq[4]))
+            req.insert("one_over_2pq");
+    }
+    else
+    {
+        if(ValidQAM(amreq[0]))
+        {
+            if(rrstep == RRStepType::K)
+                req.insert("Q_PA");
+            else
+                req.insert("Q_PB");
+
+            req.insert("aoq_PQ");
+        }
+
+        if(ValidQAM(amreq[1]) || ValidQAM(amreq[2]))
+        {
+            req.insert("one_over_2q");
+            req.insert("a_over_q");
+        }
+
+        if(ValidQAM(amreq[3]) || ValidQAM(amreq[4]))
+            req.insert("one_over_2pq");
+    }
+
+    return req;
+
+}
+
+
+
 OSTEI_VRR_Algorithm_Base::OSTEI_VRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
 {
@@ -47,55 +192,20 @@ VRR_StepSet OSTEI_VRR_Algorithm_Base::GetSteps(QAM am) const
 }
 
 
-QAMList OSTEI_VRR_Algorithm_Base::GetAMReq(QAM am, bool all) const
+QAMList OSTEI_VRR_Algorithm_Base::GetAMReq(QAM am) const
 {
     RRStepType rrstep = GetRRStep(am);
-    QAMList req;
+    QAMList req = GenerateAMReq(am, rrstep);
 
-    switch(rrstep)
+    // remove invalid quartets
+    QAMList req2;
+    for(const auto & it : req)
     {
-        case RRStepType::I:
-            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  });
-            req.push_back({am[0]-2, am[1]  , am[2]  , am[3]  });
-            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
-            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
-            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
-            break;
-        case RRStepType::J:
-            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  });
-            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
-            req.push_back({am[0]  , am[1]-2, am[2]  , am[3]  });
-            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
-            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
-            break;
-        case RRStepType::K:
-            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  });
-            req.push_back({am[0]  , am[1]  , am[2]-2, am[3]  });
-            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
-            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
-            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
-            break;
-        case RRStepType::L:
-            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1});
-            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
-            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-2});
-            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
-            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
-            break;
+        if(ValidQAM(it))
+            req2.push_back(it);
     }
 
-    if(!all)
-    {
-        QAMList req2;
-        for(const auto & it : req)
-        {
-            if(ValidQAM(it))
-                req2.push_back(it);
-        }
-        return req2;
-    }
-    else
-        return req; 
+    return req2;
 }
 
 
@@ -152,25 +262,14 @@ IntSet OSTEI_VRR_Algorithm_Base::GetAllInt_2pq(void) const
 
 StringSet OSTEI_VRR_Algorithm_Base::GetVarReq(QAM am) const
 {
-    return varreq_.at(am);
+    RRStepType rrstep = GetRRStep(am);
+    return GenerateVarReq(am, rrstep);
 }
-
-
-StringSet OSTEI_VRR_Algorithm_Base::GetAllVarReq(void) const
-{
-    StringSet sset;
-    for(const auto & it : varreq_)
-        sset.insert(it.second.begin(), it.second.end());
-    return sset;
-}
-
-
 
 int OSTEI_VRR_Algorithm_Base::GetMaxInt(void) const
 {
     return maxint_;
 }
-
 
 
 void OSTEI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
@@ -273,7 +372,7 @@ void OSTEI_VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM
         return;
 
     // get requirements
-    auto req = GetAMReq(am, false);
+    auto req = GetAMReq(am);
 
     for(const auto & it : req)
         AMOrder_AddWithDependencies_(order, it);
@@ -448,8 +547,6 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
         for(const auto & its : it.second)  // for all steps for this QAM
         {
-            std::string sstep = XYZStepToStr(its.xyz);
-
             maxint_ = std::max(its.ijkl[0], maxint_);
             maxint_ = std::max(its.ijkl[1], maxint_);
             maxint_ = std::max(its.ijkl[2], maxint_);
@@ -457,82 +554,31 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
             if(its.type == RRStepType::I || its.type == RRStepType::J)
             {
-                if(its.src[0])
-                {
-                    if(its.type == RRStepType::I)
-                        varreq_[qam].insert(std::string("P_PA_") + sstep);
-                    else
-                        varreq_[qam].insert(std::string("P_PB_") + sstep);
-                }
-
-                if(its.src[1])
-                    varreq_[qam].insert(std::string("aop_PQ_") + sstep);
-
                 if(its.src[2] || its.src[3])
-                {
-                    varreq_[qam].insert("one_over_2p");
-                    varreq_[qam].insert("a_over_p");
                     qamint_2p_[qam].insert(its.ijkl[0]);
-                }
 
                 if(its.src[4] || its.src[5])
-                {
-                    varreq_[qam].insert("one_over_2p");
-                    varreq_[qam].insert("a_over_p");
                     qamint_2p_[qam].insert(its.ijkl[1]);
-                }
 
                 if(its.src[6])
-                {
-                    varreq_[qam].insert("one_over_2pq");
                     qamint_2pq_[qam].insert(its.ijkl[2]);
-                }
 
                 if(its.src[7])
-                {
-                    varreq_[qam].insert("one_over_2pq");
                     qamint_2pq_[qam].insert(its.ijkl[3]);
-                }
             }
             else
             {
-                if(its.src[0])
-                {
-                    if(its.type == RRStepType::K)
-                        varreq_[qam].insert(std::string("Q_PA_") + sstep);
-                    else
-                        varreq_[qam].insert(std::string("Q_PB_") + sstep);
-
-                }
-
-                if(its.src[1])
-                    varreq_[qam].insert(std::string("aoq_PQ_") + sstep);
-
                 if(its.src[2] || its.src[3])
-                {
-                    varreq_[qam].insert("one_over_2q");
-                    varreq_[qam].insert("a_over_q");
                     qamint_2q_[qam].insert(its.ijkl[2]);
-                }
 
                 if(its.src[4] || its.src[5])
-                {
-                    varreq_[qam].insert("one_over_2q");
-                    varreq_[qam].insert("a_over_q");
                     qamint_2q_[qam].insert(its.ijkl[3]);
-                }
 
                 if(its.src[6])
-                {
-                    varreq_[qam].insert("one_over_2pq");
                     qamint_2pq_[qam].insert(its.ijkl[0]);
-                }
 
                 if(its.src[7])
-                {
-                    varreq_[qam].insert("one_over_2pq");
                     qamint_2pq_[qam].insert(its.ijkl[1]);
-                }
             }
         }
     }
