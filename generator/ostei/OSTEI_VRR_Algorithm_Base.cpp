@@ -441,7 +441,7 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 {
     // holds the requirements for each am
     // so store what we initially want
-    PrintQuartetSet(q, "Initial VRR");
+    //PrintQuartetSet(q, "Initial VRR");
 
     VRR_StepMap newmap;
 
