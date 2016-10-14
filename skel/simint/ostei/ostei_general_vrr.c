@@ -7,9 +7,11 @@
 /**********************************************************/
 void ostei_general_vrr1(int i, int num_n,
                         __m256d one_over_2p, __m256d a_over_p,
-                        __m256d aop_PQ[3], __m256d PA[3],
-                        __m256d * theta1, __m256d * theta2,
-                        __m256d * output)
+                        const __m256d aop_PQ[3],
+                        const __m256d PA[3],
+                        __m256d const * restrict theta1,
+                        __m256d const * restrict theta2,
+                        __m256d * restrict output)
 {
     // in this case, we want (i, 0, 0, 0), so i is equal
     // to the angular momentum.
@@ -49,13 +51,17 @@ void ostei_general_vrr1(int i, int num_n,
 
 
 
-void ostei_general_vrr2_i(int i, int j, int k, int l, int num_n,
-                          __m256d one_over_2p, __m256d a_over_p,
-                          __m256d one_over_2pq,
-                          __m256d aop_PQ[3], __m256d PA[3],
-                          __m256d * theta1, __m256d * theta2,
-                          __m256d * theta3, __m256d * theta4,
-                          __m256d * theta5, __m256d * output)
+void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
+                         __m256d one_over_2p, __m256d a_over_p,
+                         __m256d one_over_2pq,
+                         const __m256d aop_PQ[3],
+                         const __m256d PA[3],
+                         __m256d const * restrict theta1,
+                         __m256d const * restrict theta2,
+                         __m256d const * restrict theta3,
+                         __m256d const * restrict theta4,
+                         __m256d const * restrict theta5,
+                         __m256d * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -151,7 +157,7 @@ void ostei_general_vrr2_i(int i, int j, int k, int l, int num_n,
                         if(rk->ijk[dir])
                         {
                             const int idx_k_1 = rk->idx[dir][0];
-                            const int idx7 = n * ncart4 +
+                            const int idx7 = (n+1) * ncart4 +
                                              idx_i_1 * ncart_j   * ncart_k_1 * ncart_l   +
                                              idx_j   * ncart_k_1 * ncart_l   +
                                              idx_k_1 * ncart_l   +
@@ -164,7 +170,7 @@ void ostei_general_vrr2_i(int i, int j, int k, int l, int num_n,
                         if(rl->ijk[dir])
                         {
                             const int idx_l_1 = rl->idx[dir][0];
-                            const int idx8 = n * ncart5 +
+                            const int idx8 = (n+1) * ncart5 +
                                              idx_i_1 * ncart_j   * ncart_k   * ncart_l_1 +
                                              idx_j   * ncart_k   * ncart_l_1 +
                                              idx_k   * ncart_l_1 +
@@ -183,13 +189,17 @@ void ostei_general_vrr2_i(int i, int j, int k, int l, int num_n,
 }
 
 
-void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
-                          __m256d one_over_2p, __m256d a_over_p,
-                          __m256d one_over_2pq,
-                          __m256d aop_PQ[3], __m256d PB[3],
-                          __m256d * theta1, __m256d * theta2,
-                          __m256d * theta3, __m256d * theta4,
-                          __m256d * theta5, __m256d * output)
+void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
+                         __m256d one_over_2p, __m256d a_over_p,
+                         __m256d one_over_2pq,
+                         const __m256d aop_PQ[3],
+                         const __m256d PB[3],
+                         __m256d const * restrict theta1,
+                         __m256d const * restrict theta2,
+                         __m256d const * restrict theta3,
+                         __m256d const * restrict theta4,
+                         __m256d const * restrict theta5,
+                         __m256d * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -236,7 +246,7 @@ void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = rj->dir;
-                    const int idx_j_1 = ri->idx[dir][0];
+                    const int idx_j_1 = rj->idx[dir][0];
 
                     for(int n = 0; n < num_n; n++)
                     {
@@ -263,7 +273,7 @@ void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]-1);
+                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -278,14 +288,14 @@ void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]-1);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
                         if(rk->ijk[dir])
                         {
                             const int idx_k_1 = rk->idx[dir][0];
-                            const int idx7 = n * ncart4 +
+                            const int idx7 = (n+1) * ncart4 +
                                              idx_i   * ncart_j_1 * ncart_k_1 * ncart_l   +
                                              idx_j_1 * ncart_k_1 * ncart_l   +
                                              idx_k_1 * ncart_l   +
@@ -298,7 +308,7 @@ void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
                         if(rl->ijk[dir])
                         {
                             const int idx_l_1 = rl->idx[dir][0];
-                            const int idx8 = n * ncart5 +
+                            const int idx8 = (n+1) * ncart5 +
                                              idx_i   * ncart_j_1 * ncart_k   * ncart_l_1 +
                                              idx_j_1 * ncart_k   * ncart_l_1 +
                                              idx_k   * ncart_l_1 +
@@ -317,13 +327,17 @@ void ostei_general_vrr2_j(int i, int j, int k, int l, int num_n,
 }
 
 
-void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
-                          __m256d one_over_2q, __m256d a_over_q,
-                          __m256d one_over_2pq,
-                          __m256d aoq_PQ[3], __m256d QC[3],
-                          __m256d * theta1, __m256d * theta2,
-                          __m256d * theta3, __m256d * theta4,
-                          __m256d * theta5, __m256d * output)
+void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
+                         __m256d one_over_2q, __m256d a_over_q,
+                         __m256d one_over_2pq,
+                         const __m256d aoq_PQ[3],
+                         const __m256d QC[3],
+                         __m256d const * restrict theta1,
+                         __m256d const * restrict theta2,
+                         __m256d const * restrict theta3,
+                         __m256d const * restrict theta4,
+                         __m256d const * restrict theta5,
+                         __m256d * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -370,11 +384,7 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = rk->dir;
-                    const int idx_i_1 = ri->idx[dir][0];
-                    const int idx_j_1 = rj->idx[dir][0];
                     const int idx_k_1 = rk->idx[dir][0];
-                    const int idx_k_2 = rk->idx[dir][1];
-                    const int idx_l_1 = rl->idx[dir][0];
 
                     for(int n = 0; n < num_n; n++)
                     {
@@ -392,6 +402,7 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
 
                         if(rk->ijk[dir] > 1)
                         {
+                            const int idx_k_2 = rk->idx[dir][1];
                             const int idx3 = n * ncart2 +
                                              idx_i   * ncart_j   * ncart_k_2 * ncart_l   +
                                              idx_j   * ncart_k_2 * ncart_l   +
@@ -406,6 +417,7 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
 
                         if(rl->ijk[dir])
                         {
+                            const int idx_l_1 = rl->idx[dir][0];
                             const int idx5 = n * ncart3 +
                                              idx_i   * ncart_j   * ncart_k_1 * ncart_l_1 +
                                              idx_j   * ncart_k_1 * ncart_l_1 +
@@ -420,7 +432,8 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
 
                         if(ri->ijk[dir])
                         {
-                            const int idx7 = n * ncart4 +
+                            const int idx_i_1 = ri->idx[dir][0];
+                            const int idx7 = (n+1) * ncart4 +
                                              idx_i_1 * ncart_j   * ncart_k_1 * ncart_l   +
                                              idx_j   * ncart_k_1 * ncart_l   +
                                              idx_k_1 * ncart_l   +
@@ -432,7 +445,8 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
 
                         if(rj->ijk[dir])
                         {
-                            const int idx8 = n * ncart5 +
+                            const int idx_j_1 = rj->idx[dir][0];
+                            const int idx8 = (n+1) * ncart5 +
                                              idx_i   * ncart_j_1 * ncart_k_1 * ncart_l   +
                                              idx_j_1 * ncart_k_1 * ncart_l   +
                                              idx_k_1 * ncart_l +
@@ -450,13 +464,17 @@ void ostei_general_vrr2_k(int i, int j, int k, int l, int num_n,
     }
 }
 
-void ostei_general_vrr2_l(int i, int j, int k, int l, int num_n,
-                          __m256d one_over_2q, __m256d a_over_q,
-                          __m256d one_over_2pq,
-                          __m256d aoq_PQ[3], __m256d QD[3],
-                          __m256d * theta1, __m256d * theta2,
-                          __m256d * theta3, __m256d * theta4,
-                          __m256d * theta5, __m256d * output)
+void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
+                         __m256d one_over_2q, __m256d a_over_q,
+                         __m256d one_over_2pq,
+                         const __m256d aoq_PQ[3],
+                         const __m256d QD[3],
+                         __m256d const * restrict theta1,
+                         __m256d const * restrict theta2,
+                         __m256d const * restrict theta3,
+                         __m256d const * restrict theta4,
+                         __m256d const * restrict theta5,
+                         __m256d * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -510,7 +528,7 @@ void ostei_general_vrr2_l(int i, int j, int k, int l, int num_n,
                         const int outidx = n * ncart + curidx;
 
                         const int idx1 = n * ncart1 +
-                                         idx_i   * ncart_j   * ncart_k_1 * ncart_l_1 +
+                                         idx_i   * ncart_j   * ncart_k   * ncart_l_1 +
                                          idx_j   * ncart_k   * ncart_l_1 +
                                          idx_k   * ncart_l_1 +
                                          idx_l_1;
@@ -552,10 +570,10 @@ void ostei_general_vrr2_l(int i, int j, int k, int l, int num_n,
                         if(ri->ijk[dir])
                         {
                             const int idx_i_1 = ri->idx[dir][0];
-                            const int idx7 = n * ncart4 +
+                            const int idx7 = (n+1) * ncart4 +
                                              idx_i_1 * ncart_j   * ncart_k   * ncart_l_1 +
                                              idx_j   * ncart_k   * ncart_l_1 +
-                                             idx_k   * ncart_l_1   +
+                                             idx_k   * ncart_l_1 +
                                              idx_l_1;
 
                             const __m256d ival = _mm256_set1_pd(ri->ijk[dir]);
@@ -565,9 +583,9 @@ void ostei_general_vrr2_l(int i, int j, int k, int l, int num_n,
                         if(rj->ijk[dir])
                         {
                             const int idx_j_1 = rj->idx[dir][0];
-                            const int idx8 = n * ncart5 +
+                            const int idx8 = (n+1) * ncart5 +
                                              idx_i   * ncart_j   * ncart_k   * ncart_l_1   +
-                                             idx_j_1 * ncart_k_1 * ncart_l_1 +
+                                             idx_j_1 * ncart_k   * ncart_l_1 +
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 

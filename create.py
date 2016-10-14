@@ -381,6 +381,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#pragma once\n\n")
   hfile.write("\n\n")
   hfile.write("#include \"simint/ostei/ostei.h\"\n")
+  hfile.write("#include \"simint/ostei/ostei_general.h\"\n")
   hfile.write("#include \"simint/ostei/gen/vrr_generated.h\"\n")
   hfile.write("#include \"simint/ostei/gen/hrr_generated.h\"\n")
 

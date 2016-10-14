@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 // Store recurrence information
 //
@@ -41,4 +45,8 @@ struct RecurInfo
 
 extern struct RecurInfo const recurinfo_array[455];
 extern int const am_recur_map[13];
+
+#ifdef __cplusplus
+}
+#endif
 
