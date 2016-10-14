@@ -242,7 +242,7 @@ void OSTEI_HRR_Writer::WriteHRR_Bra_External_(std::ostream & os, QAM am) const
 
     // call function
     RRStepType rrstep = hrr_algo_.GetBraRRStep({am[0], am[1]});
-    os << indent4 << "HRR_BRA_" << (rrstep == RRStepType::I ? "I" : "J") << "_"
+    os << indent4 << "HRR_BRA_" << RRStepTypeToStr(rrstep) << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "(\n";
 
     // pointer to result buffer
@@ -266,7 +266,7 @@ void OSTEI_HRR_Writer::WriteHRR_Ket_External_(std::ostream & os, QAM am) const
         os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
     RRStepType rrstep = hrr_algo_.GetKetRRStep({am[2], am[3]});
-    os << indent4 << "HRR_KET_" << (rrstep == RRStepType::K ? "K" : "L") << "_"
+    os << indent4 << "HRR_KET_" << RRStepTypeToStr(rrstep) << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(\n";
 
     // pointer to result buffer
@@ -303,7 +303,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
     if(brasteps.size() > 0)
     {
         RRStepType brasteptype = hrr_algo_.GetBraRRStep(braam);
-        const char * steptypestr = (brasteptype == RRStepType::I ? "I" : "J");
+        std::string steptypestr = RRStepTypeToStr(brasteptype);
 
         of << "//////////////////////////////////////////////\n";
         of << "// BRA: ( " << amchar[braam[0]] << " " << amchar[braam[1]] << " |\n";
@@ -348,7 +348,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
     if(ketsteps.size() > 0)
     {
         RRStepType ketsteptype = hrr_algo_.GetKetRRStep(ketam);
-        const char * steptypestr = (ketsteptype == RRStepType::K ? "K" : "L");
+        std::string steptypestr = RRStepTypeToStr(ketsteptype);
 
         of << "//////////////////////////////////////////////\n";
         of << "// KET: | " << amchar[ketam[0]] << " " << amchar[ketam[1]] << " )\n";

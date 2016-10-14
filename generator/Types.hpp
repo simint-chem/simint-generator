@@ -17,7 +17,7 @@
 #include <map>
 #include <utility>
 
-static const char * amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789";
+static const char * amchar = "spdfghiklmnoqrtuvwxyzabceSPDFGHIKLMNOQRTUVWXYZABCE0123456789";
 
 //! Doublet AM (ie, AM pair for bra or ket)
 typedef std::array<int, 2> DAM;
@@ -62,6 +62,24 @@ enum class RRStepType
     L = 3
 };
 
+
+/*! \brief Convert an RRStepType to a single character */
+inline std::string RRStepTypeToStr(RRStepType step)
+{
+    switch(step)
+    {
+        case RRStepType::I:
+            return "i";
+        case RRStepType::J:
+            return "j";
+        case RRStepType::K:
+            return "k";
+        case RRStepType::L:
+            return "l";
+        default:
+            throw std::logic_error("Missing RRStepType");
+    }
+}
 
 /*! \brief Cartesian direction of a recurrence step
  */

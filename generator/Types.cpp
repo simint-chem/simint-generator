@@ -12,15 +12,6 @@
 #include "generator/Types.hpp"
 #include "generator/Options.hpp"
 
-using std::cout;
-
-
-
-
-
-
-
-
 
 QuartetSet GenerateInitialQuartetTargets(QAM amlst)
 {

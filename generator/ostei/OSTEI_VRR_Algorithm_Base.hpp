@@ -54,6 +54,10 @@ class OSTEI_VRR_Algorithm_Base
         StringSet GetAllVarReq(void) const;
         StringSet GetVarReq(QAM am) const;
 
+        QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false) const;
+        StringSet GenerateVarReq(RRStepType rrstep) const;
+        StringSet GenerateVarReq(QAM am, RRStepType rrstep) const;
+
         bool HasVRROfType(RRStepType steptype) const;
 
         bool HasVRR(void) const;

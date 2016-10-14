@@ -96,8 +96,8 @@ int main(int argc, char ** argv)
     // 1.) HRR Steps
     hrralgo->Create(finalam);
     OSTEI_HRR_Writer hrr_writer(*hrralgo, info,
-                                options[Option::ExternalVRR],
-                                options[Option::GeneralVRR]);
+                                options[Option::ExternalHRR],
+                                options[Option::GeneralHRR]);
 
     QuartetSet topquartets = hrralgo->TopQuartets();
 

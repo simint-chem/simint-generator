@@ -10,7 +10,7 @@
 #include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp"
 
 
-static QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false)
+QAMList OSTEI_VRR_Algorithm_Base::GenerateAMReq(QAM am, RRStepType rrstep, bool all) const
 {
     QAMList req;
     switch(rrstep)
@@ -60,7 +60,7 @@ static QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false)
         return req;
 }
 
-static StringSet GenerateVarReq(RRStepType rrstep)
+StringSet OSTEI_VRR_Algorithm_Base::GenerateVarReq(RRStepType rrstep) const
 {
     StringSet req;
 
@@ -99,7 +99,7 @@ static StringSet GenerateVarReq(RRStepType rrstep)
 }
 
 
-static StringSet GenerateVarReq(QAM am, RRStepType rrstep)
+StringSet OSTEI_VRR_Algorithm_Base::GenerateVarReq(QAM am, RRStepType rrstep) const
 {
     auto amreq = GenerateAMReq(am, rrstep, true);
 

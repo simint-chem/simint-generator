@@ -249,19 +249,24 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     const int ncart = NCART(am);
 
     // some helper bools
-    bool hashrr = hrr_writer_.HasHRR();
-    bool hasbrahrr = hrr_writer_.HasBraHRR();
-    bool haskethrr = hrr_writer_.HasKetHRR();
+    const bool hashrr = hrr_writer_.HasHRR();
+    const bool hasbrahrr = hrr_writer_.HasBraHRR();
+    const bool haskethrr = hrr_writer_.HasKetHRR();
 
-    bool hasbravrr = vrr_writer_.HasBraVRR();
-    bool hasketvrr = vrr_writer_.HasKetVRR();
-    //bool hasvrr = (hasbravrr || hasketvrr);
+    const bool hasbravrr = vrr_writer_.HasBraVRR();
+    const bool hasketvrr = vrr_writer_.HasKetVRR();
+    //const bool hasvrr = (hasbravrr || hasketvrr);
 
-    bool hasoneoverp = hasbravrr;
-    bool hasoneoverq = hasketvrr;
-    bool hasoneover2p = (hasbravrr && (am[0]+am[1]) > 1); 
-    bool hasoneover2q = (hasketvrr && (am[2]+am[3]) > 1); 
-    bool hasoneover2pq = (hasketvrr && (am[0]+am[1]) > 0);
+    //const bool hasoneoverp = hasbravrr;
+    //const bool hasoneoverq = hasketvrr;
+    //const bool hasoneover2p = (hasbravrr && (am[0]+am[1]) > 1); 
+    //const bool hasoneover2q = (hasketvrr && (am[2]+am[3]) > 1); 
+    //const bool hasoneover2pq = (hasketvrr && (am[0]+am[1]) > 0);
+    const bool hasoneoverp = true;
+    const bool hasoneoverq = true;
+    const bool hasoneover2p = true;
+    const bool hasoneover2q = true;
+    const bool hasoneover2pq = true;
 
 
     std::string dbltype = vinfo_.DoubleType();

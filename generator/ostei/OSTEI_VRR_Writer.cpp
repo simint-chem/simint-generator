@@ -3,6 +3,8 @@
 #include "generator/Printing.hpp"
 #include "generator/Naming.hpp"
 
+#include <algorithm> // std::count
+
 
 // map from RRStepType to a character, for creating function names
 static const std::map<RRStepType, char> rrstep_char{ {RRStepType::I, 'I'},
@@ -329,6 +331,90 @@ void OSTEI_VRR_Writer::WriteVRR_External_(std::ostream & os, QAM am) const
 
 void OSTEI_VRR_Writer::WriteVRR_General_(std::ostream & os, QAM am) const
 {
+    // is this a special case (incrementing with all other AM == 0)?
+    RRStepType rrstep = vrr_algo_.GetRRStep(am);
+    std::string stepstr = RRStepTypeToStr(rrstep);
+    auto varreq = vrr_algo_.GetVarReq(am);
+
+    auto amreq = vrr_algo_.GenerateAMReq(am, rrstep, true);
+    std::vector<std::string> amreq_str;
+    for(const auto it : amreq)
+    {
+        if(!ValidQAM(it))
+            amreq_str.push_back("NULL");
+        else
+            amreq_str.push_back(PrimVarName(it));
+    }
+    
+
+    if(std::count(am.begin(), am.end(), 0) == 3)
+    {
+        os << indent5 << "ostei_general_vrr1_" << stepstr << "("
+                      << am[static_cast<int>(rrstep)] << ", " << (vrr_algo_.GetMReq(am)+1) << ",\n"
+           << indent7;
+
+        if(rrstep == RRStepType::I || rrstep == RRStepType::J)
+            os << "one_over_2p, a_over_p, aop_PQ, ";
+        else
+            os << "one_over_2q, a_over_q, aoq_PQ, ";
+
+        switch(rrstep)
+        {
+            case RRStepType::I:
+                os << "P_PA,\n";
+                os << indent7 << amreq_str[0] << ", "
+                              << amreq_str[1] << ", ";
+                break;
+        
+            case RRStepType::J:
+                os << "P_PB,\n";
+                os << indent7 << amreq_str[0] << ", "
+                              << amreq_str[2] << ", ";
+                break;
+
+            case RRStepType::K:
+                os << "Q_PA,\n";
+                os << indent7 << amreq_str[0] << ", "
+                              << amreq_str[1] << ", ";
+                break;
+
+            case RRStepType::L:
+                os << "Q_PB,\n";
+                os << indent7 << amreq_str[0] << ", "
+                              << amreq_str[2] << ", ";
+                break;
+        }
+
+        os << PrimVarName(am) << ");\n"; // output array
+
+    }
+    else
+    {
+        os << indent5 << "ostei_general_vrr_" << stepstr << "("
+                      << am[0] << ", " << am[1] << ", " << am[2] << ", " << am[3] << ", " << (vrr_algo_.GetMReq(am)+1) << ",\n"
+           << indent7;
+
+        if(rrstep == RRStepType::I || rrstep == RRStepType::J)
+            os << "one_over_2p, a_over_p, one_over_2pq, aop_PQ, ";
+        else
+            os << "one_over_2q, a_over_q, one_over_2pq, aoq_PQ, ";
+
+
+        if(rrstep == RRStepType::I)
+            os << "P_PA,\n";
+        if(rrstep == RRStepType::J)
+            os << "P_PB,\n";
+        if(rrstep == RRStepType::K)
+            os << "Q_PA,\n";
+        if(rrstep == RRStepType::L)
+            os << "Q_PB,\n";
+
+        os << indent7;
+        for(const auto it : amreq_str)
+            os << it << ", ";
+
+        os << PrimVarName(am) << ");\n";
+    }
 }
 
 
