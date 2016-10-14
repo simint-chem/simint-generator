@@ -433,7 +433,7 @@ int GaussianOrder(const QAM & ijk);
 
 GaussianSet AllGaussiansForAM(int am);
 
-
+bool ValidQAM(QAM am);
 
 
 #endif

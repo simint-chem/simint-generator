@@ -329,7 +329,7 @@ void OSTEI_VRR_Writer_External::WriteVRR(std::ostream & os) const
 
             os << indent7 << PrimVarName(am) << ",\n";
 
-            for(const auto & it : vrr_algo_.GetAMReq(am))
+            for(const auto & it : vrr_algo_.GetAMReq(am, false))
                 os << indent7 << PrimVarName(it) << ",\n";
             
             for(const auto & it : vrr_algo_.GetVarReq(am))
@@ -365,7 +365,7 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
     // final target
     prototype << indent3 << vinfo_.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
 
-    for(const auto & it : vrr_algo_.GetAMReq(am))
+    for(const auto & it : vrr_algo_.GetAMReq(am, false))
         prototype << indent3 << vinfo_.ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
@@ -422,7 +422,7 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
         // final target
         os << indent3 << PrimVarName(am) << ",\n";
         
-        for(const auto & it : vrr_algo_.GetAMReq(am))
+        for(const auto & it : vrr_algo_.GetAMReq(am, false))
             os << indent3 << PrimVarName(it) << ",\n";
     
         for(const auto & it : vrr_algo_.GetVarReq(am))

@@ -42,7 +42,7 @@ class OSTEI_VRR_Algorithm_Base
 
         VRR_StepSet GetSteps(QAM am) const;
         int GetMReq(QAM am) const;
-        QAMSet GetAMReq(QAM am) const;
+        QAMList GetAMReq(QAM am, bool all) const;
         IntSet GetIntReq_2p(QAM am) const; 
         IntSet GetIntReq_2q(QAM am) const; 
         IntSet GetIntReq_2pq(QAM am) const; 
@@ -81,9 +81,6 @@ class OSTEI_VRR_Algorithm_Base
         // Maximum/minimum m value needed for a quartet
         VRR_MReqMap vrrmreq_max_;
         //VRR_MReqMap vrrmreq_min_;
-
-        // QAM required for a given QAM
-        VRR_AMReqMap qamreq_;
 
         QAMList amorder_;
 

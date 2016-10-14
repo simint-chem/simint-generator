@@ -109,3 +109,11 @@ GaussianSet AllGaussiansForAM(int am)
     return gs;
 }
 
+bool ValidQAM(QAM am)
+{
+    return (am[0] >= 0 &&
+            am[1] >= 0 &&
+            am[2] >= 0 &&
+            am[3] >= 0);
+}
+

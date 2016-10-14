@@ -47,9 +47,55 @@ VRR_StepSet OSTEI_VRR_Algorithm_Base::GetSteps(QAM am) const
 }
 
 
-QAMSet OSTEI_VRR_Algorithm_Base::GetAMReq(QAM am) const
+QAMList OSTEI_VRR_Algorithm_Base::GetAMReq(QAM am, bool all) const
 {
-    return qamreq_.at(am);
+    RRStepType rrstep = GetRRStep(am);
+    QAMList req;
+
+    switch(rrstep)
+    {
+        case RRStepType::I:
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  });
+            req.push_back({am[0]-2, am[1]  , am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
+            break;
+        case RRStepType::J:
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]  , am[1]-2, am[2]  , am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
+            break;
+        case RRStepType::K:
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]  , am[2]-2, am[3]  });
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
+            req.push_back({am[0]-1, am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]-1, am[3]  });
+            break;
+        case RRStepType::L:
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-2});
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]-1});
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]-1});
+            break;
+    }
+
+    if(!all)
+    {
+        QAMList req2;
+        for(const auto & it : req)
+        {
+            if(ValidQAM(it))
+                req2.push_back(it);
+        }
+        return req2;
+    }
+    else
+        return req; 
 }
 
 
@@ -227,7 +273,7 @@ void OSTEI_VRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order, QAM
         return;
 
     // get requirements
-    QAMSet req = GetAMReq(am);
+    auto req = GetAMReq(am, false);
 
     for(const auto & it : req)
         AMOrder_AddWithDependencies_(order, it);
@@ -402,12 +448,6 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
         for(const auto & its : it.second)  // for all steps for this QAM
         {
-            for(const auto & it3 : its.src)
-            {
-                if(it3)
-                    qamreq_[qam].insert(it3.amlist());
-            }
-
             std::string sstep = XYZStepToStr(its.xyz);
 
             maxint_ = std::max(its.ijkl[0], maxint_);
