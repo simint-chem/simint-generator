@@ -66,12 +66,10 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
     while(i < argc)
     {
         std::string argstr(GetNextArg(i, argc, argv));
-        if(argstr == "-et")
-            options[Option::NoET] = 0;
-        else if(argstr == "-ve")
-            options[Option::InlineVRR] = 0;
-        else if(argstr == "-ee")
-            options[Option::InlineET] = 0;
+        if(argstr == "-ve")
+            options[Option::ExternalVRR] = GetIArg(i, argc, argv);
+        else if(argstr == "-vg")
+            options[Option::GeneralVRR] = GetIArg(i, argc, argv);
         else if(argstr == "-he")
             options[Option::InlineHRR] = 0;
         else if(argstr == "-s")

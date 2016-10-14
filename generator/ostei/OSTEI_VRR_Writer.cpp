@@ -22,8 +22,10 @@ static bool IsPointer(const std::string & var)
 ///////////////////////////////
 // Base VRR Writer
 ///////////////////////////////
-OSTEI_VRR_Writer::OSTEI_VRR_Writer(const OSTEI_VRR_Algorithm_Base & vrr_algo, const OSTEI_GeneratorInfo & info)
-    : vrr_algo_(vrr_algo), info_(info), vinfo_(info_.GetVectorInfo())
+OSTEI_VRR_Writer::OSTEI_VRR_Writer(const OSTEI_VRR_Algorithm_Base & vrr_algo, const OSTEI_GeneratorInfo & info,
+                                   int start_external, int start_general)
+    : vrr_algo_(vrr_algo), info_(info), vinfo_(info_.GetVectorInfo()),
+      start_external_(start_external), start_general_(start_general)
 { 
 }
 
@@ -62,25 +64,19 @@ bool OSTEI_VRR_Writer::HasVRR_L(void) const
     return vrr_algo_.HasVRR_L();
 }
 
-ConstantMap OSTEI_VRR_Writer::GetConstants(void) const
-{
-    // by default, return empty
-    return ConstantMap();
-}
-
 void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
     os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
     os << indent5 << "// with m as the slowest index\n";
 
 
-    for(const auto & qam : vrr_algo_.GetAllAM()) 
+    for(const auto & am : vrr_algo_.GetAllAM()) 
     {
         // add +1 fromm required m values to account for 0
-        os << indent5 << "// AM = (" << qam[0] << " " << qam[1] << " | " << qam[2] << " " << qam[3] << " )\n";
-        os << indent5 << vinfo_.DoubleType() << " " << PrimVarName(qam)
-           << "[" << (vrr_algo_.GetMReq(qam)+1) << " * " 
-           << NCART(qam) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+        os << indent5 << "// AM = (" << am[0] << " " << am[1] << " | " << am[2] << " " << am[3] << " )\n";
+        os << indent5 << vinfo_.DoubleType() << " " << PrimVarName(am)
+           << "[" << (vrr_algo_.GetMReq(am)+1) << " * " 
+           << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
 
     os << "\n\n";
@@ -88,20 +84,20 @@ void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 
 void OSTEI_VRR_Writer::DeclarePrimPointers(std::ostream & os) const
 {
-    for(const auto & qam : vrr_algo_.GetAllAM()) 
+    for(const auto & am : vrr_algo_.GetAllAM()) 
     {
-        if(info_.IsContQ(qam))
-            os << indent4 << "double * restrict " << PrimPtrName(qam)
-               << " = " << ArrVarName(qam) << " + abcd * " << NCART(qam) << ";\n";
+        if(info_.IsContQ(am))
+            os << indent4 << "double * restrict " << PrimPtrName(am)
+               << " = " << ArrVarName(am) << " + abcd * " << NCART(am) << ";\n";
     }
 
     os << "\n\n";
 }
 
-void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_StepSet & vs, const std::string & num_n) const
+void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepSet & vs, const std::string & num_n) const
 {
     os << "\n";
-    os << indent5 << "// Forming " << PrimVarName(qam) << "[" << num_n << " * " << NCART(qam) << "];\n";
+    os << indent5 << "// Forming " << PrimVarName(am) << "[" << num_n << " * " << NCART(am) << "];\n";
 
     os << indent5 << "for(n = 0; n < " << num_n << "; ++n)  // loop over orders of auxiliary function\n";
     os << indent5 << "{\n";
@@ -116,7 +112,7 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
         XYZStep step = it.xyz;
         std::string stepdir = StringBuilder("[", static_cast<int>(step), "]");
 
-        std::string primname = StringBuilder(PrimVarName(qam), "[n * ", NCART(qam), " + ", it.target.index(), "]");
+        std::string primname = StringBuilder(PrimVarName(am), "[n * ", NCART(am), " + ", it.target.index(), "]");
         std::string srcname[8];
 
         if(it.src[0])
@@ -241,13 +237,7 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM qam, const VRR_Step
 }
 
 
-
-
-
-///////////////////////////////////////
-// Inline VRR Writer
-///////////////////////////////////////
-ConstantMap OSTEI_VRR_Writer_Inline::GetConstants(void) const
+ConstantMap OSTEI_VRR_Writer::GetConstants(void) const
 {
     ConstantMap cm;
     for(int i = 1; i <= vrr_algo_.GetMaxInt(); i++)
@@ -256,7 +246,7 @@ ConstantMap OSTEI_VRR_Writer_Inline::GetConstants(void) const
 }
 
 
-void OSTEI_VRR_Writer_Inline::WriteVRR(std::ostream & os) const
+void OSTEI_VRR_Writer::WriteVRR(std::ostream & os) const
 {
     os << "\n";
     os << indent5 << "//////////////////////////////////////////////\n";
@@ -289,67 +279,60 @@ void OSTEI_VRR_Writer_Inline::WriteVRR(std::ostream & os) const
             os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.IntConstant(it) << " * one_over_2pq;\n"; 
     }
 
-
-    // iterate over increasing am
-    for(const auto & qam : vrr_algo_.GetAMOrder())
+    // actually write out
+    for(const auto & am : vrr_algo_.GetAMOrder())
     {
-        // Write out the steps
-        if(qam != QAM{0,0,0,0})
-            WriteVRRSteps_(os, qam, vrr_algo_.GetSteps(qam), 
-                           std::to_string(vrr_algo_.GetMReq(qam)+1));
+        if(am == QAM{0,0,0,0})
+            continue;
+
+        int L = am[0] + am[1] + am[2] + am[3];
+        if(L < start_external_)
+            WriteVRR_Inline_(os, am);
+        else if(L < start_general_)
+            WriteVRR_External_(os, am);
+        else
+            WriteVRR_General_(os, am);
 
         os << "\n\n";
     }
-
-    os << "\n\n";
+    
 }
 
 
-void OSTEI_VRR_Writer_Inline::WriteVRRFile(std::ostream & os, std::ostream & osh) const
-{ }
-
-
-
-///////////////////////////////////////
-// External VRR Writer
-///////////////////////////////////////
-void OSTEI_VRR_Writer_External::WriteVRR(std::ostream & os) const
+void OSTEI_VRR_Writer::WriteVRR_Inline_(std::ostream & os, QAM am) const
 {
-    os << "\n";
-    os << indent5 << "//////////////////////////////////////////////\n";
-    os << indent5 << "// Primitive integrals: Vertical recurrance\n";
-    os << indent5 << "//////////////////////////////////////////////\n";
-    os << "\n";
+    WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), 
+                   std::to_string(vrr_algo_.GetMReq(am)+1));
+}
+
+
+void OSTEI_VRR_Writer::WriteVRR_External_(std::ostream & os, QAM am) const
+{
 
     // iterate over increasing am
-    for(const auto & am : vrr_algo_.GetAMOrder())
-    {
-        if(am != QAM{0,0,0,0})
-        {
-            RRStepType rrstep = vrr_algo_.GetRRStep(am);
+    RRStepType rrstep = vrr_algo_.GetRRStep(am);
 
-            os << indent5 << "VRR_" << rrstep_char.at(rrstep) << "_" 
-                          << amchar[am[0]] << "_" << amchar[am[1]] << "_"
-                          << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
+    os << indent5 << "VRR_" << rrstep_char.at(rrstep) << "_" 
+                  << amchar[am[0]] << "_" << amchar[am[1]] << "_"
+                  << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
-            os << indent7 << PrimVarName(am) << ",\n";
+    os << indent7 << PrimVarName(am) << ",\n";
 
-            for(const auto & it : vrr_algo_.GetAMReq(am))
-                os << indent7 << PrimVarName(it) << ",\n";
-            
-            for(const auto & it : vrr_algo_.GetVarReq(am))
-                os << indent7 << it << ",\n";
+    for(const auto & it : vrr_algo_.GetAMReq(am))
+        os << indent7 << PrimVarName(it) << ",\n";
+    
+    for(const auto & it : vrr_algo_.GetVarReq(am))
+        os << indent7 << it << ",\n";
 
-            os << indent7 << (vrr_algo_.GetMReq(am)+1) << ");\n";
-            os << "\n";
-        }
-    }
+    os << indent7 << (vrr_algo_.GetMReq(am)+1) << ");\n";
+}
 
-    os << "\n\n";
+void OSTEI_VRR_Writer::WriteVRR_General_(std::ostream & os, QAM am) const
+{
 }
 
 
-void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & osh) const
+void OSTEI_VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 {
     QAM am = info_.FinalAM();
 
@@ -451,3 +434,4 @@ void OSTEI_VRR_Writer_External::WriteVRRFile(std::ostream & os, std::ostream & o
     // header
     osh << prototype.str() << ";\n\n";
 }
+

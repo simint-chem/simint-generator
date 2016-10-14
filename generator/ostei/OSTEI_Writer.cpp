@@ -3,7 +3,6 @@
 #include "generator/Naming.hpp"
 #include "generator/ostei/OSTEI_GeneratorInfo.hpp"
 #include "generator/ostei/OSTEI_VRR_Writer.hpp"
-#include "generator/ostei/OSTEI_ET_Writer.hpp"
 #include "generator/ostei/OSTEI_HRR_Writer.hpp"
 #include "generator/ostei/OSTEI_Writer.hpp"
 
@@ -15,10 +14,9 @@ OSTEI_Writer::OSTEI_Writer(std::ostream & os,
                        std::ostream & osh,
                        const OSTEI_GeneratorInfo & info,
                        const OSTEI_VRR_Writer & vrr_writer,
-                       const OSTEI_ET_Writer & et_writer,
                        const OSTEI_HRR_Writer & hrr_writer)
    : os_(os), osh_(osh), info_(info), vinfo_(info_.GetVectorInfo()),
-     vrr_writer_(vrr_writer), et_writer_(et_writer), hrr_writer_(hrr_writer)
+     vrr_writer_(vrr_writer), hrr_writer_(hrr_writer)
 { }
 
 
@@ -254,7 +252,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     bool hashrr = hrr_writer_.HasHRR();
     bool hasbrahrr = hrr_writer_.HasBraHRR();
     bool haskethrr = hrr_writer_.HasKetHRR();
-    bool inline_hrr = (hashrr && hrr_writer_.IsInline());
 
     bool hasbravrr = vrr_writer_.HasBraVRR();
     bool hasketvrr = vrr_writer_.HasKetVRR();
@@ -286,10 +283,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     //       so we always want to run this
     for(const auto & it : vrr_writer_.GetConstants())
         cm.insert(it);
-
-    if(et_writer_.HasET())
-        for(const auto & it : et_writer_.GetConstants())
-            cm.insert(it);
 
     if(hrr_writer_.HasHRR())
         for(const auto & it : hrr_writer_.GetConstants())
@@ -359,15 +352,11 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent1 << "int real_abcd;\n";
 
 
-    // Needed only if we are doing inline HRR
-    if(inline_hrr)
-    {
-        if(hasbrahrr)
-            os_ << indent1 << "int iket;\n";
-        if(haskethrr)
-            os_ << indent1 << "int ibra;\n";
-    }
-
+    if(hasbrahrr)
+        os_ << indent1 << "int iket;\n";
+    if(haskethrr)
+        os_ << indent1 << "int ibra;\n";
+    
     os_ << "\n";
 
 
@@ -447,8 +436,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     // Note: vrr_writer handles the prim pointers for s_s_s_s
     //       so we always want to run this
     vrr_writer_.DeclarePrimPointers(os_);
-    if(et_writer_.HasET())
-        et_writer_.DeclarePrimPointers(os_);
     os_ << "\n";
 
     os_ << indent4 << "// Load these one per loop over i\n";
@@ -503,8 +490,8 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
 
         os_ << indent6 << "if(not_screened == 0)\n";
         os_ << indent6 << "{\n";
-        for(const auto qam : info_.GetContQ())
-            os_ << indent7 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+        for(const auto it : info_.GetContQ())
+            os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
         os_ << indent7 << "continue;\n";
         os_ << indent6 << "}\n";
         os_ << indent5 << "}\n\n";
@@ -519,8 +506,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
     vrr_writer_.DeclarePrimArrays(os_);
-    if(et_writer_.HasET())
-        et_writer_.DeclarePrimArrays(os_);
 
     os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
     os_ << indent5 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
@@ -623,9 +608,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     if(vrr_writer_.HasVRR())
         vrr_writer_.WriteVRR(os_);
-
-    if(et_writer_.HasET())
-        et_writer_.WriteET(os_);
 
     WriteAccumulation();
 

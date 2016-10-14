@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "generator/Types.hpp"
-#include "generator/WriterBase.hpp"
 #include "generator/ostei/OSTEI_HRR_Algorithm_Base.hpp"
 
 // foward declare
@@ -12,7 +11,7 @@ class OSTEI_GeneratorInfo;
 
 
 
-class OSTEI_HRR_Writer : public WriterBase
+class OSTEI_HRR_Writer
 {   
     public:
         OSTEI_HRR_Writer(const OSTEI_HRR_Algorithm_Base & hrr_algo, const OSTEI_GeneratorInfo & info);
@@ -48,9 +47,6 @@ class OSTEI_HRR_Writer_Inline : public OSTEI_HRR_Writer
     public:
         using OSTEI_HRR_Writer::OSTEI_HRR_Writer;
 
-        bool IsInline(void) const { return true; }
-        bool IsExternal(void) const { return false; }
-
         virtual void WriteHRR(std::ostream & os) const;
         virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const;
 
@@ -61,9 +57,6 @@ class OSTEI_HRR_Writer_External : public OSTEI_HRR_Writer
 {
     public:
         using OSTEI_HRR_Writer::OSTEI_HRR_Writer;
-
-        bool IsInline(void) const { return false; }
-        bool IsExternal(void) const { return true; }
 
         virtual void WriteHRR(std::ostream & os) const;
         virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const;

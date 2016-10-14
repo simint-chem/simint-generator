@@ -12,7 +12,6 @@
 #include <algorithm>
 
 #include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp" 
-#include "generator/ostei/OSTEI_ET_Algorithm_Base.hpp" 
 #include "generator/ostei/OSTEI_HRR_Algorithm_Base.hpp" 
 
 class Makowski_HRR : public OSTEI_HRR_Algorithm_Base
@@ -241,7 +240,7 @@ class Makowski_VRR : public OSTEI_VRR_Algorithm_Base
 };
 
 
-
+/*
 class Makowski_ET : public OSTEI_ET_Algorithm_Base
 {
     public:
@@ -372,4 +371,4 @@ class Makowski_ET : public OSTEI_ET_Algorithm_Base
             }
         }
 };
-
+*/

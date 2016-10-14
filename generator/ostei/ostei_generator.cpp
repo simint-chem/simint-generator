@@ -6,7 +6,6 @@
 #include "generator/ostei/Algorithms.hpp"
 #include "generator/ostei/OSTEI_GeneratorInfo.hpp"
 #include "generator/ostei/OSTEI_VRR_Writer.hpp"
-#include "generator/ostei/OSTEI_ET_Writer.hpp"
 #include "generator/ostei/OSTEI_HRR_Writer.hpp"
 #include "generator/ostei/OSTEI_Writer.hpp"
 
@@ -92,12 +91,9 @@ int main(int argc, char ** argv)
     // algorithms used
     std::unique_ptr<OSTEI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
     std::unique_ptr<OSTEI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
-    std::unique_ptr<OSTEI_ET_Algorithm_Base> etalgo(new Makowski_ET(options));
 
     // Writers
     std::unique_ptr<OSTEI_HRR_Writer> hrr_writer;
-    std::unique_ptr<OSTEI_VRR_Writer> vrr_writer;
-    std::unique_ptr<OSTEI_ET_Writer> et_writer;
 
     // Working backwards, I need:
     // 1.) HRR Steps
@@ -109,40 +105,16 @@ int main(int argc, char ** argv)
 
     QuartetSet topquartets = hrralgo->TopQuartets();
 
-    // 2.) ET steps
-    //     with the HRR top level stuff as the initial targets
-    if(!options[Option::NoET])
-    {
-        DoubletType etdirection = DoubletType::KET;
-        if((finalam[2]+finalam[3]) > (finalam[0]+finalam[1]))
-            etdirection = DoubletType::BRA;
-
-        etalgo->Create(topquartets, etdirection);
-        topquartets = etalgo->TopQuartets();
-    }
-
-
-    if(options[Option::InlineET])
-        et_writer = std::unique_ptr<OSTEI_ET_Writer>(new OSTEI_ET_Writer_Inline(*etalgo, info));
-    else
-        et_writer = std::unique_ptr<OSTEI_ET_Writer>(new OSTEI_ET_Writer_External(*etalgo, info));
-
-
-    // 3.) VRR Steps
-    // requirements for vrr are the top level stuff from ET
+    // 2.) VRR Steps
     vrralgo->Create(topquartets);
-
-    if(options[Option::InlineVRR])
-        vrr_writer = std::unique_ptr<OSTEI_VRR_Writer>(new OSTEI_VRR_Writer_Inline(*vrralgo, info));
-    else
-        vrr_writer = std::unique_ptr<OSTEI_VRR_Writer>(new OSTEI_VRR_Writer_External(*vrralgo, info));
+    OSTEI_VRR_Writer vrr_writer(*vrralgo, info, options[Option::ExternalVRR], options[Option::GeneralVRR]);
 
 
     // set the contracted quartets
     info.SetContQ(hrralgo->TopAM());
 
     // Create the OSTEI_Writer and write the file
-    OSTEI_Writer_Basic ostei_writer(of, ofh, info, *vrr_writer, *et_writer, *hrr_writer);
+    OSTEI_Writer_Basic ostei_writer(of, ofh, info, vrr_writer, *hrr_writer);
     ostei_writer.WriteFile();
 
 

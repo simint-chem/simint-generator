@@ -18,7 +18,6 @@ public:
                std::ostream & osh,
                const OSTEI_GeneratorInfo & info,
                const OSTEI_VRR_Writer & vrr_writer,
-               const OSTEI_ET_Writer & et_writer,
                const OSTEI_HRR_Writer & hrr_writer);
 
 
@@ -38,7 +37,6 @@ protected:
     const OSTEI_GeneratorInfo & info_;
     const VectorInfo & vinfo_;
     const OSTEI_VRR_Writer & vrr_writer_;
-    const OSTEI_ET_Writer & et_writer_;
     const OSTEI_HRR_Writer & hrr_writer_;
 
 };

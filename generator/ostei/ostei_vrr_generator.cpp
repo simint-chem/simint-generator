@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
     {
         Makowski_VRR vrralgo_i(options);
         vrralgo_i.Create_WithOrder(finalam, {0, -1, -1, -1});
-        OSTEI_VRR_Writer_External vrr_writer_i(vrralgo_i, info);
+        OSTEI_VRR_Writer vrr_writer_i(vrralgo_i, info);
         vrr_writer_i.WriteVRRFile(of, ofh);
     }
 
@@ -91,7 +91,7 @@ int main(int argc, char ** argv)
     {
         Makowski_VRR vrralgo_j(options);
         vrralgo_j.Create_WithOrder(finalam, {1, -1, -1, -1});
-        OSTEI_VRR_Writer_External vrr_writer_j(vrralgo_j, info);
+        OSTEI_VRR_Writer vrr_writer_j(vrralgo_j, info);
         vrr_writer_j.WriteVRRFile(of, ofh);
     }
 
@@ -100,7 +100,7 @@ int main(int argc, char ** argv)
     {
         Makowski_VRR vrralgo_k(options);
         vrralgo_k.Create_WithOrder(finalam, {2, -1, -1, -1});
-        OSTEI_VRR_Writer_External vrr_writer_k(vrralgo_k, info);
+        OSTEI_VRR_Writer vrr_writer_k(vrralgo_k, info);
         vrr_writer_k.WriteVRRFile(of, ofh);
     }
 
@@ -108,7 +108,7 @@ int main(int argc, char ** argv)
     {
         Makowski_VRR vrralgo_l(options);
         vrralgo_l.Create_WithOrder(finalam, {3, -1, -1, -1});
-        OSTEI_VRR_Writer_External vrr_writer_l(vrralgo_l, info);
+        OSTEI_VRR_Writer vrr_writer_l(vrralgo_l, info);
         vrr_writer_l.WriteVRRFile(of, ofh);
     }
 

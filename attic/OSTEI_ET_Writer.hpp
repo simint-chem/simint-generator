@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "generator/Types.hpp"
-#include "generator/WriterBase.hpp"
 #include "generator/ostei/OSTEI_ET_Algorithm_Base.hpp"
 
 // foward declare
@@ -12,7 +11,7 @@ class OSTEI_GeneratorInfo;
 
 
 
-class OSTEI_ET_Writer : public WriterBase
+class OSTEI_ET_Writer
 {   
     public:
         OSTEI_ET_Writer(const OSTEI_ET_Algorithm_Base & et_algo, const OSTEI_GeneratorInfo & info); 
@@ -46,9 +45,6 @@ class OSTEI_ET_Writer_Inline : public OSTEI_ET_Writer
     public:
         using OSTEI_ET_Writer::OSTEI_ET_Writer;
 
-        bool IsInline(void) const { return true; }
-        bool IsExternal(void) const { return false; }
-
         virtual ConstantMap GetConstants(void) const;
         virtual void WriteET(std::ostream & os) const;
         virtual void WriteETFile(std::ostream & os, std::ostream & osh) const;
@@ -59,9 +55,6 @@ class OSTEI_ET_Writer_External : public OSTEI_ET_Writer
 {
     public:
         using OSTEI_ET_Writer::OSTEI_ET_Writer;
-
-        bool IsInline(void) const { return false; }
-        bool IsExternal(void) const { return true; }
 
         virtual void WriteET(std::ostream & os) const;
         virtual void WriteETFile(std::ostream & os, std::ostream & osh) const;
