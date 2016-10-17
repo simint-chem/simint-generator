@@ -79,8 +79,8 @@ int main(int argc, char ** argv)
 
     // Information for this OSTEI
     OSTEI_GeneratorInfo info(finalam,
-                          Compiler::Intel,
-                          cpuflags, options);
+                             Compiler::Intel,
+                             cpuflags, options);
 
 
     //////////////////////////////////////////////////////////////

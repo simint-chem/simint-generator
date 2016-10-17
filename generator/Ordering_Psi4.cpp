@@ -1,3 +1,12 @@
+/*
+ Generated with:
+   ../python/gen_ordering.py --max-am 24 --filename Ordering_tmp
+------------------------------------
+Options for gen_ordering:
+   Max am: 24
+------------------------------------
+*/
+
 #include <array>
 #include <map>
 #include <vector>

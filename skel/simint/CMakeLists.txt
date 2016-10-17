@@ -16,6 +16,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
 
                          ostei/ostei_init.c
                          ostei/ostei_general_vrr.c
+                         ostei/ostei_general_hrr.c
                          ostei/ostei.c
                          ostei/recur_lookup.c
 

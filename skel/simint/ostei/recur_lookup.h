@@ -39,12 +39,12 @@ struct RecurInfo
 {
     int8_t ijk[3];
     int8_t dir;
-    int8_t idx[3][2];
+    int8_t idx[3][3];
 };
 
 
-extern struct RecurInfo const recurinfo_array[455];
-extern int const am_recur_map[13];
+extern struct RecurInfo const recurinfo_array[1330];
+extern int const am_recur_map[19];
 
 #ifdef __cplusplus
 }

@@ -31,6 +31,8 @@ class OSTEI_HRR_Algorithm_Base
         DoubletSet TopBraDoublets(void) const;
         DoubletSet TopKetDoublets(void) const;
 
+        QAMList GenerateAMReq(QAM am, RRStepType rrstep) const;
+
         HRRDoubletStepList GetBraSteps(DAM am) const;
         HRRDoubletStepList GetKetSteps(DAM am) const;
 

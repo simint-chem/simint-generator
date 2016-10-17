@@ -6,12 +6,12 @@
 /* All vrr1 are the same, with some swapping of variables */
 /**********************************************************/
 void ostei_general_vrr1(int i, int num_n,
-                        __m256d one_over_2p, __m256d a_over_p,
-                        const __m256d aop_PQ[3],
-                        const __m256d PA[3],
-                        __m256d const * restrict theta1,
-                        __m256d const * restrict theta2,
-                        __m256d * restrict output)
+                        DBLTYPE one_over_2p, DBLTYPE a_over_p,
+                        const DBLTYPE aop_PQ[3],
+                        const DBLTYPE PA[3],
+                        DBLTYPE const * restrict theta1,
+                        DBLTYPE const * restrict theta2,
+                        DBLTYPE * restrict output)
 {
     // in this case, we want (i, 0, 0, 0), so i is equal
     // to the angular momentum.
@@ -24,7 +24,7 @@ void ostei_general_vrr1(int i, int num_n,
     struct RecurInfo const * aminfo = &recurinfo_array[arrstart];
 
     int curidx = 0;
-    for(int16_t idx_i = 0; idx_i < ncart; idx_i++)
+    for(int idx_i = 0; idx_i < ncart; idx_i++)
     {
         struct RecurInfo const * ri = aminfo + idx_i;
         const int dir = ri->dir;
@@ -41,7 +41,7 @@ void ostei_general_vrr1(int i, int num_n,
             {
                 const int idx3 = n*(ncart2) + ri->idx[dir][1];
                 const int idx4 = (n+1)*(ncart2) + ri->idx[dir][1];
-                const __m256d i1 = _mm256_set1_pd(ri->ijk[dir]-1);
+                const DBLTYPE i1 = _mm256_set1_pd(ri->ijk[dir]-1);
                 output[outidx] += one_over_2p * i1 * (theta2[idx3] + a_over_p * theta2[idx4]);
             }
         }
@@ -52,16 +52,16 @@ void ostei_general_vrr1(int i, int num_n,
 
 
 void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
-                         __m256d one_over_2p, __m256d a_over_p,
-                         __m256d one_over_2pq,
-                         const __m256d aop_PQ[3],
-                         const __m256d PA[3],
-                         __m256d const * restrict theta1,
-                         __m256d const * restrict theta2,
-                         __m256d const * restrict theta3,
-                         __m256d const * restrict theta4,
-                         __m256d const * restrict theta5,
-                         __m256d * restrict output)
+                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
+                         DBLTYPE one_over_2pq,
+                         const DBLTYPE aop_PQ[3],
+                         const DBLTYPE PA[3],
+                         DBLTYPE const * restrict theta1,
+                         DBLTYPE const * restrict theta2,
+                         DBLTYPE const * restrict theta3,
+                         DBLTYPE const * restrict theta4,
+                         DBLTYPE const * restrict theta5,
+                         DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -96,15 +96,15 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
     {
         struct RecurInfo const * const ri = aminfo_i + idx_i;
 
-        for(int16_t idx_j = 0; idx_j < ncart_j; idx_j++)
+        for(int idx_j = 0; idx_j < ncart_j; idx_j++)
         {
             struct RecurInfo const * const rj = aminfo_j + idx_j;
 
-            for(int16_t idx_k = 0; idx_k < ncart_k; idx_k++)
+            for(int idx_k = 0; idx_k < ncart_k; idx_k++)
             {
                 struct RecurInfo const * const rk = aminfo_k + idx_k;
 
-                for(int16_t idx_l = 0; idx_l < ncart_l; idx_l++)
+                for(int idx_l = 0; idx_l < ncart_l; idx_l++)
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = ri->dir;
@@ -135,7 +135,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]-1);
+                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]-1);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -150,7 +150,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -163,7 +163,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const __m256d kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -176,7 +176,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const __m256d lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -190,16 +190,16 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
 
 void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
-                         __m256d one_over_2p, __m256d a_over_p,
-                         __m256d one_over_2pq,
-                         const __m256d aop_PQ[3],
-                         const __m256d PB[3],
-                         __m256d const * restrict theta1,
-                         __m256d const * restrict theta2,
-                         __m256d const * restrict theta3,
-                         __m256d const * restrict theta4,
-                         __m256d const * restrict theta5,
-                         __m256d * restrict output)
+                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
+                         DBLTYPE one_over_2pq,
+                         const DBLTYPE aop_PQ[3],
+                         const DBLTYPE PB[3],
+                         DBLTYPE const * restrict theta1,
+                         DBLTYPE const * restrict theta2,
+                         DBLTYPE const * restrict theta3,
+                         DBLTYPE const * restrict theta4,
+                         DBLTYPE const * restrict theta5,
+                         DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -234,15 +234,15 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
     {
         struct RecurInfo const * const ri = aminfo_i + idx_i;
 
-        for(int16_t idx_j = 0; idx_j < ncart_j; idx_j++)
+        for(int idx_j = 0; idx_j < ncart_j; idx_j++)
         {
             struct RecurInfo const * const rj = aminfo_j + idx_j;
 
-            for(int16_t idx_k = 0; idx_k < ncart_k; idx_k++)
+            for(int idx_k = 0; idx_k < ncart_k; idx_k++)
             {
                 struct RecurInfo const * const rk = aminfo_k + idx_k;
 
-                for(int16_t idx_l = 0; idx_l < ncart_l; idx_l++)
+                for(int idx_l = 0; idx_l < ncart_l; idx_l++)
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = rj->dir;
@@ -273,7 +273,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -288,7 +288,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]-1);
+                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]-1);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -301,7 +301,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const __m256d kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -314,7 +314,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const __m256d lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -328,16 +328,16 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
 
 void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
-                         __m256d one_over_2q, __m256d a_over_q,
-                         __m256d one_over_2pq,
-                         const __m256d aoq_PQ[3],
-                         const __m256d QC[3],
-                         __m256d const * restrict theta1,
-                         __m256d const * restrict theta2,
-                         __m256d const * restrict theta3,
-                         __m256d const * restrict theta4,
-                         __m256d const * restrict theta5,
-                         __m256d * restrict output)
+                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
+                         DBLTYPE one_over_2pq,
+                         const DBLTYPE aoq_PQ[3],
+                         const DBLTYPE QC[3],
+                         DBLTYPE const * restrict theta1,
+                         DBLTYPE const * restrict theta2,
+                         DBLTYPE const * restrict theta3,
+                         DBLTYPE const * restrict theta4,
+                         DBLTYPE const * restrict theta5,
+                         DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -372,15 +372,15 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
     {
         struct RecurInfo const * const ri = aminfo_i + idx_i;
 
-        for(int16_t idx_j = 0; idx_j < ncart_j; idx_j++)
+        for(int idx_j = 0; idx_j < ncart_j; idx_j++)
         {
             struct RecurInfo const * const rj = aminfo_j + idx_j;
 
-            for(int16_t idx_k = 0; idx_k < ncart_k; idx_k++)
+            for(int idx_k = 0; idx_k < ncart_k; idx_k++)
             {
                 struct RecurInfo const * const rk = aminfo_k + idx_k;
 
-                for(int16_t idx_l = 0; idx_l < ncart_l; idx_l++)
+                for(int idx_l = 0; idx_l < ncart_l; idx_l++)
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = rk->dir;
@@ -411,7 +411,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const __m256d kval = _mm256_set1_pd(rk->ijk[dir]-1);
+                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]-1);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -426,7 +426,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const __m256d lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -439,7 +439,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -452,7 +452,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l +
                                              idx_l;
 
-                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }
@@ -465,16 +465,16 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 }
 
 void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
-                         __m256d one_over_2q, __m256d a_over_q,
-                         __m256d one_over_2pq,
-                         const __m256d aoq_PQ[3],
-                         const __m256d QD[3],
-                         __m256d const * restrict theta1,
-                         __m256d const * restrict theta2,
-                         __m256d const * restrict theta3,
-                         __m256d const * restrict theta4,
-                         __m256d const * restrict theta5,
-                         __m256d * restrict output)
+                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
+                         DBLTYPE one_over_2pq,
+                         const DBLTYPE aoq_PQ[3],
+                         const DBLTYPE QD[3],
+                         DBLTYPE const * restrict theta1,
+                         DBLTYPE const * restrict theta2,
+                         DBLTYPE const * restrict theta3,
+                         DBLTYPE const * restrict theta4,
+                         DBLTYPE const * restrict theta5,
+                         DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -509,15 +509,15 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
     {
         struct RecurInfo const * const ri = aminfo_i + idx_i;
 
-        for(int16_t idx_j = 0; idx_j < ncart_j; idx_j++)
+        for(int idx_j = 0; idx_j < ncart_j; idx_j++)
         {
             struct RecurInfo const * const rj = aminfo_j + idx_j;
 
-            for(int16_t idx_k = 0; idx_k < ncart_k; idx_k++)
+            for(int idx_k = 0; idx_k < ncart_k; idx_k++)
             {
                 struct RecurInfo const * const rk = aminfo_k + idx_k;
 
-                for(int16_t idx_l = 0; idx_l < ncart_l; idx_l++)
+                for(int idx_l = 0; idx_l < ncart_l; idx_l++)
                 {
                     struct RecurInfo const * const rl = aminfo_l + idx_l;
                     const int dir = rl->dir;
@@ -548,7 +548,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const __m256d kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -563,7 +563,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const __m256d lval = _mm256_set1_pd(rl->ijk[dir]-1);
+                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]-1);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -576,7 +576,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const __m256d ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -589,7 +589,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const __m256d jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }

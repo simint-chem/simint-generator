@@ -338,3 +338,29 @@ bool OSTEI_HRR_Algorithm_Base::HasKetHRR(void) const
     return ketsteps_.size();
 }
 
+QAMList OSTEI_HRR_Algorithm_Base::GenerateAMReq(QAM am, RRStepType rrstep) const
+{
+    QAMList req;
+    switch(rrstep)
+    {
+        case RRStepType::I:
+            req.push_back({am[0]-1, am[1]+1, am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  });
+            break;
+        case RRStepType::J:
+            req.push_back({am[0]+1, am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  });
+            break;
+        case RRStepType::K:
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]+1});
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  });
+            break;
+        case RRStepType::L:
+            req.push_back({am[0]  , am[1]  , am[2]+1, am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1});
+            break;
+    }
+
+    return req;
+}
+

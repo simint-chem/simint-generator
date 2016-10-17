@@ -13,7 +13,7 @@ from mpmath import mp # arbitrary-precision math
 # can parse it without turning it into a (possibly) lesser-precision float 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename", type=str, required=True,               help="Output file name base (no extension)")
-parser.add_argument("--max-l",    type=int, required=True,               help="Maximum angular momentum value to go to")
+parser.add_argument("--max-am",    type=int, required=True,               help="Maximum angular momentum value to go to")
 parser.add_argument("--dps",      type=int, required=False, default=256, help="Decimal precision/sig figs to use/calculate")
 args = parser.parse_args()
 
@@ -21,11 +21,11 @@ args = parser.parse_args()
 mp.dps = args.dps
 
 # Convert stuff to mpmath
-maxl = args.max_l
+maxam = args.max_am
 
 print("------------------------------------")
-print("Options for ShellGen constants:")
-print("    Max l: {}".format(maxl))
+print("Options for gen_shellconstants:")
+print("   Max am: {}".format(maxam))
 print("      DPS: {}".format(args.dps))
 print("------------------------------------")
 
@@ -33,12 +33,12 @@ print("------------------------------------")
 # For normalization
 # c = pi**(3/2) * (2L-1)!! / 2**L 
 
-normfac = [None] * (maxl+1)
+normfac = [None] * (maxam+1)
 
 normfac[0] = mp.power(mp.pi, 1.5)
 normfac[1] = normfac[0] / mp.mpf(2.0)
 
-for l in range(2, maxl+1):
+for l in range(2, maxam+1):
   normfac[l] = normfac[l-1] * mp.mpf(2*l-1) / mp.mpf(2.0)
   
 
@@ -49,8 +49,8 @@ with open(args.filename + ".c", 'w') as f:
   f.write("   " + " ".join(sys.argv[:]))
   f.write("\n")
   f.write("------------------------------------\n")
-  f.write("Options for ShellGen constants:\n")
-  f.write("    Max l: {}\n".format(maxl))
+  f.write("Options for gen_shellconstants:\n")
+  f.write("   Max am: {}\n".format(maxam))
   f.write("      DPS: {}\n".format(args.dps))
   f.write("------------------------------------\n")
   f.write("*/\n\n")
@@ -59,7 +59,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("/* A prefactor for normalization. c = pi**(3/2) * (2l-1)!! / 2**l\n")
   f.write("   where l is the angular momentum\n")
   f.write("*/\n")
-  f.write("const double norm_fac[{}] = \n".format(maxl+1))
+  f.write("const double norm_fac[{}] = \n".format(maxam+1))
   f.write("{\n")
 
   for i,n in enumerate(normfac):
@@ -72,5 +72,5 @@ with open(args.filename + ".h", 'w') as f:
   f.write("/*! The maximum value of L for which we have precomputed a\n")
   f.write("*  part of the normalization\n")
   f.write("*/\n")
-  f.write("#define SHELL_PRIM_NORMFAC_MAXL {}\n".format(maxl))
+  f.write("#define SHELL_PRIM_NORMFAC_MAXL {}\n".format(maxam))
   f.write("\n")
