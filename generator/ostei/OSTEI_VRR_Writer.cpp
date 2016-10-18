@@ -281,6 +281,8 @@ void OSTEI_VRR_Writer::WriteVRR(std::ostream & os) const
             os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.IntConstant(it) << " * one_over_2pq;\n"; 
     }
 
+    os << "\n\n";
+
     // actually write out
     for(const auto & am : vrr_algo_.GetAMOrder())
     {
