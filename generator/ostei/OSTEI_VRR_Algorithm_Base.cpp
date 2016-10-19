@@ -294,35 +294,35 @@ VRRStep OSTEI_VRR_Algorithm_Base::Create_Single_(Quartet q, RRStepType rrstep)
 
 void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder idx_order)
 {
+    // holds the requirements for each am
+    // so store what we initially want
     //PrintQuartetSet(q, "Initial VRR");
-    std::cout << "idx order: " << idx_order[0] << " "
-                               << idx_order[1] << " "
-                               << idx_order[2] << " "
-                               << idx_order[3] << "\n";
 
     VRR_StepMap newmap;
 
+    // solved quartets
     QuartetSet solvedquartets;
 
+    // unsolved quartets
     QuartetSet targets = q;
     PruneQuartets_(targets);
 
-    while(targets.size())
+    for(int i = 0; i < 4; i++)
     {
-        QuartetSet newtargets;
+        // check if we should stop
+        if(idx_order[i] < 0)
+            break;
 
-        for(int i = 0; i < 4; i++)
+        RRStepType rrstep = static_cast<RRStepType>(idx_order[i]);
+
+        QuartetSet my_targets = targets;
+
+        // set targets to be everything we aren't doing 
+        targets = PruneQuartets_(my_targets, rrstep);
+
+        while(my_targets.size())
         {
-            // called from the vrr file generator with -1 sometimes
-            if(idx_order[i] < 0)
-                continue;
-
-            RRStepType rrstep = static_cast<RRStepType>(idx_order[i]);
-
-            // get what we are doing and
-            // set targets to be everything we aren't doing 
-            QuartetSet my_targets = targets;
-            targets = PruneQuartets_(my_targets, rrstep);
+            QuartetSet newtargets;
 
             for(const auto & it : my_targets)
             {
@@ -333,25 +333,28 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
                 // add new targets
                 for(const auto & it2 : vs.src)
                 {
-                    if(it2 && solvedquartets.count(it2) == 0)
-                        newtargets.insert(it2);
-
-                    newmap[qam].insert(vs);
-                    solvedquartets.insert(it);
+                    if(it2)
+                    {
+                        if(solvedquartets.count(it2) == 0)
+                            newtargets.insert(it2);
+                    }
                 }
+
+                newmap[qam].insert(vs);
+                solvedquartets.insert(it);
             }
-        } 
 
-        // targets should be zero
-        if(targets.size() != 0)
-        {
-            PrintQuartetSet(targets, "Remaining targets");
-            throw std::logic_error("Error - I still have targets!");
+            // now get what I need to do
+            my_targets = newtargets;
+            QuartetSet not_for_me = PruneQuartets_(my_targets, rrstep);
+
+            // add anything that is not my responsibility to the
+            // main targets list. These might not be a part of
+            // that list right now. 
+            targets.insert(not_for_me.begin(),
+                           not_for_me.end());
         }
-
-        targets = newtargets;
-        PruneQuartets_(targets);
-    }    
+    } 
 
     // save the solved quartets
     for(const auto & it : solvedquartets)
