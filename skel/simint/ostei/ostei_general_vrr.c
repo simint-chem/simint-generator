@@ -41,7 +41,7 @@ void ostei_general_vrr1(int i, int num_n,
             {
                 const int idx3 = n*(ncart2) + ri->idx[dir][1];
                 const int idx4 = (n+1)*(ncart2) + ri->idx[dir][1];
-                const DBLTYPE i1 = _mm256_set1_pd(ri->ijk[dir]-1);
+                const DBLTYPE i1 = SET1(ri->ijk[dir]-1);
                 output[outidx] += one_over_2p * i1 * (theta2[idx3] + a_over_p * theta2[idx4]);
             }
         }
@@ -135,7 +135,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]-1);
+                            const DBLTYPE ival = SET1(ri->ijk[dir]-1);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -150,7 +150,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -163,7 +163,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -176,7 +176,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -273,7 +273,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -288,7 +288,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]-1);
+                            const DBLTYPE jval = SET1(rj->ijk[dir]-1);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -301,7 +301,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -314,7 +314,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -411,7 +411,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]-1);
+                            const DBLTYPE kval = SET1(rk->ijk[dir]-1);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -426,7 +426,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]);
+                            const DBLTYPE lval = SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -439,7 +439,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -452,7 +452,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l +
                                              idx_l;
 
-                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }
@@ -548,7 +548,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE kval = _mm256_set1_pd(rk->ijk[dir]);
+                            const DBLTYPE kval = SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -563,7 +563,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE lval = _mm256_set1_pd(rl->ijk[dir]-1);
+                            const DBLTYPE lval = SET1(rl->ijk[dir]-1);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -576,7 +576,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE ival = _mm256_set1_pd(ri->ijk[dir]);
+                            const DBLTYPE ival = SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -589,7 +589,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE jval = _mm256_set1_pd(rj->ijk[dir]);
+                            const DBLTYPE jval = SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }

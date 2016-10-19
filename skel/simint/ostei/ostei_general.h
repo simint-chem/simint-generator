@@ -1,19 +1,26 @@
 #pragma once
 
-#include "simint/shell/shell.h"
+#include "simint/ostei/ostei.h"
 #include "simint/vectorization/vectorization.h"
 
 #ifdef SIMINT_AVX
   #define DBLTYPE __m256d
+  #define SET1 _mm256_set1_pd
 #elif defined SIMINT_SSE
   #define DBLTYPE __m128d
+  #define SET1 _mm_set1_pd
 #elif defined SIMINT_SCALAR
   #define DBLTYPE double
+  #define SET1
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+//////////////////////////////////////////////////////
+// General VRR
+//////////////////////////////////////////////////////
 
 
 /*! \brief Compute a vrr step for incrementing a single center,
@@ -164,6 +171,10 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                          DBLTYPE * restrict output);
 
 
+//////////////////////////////////////////////////////
+// General HRR
+//////////////////////////////////////////////////////
+
 /*! \brief Compute X_X_X_X via a single hrr step on i
  *
  * \todo writeme
@@ -203,6 +214,24 @@ void ostei_general_hrr_l(int i, int j, int k, int l,
                          const double * theta1,
                          const double * theta2,
                          double * output);
+
+
+//////////////////////////////////////////////////////
+// General OSTEI
+//////////////////////////////////////////////////////
+int ostei_general_sharedwork(struct simint_multi_shellpair const P,
+                             struct simint_multi_shellpair const Q,
+                             Fjtfunc fjt,
+                             double screen_tol,
+                             double * const restrict contwork,
+                             double * const restrict INT__s_d_s_p);
+
+int ostei_general(struct simint_multi_shellpair const P,
+                  struct simint_multi_shellpair const Q,
+                  Fjtfunc fjt,
+                  double screen_tol,
+                  double * const restrict INT__s_d_s_p);
+
 
 #ifdef __cplusplus
 }

@@ -295,6 +295,10 @@ VRRStep OSTEI_VRR_Algorithm_Base::Create_Single_(Quartet q, RRStepType rrstep)
 void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder idx_order)
 {
     //PrintQuartetSet(q, "Initial VRR");
+    std::cout << "idx order: " << idx_order[0] << " "
+                               << idx_order[1] << " "
+                               << idx_order[2] << " "
+                               << idx_order[3] << "\n";
 
     VRR_StepMap newmap;
 
@@ -309,6 +313,10 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
         for(int i = 0; i < 4; i++)
         {
+            // called from the vrr file generator with -1 sometimes
+            if(idx_order[i] < 0)
+                continue;
+
             RRStepType rrstep = static_cast<RRStepType>(idx_order[i]);
 
             // get what we are doing and
@@ -336,7 +344,10 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
         // targets should be zero
         if(targets.size() != 0)
+        {
+            PrintQuartetSet(targets, "Remaining targets");
             throw std::logic_error("Error - I still have targets!");
+        }
 
         targets = newtargets;
         PruneQuartets_(targets);
