@@ -150,7 +150,7 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
             if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
-            int L = am[0] + am[1] + am[2] + am[3];
+            int L = am[0] + am[1];
 
             if(L < start_external_)
                 WriteHRR_Bra_Inline_(os, am);
@@ -179,7 +179,7 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
             if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
-            int L = am[0] + am[1] + am[2] + am[3];
+            int L = am[2] + am[3];
 
             if(L < start_external_)
                 WriteHRR_Ket_Inline_(os, am);

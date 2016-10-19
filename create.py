@@ -143,11 +143,7 @@ for i in range(1, args.l+1):
   for j in range(1, i+1):
     ij = i + j
 
-    # We will always need the lower external ones.
-    # This is because the determination of inline, external, and general
-    # Is made based on the entire AM quartet, not just the part
-    # undergoing HRR
-    if ij < args.hg:
+    if ij >= args.he and ij < args.hg:
       valid.add((i,j));
       if args.p:
           valid.add((j, i))
@@ -156,8 +152,7 @@ for i in range(args.l+1, 2*args.l):
   for j in range(1, 2*args.l-i+1):
     ij = i + j
 
-    # See note above
-    if ij < args.hg:
+    if ij >= args.he and ij < args.hg:
       valid.add((i,j));
       if args.p:
         valid.add((j, i))
