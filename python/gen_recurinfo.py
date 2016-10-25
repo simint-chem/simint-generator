@@ -72,8 +72,9 @@ with open(args.filename + ".c", 'w') as f:
         d = -1
       else:
         # smallest nonzero value, blah blah (see Makowski)
-        m = next((i for i, x in enumerate(reversed(vi.ijk)) if x), None)
-        d = 2 - m
+        srt = sorted(vi.ijk)
+        m = next((x for i, x in enumerate(srt) if x > 0), None) # Smallest non-zero
+        d = 2 - list(reversed(vi.ijk)).index(m)  # Favoring the right-hand side
 
       f.write("{:>2}, ".format(str(d)))
 
