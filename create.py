@@ -472,18 +472,9 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#pragma once\n\n")
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
-  hfile.write("#ifdef __cplusplus\n")
-  hfile.write("extern \"C\" {\n")
-  hfile.write("#endif\n")
-  hfile.write("\n\n")
   hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(args.l))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
-  hfile.write("\n\n")
-  hfile.write("\n")
-  hfile.write("#ifdef __cplusplus\n")
-  hfile.write("}\n")
-  hfile.write("#endif\n")
   hfile.write("\n")
 
 

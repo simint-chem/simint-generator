@@ -1,6 +1,6 @@
 #include "simint/simint_eri.h"
 #include "simint/ostei/ostei.h"
-#include "simint/boys/boys_split.h"
+#include "simint/boys/boys.h"
 
 
 

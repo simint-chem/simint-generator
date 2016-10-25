@@ -1,11 +1,11 @@
 #pragma once
 
+#include "simint/boys/boys_shortgrid.h"
+#include "simint/vectorization/vectorization.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "simint/boys/boys_shortgrid.h"
-#include "simint/vectorization/vectorization.h"
 
 extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];
 

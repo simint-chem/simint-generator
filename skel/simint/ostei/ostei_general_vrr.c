@@ -584,7 +584,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                         {
                             const int idx_j_1 = rj->idx[dir][0];
                             const int idx8 = (n+1) * ncart5 +
-                                             idx_i   * ncart_j   * ncart_k   * ncart_l_1   +
+                                             idx_i   * ncart_j_1 * ncart_k   * ncart_l_1   +
                                              idx_j_1 * ncart_k   * ncart_l_1 +
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
