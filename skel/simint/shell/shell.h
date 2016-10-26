@@ -2,6 +2,12 @@
 
 #include <stddef.h>
 
+
+#define SIMINT_SCREEN_NONE         0
+#define SIMINT_SCREEN_SCHWARZ      1
+#define SIMINT_SCREEN_FASTSCHWARZ  2
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,7 +27,7 @@ struct simint_shell
     double * coef;   //!< Contraction coefficients (for each primitive)
 
     size_t memsize;     //!< Total memory for storing various data in this structure (in bytes)
-    void * ptr;      //!< Pointer to all the allocated memory within this structure (in bytes) 
+    void * ptr;      //!< Pointer to all the allocated memory within this structure (in bytes)
 };
 
 
@@ -45,7 +51,7 @@ struct simint_multi_shellpair
 
     int nshell12;       //!< Total number of shell pair (nshell1 * nshell2)
     int nshell12_clip;  //!< Total number of shell pair to actual calculate (should be <= nshell12)
-    int * nprim12;      //!< Number of primitive combinations for each shell pair, including padding (length nshell12) 
+    int * nprim12;      //!< Number of primitive combinations for each shell pair, including padding (length nshell12)
 
     double * AB_x;      //!< X distance between the centers for a shell (Ax - Bx) (length nshell12).
     double * AB_y;      //!< Y distance between the centers for a shell (Ay - By) (length nshell12).
@@ -213,7 +219,7 @@ void simint_free_multi_shellpair(struct simint_multi_shellpair * P);
 void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  int nb, struct simint_shell const * B,
                                  struct simint_multi_shellpair * P,
-                                 int screen);
+                                 int screen_method);
 
 
 
@@ -234,7 +240,7 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
  */
 void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                                   struct simint_multi_shellpair * P,
-                                  int screen);
+                                  int screen_method);
 
 
 
@@ -254,7 +260,7 @@ void
 simint_create_multi_shellpair(int na, struct simint_shell const * A,
                               int nb, struct simint_shell const * B,
                               struct simint_multi_shellpair * P,
-                              int screen);
+                              int screen_method);
 
 /*! \brief Allocates and fills a multi shellpair structure
  *
@@ -269,7 +275,7 @@ void
 simint_create_multi_shellpair2(int npair,
                                struct simint_shell const * AB,
                                struct simint_multi_shellpair * P,
-                               int screen);
+                               int screen_method);
 
 
 
@@ -280,11 +286,12 @@ simint_create_multi_shellpair2(int npair,
  * \param [in] AB Pairs of shells to place in the shell pair
  * \param [inout] P The structure that will hold the shell pair data
  */
+/*
 void
 simint_prune_multi_shellpair(struct simint_multi_shellpair const * P,
                              struct simint_multi_shellpair * out,
                              double screen_max, double screen_tol);
-
+*/
 
 #ifdef __cplusplus
 }

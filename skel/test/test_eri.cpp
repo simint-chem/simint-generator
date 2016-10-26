@@ -168,7 +168,7 @@ int main(int argc, char ** argv)
                 UpdateErrorMap(errors, {i, j, k, l}, CalcError(res_simint, res_valeev, ncont1234));
             }
 
-
+/*
             // For debugging
             int m = 0;
             for(int m1 = 0; m1 < nshell1; m1++)
@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
                     printf("\n");
                 }
             }
-
+*/
 
             simint_free_multi_shellpair(&P);
 
@@ -208,7 +208,10 @@ int main(int argc, char ** argv)
         printf("( %2d %2d | %2d %2d )  ", i, j, k, l);
 
         // should be the same order as the header, right?
-        printf("  %10.3e  %10.3e\n", errors.at({i, j, k, l}).first, errors.at({i, j, k, l}).second);
+        double abserr = errors.at({i, j, k, l}).first;
+        double relerr = errors.at({i, j, k, l}).second;
+        bool bad = (abserr > 1e-14 && relerr > 1e-8);
+        printf("  %10.3e  %10.3e  %s\n", abserr, relerr, bad ? "***" : "");
     }
 
     printf("\n");

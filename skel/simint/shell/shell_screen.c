@@ -1,12 +1,51 @@
 #include <math.h> // for fabs()
 
 #include "simint/simint_eri.h"
+#include "simint/constants.h"
 #include "simint/shell/shell_screen.h"
 #include "simint/vectorization/vectorization.h"
 
 double
-simint_shellscreen_schwarz_max(struct simint_shell const * A,
-                               struct simint_shell const * B)
+simint_shellscreen(struct simint_shell const * A,
+                   struct simint_shell const * B,
+                   int screen_method)
+{
+    switch(screen_method)
+    {
+        case SIMINT_SCREEN_SCHWARZ:
+            return simint_shellscreen_schwarz(A, B);
+        case SIMINT_SCREEN_FASTSCHWARZ:
+            return simint_shellscreen_fastschwarz(A, B);
+        default:
+            return simint_shellscreen_schwarz(A, B);
+    }
+}
+
+
+double
+simint_primscreen(struct simint_shell const * A,
+                  struct simint_shell const * B,
+                  double * out,
+                  int screen_method)
+{
+    switch(screen_method)
+    {
+        case SIMINT_SCREEN_SCHWARZ:
+            return simint_primscreen_schwarz(A, B, out);
+        case SIMINT_SCREEN_FASTSCHWARZ:
+            return simint_primscreen_fastschwarz(A, B, out);
+        default:
+            return simint_primscreen_schwarz(A, B, out);
+    }
+}
+
+
+///////////////////////////////////////
+// Shell screening implementations
+///////////////////////////////////////
+double
+simint_shellscreen_schwarz(struct simint_shell const * A,
+                           struct simint_shell const * B)
 {
     const int ncart1 = ((A->am+1) * (A->am+2))/2;
     const int ncart2 = ((B->am+1) * (B->am+2))/2;
@@ -38,9 +77,49 @@ simint_shellscreen_schwarz_max(struct simint_shell const * A,
 
 
 double
-simint_primscreen_schwarz_max(struct simint_shell const * A,
-                              struct simint_shell const * B,
-                              double * out)
+simint_shellscreen_fastschwarz(struct simint_shell const * A,
+                               struct simint_shell const * B)
+{
+    const int same_shell = compare_shell(A, B);
+
+    int idx = 0;
+    double val = 0.0;
+
+    for(int i = 0; i < A->nprim; i++)
+    {
+        const int Bend = (same_shell ? (i+1) : B->nprim);
+        for(int j = 0; j < Bend; j++)
+        {
+            const double a = A->alpha[i];
+            const double b = B->alpha[j];
+            const double p = a + b;
+            const double oop = 1.0/p;
+            const double rho = (a*b)/p;
+            const double Rx = (A->x - B->x);
+            const double Ry = (A->y - B->y);
+            const double Rz = (A->z - B->z);
+            const double R2 = (Rx*Rx + Ry*Ry + Rz*Rz);
+
+            // this is actually Gab**2 (where Gab is from from MEST)
+            double Gab = SQRT_TWO_TIMES_PI_52 * pow(oop, 2.5) * exp(-2.0 * rho * R2);
+            Gab *= A->coef[i] * A->coef[i] * B->coef[j] * B->coef[j];
+            val += Gab;
+        }
+    }
+
+    return val;
+}
+
+
+
+
+///////////////////////////////////////////
+// Primitive screening implementations
+///////////////////////////////////////////
+double
+simint_primscreen_schwarz(struct simint_shell const * A,
+                          struct simint_shell const * B,
+                          double * out)
 {
     const int ncart1 = ((A->am+1) * (A->am+2))/2;
     const int ncart2 = ((B->am+1) * (B->am+2))/2;
@@ -81,7 +160,7 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
 
             // create a shell pair
             // Note - we aren't screening this. That would be a infinite loop.
-            simint_create_multi_shellpair(1, &new_A, 1, &new_B, &P, 0); 
+            simint_create_multi_shellpair(1, &new_A, 1, &new_B, &P, 0);
 
             // calculate (ab|ab)
             simint_compute_eri(&P, &P, 0.0, integrals);
@@ -117,6 +196,55 @@ simint_primscreen_schwarz_max(struct simint_shell const * A,
     simint_free_multi_shellpair(&P);
     simint_free_shell(&new_A);
     simint_free_shell(&new_B);
+
+    return total_max;
+}
+
+
+double
+simint_primscreen_fastschwarz(struct simint_shell const * A,
+                              struct simint_shell const * B,
+                              double * restrict out)
+{
+    const int same_shell = compare_shell(A, B);
+
+    double total_max = 0.0;
+
+    int idx = 0;
+
+    // we manually calculate [00|00] for all primitives
+    // (manually, rather than calling to simint_compute_eri)
+    // Since this is schwarz screening, we calculate (ij|ij)
+    // for each primitive pair
+    for(int i = 0; i < A->nprim; i++)
+    {
+        const int Bend = (same_shell ? (i+1) : B->nprim);
+        for(int j = 0; j < Bend; j++)
+        {
+            const double a = A->alpha[i];
+            const double b = B->alpha[j];
+            const double p = a + b;
+            const double oop = 1.0/p;
+            const double rho = (a*b)/p;
+            const double Rx = (A->x - B->x);
+            const double Ry = (A->y - B->y);
+            const double Rz = (A->z - B->z);
+            const double R2 = (Rx*Rx + Ry*Ry + Rz*Rz);
+
+            // this is actually Gab**2 (where Gab is from from MEST)
+            double Gab = SQRT_TWO_TIMES_PI_52 * pow(oop, 2.5) * exp(-2.0 * rho * R2);
+            Gab *= A->coef[i] * A->coef[i] * B->coef[j] * B->coef[j];
+
+            if(out != NULL)
+                out[idx] = Gab;
+
+            if(Gab > total_max)
+                total_max = Gab;
+
+            idx++; // increment even if we aren't outputting
+                   // this helps the compiler vectorize this loop
+        }
+    }
 
     return total_max;
 }

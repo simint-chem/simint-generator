@@ -1,7 +1,6 @@
 #include "test/Common.hpp"
 
-#include "simint/eri/eri.h"
-#include "simint/simint_init.h"
+#include "simint/simint.h"
 #include "simint/shell/shell_screen.h"
 
 #define SIMINT_SCREEN 1
@@ -35,7 +34,7 @@ int main(int argc, char ** argv)
 
     // find the max dimensions
     std::pair<int, int> maxparams = FindMaxParams(shellmap);
-    const int maxam = (maxparams.first > SIMINT_ERI_MAXAM ? SIMINT_ERI_MAXAM : maxparams.first);
+    const int maxam = (maxparams.first > SIMINT_OSTEI_MAXAM ? SIMINT_OSTEI_MAXAM : maxparams.first);
 
 
     // expand the shell map
@@ -63,8 +62,8 @@ int main(int argc, char ** argv)
         const simint_shell * A = &shellvec[i];
         const simint_shell * B = &shellvec[j];
 
-        double shell_screen = simint_shellscreen_schwarz_max(A, B); 
-        double prim_screen = simint_primscreen_schwarz_max(A, B, NULL); 
+        double shell_screen = simint_shellscreen_schwarz(A, B); 
+        double prim_screen = simint_primscreen(A, B, NULL, SIMINT_SCREEN); 
 
         shell_screen_max = std::max(shell_screen_max, shell_screen);
         prim_screen_max = std::max(prim_screen_max, prim_screen);
@@ -89,7 +88,7 @@ int main(int argc, char ** argv)
     {
         const simint_shell * A = &shellvec[i];
         const simint_shell * B = &shellvec[j];
-        const double screen = simint_shellscreen_schwarz_max(A, B);
+        const double screen = simint_shellscreen_schwarz(A, B);
         const double val4 = screen * shell_screen_max;
 
         if(val4 < SIMINT_SCREEN_TOL2)
@@ -115,7 +114,7 @@ int main(int argc, char ** argv)
     /////////////////////////////////////////////
     // PRIMITIVE SHELL PAIRS
     /////////////////////////////////////////////
-    double * primscreen_info = (double *)ALLOC(max_nprim * max_nprim * sizeof(double));
+    double * primscreen_info = (double *)SIMINT_ALLOC(max_nprim * max_nprim * sizeof(double));
     size_t nprimpair_insig = 0;
     size_t nprimpair_sig = 0;
 
@@ -130,7 +129,7 @@ int main(int argc, char ** argv)
         const size_t nprim12 = nprimA * nprimB;
         const size_t nprimtri = (i == j ? ((nprimA)*(nprimA+1))/2 : nprim12);
 
-        const double screen = simint_primscreen_schwarz_max(A, B, primscreen_info);
+        const double screen = simint_primscreen(A, B, primscreen_info, SIMINT_SCREEN);
 
         for(size_t p = 0; p < nprimtri; p++)
         {
@@ -143,7 +142,7 @@ int main(int argc, char ** argv)
         }
     }
 
-    FREE(primscreen_info);
+    SIMINT_FREE(primscreen_info);
 
     const size_t nprimpair_total = nprimpair_insig + nprimpair_sig;
     frac = ((double)(nprimpair_sig))/((double)(nprimpair_total));

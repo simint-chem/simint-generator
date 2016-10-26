@@ -11,7 +11,7 @@ Options for gen_shellconstants:
 /* A prefactor for normalization. c = pi**(3/2) * (2l-1)!! / 2**l
    where l is the angular momentum
 */
-const double norm_fac[21] = 
+const double norm_fac[21] =
 {
 /* l =    0 */  5.56832799683170785             ,
 /* l =    1 */  2.78416399841585392             ,
