@@ -396,7 +396,7 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
     }
 
 
-    // Sort, if we are screening
+    // If we are screening, sort the primitives within each shell
     if(screen_method)
         simint_sort_multi_shellpair(P);
 }
