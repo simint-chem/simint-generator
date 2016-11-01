@@ -15,7 +15,6 @@ simint_osteifunc             simint_osteifunc_array[AMSIZE][AMSIZE][AMSIZE][AMSI
 static
 int simint_ostei_notyetimplemented(struct simint_multi_shellpair const P,
                                    struct simint_multi_shellpair const Q,
-                                   Fjtfunc dummy0,
                                    double dummy1,
                                    double * restrict dummy2)
 {
@@ -31,7 +30,6 @@ int simint_ostei_notyetimplemented(struct simint_multi_shellpair const P,
 static
 int simint_ostei_shared_notyetimplemented(struct simint_multi_shellpair const P,
                                           struct simint_multi_shellpair const Q,
-                                          Fjtfunc dummy0,
                                           double dummy1,
                                           double * restrict dummy2,
                                           double * restrict dummy3)

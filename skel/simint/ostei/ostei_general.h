@@ -3,16 +3,6 @@
 #include "simint/ostei/ostei.h"
 #include "simint/vectorization/vectorization.h"
 
-#ifdef SIMINT_AVX
-  #define DBLTYPE __m256d
-  #define SET1 _mm256_set1_pd
-#elif defined SIMINT_SSE
-  #define DBLTYPE __m128d
-  #define SET1 _mm_set1_pd
-#elif defined SIMINT_SCALAR
-  #define DBLTYPE double
-  #define SET1
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,12 +19,12 @@ extern "C" {
  * \todo writeme
  */
 void ostei_general_vrr1(int i, int num_n,
-                        DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                        const DBLTYPE aop_PQ[3],
-                        const DBLTYPE PA[3],
-                        DBLTYPE const * restrict theta1,
-                        DBLTYPE const * restrict theta2,
-                        DBLTYPE * restrict output);
+                        SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                        const SIMINT_DBLTYPE aop_PQ[3],
+                        const SIMINT_DBLTYPE PA[3],
+                        SIMINT_DBLTYPE const * restrict theta1,
+                        SIMINT_DBLTYPE const * restrict theta2,
+                        SIMINT_DBLTYPE * restrict output);
 
 
 /*! \brief Compute X_s_s_s via a single vrr step
@@ -43,12 +33,12 @@ void ostei_general_vrr1(int i, int num_n,
  */
 static inline
 void ostei_general_vrr1_i(int i, int num_n,
-                          DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                          const DBLTYPE aop_PQ[3],
-                          const DBLTYPE PA[3],
-                        DBLTYPE const * restrict theta1,
-                        DBLTYPE const * restrict theta2,
-                        DBLTYPE * restrict output)
+                          SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                          const SIMINT_DBLTYPE aop_PQ[3],
+                          const SIMINT_DBLTYPE PA[3],
+                          SIMINT_DBLTYPE const * restrict theta1,
+                          SIMINT_DBLTYPE const * restrict theta2,
+                          SIMINT_DBLTYPE * restrict output)
 {
     ostei_general_vrr1(i, num_n, one_over_2p, a_over_p, aop_PQ, PA,
                  theta1, theta2, output);
@@ -60,12 +50,12 @@ void ostei_general_vrr1_i(int i, int num_n,
  */
 static inline
 void ostei_general_vrr1_j(int j, int num_n,
-                          DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                          const DBLTYPE aop_PQ[3],
-                          const DBLTYPE PB[3],
-                        DBLTYPE const * restrict theta1,
-                        DBLTYPE const * restrict theta2,
-                        DBLTYPE * restrict output)
+                          SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                          const SIMINT_DBLTYPE aop_PQ[3],
+                          const SIMINT_DBLTYPE PB[3],
+                          SIMINT_DBLTYPE const * restrict theta1,
+                          SIMINT_DBLTYPE const * restrict theta2,
+                          SIMINT_DBLTYPE * restrict output)
 {
     ostei_general_vrr1(j, num_n, one_over_2p, a_over_p, aop_PQ, PB,
                  theta1, theta2, output);
@@ -77,12 +67,12 @@ void ostei_general_vrr1_j(int j, int num_n,
  */
 static inline
 void ostei_general_vrr1_k(int k, int num_n,
-                          DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                          const DBLTYPE aoq_PQ[3],
-                          const DBLTYPE QC[3],
-                          DBLTYPE const * restrict theta1,
-                          DBLTYPE const * restrict theta2,
-                          DBLTYPE * restrict output)
+                          SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                          const SIMINT_DBLTYPE aoq_PQ[3],
+                          const SIMINT_DBLTYPE QC[3],
+                          SIMINT_DBLTYPE const * restrict theta1,
+                          SIMINT_DBLTYPE const * restrict theta2,
+                          SIMINT_DBLTYPE * restrict output)
 {
     ostei_general_vrr1(k, num_n, one_over_2q, a_over_q, aoq_PQ, QC,
                  theta1, theta2, output);
@@ -94,12 +84,12 @@ void ostei_general_vrr1_k(int k, int num_n,
  */
 static inline
 void ostei_general_vrr1_l(int l, int num_n,
-                          DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                          const DBLTYPE aoq_PQ[3],
-                          const DBLTYPE QD[3],
-                          DBLTYPE const * restrict theta1,
-                          DBLTYPE const * restrict theta2,
-                          DBLTYPE * restrict output)
+                          SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                          const SIMINT_DBLTYPE aoq_PQ[3],
+                          const SIMINT_DBLTYPE QD[3],
+                          SIMINT_DBLTYPE const * restrict theta1,
+                          SIMINT_DBLTYPE const * restrict theta2,
+                          SIMINT_DBLTYPE * restrict output)
 {
     ostei_general_vrr1(l, num_n, one_over_2q, a_over_q, aoq_PQ, QD,
                  theta1, theta2, output);
@@ -111,64 +101,64 @@ void ostei_general_vrr1_l(int l, int num_n,
  * \todo writeme
  */
 void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aop_PQ[3],
-                         const DBLTYPE PA[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output);
+                         SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aop_PQ[3],
+                         const SIMINT_DBLTYPE PA[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output);
 
 /*! \brief Compute X_X_X_X via a single vrr step on j
  *
  * \todo writeme
  */
 void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aop_PQ[3],
-                         const DBLTYPE PB[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output);
+                         SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aop_PQ[3],
+                         const SIMINT_DBLTYPE PB[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output);
 
 /*! \brief Compute X_X_X_X via a single vrr step on k
  *
  * \todo writeme
  */
 void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aoq_PQ[3],
-                         const DBLTYPE QC[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output);
+                         SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aoq_PQ[3],
+                         const SIMINT_DBLTYPE QC[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output);
 
 /*! \brief Compute X_X_X_X via a single vrr step on l
  *
  * \todo writeme
  */
 void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aoq_PQ[3],
-                         const DBLTYPE QD[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output);
+                         SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aoq_PQ[3],
+                         const SIMINT_DBLTYPE QD[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output);
 
 
 //////////////////////////////////////////////////////
@@ -214,23 +204,6 @@ void ostei_general_hrr_l(int i, int j, int k, int l,
                          const double * theta1,
                          const double * theta2,
                          double * output);
-
-
-//////////////////////////////////////////////////////
-// General OSTEI
-//////////////////////////////////////////////////////
-int ostei_general_sharedwork(struct simint_multi_shellpair const P,
-                             struct simint_multi_shellpair const Q,
-                             Fjtfunc fjt,
-                             double screen_tol,
-                             double * const restrict contwork,
-                             double * const restrict INT__s_d_s_p);
-
-int ostei_general(struct simint_multi_shellpair const P,
-                  struct simint_multi_shellpair const Q,
-                  Fjtfunc fjt,
-                  double screen_tol,
-                  double * const restrict INT__s_d_s_p);
 
 
 #ifdef __cplusplus

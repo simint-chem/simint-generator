@@ -11,6 +11,10 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND SIMINT_C_FLAGS "-wd10397;-wd981;-wd869")
   list(APPEND SIMINT_C_FLAGS "-DSIMINT_INTEL")
 
+  # Temporarily supress unused variable warnings
+  # (hope to be fixed in the future)
+  list(APPEND SIMINT_C_FLAGS "-wd177")
+
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-qopt-report=5;-w3")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-wd10397;-wd981;-wd383")

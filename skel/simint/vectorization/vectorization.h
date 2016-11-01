@@ -34,3 +34,20 @@
 // Number of shells to use in a batch
 #define SIMINT_NSHELL_SIMD (2*SIMINT_SIMD_LEN)
 
+
+/* The following are used in some general routines, such as the
+ * general recurrence functions and the boys function
+ */
+#ifdef SIMINT_AVX
+  #define SIMINT_DBLTYPE  __m256d
+  #define SIMINT_SET1     _mm256_set1_pd
+  #define SIMINT_EXP      _mm256_exp_pd
+#elif defined SIMINT_SSE
+  #define SIMINT_DBLTYPE  __m128d
+  #define SIMINT_SET1     _mm_set1_pd
+  #define SIMINT_EXP      _mm_exp_pd
+#elif defined SIMINT_SCALAR
+  #define SIMINT_DBLTYPE  double
+  #define SIMINT_SET1
+  #define SIMINT_EXP      exp
+#endif

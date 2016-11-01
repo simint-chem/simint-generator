@@ -12,6 +12,7 @@ extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];
 static inline
 void boys_F_taylor(double * restrict F, int n, double x)
 {
+
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
     const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
     const double dx = xi-x;   // -delta x
@@ -20,27 +21,45 @@ void boys_F_taylor(double * restrict F, int n, double x)
 
     for(int i = 0; i <= n; ++i)
     {
-        const double f0xi = gridpts[i];
-        const double f1xi = gridpts[i+1];
-        const double f2xi = gridpts[i+2];
-        const double f3xi = gridpts[i+3];
-        const double f4xi = gridpts[i+4];
-        const double f5xi = gridpts[i+5];
-        const double f6xi = gridpts[i+6];
-        const double f7xi = gridpts[i+7];
+        double fxi[8];
+        for(int fi = 0; fi < 8; fi++)
+            fxi[fi] = gridpts[i+fi];
 
-        F[0] = f0xi
-               + dx * (                  f1xi
-               + dx * ( (1.0/2.0   )   * f2xi
-               + dx * ( (1.0/6.0   )   * f3xi
-               + dx * ( (1.0/24.0  )   * f4xi
-               + dx * ( (1.0/120.0 )   * f5xi
-               + dx * ( (1.0/720.0 )   * f6xi
-               + dx * ( (1.0/5040.0)   * f7xi
+        F[i*SIMINT_SIMD_LEN] = fxi[0]
+               + dx * (                  fxi[1]
+               + dx * ( (1.0/2.0   )   * fxi[2]
+               + dx * ( (1.0/6.0   )   * fxi[3]
+               + dx * ( (1.0/24.0  )   * fxi[4]
+               + dx * ( (1.0/120.0 )   * fxi[5]
+               + dx * ( (1.0/720.0 )   * fxi[6]
+               + dx * ( (1.0/5040.0)   * fxi[7]
                )))))));
-
-        F += SIMINT_SIMD_LEN;
     }
+}
+
+static inline
+double boys_F_taylor_single(int n, double x)
+{
+    double fxi[8];
+
+    const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
+    const double xi = ((double)lookup_idx * BOYS_SHORTGRID_SPACE);
+    const double dx = xi-x;   // -delta x
+
+    double const * restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
+
+    for(int fi = 0; fi < 8; fi++)
+        fxi[fi] = gridpts[n+fi];
+
+    return fxi[0]
+           + dx * (                  fxi[1]
+           + dx * ( (1.0/2.0   )   * fxi[2]
+           + dx * ( (1.0/6.0   )   * fxi[3]
+           + dx * ( (1.0/24.0  )   * fxi[4]
+           + dx * ( (1.0/120.0 )   * fxi[5]
+           + dx * ( (1.0/720.0 )   * fxi[6]
+           + dx * ( (1.0/5040.0)   * fxi[7]
+           )))))));
 }
 
 

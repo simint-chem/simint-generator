@@ -6,12 +6,12 @@
 /* All vrr1 are the same, with some swapping of variables */
 /**********************************************************/
 void ostei_general_vrr1(int i, int num_n,
-                        DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                        const DBLTYPE aop_PQ[3],
-                        const DBLTYPE PA[3],
-                        DBLTYPE const * restrict theta1,
-                        DBLTYPE const * restrict theta2,
-                        DBLTYPE * restrict output)
+                        SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                        const SIMINT_DBLTYPE aop_PQ[3],
+                        const SIMINT_DBLTYPE PA[3],
+                        SIMINT_DBLTYPE const * restrict theta1,
+                        SIMINT_DBLTYPE const * restrict theta2,
+                        SIMINT_DBLTYPE * restrict output)
 {
     // in this case, we want (i, 0, 0, 0), so i is equal
     // to the angular momentum.
@@ -41,7 +41,7 @@ void ostei_general_vrr1(int i, int num_n,
             {
                 const int idx3 = n*(ncart2) + ri->idx[dir][1];
                 const int idx4 = (n+1)*(ncart2) + ri->idx[dir][1];
-                const DBLTYPE i1 = SET1(ri->ijk[dir]-1);
+                const SIMINT_DBLTYPE i1 = SIMINT_SET1(ri->ijk[dir]-1);
                 output[outidx] += one_over_2p * i1 * (theta2[idx3] + a_over_p * theta2[idx4]);
             }
         }
@@ -52,16 +52,16 @@ void ostei_general_vrr1(int i, int num_n,
 
 
 void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aop_PQ[3],
-                         const DBLTYPE PA[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output)
+                         SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aop_PQ[3],
+                         const SIMINT_DBLTYPE PA[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -135,7 +135,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE ival = SET1(ri->ijk[dir]-1);
+                            const SIMINT_DBLTYPE ival = SIMINT_SET1(ri->ijk[dir]-1);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -150,7 +150,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE jval = SET1(rj->ijk[dir]);
+                            const SIMINT_DBLTYPE jval = SIMINT_SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -163,7 +163,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE kval = SET1(rk->ijk[dir]);
+                            const SIMINT_DBLTYPE kval = SIMINT_SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -176,7 +176,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE lval = SET1(rl->ijk[dir]);
+                            const SIMINT_DBLTYPE lval = SIMINT_SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -190,16 +190,16 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
 
 void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2p, DBLTYPE a_over_p,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aop_PQ[3],
-                         const DBLTYPE PB[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output)
+                         SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aop_PQ[3],
+                         const SIMINT_DBLTYPE PB[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -273,7 +273,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE ival = SET1(ri->ijk[dir]);
+                            const SIMINT_DBLTYPE ival = SIMINT_SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
                         }
 
@@ -288,7 +288,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE jval = SET1(rj->ijk[dir]-1);
+                            const SIMINT_DBLTYPE jval = SIMINT_SET1(rj->ijk[dir]-1);
                             output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
                         }
 
@@ -301,7 +301,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE kval = SET1(rk->ijk[dir]);
+                            const SIMINT_DBLTYPE kval = SIMINT_SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2pq * kval * theta4[idx7];
                         }
 
@@ -314,7 +314,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE lval = SET1(rl->ijk[dir]);
+                            const SIMINT_DBLTYPE lval = SIMINT_SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2pq * lval * theta5[idx8];
                         }
                     }
@@ -328,16 +328,16 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
 
 void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aoq_PQ[3],
-                         const DBLTYPE QC[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output)
+                         SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aoq_PQ[3],
+                         const SIMINT_DBLTYPE QC[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -411,7 +411,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE kval = SET1(rk->ijk[dir]-1);
+                            const SIMINT_DBLTYPE kval = SIMINT_SET1(rk->ijk[dir]-1);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -426,7 +426,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE lval = SET1(rl->ijk[dir]);
+                            const SIMINT_DBLTYPE lval = SIMINT_SET1(rl->ijk[dir]);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -439,7 +439,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l   +
                                              idx_l;
 
-                            const DBLTYPE ival = SET1(ri->ijk[dir]);
+                            const SIMINT_DBLTYPE ival = SIMINT_SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -452,7 +452,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_k_1 * ncart_l +
                                              idx_l;
 
-                            const DBLTYPE jval = SET1(rj->ijk[dir]);
+                            const SIMINT_DBLTYPE jval = SIMINT_SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }
@@ -465,16 +465,16 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 }
 
 void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
-                         DBLTYPE one_over_2q, DBLTYPE a_over_q,
-                         DBLTYPE one_over_2pq,
-                         const DBLTYPE aoq_PQ[3],
-                         const DBLTYPE QD[3],
-                         DBLTYPE const * restrict theta1,
-                         DBLTYPE const * restrict theta2,
-                         DBLTYPE const * restrict theta3,
-                         DBLTYPE const * restrict theta4,
-                         DBLTYPE const * restrict theta5,
-                         DBLTYPE * restrict output)
+                         SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
+                         SIMINT_DBLTYPE one_over_2pq,
+                         const SIMINT_DBLTYPE aoq_PQ[3],
+                         const SIMINT_DBLTYPE QD[3],
+                         SIMINT_DBLTYPE const * restrict theta1,
+                         SIMINT_DBLTYPE const * restrict theta2,
+                         SIMINT_DBLTYPE const * restrict theta3,
+                         SIMINT_DBLTYPE const * restrict theta4,
+                         SIMINT_DBLTYPE const * restrict theta5,
+                         SIMINT_DBLTYPE * restrict output)
 {
     const int ncart_i = ((i+1)*(i+2))/2;
     const int ncart_j = ((j+1)*(j+2))/2;
@@ -548,7 +548,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx4 = idx3 + ncart2;
 
-                            const DBLTYPE kval = SET1(rk->ijk[dir]);
+                            const SIMINT_DBLTYPE kval = SIMINT_SET1(rk->ijk[dir]);
                             output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
                         }
 
@@ -563,7 +563,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                             const int idx6 = idx5 + ncart3;
 
-                            const DBLTYPE lval = SET1(rl->ijk[dir]-1);
+                            const SIMINT_DBLTYPE lval = SIMINT_SET1(rl->ijk[dir]-1);
                             output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
                         }
 
@@ -576,7 +576,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE ival = SET1(ri->ijk[dir]);
+                            const SIMINT_DBLTYPE ival = SIMINT_SET1(ri->ijk[dir]);
                             output[outidx] += one_over_2pq * ival * theta4[idx7];
                         }
 
@@ -589,7 +589,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_k   * ncart_l_1 +
                                              idx_l_1;
 
-                            const DBLTYPE jval = SET1(rj->ijk[dir]);
+                            const SIMINT_DBLTYPE jval = SIMINT_SET1(rj->ijk[dir]);
                             output[outidx] += one_over_2pq * jval * theta5[idx8];
                         }
                     }

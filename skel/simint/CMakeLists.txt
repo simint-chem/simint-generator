@@ -11,8 +11,6 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
                          simint_init.c
                          simint_eri.c
 
-                         boys/boys.c
-                         boys/boys_longfac.c
                          boys/boys_shortgrid.c
 
                          ostei/ostei_init.c

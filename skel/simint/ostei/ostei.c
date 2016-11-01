@@ -9,7 +9,6 @@ extern simint_osteifunc             simint_osteifunc_array[AMSIZE][AMSIZE][AMSIZ
 
 int simint_compute_ostei(struct simint_multi_shellpair const * P,
                          struct simint_multi_shellpair const * Q,
-                         Fjtfunc fjt,
                          double screen_tol,
                          double * restrict integrals)
 {
@@ -19,14 +18,13 @@ int simint_compute_ostei(struct simint_multi_shellpair const * P,
     if(screen_tol > 0.0 && (P->screen_max * Q->screen_max) < screen_tol2 )
         return -1;
 
-    return simint_osteifunc_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, fjt, screen_tol2, integrals);
+    return simint_osteifunc_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, screen_tol2, integrals);
 }
 
 
 
 int simint_compute_ostei_sharedwork(struct simint_multi_shellpair const * P,
                                     struct simint_multi_shellpair const * Q,
-                                    Fjtfunc fjt,
                                     double screen_tol,
                                     double * restrict work,
                                     double * restrict integrals)
@@ -37,7 +35,7 @@ int simint_compute_ostei_sharedwork(struct simint_multi_shellpair const * P,
     if(screen_tol > 0.0 && (P->screen_max * Q->screen_max) < screen_tol2 )
         return -1;
 
-    return simint_osteifunc_sharedwork_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q, fjt,
+    return simint_osteifunc_sharedwork_array[P->am1][P->am2][Q->am1][Q->am2](*P, *Q,
                                                     screen_tol2, work, integrals);
 }
 

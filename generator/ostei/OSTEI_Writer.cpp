@@ -44,7 +44,6 @@ void OSTEI_Writer_Basic::DeclareContwork(void) const
     }
 
     os_ << "\n";
-
 }
 
 
@@ -200,7 +199,6 @@ void OSTEI_Writer_Basic::WriteFile_Permute_(void) const
     os_ << funcline;
     os_ << "struct simint_multi_shellpair const P,\n";
     os_ << indent << "struct simint_multi_shellpair const Q,\n";
-    os_ << indent << "Fjtfunc fjt,\n";
     os_ << indent << "double screen_tol,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
@@ -234,7 +232,7 @@ void OSTEI_Writer_Basic::WriteFile_Permute_(void) const
     os_ << indent1 << "return ostei_sharedwork_" << amchar[tocall[0]] << "_" 
                                                << amchar[tocall[1]] << "_" 
                                                << amchar[tocall[2]] << "_" 
-                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var << ", fjt, screen_tol, "
+                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var << ", screen_tol, "
                                                                     << "contwork, " << ArrVarName(am) << ");\n"; 
 
     os_ << "}\n";
@@ -278,6 +276,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
                         "<math.h>",
                         "\"simint/ostei/gen/ostei_generated.h\"",
                         "\"simint/vectorization/vectorization.h\"",
+                        "\"simint/boys/boys.h\"",
                         "\"simint/ostei/ostei_contract.h\""};
 
     // Constants
@@ -320,7 +319,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << funcline;
     os_ << "struct simint_multi_shellpair const P,\n";
     os_ << indent << "struct simint_multi_shellpair const Q,\n";
-    os_ << indent << "Fjtfunc fjt,\n";
     os_ << indent << "double screen_tol,\n";
     os_ << indent << "double * const restrict contwork,\n";
     os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
@@ -602,8 +600,8 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n\n"; 
 
 
-    os_ << indent5 << "fjt((double *)" << PrimVarName({0,0,0,0}) << ", "
-                   << info_.L() << ", (const double *)(&F_x));\n";
+    os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0}) << ", "
+                   << info_.L() << ", &F_x);\n";
 
     os_ << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * Q_prefac;\n";
 
@@ -675,13 +673,11 @@ void OSTEI_Writer_Basic::WriteFile(void) const
     // comment out contwork if its not needed
     ssig  << "struct simint_multi_shellpair const P,\n"
           << funcindent << "struct simint_multi_shellpair const Q,\n"
-          << funcindent << "Fjtfunc fjt,\n"
           << funcindent << "double screen_tol,\n"
           << funcindent << "double * const restrict contwork,\n"
           << funcindent << "double * const restrict " << ArrVarName(am) << ")";
     ssig2 << "struct simint_multi_shellpair const P,\n"
           << funcindent2 << "struct simint_multi_shellpair const Q,\n"
-          << funcindent2 << "Fjtfunc fjt,\n"
           << funcindent2 << "double screen_tol,\n"
           << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";
 
@@ -692,7 +688,7 @@ void OSTEI_Writer_Basic::WriteFile(void) const
     os_ << "{\n";
     size_t contmem = info_.ContMemoryReq();
     if(contmem == 0)
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, fjt, screen_tol, NULL, ", ArrVarName(am), ");");
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, NULL, ", ArrVarName(am), ");");
     else
     {
         size_t contnel = info_.ContNElements();
@@ -703,7 +699,7 @@ void OSTEI_Writer_Basic::WriteFile(void) const
         else
             os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, fjt, screen_tol, contwork, ", ArrVarName(am), ");");
+        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, contwork, ", ArrVarName(am), ");");
 
     }
 

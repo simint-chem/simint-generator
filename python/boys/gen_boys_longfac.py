@@ -42,7 +42,7 @@ for n in range(1, maxn+1):
  longfac[n] = longfac[n-1] * 0.5 * (2.0*n - 1)
 
 # Output to file
-with open(args.filename + ".c", 'w') as f:
+with open(args.filename + ".h", 'w') as f:
   f.write("/*\n")
   f.write(" Generated with:\n")
   f.write("   " + " ".join(sys.argv[:]))
@@ -54,15 +54,16 @@ with open(args.filename + ".c", 'w') as f:
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
-  f.write("const double boys_longfac[{}] = \n".format(maxn+1))
+  f.write("#pragma once\n")
+
+  f.write("\n")
+  f.write("#define BOYS_LONGFAC_MAXN {}\n\n".format(maxn))
+
+  f.write("static const double boys_longfac[BOYS_LONGFAC_MAXN + 1] = \n")
   f.write("{\n")
 
   for i,n in enumerate(longfac):
       f.write("/* n = {:4} */  {:32},\n".format(i, mp.nstr(n, 18)))
   f.write("};\n")
 
-with open(args.filename + ".h", 'w') as f: 
-  f.write("#pragma once\n")
-  f.write("\n")
-  f.write("#define BOYS_LONGFAC_MAXN {}\n".format(maxn))
   f.write("\n")

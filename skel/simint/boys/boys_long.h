@@ -9,7 +9,8 @@
 extern "C" {
 #endif
 
-extern double const boys_longfac[BOYS_LONGFAC_MAXN];
+// from boys_longfac.h
+//extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
 static inline
 void boys_F_long(double * restrict F, int n, double x)
@@ -23,6 +24,14 @@ void boys_F_long(double * restrict F, int n, double x)
         x2 *= x1;
         F += SIMINT_SIMD_LEN;
      }
+}
+
+static inline
+double boys_F_long_single(int n, double x)
+{
+    const double p = -(2*n+1);
+    const double x2 = pow(x, p);
+    return boys_longfac[n] * sqrt(x2);
 }
 
 
