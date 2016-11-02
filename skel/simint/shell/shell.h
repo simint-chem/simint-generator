@@ -47,11 +47,11 @@ struct simint_multi_shellpair
 {
     int am1;            //!< Angular momentum of the first position
     int am2;            //!< Angular momentum of the second position
-    int nprim;          //!< Total number of primitive combinations stored (including padding)
+    int nprim;          //!< Total number of primitive combinations stored (not including padding)
 
     int nshell12;       //!< Total number of shell pair (nshell1 * nshell2)
     int nshell12_clip;  //!< Total number of shell pair to actual calculate (should be <= nshell12)
-    int * nprim12;      //!< Number of primitive combinations for each shell pair, including padding (length nshell12)
+    int * nprim12;      //!< Number of primitive combinations for each shell pair, not including padding (length nshell12)
 
     double * AB_x;      //!< X distance between the centers for a shell (Ax - Bx) (length nshell12).
     double * AB_y;      //!< Y distance between the centers for a shell (Ay - By) (length nshell12).

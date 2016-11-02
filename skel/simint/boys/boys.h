@@ -11,24 +11,24 @@ extern "C" {
 #endif
 
 static inline
-void boys_F_split_single(double * restrict Farr,
-                         int n,
-                         double const * restrict x)
+void boys_F_split_single(double * restrict F,
+                         double const * restrict x,
+                         int n)
 {
     for(int i = 0; i < SIMINT_SIMD_LEN; i++)
     {
         if(x[i] < BOYS_SHORTGRID_MAXX)
-            Farr[i] = boys_F_taylor_single(n, x[i]);
+            F[i] = boys_F_taylor_single(x[i], n);
         else
-            Farr[i] = boys_F_long_single(n, x[i]); 
+            F[i] = boys_F_long_single(x[i], n); 
     }
 }
 
 
 static inline
-void boys_F_split_small_n(double * restrict Farr,
-                          int n,
-                          double const * restrict x)
+void boys_F_split_small_n(double * restrict F,
+                          double const * restrict x,
+                          int n)
 {
     // n is small - just do it all of them via
     // lookup or longfac (no recursion)
@@ -36,21 +36,21 @@ void boys_F_split_small_n(double * restrict Farr,
     for(int i = 0; i < SIMINT_SIMD_LEN; i++)
     {
         if(x[i] < BOYS_SHORTGRID_MAXX)
-            boys_F_taylor(Farr + i, n, x[i]);
+            boys_F_taylor(F + i, x[i], n);
         else
-            boys_F_long(Farr + i, n, x[i]); 
+            boys_F_long(F + i, x[i], n); 
     }
 }
 
 
 static inline
-void boys_F_split_large_n(SIMINT_DBLTYPE * restrict Farr,
-                          int n,
-                          SIMINT_DBLTYPE const * restrict x)
+void boys_F_split_large_n(SIMINT_DBLTYPE * restrict F,
+                          SIMINT_DBLTYPE const * restrict x,
+                          int n)
 {
     // n is large - do only the highest, then recur down
 
-    boys_F_split_single((double *)(Farr + n), n, (double *)(x));
+    boys_F_split_single((double *)(F + n), (double *)(x), n);
 
     // factors for the recursion
     const SIMINT_DBLTYPE x2 = SIMINT_SET1(2.0)*(*x);
@@ -60,19 +60,19 @@ void boys_F_split_large_n(SIMINT_DBLTYPE * restrict Farr,
     for(int n2 = n-1; n2 >= 0; n2--)
     {
         const SIMINT_DBLTYPE den = SIMINT_SET1(1.0 / (2.0 * n2 + 1));
-        Farr[n2] = den * (x2 * Farr[(n2+1)] + ex);
+        F[n2] = den * (x2 * F[(n2+1)] + ex);
     }
 }
 
 static inline
-void boys_F_split(SIMINT_DBLTYPE * restrict Farr,
-                  int n,
-                  SIMINT_DBLTYPE const * restrict x)
+void boys_F_split(SIMINT_DBLTYPE * restrict F,
+                  SIMINT_DBLTYPE const * restrict x,
+                  int n)
 {
     if(n > 1)
-        boys_F_split_large_n(Farr, n, x);
+        boys_F_split_large_n(F, x, n);
     else
-        boys_F_split_small_n((double *)Farr, n, (double *)x);
+        boys_F_split_small_n((double *)F, (double *)x, n);
 }
 
 

@@ -13,7 +13,7 @@ extern "C" {
 //extern double const boys_longfac[BOYS_LONGFAC_MAXN];
 
 static inline
-void boys_F_long(double * restrict F, int n, double x)
+void boys_F_long(double * restrict F, double x, int n)
 {
     const double x1 = 1.0/x;
     double x2 = sqrt(x1);
@@ -27,7 +27,7 @@ void boys_F_long(double * restrict F, int n, double x)
 }
 
 static inline
-double boys_F_long_single(int n, double x)
+double boys_F_long_single(double x, int n)
 {
     const double p = -(2*n+1);
     const double x2 = pow(x, p);

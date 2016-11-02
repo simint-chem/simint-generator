@@ -10,7 +10,7 @@ extern "C" {
 extern double boys_shortgrid[BOYS_SHORTGRID_NPOINT][BOYS_SHORTGRID_MAXN+1];
 
 static inline
-void boys_F_taylor(double * restrict F, int n, double x)
+void boys_F_taylor(double * restrict F, double x, int n)
 {
 
     const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(x+BOYS_SHORTGRID_LOOKUPFAC2));
@@ -38,7 +38,7 @@ void boys_F_taylor(double * restrict F, int n, double x)
 }
 
 static inline
-double boys_F_taylor_single(int n, double x)
+double boys_F_taylor_single(double x, int n)
 {
     double fxi[8];
 

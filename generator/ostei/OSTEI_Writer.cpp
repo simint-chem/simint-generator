@@ -600,8 +600,9 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n\n"; 
 
 
-    os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0}) << ", "
-                   << info_.L() << ", &F_x);\n";
+    os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0}) << ", &F_x, "
+                   << info_.L() << ");\n";
+
 
     os_ << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * Q_prefac;\n";
 
@@ -621,7 +622,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
 
     os_ << indent3 << "\n";
     os_ << indent3 << "//Advance to the next batch\n";
-    os_ << indent3 << "jstart = jend;\n";
+    os_ << indent3 << "jstart = SIMINT_SIMD_ROUND(jend);\n";
     if(!hashrr)
         os_ << indent3 << "abcd += nshellbatch;\n";
     os_ << indent3 << "\n";

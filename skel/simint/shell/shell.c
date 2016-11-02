@@ -383,10 +383,7 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
         {
             // fill in alpha = 1 until next boundary
             while(idx < SIMINT_SIMD_ROUND(idx))
-            {
                 P->alpha[idx++] = 1.0;
-                nprim++;
-            }
         }
 
         P->nprim12[sasb] = nprim;
