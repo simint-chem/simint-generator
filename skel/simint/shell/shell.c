@@ -41,7 +41,7 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
             for(int i = 0; i < (P->nprim12[ab]-1); i++)
             {
                 const int idxi = idx + i;
-                if(P->screen[idxi] > P->screen[idxi+1])
+                if(P->screen[idxi] < P->screen[idxi+1])
                 {
                     SWAP_D(P->x)
                     SWAP_D(P->y)
@@ -60,8 +60,12 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
             }
         } while(swapped);
 
-
         idx += P->nprim12[ab];
+
+        int ab1 = ab+1;
+        if( (ab1 % SIMINT_NSHELL_SIMD) == 0 || (ab1 >= P->nshell12) )
+            idx = SIMINT_SIMD_ROUND(idx);
+
     }
 }
 

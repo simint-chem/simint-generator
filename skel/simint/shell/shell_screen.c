@@ -143,6 +143,7 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     double total_max = 0.0;
 
     int idx = 0;
+    int ij = 0;
     for(int i = 0; i < A->nprim; i++)
     {
         simint_create_shell(1, A->am, A->x, A->y, A->z,
@@ -189,8 +190,16 @@ simint_primscreen_schwarz(struct simint_shell const * A,
 
             if(max > total_max)
                 total_max = max;
-        }
 
+            ij++;
+
+            // pad out, if needed
+            if( (ij % SIMINT_NSHELL_SIMD) == 0 || ij >= A->nprim*B->nprim)
+            {
+                while(idx < SIMINT_SIMD_ROUND(idx))
+                    out[idx++] = 0.0;
+            }
+        }
     }
 
     simint_free_multi_shellpair(&P);
