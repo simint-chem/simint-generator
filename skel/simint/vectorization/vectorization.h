@@ -10,6 +10,7 @@
   #include "simint/vectorization/intrinsics_sse.h"
   #define SIMINT_SIMD_LEN 2
 #else
+  #include <stdlib.h>
   #include "simint/vectorization/intrinsics_scalar.h"
   #define SIMINT_SIMD_LEN 1
 #endif
@@ -28,8 +29,13 @@
 
 
 // Aligned memory allocation
-#define SIMINT_ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
-#define SIMINT_FREE(x) _mm_free((x))
+#ifdef SIMINT_SCALAR
+  #define SIMINT_ALLOC(x) malloc((x))
+  #define SIMINT_FREE(x) free((x))
+#else
+  #define SIMINT_ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
+  #define SIMINT_FREE(x) _mm_free((x))
+#endif
 
 
 // round up the number of elements to the nearest boundary

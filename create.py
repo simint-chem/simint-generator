@@ -495,7 +495,7 @@ with open(sinfofile, 'w') as sf:
   elif "sse2" in cpuflags:
     sf.write("#define SIMINT_SSE\n")
   else:
-    sf.write("#define SIMINT_SCALAR")
+    sf.write("#define SIMINT_SCALAR\n")
 
   if args.p:
     sf.write("#define SIMINT_OSTEI_PERMUTATIONS\n")
@@ -511,7 +511,9 @@ with open(sinfofile, 'w') as sf:
 cmflagfile = os.path.join(outdir_cmake, "DefaultFlags_generated.cmake")
 with open(cmflagfile, 'w') as sf:
 
-  if "avx" in cpuflags:
+  if "avx" in cpuflags and "fma" in cpuflags:
+    sf.write("include(cmake/DefaultFlags_avxfma.cmake)")
+  elif "avx" in cpuflags:
     sf.write("include(cmake/DefaultFlags_avx.cmake)")
   elif "sse2" in cpuflags:
     sf.write("include(cmake/DefaultFlags_sse.cmake)")

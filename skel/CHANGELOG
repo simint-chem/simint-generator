@@ -1,6 +1,7 @@
 v0.4
 Released 2016-TBD
 ---------------------
+* Compilation works with GCC
 * Implemented primitive screening (Schwarz screening)
 * Interface changes
     * Add screening arguments to some functions

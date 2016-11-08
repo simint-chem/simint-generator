@@ -36,7 +36,7 @@ void contract_all(int ncart,
 {
     //TODO efficient algorithm for this
     int offsets[] = {0, 0};
-    return contract(ncart, offsets, PRIM_INT, PRIM_PTR);
+    contract(ncart, offsets, PRIM_INT, PRIM_PTR);
 }
 
 
