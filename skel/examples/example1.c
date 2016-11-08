@@ -99,7 +99,9 @@ int main(int argc, char ** argv)
     simint_initialize_multi_shellpair(&ps_pair);
     simint_initialize_multi_shellpair(&pp_pair);
 
-    // Last argument - set to non-zero to enable screening
+    // Last argument - set to one of the following to enable primitive screening
+    //       1 - Schwarz screening
+    //       2 - Fast Schwarz screening
     simint_create_multi_shellpair(4, s_shells, 4, s_shells, &ss_pair, 0);
     simint_create_multi_shellpair(1, p_shells, 4, s_shells, &ps_pair, 0);
     simint_create_multi_shellpair(1, p_shells, 1, p_shells, &pp_pair, 0);

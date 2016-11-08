@@ -21,7 +21,10 @@ Any permutation of angular momentum *is* supported
 Requirements
 -------------
 
-Intel Compiler v15 or above
+Compiler:
+  Intel Compiler v15 or above
+  GCC v4.9 or above
+
 CMake 3.0.2 or above
 Intel CPU
 
@@ -31,7 +34,7 @@ Intel CPU
 Selecting the right library
 ---------------------------
 
-There are currently three verions. Make sure you select
+There are currently four versions. Make sure you select
 the correct one for you CPU
 
 1.) simint-avxfma

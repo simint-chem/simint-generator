@@ -1,5 +1,5 @@
 v0.4
-Released 2016-TBD
+Released 2016-11-08
 ---------------------
 * Compilation works with GCC
 * Implemented primitive screening (Schwarz screening)
