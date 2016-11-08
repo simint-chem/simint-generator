@@ -12,7 +12,7 @@
 #if defined(__ICC) || defined(__INTEL_COMPILER)
     #pragma warning(disable:1338)                  // Pointer arithmetic on void
 #elif defined(__GNUC__) || defined(__GNUG__)
-    #pragma GCC diagnostic ignored -Wpointer-arith // Pointer arithmetic on void
+    #pragma GCC diagnostic ignored "-Wpointer-arith"
 #endif
 
 

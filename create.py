@@ -491,16 +491,11 @@ with open(sinfofile, 'w') as sf:
   sf.write("#pragma once\n\n")
 
   if "avx" in cpuflags:
-    sf.write("#include \"simint/vectorization/intrinsics_avx.h\"\n")
-    sf.write("#define SIMINT_SIMD_LEN 4\n")
     sf.write("#define SIMINT_AVX\n")
   elif "sse2" in cpuflags:
-    sf.write("#include \"simint/vectorization/intrinsics_sse.h\"\n")
-    sf.write("#define SIMINT_SIMD_LEN 2\n")
     sf.write("#define SIMINT_SSE\n")
   else:
-    sf.write("#define SIMINT_SIMD_LEN 1\n")
-    sf.write("#define SIMINT_SCALAR\n")
+    sf.write("#define SIMINT_SCALAR")
 
   if args.p:
     sf.write("#define SIMINT_OSTEI_PERMUTATIONS\n")

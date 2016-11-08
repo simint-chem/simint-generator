@@ -39,7 +39,7 @@ struct RecurInfo
 {
     int8_t ijk[3];
     int8_t dir;
-    int8_t idx[3][3];
+    int16_t idx[3][3];
 };
 
 

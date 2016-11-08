@@ -30,8 +30,6 @@ public:
 
     virtual std::string Sqrt(const std::string & val) const = 0;
     virtual std::string RSqrt(const std::string & val) const = 0;
-    virtual std::string Power(const std::string & base, const std::string & exp) const = 0;
-    virtual std::string Exp(const std::string & exp) const = 0;
 
     virtual std::string IntConstant(int i) const = 0;
 
@@ -44,7 +42,6 @@ public:
         return StringBuilder(DoubleType(), " ", var, " = ", DoubleSet1(val));
     }
 
-
     virtual std::string NewDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
     {
         return StringBuilder(DoubleType(), " ", var, " = ", DoubleLoad(ptr, idx));
@@ -54,7 +51,6 @@ public:
     {
         return StringBuilder("const ", NewDoubleSet1(var, val));
     }
-
 
     virtual std::string NewConstDoubleLoad(const std::string & var, const std::string & ptr, const std::string & idx) const
     {
@@ -103,16 +99,6 @@ public:
     virtual std::string RSqrt(const std::string & val) const
     {
         return StringBuilder("(1.0 / sqrt(", val, "))");
-    }
-
-    virtual std::string Power(const std::string & base, const std::string & exp) const
-    {
-        return StringBuilder("pow(", base, ",", exp, ")");
-    }
-
-    virtual std::string Exp(const std::string & exp) const
-    {
-        return StringBuilder("exp(", exp, ")");
     }
 
     virtual std::string IntConstant(int i) const
@@ -182,16 +168,6 @@ public:
     virtual std::string RSqrt(const std::string & val) const
     {
         return StringBuilder("(1.0/", Sqrt(val), ")");
-    }
-
-    virtual std::string Power(const std::string & base, const std::string & exp) const
-    {
-        return StringBuilder("_mm", swidth_, "_pow_pd(", base, ",", exp, ")");
-    }
-
-    virtual std::string Exp(const std::string & exp) const
-    {
-        return StringBuilder("_mm", swidth_, "_exp_pd(", exp, ")");
     }
 
     virtual std::string IntConstant(int i) const

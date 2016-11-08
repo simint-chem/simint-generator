@@ -105,9 +105,9 @@ int main(int argc, char ** argv)
 
 
         // running totals for this am
-        std::atomic<size_t> nprim1234_am = 0;
-        std::atomic<size_t> nshell1234_am = 0;
-        std::atomic<size_t> ncont1234_am = 0;
+        std::atomic<size_t> nprim1234_am(0);
+        std::atomic<size_t> nshell1234_am(0);
+        std::atomic<size_t> ncont1234_am(0);
 
 	    const auto & shellmap_i = shellmap[i];
 	    const auto & shellmap_j = shellmap[j];

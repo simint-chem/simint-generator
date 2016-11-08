@@ -485,11 +485,11 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
         os_ << indent5 << "if(check_screen)\n";
         os_ << indent5 << "{\n";
-        os_ << indent6 << vinfo_.UnionType() << " screen_max = ("
-                       << vinfo_.UnionType() << ")(bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
+        os_ << indent6 << cdbltype << " screen_max = (bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
+        os_ << indent6 << vinfo_.UnionType() << " screen_max_v = { screen_max };\n";
         os_ << indent6 << "not_screened = 0;\n";
         os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
-        os_ << indent7 << "not_screened = ( screen_max.d[n] >= screen_tol ? 1 : not_screened );\n";
+        os_ << indent7 << "not_screened = ( screen_max_v.d[n] >= screen_tol ? 1 : not_screened );\n";
 
         os_ << indent6 << "if(not_screened == 0)\n";
         os_ << indent6 << "{\n";
@@ -517,9 +517,10 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
     os_ << "\n";
     os_ << indent5 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
-    os_ << indent5 << cdbltype << " PQ[3] = { Pxyz[0] - " << vinfo_.DoubleLoad("Q.x", "j") << ", "
-                                          << "Pxyz[1] - " << vinfo_.DoubleLoad("Q.y", "j") << ", "
-                                          << "Pxyz[2] - " << vinfo_.DoubleLoad("Q.z", "j") << " };\n";
+    os_ << indent5 << dbltype << " PQ[3];\n";
+    os_ << indent5 << "PQ[0] = Pxyz[0] - " << vinfo_.DoubleLoad("Q.x", "j") << ";\n";
+    os_ << indent5 << "PQ[1] = Pxyz[1] - " << vinfo_.DoubleLoad("Q.y", "j") << ";\n";
+    os_ << indent5 << "PQ[2] = Pxyz[2] - " << vinfo_.DoubleLoad("Q.z", "j") << ";\n";
 
 
     os_ << indent5 << cdbltype << " R2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];\n";
@@ -562,7 +563,10 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << "\n";
         os_ << indent5 << "// NOTE: Minus sign!\n";
         os_ << indent5 << cdbltype << " a_over_p =  -alpha * one_over_p;     // a/p from MEST\n";
-        os_ << indent5 << cdbltype << " aop_PQ[3] = { a_over_p * PQ[0], a_over_p * PQ[1], a_over_p * PQ[2] };\n"; 
+        os_ << indent5 << dbltype << " aop_PQ[3];\n";
+        os_ << indent5 << "aop_PQ[0] = a_over_p * PQ[0];\n";
+        os_ << indent5 << "aop_PQ[1] = a_over_p * PQ[1];\n";
+        os_ << indent5 << "aop_PQ[2] = a_over_p * PQ[2];\n";
     }
 
     if(hasketvrr)
@@ -571,7 +575,10 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent5 << "// NOTE: Minus sign\n";
         os_ << indent5 << "// NOTE2: Plus sign taken care of on aoq_PQ!\n";
         os_ << indent5 << cdbltype << " a_over_q =  -alpha * one_over_q;     // a/q from MEST\n";
-        os_ << indent5 << cdbltype << " aoq_PQ[3] = { -a_over_q * PQ[0], -a_over_q * PQ[1], -a_over_q * PQ[2] };\n"; 
+        os_ << indent5 << dbltype << " aoq_PQ[3];\n";
+        os_ << indent5 << "aoq_PQ[0] = -a_over_q * PQ[0];\n";
+        os_ << indent5 << "aoq_PQ[1] = -a_over_q * PQ[1];\n";
+        os_ << indent5 << "aoq_PQ[2] = -a_over_q * PQ[2];\n";
 
     }
 
@@ -589,8 +596,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     // we need to zero out any that are beyond the end of the batch (that's been clipped)
     if(info_.Vectorized())
     {
-        os_ << indent5 << vinfo_.UnionType() << " Q_prefac_u = (" << vinfo_.UnionType() << ")"
-                       << vinfo_.DoubleLoad("Q.prefac", "j") << ";\n";
+        os_ << indent5 << vinfo_.UnionType() << " Q_prefac_u = { " << vinfo_.DoubleLoad("Q.prefac", "j") << " };\n";
         os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
         os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
         os_ << indent5 << cdbltype << " Q_prefac = Q_prefac_u." << vinfo_.UnionMember() << ";\n";

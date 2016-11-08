@@ -155,7 +155,7 @@ int main(int argc, char ** argv)
         // check to make sure our indexing is ok (see note above)
         // the nprim member of the shell pair struct is padded, and we
         // don't want to include those values
-        if(SIMINT_SIMD_ROUND(nprimpair) != shellpairvec[ij].nprim)
+        if(SIMINT_SIMD_ROUND(nprimpair) != static_cast<size_t>(shellpairvec[ij].nprim))
             throw std::logic_error("Bad number of primitives stored in the shell pair");
 
         for(size_t p = 0; p < nprimpair; p++)
