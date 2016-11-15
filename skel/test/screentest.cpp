@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "test/Common.hpp"
 
 #include "simint/simint.h"
