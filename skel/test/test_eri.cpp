@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
     for(int j = 0; j <= maxam; j++)
     for(int k = 0; k <= maxam; k++)
     for(int l = 0; l <= maxam; l++)
-        errors[{i,j,k,l}] = {0,0};
+        errors[{{i,j,k,l}}] = {0,0};
 
 
     // Print the header for the final results table
@@ -165,7 +165,7 @@ int main(int argc, char ** argv)
             /////////////////////////////////
             #pragma omp critical
             {
-                UpdateErrorMap(errors, {i, j, k, l}, CalcError(res_simint, res_valeev, ncont1234));
+                UpdateErrorMap(errors, {{i, j, k, l}}, CalcError(res_simint, res_valeev, ncont1234));
             }
 
 /*
@@ -208,8 +208,8 @@ int main(int argc, char ** argv)
         printf("( %2d %2d | %2d %2d )  ", i, j, k, l);
 
         // should be the same order as the header, right?
-        double abserr = errors.at({i, j, k, l}).first;
-        double relerr = errors.at({i, j, k, l}).second;
+        double abserr = errors.at({{i, j, k, l}}).first;
+        double relerr = errors.at({{i, j, k, l}}).second;
         bool bad = (abserr > 1e-14 && relerr > 1e-8);
         printf("  %10.3e  %10.3e  %s\n", abserr, relerr, bad ? "***" : "");
     }

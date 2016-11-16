@@ -436,16 +436,16 @@ void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
             long double vC[3] = { C[k].x, C[k].y, C[k].z };
             long double vD[3] = { D[l].x, D[l].y, D[l].z };
 
-            std::array<int, 3> g1{am1, 0, 0};
+            std::array<int, 3> g1 = {{am1, 0, 0}};
             do
             {
-                std::array<int, 3> g2{am2, 0, 0};
+                std::array<int, 3> g2 = {{am2, 0, 0}};
                 do
                 {
-                    std::array<int, 3> g3{am3, 0, 0};
+                    std::array<int, 3> g3 = {{am3, 0, 0}};
                     do
                     {
-                        std::array<int, 3> g4{am4, 0, 0};
+                        std::array<int, 3> g4 = {{am4, 0, 0}};
                         do
                         {
                             double myint = 0.0;

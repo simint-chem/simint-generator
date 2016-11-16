@@ -20,9 +20,9 @@ bool IterateGaussian(std::array<int, 3> & g)
         return false;
 
     if(g[2] < (am - g[0]))
-        g = {g[0],   g[1]-1,      g[2]+1 };
+        g = {{ g[0],   g[1]-1,      g[2]+1 }};
     else
-        g = {g[0]-1, am-g[0]+1, 0        };
+        g = {{ g[0]-1, am-g[0]+1,   0      }};
 
     return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0); 
 }

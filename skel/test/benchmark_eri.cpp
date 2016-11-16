@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
             continue;
 
         #ifdef BENCHMARK_VALIDATE
-        std::pair<double, double> err{0.0, 0.0};
+        std::pair<double, double> err(0.0, 0.0);
         #endif
 
         const size_t ncart1234 = NCART(i) * NCART(j) * NCART(k) * NCART(l);
