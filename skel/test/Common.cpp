@@ -11,6 +11,11 @@
 
 #include "test/Common.hpp"
 
+bool ValidGaussian(const std::array<int, 3> & g)
+{
+    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0); 
+}
+
 
 bool IterateGaussian(std::array<int, 3> & g)
 {
@@ -24,9 +29,8 @@ bool IterateGaussian(std::array<int, 3> & g)
     else
         g = {{ g[0]-1, am-g[0]+1,   0      }};
 
-    return (g[0] >= 0 && g[1] >= 0 && g[2] >= 0); 
+    return ValidGaussian(g);
 }
-
 
 
 

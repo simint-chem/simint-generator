@@ -16,4 +16,5 @@ void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
                          simint_shell const * const B, int nshell2,
                          simint_shell const * const C, int nshell3,
                          simint_shell const * const D, int nshell4,
-                         double * const integrals, bool normalize);
+                         double * const integrals, int deriv, bool normalize);
+

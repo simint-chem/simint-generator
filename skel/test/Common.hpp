@@ -68,6 +68,12 @@ typedef std::vector<simint_shell> GaussianVec;
 typedef std::map<int, GaussianVec> ShellMap;
 
 
+/*! \brief Check if the integer exponents of a gaussian are valid
+ *
+ * ie, ijk must all be >= 0
+ */
+bool ValidGaussian(const std::array<int, 3> & g);
+
 /*! \brief Iterate over cartesian components of a gaussian
  *
  * The elements of the array represent the exponents on x, y, and z.

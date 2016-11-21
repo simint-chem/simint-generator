@@ -518,9 +518,11 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                         std::array<int, 3> g4 = {{am4, 0, 0}};
                         do
                         {
+                            // loop over cartesian derivatives
+                            for(int d = 0; d < 3; d++)
                             {
-                                // the 9 unique components
-                                double myints[9] = {0.0};
+                                // the four components
+                                double myints[4] = {0.0, 0.0, 0.0, 0.0};
                                 
                                 for(int m = 0; m < A[i].nprim; m++)
                                 for(int n = 0; n < B[j].nprim; n++)
@@ -535,85 +537,78 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                                     std::array<int, 3> gm;
                                     double valp, valm;
 
+                                    // new shell with higher/lower AM
                                     // First center
-                                    for(int d = 0; d < 3; d++)
-                                    {
-                                        gp = g1;  gp[d]++;
-                                        gm = g1;  gm[d]--;
-                                        valp = 0.0;
-                                        valm = 0.0;
+                                    gp = g1;  gp[d]++;
+                                    gm = g1;  gm[d]--;
+                                    valp = 0.0;
+                                    valm = 0.0;
 
-                                        valp = (double)ValeevRef_eri(gp[0], gp[1], gp[2], A[i].alpha[m], vA,
+                                    valp = (double)ValeevRef_eri(gp[0], gp[1], gp[2], A[i].alpha[m], vA,
+                                                                 g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                 g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                 g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                    if(ValidGaussian(gm))
+                                        valm = (double)ValeevRef_eri(gm[0], gm[1], gm[2], A[i].alpha[m], vA,
                                                                      g2[0], g2[1], g2[2], B[j].alpha[n], vB,
                                                                      g3[0], g3[1], g3[2], C[k].alpha[o], vC,
                                                                      g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-
-                                        if(ValidGaussian(gm))
-                                            valm = (double)ValeevRef_eri(gm[0], gm[1], gm[2], A[i].alpha[m], vA,
-                                                                         g2[0], g2[1], g2[2], B[j].alpha[n], vB,
-                                                                         g3[0], g3[1], g3[2], C[k].alpha[o], vC,
-                                                                         g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                        valp *= 2 * A[i].alpha[m];
-                                        valm *= g1[d];  // ok, may be zero
-                    
-                                        myints[0*3+d] += (valp - valm) * prefac;
-                                    }
+                                    valp *= 2 * A[i].alpha[m];
+                                    valm *= g1[d];  // ok, may be zero
+                
+                                    myints[0] += (valp - valm) * prefac;
 
 
                                     // Second Center
-                                    for(int d = 0; d < 3; d++)
-                                    {
-                                        gp = g2;  gp[d]++;
-                                        gm = g2;  gm[d]--;
-                                        valp = 0.0;
-                                        valm = 0.0;
+                                    gp = g2;  gp[d]++;
+                                    gm = g2;  gm[d]--;
+                                    valp = 0.0;
+                                    valm = 0.0;
 
-                                        valp = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
-                                                                     gp[0], gp[1], gp[2], B[j].alpha[n], vB,
+                                    valp = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                 gp[0], gp[1], gp[2], B[j].alpha[n], vB,
+                                                                 g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                 g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+                                    if(ValidGaussian(gm))
+                                        valm = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                     gm[0], gm[1], gm[2], B[j].alpha[n], vB,
                                                                      g3[0], g3[1], g3[2], C[k].alpha[o], vC,
                                                                      g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                        if(ValidGaussian(gm))
-                                            valm = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
-                                                                         gm[0], gm[1], gm[2], B[j].alpha[n], vB,
-                                                                         g3[0], g3[1], g3[2], C[k].alpha[o], vC,
-                                                                         g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                        valp *= 2 * B[j].alpha[n];
-                                        valm *= g2[d];  // ok, may be zero
-                    
-                                        myints[1*3+d] += (valp - valm) * prefac;
-                                    }
+                                    valp *= 2 * B[j].alpha[n];
+                                    valm *= g2[d];  // ok, may be zero
+                
+                                    myints[1] += (valp - valm) * prefac;
 
 
                                     // Third Center
-                                    for(int d = 0; d < 3; d++)
-                                    {
-                                        gp = g3;  gp[d]++;
-                                        gm = g3;  gm[d]--;
-                                        valp = 0.0;
-                                        valm = 0.0;
+                                    gp = g3;  gp[d]++;
+                                    gm = g3;  gm[d]--;
+                                    valp = 0.0;
+                                    valm = 0.0;
 
-                                        valp = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                    valp = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                 g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                 gp[0], gp[1], gp[2], C[k].alpha[o], vC,
+                                                                 g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+                                    if(ValidGaussian(gm))
+                                        valm = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
                                                                      g2[0], g2[1], g2[2], B[j].alpha[n], vB,
-                                                                     gp[0], gp[1], gp[2], C[k].alpha[o], vC,
+                                                                     gm[0], gm[1], gm[2], C[k].alpha[o], vC,
                                                                      g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                        if(ValidGaussian(gm))
-                                            valm = (double)ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
-                                                                         g2[0], g2[1], g2[2], B[j].alpha[n], vB,
-                                                                         gm[0], gm[1], gm[2], C[k].alpha[o], vC,
-                                                                         g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
-                                        valp *= 2 * C[k].alpha[o];
-                                        valm *= g3[d];  // ok, may be zero
-                    
-                                        myints[2*3+d] += (valp - valm) * prefac;
-                                    }
+                                    valp *= 2 * C[k].alpha[o];
+                                    valm *= g3[d];  // ok, may be zero
+                
+                                    myints[2] += (valp - valm) * prefac;
 
                                     // The fourth center can be determined from the other three
                                 }
 
-                                // copy to the final integrals
-                                std::copy(myints, myints+9, integrals + idxstart + idx);
-                                idx += 9;
-
+                                integrals[idxstart + idx + 0] = myints[0];
+                                integrals[idxstart + idx + 1] = myints[1];
+                                integrals[idxstart + idx + 2] = myints[2];
+                                integrals[idxstart + idx + 3] = -(myints[0]+myints[1]+myints[2]);
+                                idx += 4;
                             }
                         } while(IterateGaussian(g4));
                     } while(IterateGaussian(g3));
@@ -639,3 +634,232 @@ void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
         throw std::runtime_error("Invlalid derivative for ValeevRef");
 }
 
+void ValeevRef_Integrals_Numdiff(simint_shell const * const A, int nshell1,
+                                 simint_shell const * const B, int nshell2,
+                                 simint_shell const * const C, int nshell3,
+                                 simint_shell const * const D, int nshell4,
+                                 double * const integrals, bool normalize)
+{
+    int inorm = (normalize ? 1 : 0);
+
+    const int am1 = A[0].am;
+    const int am2 = B[0].am;
+    const int am3 = C[0].am;
+    const int am4 = D[0].am;
+
+    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
+
+    for(int i = 0; i < nshell1; i++)
+    {
+        const int idxstart = i * n234;
+        int idx = 0;
+
+        for(int j = 0; j < nshell2; j++)
+        for(int k = 0; k < nshell3; k++)
+        for(int l = 0; l < nshell4; l++)
+        {
+            long double vA[3] = { A[i].x, A[i].y, A[i].z };
+            long double vB[3] = { B[j].x, B[j].y, B[j].z };
+            long double vC[3] = { C[k].x, C[k].y, C[k].z };
+            long double vD[3] = { D[l].x, D[l].y, D[l].z };
+
+            std::array<int, 3> g1 = {{am1, 0, 0}};
+            do
+            {
+                std::array<int, 3> g2 = {{am2, 0, 0}};
+                do
+                {
+                    std::array<int, 3> g3 = {{am3, 0, 0}};
+                    do
+                    {
+                        std::array<int, 3> g4 = {{am4, 0, 0}};
+                        do
+                        {
+                            double myint[12] = { 0.0 };
+
+                            for(int m = 0; m < A[i].nprim; m++)
+                            for(int n = 0; n < B[j].nprim; n++)
+                            for(int o = 0; o < C[k].nprim; o++)
+                            for(int p = 0; p < D[l].nprim; p++)
+                            {
+
+                                long double vAxp[3] = { vA[0]+NUMDIFF_DELTA, vA[1],               vA[2]               };
+                                long double vAxm[3] = { vA[0]-NUMDIFF_DELTA, vA[1],               vA[2]               };
+                                long double vAyp[3] = { vA[0],               vA[1]+NUMDIFF_DELTA, vA[2]               };
+                                long double vAym[3] = { vA[0],               vA[1]-NUMDIFF_DELTA, vA[2]               };
+                                long double vAzp[3] = { vA[0],               vA[1],               vA[2]+NUMDIFF_DELTA };
+                                long double vAzm[3] = { vA[0],               vA[1],               vA[2]-NUMDIFF_DELTA };
+
+                                long double vBxp[3] = { vB[0]+NUMDIFF_DELTA, vB[1],               vB[2]               };
+                                long double vBxm[3] = { vB[0]-NUMDIFF_DELTA, vB[1],               vB[2]               };
+                                long double vByp[3] = { vB[0],               vB[1]+NUMDIFF_DELTA, vB[2]               };
+                                long double vBym[3] = { vB[0],               vB[1]-NUMDIFF_DELTA, vB[2]               };
+                                long double vBzp[3] = { vB[0],               vB[1],               vB[2]+NUMDIFF_DELTA };
+                                long double vBzm[3] = { vB[0],               vB[1],               vB[2]-NUMDIFF_DELTA };
+
+                                long double vCxp[3] = { vC[0]+NUMDIFF_DELTA, vC[1],               vC[2]               };
+                                long double vCxm[3] = { vC[0]-NUMDIFF_DELTA, vC[1],               vC[2]               };
+                                long double vCyp[3] = { vC[0],               vC[1]+NUMDIFF_DELTA, vC[2]               };
+                                long double vCym[3] = { vC[0],               vC[1]-NUMDIFF_DELTA, vC[2]               };
+                                long double vCzp[3] = { vC[0],               vC[1],               vC[2]+NUMDIFF_DELTA };
+                                long double vCzm[3] = { vC[0],               vC[1],               vC[2]-NUMDIFF_DELTA };
+
+                                long double vDxp[3] = { vD[0]+NUMDIFF_DELTA, vD[1],               vD[2]               };
+                                long double vDxm[3] = { vD[0]-NUMDIFF_DELTA, vD[1],               vD[2]               };
+                                long double vDyp[3] = { vD[0],               vD[1]+NUMDIFF_DELTA, vD[2]               };
+                                long double vDym[3] = { vD[0],               vD[1]-NUMDIFF_DELTA, vD[2]               };
+                                long double vDzp[3] = { vD[0],               vD[1],               vD[2]+NUMDIFF_DELTA };
+                                long double vDzm[3] = { vD[0],               vD[1],               vD[2]-NUMDIFF_DELTA };
+
+                                long double valAxp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAxp,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valAxm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAxm,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valBxp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vBxp,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valBxm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vBxm,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCxp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCxp,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCxm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCxm,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valDxp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDxp, inorm);
+
+                                long double valDxm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDxm, inorm);
+
+
+
+                                long double valAyp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAyp,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valAym = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAym,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valByp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vByp,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valBym = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vBym,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCyp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCyp,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCym = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCym,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valDyp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDyp, inorm);
+
+                                long double valDym = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDym, inorm);
+
+
+
+                                long double valAzp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAzp,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valAzm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vAzm,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valBzp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vBzp,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valBzm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vBzm,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCzp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCzp,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valCzm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vCzm,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
+                                long double valDzp = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDzp, inorm);
+
+                                long double valDzm = ValeevRef_eri(g1[0], g1[1], g1[2], A[i].alpha[m], vA,
+                                                                   g2[0], g2[1], g2[2], B[j].alpha[n], vB,
+                                                                   g3[0], g3[1], g3[2], C[k].alpha[o], vC,
+                                                                   g4[0], g4[1], g4[2], D[l].alpha[p], vDzm, inorm);
+
+                                const long double prefac = A[i].coef[m] * B[j].coef[n] * C[k].coef[o] * D[l].coef[p]; 
+                                myint[0] +=  (double)(prefac * (valAxp - valAxm)/(2.0*NUMDIFF_DELTA));
+                                myint[1] +=  (double)(prefac * (valBxp - valBxm)/(2.0*NUMDIFF_DELTA));
+                                myint[2] +=  (double)(prefac * (valCxp - valCxm)/(2.0*NUMDIFF_DELTA));
+                                myint[3] +=  (double)(prefac * (valDxp - valDxm)/(2.0*NUMDIFF_DELTA));
+
+                                myint[4] +=  (double)(prefac * (valAyp - valAym)/(2.0*NUMDIFF_DELTA));
+                                myint[5] +=  (double)(prefac * (valByp - valBym)/(2.0*NUMDIFF_DELTA));
+                                myint[6] +=  (double)(prefac * (valCyp - valCym)/(2.0*NUMDIFF_DELTA));
+                                myint[7] +=  (double)(prefac * (valDyp - valDym)/(2.0*NUMDIFF_DELTA));
+
+                                myint[8] +=  (double)(prefac * (valAzp - valAzm)/(2.0*NUMDIFF_DELTA));
+                                myint[9] +=  (double)(prefac * (valBzp - valBzm)/(2.0*NUMDIFF_DELTA));
+                                myint[10] += (double)(prefac * (valCzp - valCzm)/(2.0*NUMDIFF_DELTA));
+                                myint[11] += (double)(prefac * (valDzp - valDzm)/(2.0*NUMDIFF_DELTA));
+                            }
+
+                            for(int d = 0; d < 12; d++)
+                                integrals[idxstart + idx + d] = myint[d];
+                            idx += 12;
+
+                        } while(IterateGaussian(g4));
+                    } while(IterateGaussian(g3));
+                } while(IterateGaussian(g2));
+            } while(IterateGaussian(g1));
+        }
+    }
+}
