@@ -22,12 +22,17 @@ extern "C" {
 //      The dir member represents what is the "best" way (or at least a valid way).
 //      0 = x, 1 = y, 2 = z
 //
-// idx: The index of the cartesian if ijk has been decremented once or twice.
+// idx: The index of the cartesian if ijk has been decremented once or twice,
+//      or incremented once.
+//
 //      For example:
 //         fxxy, with i decremented once, results in dxy, whose index is 1 in our ordering.
-//               if i is decremented twice, the result is py, whose index is also 1
+//               if i is decremented twice, the result is py, whose index is also 1.
+//               Incremented once, the result is gxxxy, which is index 1.
+//
 //         dyz,  decrement j once, results in pz (index 2). decremented twice, the
 //               result is -1 (does not exist).
+//               Incremented, the result is fyyz, which is index 7
 //
 //  Having these in a lookup table reduces the need to determine this on the fly, at the
 //  expense of a bigger binary (and a compile-time fixed ordering).

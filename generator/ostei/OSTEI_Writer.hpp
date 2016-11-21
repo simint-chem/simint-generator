@@ -66,3 +66,25 @@ private:
 
 
 
+class OSTEIDeriv1_Writer_Basic : public OSTEI_Writer
+{
+public:
+    using OSTEI_Writer::OSTEI_Writer;
+    using OSTEI_Writer::operator=;
+
+    virtual void WriteFile(void) const;
+
+private:
+    void DeclareContwork(void) const;
+    void ZeroContwork(void) const;
+    void FreeContwork(void) const;
+    void WriteShellOffsets(void) const;
+    void WriteShellOffsets_Scalar(void) const;
+    void WriteAccumulation(void) const;
+
+    void WriteFile_Permute_(void) const;
+    void WriteFile_NoPermute_(void) const;
+};
+
+
+

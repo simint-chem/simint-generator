@@ -75,11 +75,16 @@ skeldir = os.path.join(topdir, "skel")
 
 # paths to generator programs
 ostei_gen = os.path.join(args.g, "ostei_generator")
+ostei_deriv1_gen = os.path.join(args.g, "ostei_deriv1_generator")
 hrr_gen = os.path.join(args.g, "ostei_hrr_generator")
 vrr_gen = os.path.join(args.g, "ostei_vrr_generator")
 
 if not os.path.isfile(ostei_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_gen))
+  quit(1)
+
+if not os.path.isfile(ostei_deriv1_gen):
+  print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_deriv1_gen))
   quit(1)
 
 if not os.path.isfile(hrr_gen):
@@ -373,8 +378,6 @@ print("=========================================================================
 print()
 
 
-
-
 # Generate the ostei
 headerbase = "ostei_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
@@ -463,6 +466,129 @@ with open(headerfile, 'a') as hfile:
   hfile.write("\n")
 
 
+####################################################
+# Generate the ERI 1st derivative sources and headers
+####################################################
+print("-------------------------------")
+print("Generating ERI 1st Derivatives")
+print("Maximum AM: {}".format(args.l))
+print("-------------------------------")
+
+valid = set()
+invalid = set()
+
+print()
+
+for i in range(0, args.l + 1):
+  for j in range(0, args.l + 1):
+    for k in range(0, args.l + 1):
+      for l in range(0, args.l + 1):
+        q = (i,j,k,l)
+        if args.p or ValidQuartet(q):
+          valid.add(q)
+        else:
+          invalid.add(q)
+
+print()
+print("Valid: {}".format(len(valid)))
+for q in valid:
+  print("  {}".format(QStr(q)))
+
+print()
+print("==========================================================================================")
+print()
+
+
+# Generate the ostei 1st derivatives
+headerbase = "ostei_deriv1_generated.h"
+headerfile = os.path.join(outdir_osteigen, headerbase)
+
+# Maximum required contwork
+maxworksize = 0  # number of elements
+
+print()
+print("Header file: {}".format(headerfile))
+print()
+
+# Start the header file
+with open(headerfile, 'w') as hfile:
+  hfile.write("#pragma once\n\n")
+  hfile.write("\n\n")
+  hfile.write("#include \"simint/ostei/ostei.h\"\n")
+  hfile.write("#include \"simint/ostei/ostei_general.h\"\n")
+  hfile.write("#include \"simint/ostei/gen/vrr_generated.h\"\n")
+  hfile.write("#include \"simint/ostei/gen/hrr_generated.h\"\n")
+
+  hfile.write("\n")
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("extern \"C\" {\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+
+
+for q in valid:
+  filebase = "ostei_deriv1_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
+  outfile = os.path.join(outdir_osteigen, filebase + ".c")
+  logfile = os.path.join(outdir_osteigen, filebase + ".log")
+  print("Creating: {}".format(filebase))
+  print("      Output: {}".format(outfile))
+  print("     Logfile: {}".format(logfile))
+
+  with open(logfile, 'w') as lf:
+    cmdline = [ostei_deriv1_gen];
+    cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
+    cmdline.extend(["-o", outfile])
+    cmdline.extend(["-oh", headerfile])
+    cmdline.extend(["-s", str(args.s)])
+    cmdline.extend(["-ve", str(args.ve)]) 
+    cmdline.extend(["-vg", str(args.vg)]) 
+    cmdline.extend(["-he", str(args.he)]) 
+    cmdline.extend(["-hg", str(args.hg)]) 
+
+    if args.c:
+        cmdline.extend(["-c", str(args.c)])
+
+    if args.i:
+        cmdline.append("-i")
+    if args.S:
+        cmdline.append("-S")
+
+    print()
+    print("Command line:")
+    print(' '.join(cmdline))
+    print()
+
+    ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
+
+    if ret != 0:
+      print("\n")
+      print("*********************************")
+      print("While generating ostei_deriv1")
+      print("Subprocess returned {} - aborting".format(ret))
+      print("*********************************")
+      print("\n")
+      quit(5)
+
+
+  # reopen the logfile, find contwork
+  for line in open(logfile, 'r').readlines():
+    if line.startswith("CONTWORK SIZE"):
+      maxworksize = max(maxworksize, int(line.split()[2]))
+
+  print()
+
+
+# Close out the header file
+
+with open(headerfile, 'a') as hfile:
+  hfile.write("#ifdef __cplusplus\n")
+  hfile.write("}\n")
+  hfile.write("#endif\n")
+  hfile.write("\n")
+
+
+
+
 ######################
 # OSTEI config file
 ######################
@@ -473,6 +599,8 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
   hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(args.l))
+  hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
+  hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(args.l))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n")

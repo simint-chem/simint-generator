@@ -9,8 +9,8 @@
 #include "test/ValeevRef.hpp"
 
 
-#define SIMINT_SCREEN 0
-#define SIMINT_SCREEN_TOL 0.0
+#define SIMINT_SCREEN 2
+#define SIMINT_SCREEN_TOL 1e-7
 
 
 typedef std::array<int, 4> QAM;
@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
             // if the return is < 0, it didn't calculate anything
             // (everything was screened)
             if(simint_ret < 0)
-                std::fill(res_simint, res_simint + nshell1234, 0.0);
+                std::fill(res_simint, res_simint + nshell1234*ncart1234, 0.0);
 
             /////////////////////////////////
             // Update the error map
