@@ -9,8 +9,8 @@
 #include "test/ValeevRef.hpp"
 
 
-#define SIMINT_SCREEN 2
-#define SIMINT_SCREEN_TOL 1e-7
+#define SIMINT_SCREEN 0
+#define SIMINT_SCREEN_TOL 0.0
 
 
 typedef std::array<int, 4> QAM;

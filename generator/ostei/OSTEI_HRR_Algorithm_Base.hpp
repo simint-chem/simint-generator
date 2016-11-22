@@ -15,6 +15,7 @@ class OSTEI_HRR_Algorithm_Base
         OSTEI_HRR_Algorithm_Base(const OptionMap & options);
 
         void Create(QAM am);
+        void Create(std::set<QAM> am);
         
         DAMSet TopBraAM(void) const;
         DAMSet TopKetAM(void) const;
@@ -49,8 +50,6 @@ class OSTEI_HRR_Algorithm_Base
     private:
         // Options
         OptionMap options_;
-
-        QAM finalam_;
 
         DAMSet allbraam_, allketam_;
 

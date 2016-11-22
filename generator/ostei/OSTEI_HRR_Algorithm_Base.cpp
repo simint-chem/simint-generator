@@ -122,11 +122,16 @@ void OSTEI_HRR_Algorithm_Base::HRRDoubletLoop_(HRRDoubletStepList & hrrlist,
 
 }
 
-
-
 void OSTEI_HRR_Algorithm_Base::Create(QAM am)
 {
-    finalam_ = am;
+    Create(std::set<QAM>{am});
+}
+
+void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am)
+{
+    // What is the am we base the direction on?
+    QAM highest_am = *(am.rbegin());
+    std::cout << "HERE: " << highest_am[0] << " " << highest_am[1] << " " << highest_am[2] << " " << highest_am[3] << "\n";
 
     // First, we need a list of doublet steps for the bra
 
@@ -134,12 +139,19 @@ void OSTEI_HRR_Algorithm_Base::Create(QAM am)
     DoubletSet solvedbras;
 
     // generate initial targets
-    DoubletSet initbras = GenerateInitialDoubletTargets({am[0],am[1]}, DoubletType::BRA);
+    DoubletSet initbras;
+
+    for(auto & iam : am)
+    {
+        auto add_targets = GenerateInitialDoubletTargets({iam[0],iam[1]}, DoubletType::BRA);
+        initbras.insert(add_targets.begin(), add_targets.end());
+    }
+
     //PrintDoubletSet(initbras, "Initial Targets");
 
     // What direction are we going?
     RRStepType steptype = RRStepType::J; // Moving I -> J
-    if(am[0] < am[1])
+    if(highest_am[0] < highest_am[1])
         steptype = RRStepType::I;  // Moving J -> I
 
     // Initial bra targets
@@ -165,24 +177,31 @@ void OSTEI_HRR_Algorithm_Base::Create(QAM am)
     }
 
 
-    //std::cout << "\n\n";
-    //std::cout << "--------------------------------------------------------------------------------\n";
-    //std::cout << "BRA HRR step done.\n";
-    //std::cout << "--------------------------------------------------------------------------------\n";
-    //for(const auto & it : brasteps_)
-    //for(const auto & it2 : it.second)
-    //    std::cout << it2 << "\n";
+    std::cout << "\n\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "BRA HRR step done.\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    for(const auto & it : brasteps_)
+    for(const auto & it2 : it.second)
+        std::cout << it2 << "\n";
     
 
     // now do kets
     // What direction are we going?
     steptype = RRStepType::L;  // Moving K->L
-    if(am[2] < am[3])
+    if(highest_am[2] < highest_am[3])
         steptype = RRStepType::K; // Moving L->K
 
     // we only need the bras from the original targets
     DoubletSet solvedkets;
-    DoubletSet initkets = GenerateInitialDoubletTargets({am[2],am[3]}, DoubletType::KET);
+    DoubletSet initkets;
+    for(auto & iam : am)
+    {
+        auto add_targets = GenerateInitialDoubletTargets({iam[2],iam[3]}, DoubletType::KET);
+        initkets.insert(add_targets.begin(), add_targets.end());
+    }
+
+
     targets = initkets;
     PruneDoublets_(targets, kettop_, steptype);
 
@@ -204,13 +223,13 @@ void OSTEI_HRR_Algorithm_Base::Create(QAM am)
     }
     
 
-    //std::cout << "\n\n";
-    //std::cout << "--------------------------------------------------------------------------------\n";
-    //std::cout << "KET HRR step done.\n";
-    //std::cout << "--------------------------------------------------------------------------------\n";
-    //for(const auto & it : ketsteps_)
-    //for(const auto & it2 : it.second)
-    //    std::cout << it2 << "\n";
+    std::cout << "\n\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "KET HRR step done.\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    for(const auto & it : ketsteps_)
+    for(const auto & it2 : it.second)
+        std::cout << it2 << "\n";
 
     std::cout << "\n\n";
 
@@ -238,12 +257,15 @@ void OSTEI_HRR_Algorithm_Base::Create(QAM am)
 
 
     // Put am in the order of calculation
-    AMOrder_AddWithDependencies_(braamorder_, {am[0], am[1]}, DoubletType::BRA);
-    AMOrder_AddWithDependencies_(ketamorder_, {am[2], am[3]}, DoubletType::KET);
+    for(auto & iam : am)
+    {
+        AMOrder_AddWithDependencies_(braamorder_, {iam[0], iam[1]}, DoubletType::BRA);
+        AMOrder_AddWithDependencies_(ketamorder_, {iam[2], iam[3]}, DoubletType::KET);
+    }
 
-    //PrintDoubletSet(bratop_, "HRR top level bras");
-    //PrintDoubletSet(kettop_, "HRR top level kets");
-    //PrintQuartetSet(topquartets_, "HRR top quartets");
+    PrintDoubletSet(bratop_, "HRR top level bras");
+    PrintDoubletSet(kettop_, "HRR top level kets");
+    PrintQuartetSet(topquartets_, "HRR top quartets");
 }
 
 

@@ -84,8 +84,7 @@ int main(int argc, char ** argv)
 
 
     //////////////////////////////////////////////////////////////
-    //! \todo We are doing all this work even if it is a special
-    //        permutation
+    //! \todo Are there special permutations for derivatives?
     //////////////////////////////////////////////////////////////
 
     // algorithms used
