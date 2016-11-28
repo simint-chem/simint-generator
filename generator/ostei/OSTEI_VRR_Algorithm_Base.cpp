@@ -471,12 +471,12 @@ void OSTEI_VRR_Algorithm_Base::Create(const QuartetSet & q)
 
 void OSTEI_VRR_Algorithm_Base::Create_WithOrder(QAM q, IdxOrder idx_order)
 {
-    Create_WithOrder(GenerateInitialQuartetTargets(q), idx_order);
+    Create_WithOrder(GenerateQuartetTargets(q), idx_order);
 }
 
 void OSTEI_VRR_Algorithm_Base::Create(QAM q)
 {
-    Create(GenerateInitialQuartetTargets(q));
+    Create(GenerateQuartetTargets(q));
 }
 
 QAMList OSTEI_VRR_Algorithm_Base::GenerateAMReq(QAM am, RRStepType rrstep, bool all) const

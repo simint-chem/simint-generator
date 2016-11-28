@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
     
 
     // Information for this OSTEI
-    OSTEI_GeneratorInfo info(finalam,
+    OSTEI_GeneratorInfo info(finalam, 1,
                              Compiler::Intel,
                              cpuflags, options);
 
@@ -93,7 +93,28 @@ int main(int argc, char ** argv)
 
     // Working backwards, I need:
     // 1.) HRR Steps
-    hrralgo->Create(finalam);
+    //     We need the different increments, decrements for derivatives
+    std::set<QAM> needed_am;
+
+    // We only need to do three centers. The fourth is free
+    for(int i = 0; i < 3; i++)
+    {
+        QAM amtmp_p(finalam);
+        QAM amtmp_m(finalam);
+        amtmp_p[i]++;
+        amtmp_m[i]--;
+
+        needed_am.insert(amtmp_p);
+        if(ValidQAM(amtmp_m))
+            needed_am.insert(amtmp_m);
+    }
+
+    std::cout << "Here\n";
+    for(auto it : needed_am)
+        std::cout << it[0] << it[1] << it[2] << it[3] << "\n";
+    std::cout << "\n";
+
+    hrralgo->Create(needed_am);
     OSTEI_HRR_Writer hrr_writer(*hrralgo, info,
                                 options[Option::ExternalHRR],
                                 options[Option::GeneralHRR]);

@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
     if(!ofh.is_open())
         throw std::runtime_error(StringBuilder("Cannot open file: ", hpath, "\n"));
 
-    OSTEI_GeneratorInfo info(finalam, Compiler::Intel, cpuflags, options);
+    OSTEI_GeneratorInfo info(finalam, 0, Compiler::Intel, cpuflags, options);
 
     of << "#include \"simint/ostei/ostei.h\"\n";
 

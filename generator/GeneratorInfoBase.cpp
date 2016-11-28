@@ -45,10 +45,12 @@ IncludeSet GeneratorInfoBase::ConvertCPUFlags(std::string cpuflagsstr)
 
 
 GeneratorInfoBase::GeneratorInfoBase(QAM finalam,
+                                     int deriv,
                                      Compiler compiler,
                                      const std::string & cpuflagsstr,
                                      const OptionMap & options)
     : finalam_(finalam),
+      deriv_(deriv),
       compiler_(compiler),
       cpuflags_(ConvertCPUFlags(cpuflagsstr)),
       options_(options),

@@ -17,20 +17,16 @@ class OSTEI_HRR_Algorithm_Base
         void Create(QAM am);
         void Create(std::set<QAM> am);
         
-        DAMSet TopBraAM(void) const;
-        DAMSet TopKetAM(void) const;
         QAMSet TopAM(void) const;
         QuartetSet TopQuartets(void) const;
+        QAMList GetAMOrder(void) const;
 
         RRStepType GetBraRRStep(DAM am) const;
         RRStepType GetKetRRStep(DAM am) const;
-        DAMList GetBraAMOrder(void) const;
-        DAMList GetKetAMOrder(void) const;
+        DoubletType GetDoubletStep(QAM am) const;
 
         DAMSet GetBraAMReq(DAM am) const;
         DAMSet GetKetAMReq(DAM am) const;
-        DoubletSet TopBraDoublets(void) const;
-        DoubletSet TopKetDoublets(void) const;
 
         QAMList GenerateAMReq(QAM am, RRStepType rrstep) const;
 
@@ -56,14 +52,11 @@ class OSTEI_HRR_Algorithm_Base
         HRR_StepMap brasteps_, ketsteps_;
         HRR_AMReqMap brareq_, ketreq_;
 
-        // with full quartets (not am)
-        DoubletSet bratop_, kettop_;
         QuartetSet topquartets_;
-
-        DAMSet bratopam_, kettopam_;
         QAMSet topqam_;
 
-        DAMList braamorder_, ketamorder_;
+        QAMList amorder_;
+        std::map<QAM, DoubletType> stepmap_;
 
         virtual HRRDoubletStep DoubletStep_(const Doublet & target, RRStepType steptype) = 0;
 
@@ -75,7 +68,10 @@ class OSTEI_HRR_Algorithm_Base
 
         static void PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRStepType steptype);
 
-        void AMOrder_AddWithDependencies_(DAMList & order, DAM am, DoubletType type) const;
+        void AMOrder_AddWithDependencies_(QAMList & order,
+                                          QAMSet & topqam,
+                                          std::map<QAM, DoubletType> & smap,
+                                          QAMSet am) const;
  
 };
 

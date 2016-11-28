@@ -35,6 +35,7 @@ public:
      * \param [in] options Options for code generation
      */
     GeneratorInfoBase(QAM finalam,
+                      int deriv,
                       Compiler compiler,
                       const std::string & cpuflagsstr,
                       const OptionMap & options);
@@ -47,6 +48,13 @@ public:
     QAM FinalAM(void) const
     {
         return finalam_;
+    }
+
+    /*! \brief The derivative we are calculating
+     */
+    int Deriv(void) const
+    {
+        return deriv_;
     }
 
     /*! \brief Retrieve an option
@@ -122,6 +130,9 @@ public:
 private:
     //! The requested AM quartet
     QAM finalam_;
+
+    //! The requested derivative
+    int deriv_;
 
     //! The compiler the generated source is to be compiled with
     Compiler compiler_;

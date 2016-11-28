@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
     // Write out
     of << "\n#include \"simint/ostei/gen/ostei_generated.h\"\n";
 
-    OSTEI_GeneratorInfo info(am, Compiler::Intel, cpuflags, options);
+    OSTEI_GeneratorInfo info(am, 0, Compiler::Intel, cpuflags, options);
 
     // The algorithm to use
     Makowski_HRR hrralgo(options);

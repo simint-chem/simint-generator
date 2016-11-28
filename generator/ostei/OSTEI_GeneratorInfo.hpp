@@ -11,9 +11,8 @@
 class OSTEI_GeneratorInfo : public GeneratorInfoBase
 {
 public:    
+
     using GeneratorInfoBase::GeneratorInfoBase;
-
-
 
     //////////////////////////////////
     // Memory for contracted quartets

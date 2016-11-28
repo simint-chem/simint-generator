@@ -471,7 +471,7 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 print("-------------------------------")
 print("Generating ERI 1st Derivatives")
-print("Maximum AM: {}".format(args.l))
+print("Maximum AM: {}".format(args.l-1))
 print("-------------------------------")
 
 valid = set()
@@ -503,9 +503,6 @@ print()
 headerbase = "ostei_deriv1_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
 
-# Maximum required contwork
-maxworksize = 0  # number of elements
-
 print()
 print("Header file: {}".format(headerfile))
 print()
@@ -527,6 +524,9 @@ with open(headerfile, 'w') as hfile:
 
 
 for q in valid:
+  if max(q) > (args.l-1):
+    continue; 
+
   filebase = "ostei_deriv1_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_osteigen, filebase + ".c")
   logfile = os.path.join(outdir_osteigen, filebase + ".log")
@@ -600,7 +600,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("\n")
   hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(args.l))
   hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
-  hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(args.l))
+  hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(-1))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n")

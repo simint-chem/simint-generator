@@ -113,41 +113,43 @@ std::string OSTEI_HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::strin
 void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
 {
     QAM finalam = info_.FinalAM();
-    DAM finalbra{finalam[0], finalam[1]};
 
     os << indent3 << "//////////////////////////////////////////////\n";
     os << indent3 << "// Contracted integrals: Horizontal recurrance\n";
     os << indent3 << "//////////////////////////////////////////////\n";
-    os << "\n";
+    os << "\n\n";
 
     if(HasBraHRR())
-    {
-        os << "\n";
-        os << indent4 << "const double hAB[3] = { P.AB_x[ab], P.AB_y[ab], P.AB_z[ab] };\n"; 
-        os << "\n";
-    }
+        os << indent3 << "const double hAB[3] = { P.AB_x[ab], P.AB_y[ab], P.AB_z[ab] };\n"; 
+    os << "\n\n";
 
     os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
     os << indent3 << "{\n";
 
+    if(HasKetHRR())
+        os << indent4 << "const double hCD[3] = { Q.AB_x[cd+abcd], Q.AB_y[cd+abcd], Q.AB_z[cd+abcd] };\n";
     os << "\n";
     os << indent4 << "// set up HRR pointers\n";
     for(const auto & it : hrr_algo_.TopAM())
         os << indent4 << "double const * restrict " << HRRVarName(it) << " = " << ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
-    // and also for the final integral
-    os << indent4 << "double * restrict " << HRRVarName(finalam) << " = " << ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
+    // and also for the integral, but only if we aren't doing a derivative
+    if(info_.Deriv() == 0)
+        os << indent4 << "double * restrict " << HRRVarName(finalam) << " = " << ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
     os << "\n";
-    
-    if(HasBraHRR())
+
+
+    for(auto am : hrr_algo_.GetAMOrder())
     {
-        for(const auto & itk : hrr_algo_.TopKetAM()) // for all needed ket am
-        for(const auto & itb : hrr_algo_.GetBraAMOrder()) // form these
+        DoubletType steptype = hrr_algo_.GetDoubletStep(am);
+
+        if(steptype == DoubletType::BRA)
         {
-            QAM am = {itb[0], itb[1], itk[0], itk[1]};
             os << indent4 << "// form " << ArrVarName(am) << "\n";
             // allocate temporary if needed
-            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
+            // temporary is needed even for the "final am" if we are doing derivatives, since
+            // it will actually be an intermediate
+            if(!info_.IsContQ(am) && (info_.Deriv() > 0 || !info_.IsFinalAM(am)))
                 os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
 
             int L = am[0] + am[1];
@@ -160,20 +162,8 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
                 WriteHRR_Bra_General_(os, am);
             os << "\n";
         }
-    }
-
-    os << "\n";
-    os << "\n";
-
-    if(HasKetHRR())
-    {
-        os << "\n";
-        os << indent4 << "const double hCD[3] = { Q.AB_x[cd+abcd], Q.AB_y[cd+abcd], Q.AB_z[cd+abcd] };\n";
-        os << "\n";
-
-        for(const auto & itk : hrr_algo_.GetKetAMOrder())
+        else
         {
-            QAM am = {finalbra[0], finalbra[1], itk[0], itk[1]};
             os << indent4 << "// form " << ArrVarName(am) << "\n";
             // allocate temporary if needed
             if(!info_.IsContQ(am) && !info_.IsFinalAM(am))

@@ -442,9 +442,9 @@ typedef std::map<std::string, std::string> ConstantMap;
 
 
 // Some helper functions
-QuartetSet GenerateInitialQuartetTargets(QAM amlst);
+QuartetSet GenerateQuartetTargets(QAM am);
 
-DoubletSet GenerateInitialDoubletTargets(DAM amlst, DoubletType type);
+DoubletSet GenerateDoubletTargets(DAM am, DoubletType type);
 
 int GaussianOrder(const QAM & ijk);
 
