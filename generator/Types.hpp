@@ -28,6 +28,29 @@ typedef std::array<int, 4> QAM;
 //! \brief Exponents on the xyz prefactor of a gaussian
 typedef std::array<int, 3> ExpList;
 
+//! \brief An AM quartet with some sort of tag
+struct TaggedQAM
+{
+    QAM qam;
+    std::string tag;
+
+    TaggedQAM(int i, int j, int k, int l, std::string itag)
+        : qam{i,j,k,l}, tag(std::move(itag)) { }
+
+    TaggedQAM(QAM iqam, std::string itag)
+        : qam(iqam), tag(std::move(itag)) { }
+
+    bool operator<(const TaggedQAM & rhs) const
+    {
+        if(qam < rhs.qam)
+            return true;
+        else if(qam == rhs.qam)
+            return tag < rhs.tag;
+        else
+            return false;
+    }
+};
+
 extern
 std::map<int, std::vector<ExpList>> gorder_map; // in Ordering.cpp
 
@@ -425,9 +448,11 @@ typedef std::set<int> IntSet;
 
 typedef std::set<QAM> QAMSet;
 typedef std::set<DAM> DAMSet;
+typedef std::set<TaggedQAM> TaggedQAMSet;
 
 typedef std::vector<QAM> QAMList;
 typedef std::vector<DAM> DAMList;
+typedef std::vector<TaggedQAM> TaggedQAMList;
 
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;

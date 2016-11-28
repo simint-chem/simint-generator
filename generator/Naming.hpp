@@ -29,6 +29,28 @@ inline std::string ArrVarName(const QAM & am, const std::string & prefix = "")
 }
 
 
+/*! \brief Generate a general name of an array of integrals
+ *
+ * \param [in] tam Tagged AM of the integral to be stored
+ * \param [in] prefix Optional prefix to use
+ * \return A standard name of an array
+ */
+inline std::string ArrVarName(const TaggedQAM & tam, const std::string & prefix = "")
+{
+    auto am = tam.qam;
+
+    std::string tag = (tam.tag.size() ? tam.tag + "_" : "");
+
+    std::string str = StringBuilder("INT__" , tag, amchar[am[0]], "_", 
+                                    amchar[am[1]], "_", amchar[am[2]], "_", amchar[am[3]]);
+    
+    if(prefix.size())
+        return StringBuilder(prefix, "_", str);
+    else
+        return str;
+}
+
+
 /*! \brief Generate a general name of an array of integrals (split with custom ket string)
  *
  * \param [in] am1 AM of the first center of the bra
@@ -78,6 +100,17 @@ inline std::string HRRVarName(const QAM & am)
 }
 
 
+/*! \brief Generate a general name of an array of integrals used in HRR
+ *
+ * \param [in] tam Tagged AM of the integral to be stored
+ * \return A standard name of an array used in HRR
+ */
+inline std::string HRRVarName(const TaggedQAM & tam)
+{
+    return ArrVarName(tam, "HRR");
+}
+
+
 /*! \brief Generate a general name of an array of integrals used in HRR (split with custom ket string)
  *
  * \param [in] am1 AM of the first center of the bra
@@ -115,6 +148,17 @@ inline std::string PrimVarName(const QAM & am)
 }
 
 
+/*! \brief Generate a name for an array of integrals used within the primitive loop
+ *
+ * \param [in] tam Tagged AM of the integral to be stored
+ * \return A standard name of an array used in the primitive loop
+ */
+inline std::string PrimVarName(const TaggedQAM & tam)
+{
+    return ArrVarName(tam, "PRIM");
+}
+
+
 /*! \brief Generate a name for a pointer to an array of integrals used within the primitive loop
  *
  * \param [in] am AM of the integral to be stored
@@ -123,6 +167,17 @@ inline std::string PrimVarName(const QAM & am)
 inline std::string PrimPtrName(const QAM & am)
 {
     return ArrVarName(am, "PRIM_PTR");
+}
+
+
+/*! \brief Generate a name for a pointer to an array of integrals used within the primitive loop
+ *
+ * \param [in] tam Tagged AM of the integral to be stored
+ * \return A standard name of a pointer to an array used in the primitive loop
+ */
+inline std::string PrimPtrName(const TaggedQAM & tam)
+{
+    return ArrVarName(tam, "PRIM_PTR");
 }
 
 

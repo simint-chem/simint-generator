@@ -17,20 +17,29 @@ public:
     //////////////////////////////////
     // Memory for contracted quartets
     //////////////////////////////////
-    void SetContQ(const QAMSet & q)
+    void SetContQ(const TaggedQAMSet & q)
     {
         contq_ = q;
         nelements_ = 0;
         for(const auto & it : contq_)
         {
-            if(it != FinalAM())
-                nelements_ += NCART(it);
+            if(it.qam != FinalAM())
+                nelements_ += NCART(it.qam);
         }
 
         memory_ = nelements_ * sizeof(double);
     }
 
-    QAMSet GetContQ(void) const
+    void SetContQ(const QAMSet & q)
+    {
+        TaggedQAMSet q2;
+        for(const auto & it : q)
+            q2.insert({it, ""});
+
+        SetContQ(q2);
+    }
+
+    TaggedQAMSet GetContQ(void) const
     {
         return contq_;
     }
@@ -46,6 +55,14 @@ public:
     }
     
     bool IsContQ(const QAM & am) const
+    {
+        for(const auto & it : contq_)
+            if(it.qam == am)
+                return true;
+        return false;
+    }
+
+    bool IsContQ(const TaggedQAM & am) const
     {
         return contq_.count(am);
     }
@@ -65,7 +82,7 @@ private:
     //////////////////////////////////
     // Memory for contracted quartets
     //////////////////////////////////
-    QAMSet contq_;
+    TaggedQAMSet contq_;
     size_t memory_;
     size_t nelements_;
 

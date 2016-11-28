@@ -20,10 +20,10 @@ void OSTEI_Writer_Basic::DeclareContwork(void) const
 
     for(const auto & it : info_.GetContQ())
     {
-        if(!info_.IsFinalAM(it))
+        if(!info_.IsFinalAM(it.qam))
         {
             os_ << indent1 << "double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
-            ptidx += NCART(it);
+            ptidx += NCART(it.qam);
         }
     }
 
@@ -68,8 +68,8 @@ void OSTEI_Writer_Basic::WriteShellOffsets(void) const
     os_ << indent6 << "{\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     
-    for(const auto qam : info_.GetContQ())
-        os_ << indent7 << PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
+    for(const auto it : info_.GetContQ())
+        os_ << indent7 << PrimPtrName(it) << " += " << NCART(it.qam) << ";\n";
 
     os_ << indent6 << "}\n";
     os_ << indent6 << "iprimcd++;\n";
@@ -100,8 +100,8 @@ void OSTEI_Writer_Basic::WriteShellOffsets_Scalar(void) const
     os_ << indent5 << "{\n";
     os_ << indent6 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     
-    for(const auto qam : info_.GetContQ())
-        os_ << indent6 << PrimPtrName(qam) << " += " << NCART(qam) << ";\n";
+    for(const auto it : info_.GetContQ())
+        os_ << indent6 << PrimPtrName(it) << " += " << NCART(it.qam) << ";\n";
 
     os_ << indent5 << "}\n";
     os_ << indent5 << "iprimcd++;\n\n";
@@ -120,32 +120,32 @@ void OSTEI_Writer_Basic::WriteAccumulation(void) const
         os_ << indent5 << "if(lastoffset == 0)\n";
         os_ << indent5 << "{\n";
 
-        for(const auto qam : info_.GetContQ())
+        for(const auto it : info_.GetContQ())
         {
-            int ncart = NCART(qam);
-            os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+            int ncart = NCART(it.qam);
+            os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it.qam) << ", " << PrimPtrName(it.qam) << ");\n";
         }
         os_ << indent5 << "}\n";
         os_ << indent5 << "else\n";
         os_ << indent5 << "{\n";
 
-        for(const auto qam : info_.GetContQ())
+        for(const auto it : info_.GetContQ())
         {
-            int ncart = NCART(qam);
-            os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+            int ncart = NCART(it.qam);
+            os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
         }
 
-        for(const auto qam : info_.GetContQ())
-            os_ << indent6 << PrimPtrName(qam) << " += lastoffset*" << NCART(qam) << ";\n";
+        for(const auto it : info_.GetContQ())
+            os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
 
         os_ << indent5 << "}\n";
     }
     else
     {
-        for(const auto qam : info_.GetContQ())
+        for(const auto it : info_.GetContQ())
         {
-            int ncart = NCART(qam);
-            os_ << indent6 << "contract(" << ncart << ", " << PrimVarName(qam) << ", " << PrimPtrName(qam) << ");\n";
+            int ncart = NCART(it.qam);
+            os_ << indent6 << "contract(" << ncart << ", " << PrimVarName(it) << ", " << PrimPtrName(it.qam) << ");\n";
         }
     }
 }
@@ -478,7 +478,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent6 << "if(not_screened == 0)\n";
         os_ << indent6 << "{\n";
         for(const auto it : info_.GetContQ())
-            os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
+            os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
         os_ << indent7 << "continue;\n";
         os_ << indent6 << "}\n";
         os_ << indent5 << "}\n\n";
