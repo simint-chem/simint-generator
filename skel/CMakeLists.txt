@@ -48,7 +48,9 @@ else()
   message(STATUS "Building static library")
 endif()
 
-
+# Install the config file
+configure_file("simintConfig.cmake.in" "simintConfig.cmake" @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/simintConfig.cmake DESTINATION cmake)
 
 # Main code subdirectory
 add_subdirectory(simint)

@@ -61,7 +61,9 @@ args = parser.parse_args()
 
 
 
-
+maxam = args.l
+#maxder1 = maxam-1
+maxder1 = -1 # temporarily disable
 
 
 
@@ -122,14 +124,15 @@ if os.path.isdir(args.outdir):
   shutil.rmtree(outdir_cmake, ignore_errors=True)
 
 
-shutil.copytree(os.path.join(skeldir, "simint"),        outdir)
-shutil.copytree(os.path.join(skeldir, "test"),          outdir_test)
-shutil.copytree(os.path.join(skeldir, "examples"),      outdir_examples)
-shutil.copytree(os.path.join(skeldir, "cmake"),         outdir_cmake)
-shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),    args.outdir)
-shutil.copy(os.path.join(skeldir, "README"),            args.outdir)
-shutil.copy(os.path.join(skeldir, "LICENSE"),           args.outdir)
-shutil.copy(os.path.join(skeldir, "CHANGELOG"),           args.outdir)
+shutil.copytree(os.path.join(skeldir, "simint"),            outdir)
+shutil.copytree(os.path.join(skeldir, "test"),              outdir_test)
+shutil.copytree(os.path.join(skeldir, "examples"),          outdir_examples)
+shutil.copytree(os.path.join(skeldir, "cmake"),             outdir_cmake)
+shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),        args.outdir)
+shutil.copy(os.path.join(skeldir, "README"),                args.outdir)
+shutil.copy(os.path.join(skeldir, "LICENSE"),               args.outdir)
+shutil.copy(os.path.join(skeldir, "CHANGELOG"),             args.outdir)
+shutil.copy(os.path.join(skeldir, "simintConfig.cmake.in"), args.outdir)
 
 
 
@@ -144,7 +147,7 @@ valid = set()
 invalid = set()
 
 print()
-for i in range(1, args.l+1):
+for i in range(1, maxam+1):
   for j in range(1, i+1):
     ij = i + j
 
@@ -153,8 +156,8 @@ for i in range(1, args.l+1):
       if args.p:
           valid.add((j, i))
 
-for i in range(args.l+1, 2*args.l):
-  for j in range(1, 2*args.l-i+1):
+for i in range(maxam+1, 2*maxam):
+  for j in range(1, 2*maxam-i+1):
     ij = i + j
 
     if ij >= args.he and ij < args.hg:
@@ -254,8 +257,8 @@ invalid = set()
 print()
 
 # also need (X s | X s), etc
-for i in range(0, args.l*2+1):
-  for j in range(0, args.l*2+1):
+for i in range(0, maxam*2+1):
+  for j in range(0, maxam*2+1):
     if i == 0 and j == 0: # skip ssss
       continue
 
@@ -350,7 +353,7 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 print("-------------------------------")
 print("Generating ERI")
-print("Maximum AM: {}".format(args.l))
+print("Maximum AM: {}".format(maxam))
 print("-------------------------------")
 
 valid = set()
@@ -358,10 +361,10 @@ invalid = set()
 
 print()
 
-for i in range(0, args.l + 1):
-  for j in range(0, args.l + 1):
-    for k in range(0, args.l + 1):
-      for l in range(0, args.l + 1):
+for i in range(0, maxam + 1):
+  for j in range(0, maxam + 1):
+    for k in range(0, maxam + 1):
+      for l in range(0, maxam + 1):
         q = (i,j,k,l)
         if args.p or ValidQuartet(q):
           valid.add(q)
@@ -471,7 +474,7 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 print("-------------------------------")
 print("Generating ERI 1st Derivatives")
-print("Maximum AM: {}".format(args.l-1))
+print("Maximum AM: {}".format(maxder1))
 print("-------------------------------")
 
 valid = set()
@@ -479,11 +482,13 @@ invalid = set()
 
 print()
 
-for i in range(0, args.l + 1):
-  for j in range(0, args.l + 1):
-    for k in range(0, args.l + 1):
-      for l in range(0, args.l + 1):
+for i in range(0, maxam + 1):
+  for j in range(0, maxam + 1):
+    for k in range(0, maxam + 1):
+      for l in range(0, maxam + 1):
         q = (i,j,k,l)
+        if max(q) > maxder1:
+          continue
         if args.p or ValidQuartet(q):
           valid.add(q)
         else:
@@ -524,8 +529,6 @@ with open(headerfile, 'w') as hfile:
 
 
 for q in valid:
-  if max(q) > (args.l-1):
-    continue; 
 
   filebase = "ostei_deriv1_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_osteigen, filebase + ".c")
@@ -598,7 +601,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#pragma once\n\n")
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
-  hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(args.l))
+  hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(maxam))
   hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
   hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(-1))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
