@@ -469,7 +469,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
         os_ << indent5 << "if(check_screen)\n";
         os_ << indent5 << "{\n";
-        os_ << indent6 << cdbltype << " screen_max = (bra_screen_max * " << vinfo_.DoubleLoad("Q.screen", "j") << ");\n";
+        os_ << indent6 << cdbltype << " screen_max = (" << vinfo_.Mul("bra_screen_max", vinfo_.DoubleLoad("Q.screen", "j")) << ");\n";
         os_ << indent6 << vinfo_.UnionType() << " screen_max_v = { screen_max };\n";
         os_ << indent6 << "not_screened = 0;\n";
         os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
@@ -495,36 +495,38 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     vrr_writer_.DeclarePrimArrays(os_);
 
     os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
-    os_ << indent5 << cdbltype << " PQalpha_mul = P_alpha * Q_alpha;\n";
-    os_ << indent5 << cdbltype << " PQalpha_sum = P_alpha + Q_alpha;\n";
-    os_ << indent5 << cdbltype << " one_over_PQalpha_sum = " << const1_str << " / PQalpha_sum;\n";
+    os_ << indent5 << cdbltype << " PQalpha_mul = " << vinfo_.Mul("P_alpha", "Q_alpha") << ";\n";
+    os_ << indent5 << cdbltype << " PQalpha_sum = " << vinfo_.Add("P_alpha", "Q_alpha") << ";\n";
+    os_ << indent5 << cdbltype << " one_over_PQalpha_sum = " << vinfo_.Div(const1_str, "PQalpha_sum") << ";\n";
     os_ << "\n";
     os_ << "\n";
     os_ << indent5 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
     os_ << indent5 << dbltype << " PQ[3];\n";
-    os_ << indent5 << "PQ[0] = Pxyz[0] - " << vinfo_.DoubleLoad("Q.x", "j") << ";\n";
-    os_ << indent5 << "PQ[1] = Pxyz[1] - " << vinfo_.DoubleLoad("Q.y", "j") << ";\n";
-    os_ << indent5 << "PQ[2] = Pxyz[2] - " << vinfo_.DoubleLoad("Q.z", "j") << ";\n";
+    os_ << indent5 << "PQ[0] = " << vinfo_.Sub("Pxyz[0]", vinfo_.DoubleLoad("Q.x", "j")) << ";\n";
+    os_ << indent5 << "PQ[1] = " << vinfo_.Sub("Pxyz[1]", vinfo_.DoubleLoad("Q.y", "j")) << ";\n";
+    os_ << indent5 << "PQ[2] = " << vinfo_.Sub("Pxyz[2]", vinfo_.DoubleLoad("Q.z", "j")) << ";\n";
 
 
-    os_ << indent5 << cdbltype << " R2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];\n";
+    os_ << indent5 << dbltype << " R2 = " << vinfo_.Mul("PQ[0]", "PQ[0]") << ";\n";
+    os_ << indent5 << " R2 = " << vinfo_.FMAdd("PQ[1]", "PQ[1]", "R2")    << ";\n";
+    os_ << indent5 << " R2 = " << vinfo_.FMAdd("PQ[2]", "PQ[2]", "R2")    << ";\n";
     os_ << "\n";
-    os_ << indent5 << cdbltype << " alpha = PQalpha_mul * one_over_PQalpha_sum;   // alpha from MEST\n";
+    os_ << indent5 << cdbltype << " alpha = " << vinfo_.Mul("PQalpha_mul", "one_over_PQalpha_sum") << ";   // alpha from MEST\n";
 
     if(hasoneoverp)
-        os_ << indent5 << cdbltype << " one_over_p = " << const1_str << " / P_alpha;\n";
+        os_ << indent5 << cdbltype << " one_over_p = " << vinfo_.Div(const1_str, "P_alpha") << ";\n";
 
     if(hasoneoverq)
-        os_ << indent5 << cdbltype << " one_over_q = " << const1_str << " / Q_alpha;\n";
+        os_ << indent5 << cdbltype << " one_over_q = " << vinfo_.Div(const1_str, "Q_alpha") << ";\n";
 
     if(hasoneover2p)    
-        os_ << indent5 << cdbltype << " one_over_2p = " << consthalf_str << " * one_over_p;  // gets multiplied in VRR\n";
+        os_ << indent5 << cdbltype << " one_over_2p = " << vinfo_.Mul(consthalf_str, "one_over_p") << ";\n";
 
     if(hasoneover2q)    
-        os_ << indent5 << cdbltype << " one_over_2q = " << consthalf_str << " * one_over_q;  // gets multiplied in VRR\n";
+        os_ << indent5 << cdbltype << " one_over_2q = " << vinfo_.Mul(consthalf_str, "one_over_q") << ";\n";
 
     if(hasoneover2pq)
-        os_ << indent5 << cdbltype << " one_over_2pq = " << consthalf_str << " * one_over_PQalpha_sum;\n";
+        os_ << indent5 << cdbltype << " one_over_2pq = " << vinfo_.Mul(consthalf_str, "one_over_PQalpha_sum") << ";\n";
 
     if(hasketvrr)
     {
@@ -546,23 +548,24 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     {
         os_ << "\n";
         os_ << indent5 << "// NOTE: Minus sign!\n";
-        os_ << indent5 << cdbltype << " a_over_p =  -alpha * one_over_p;     // a/p from MEST\n";
+        os_ << indent5 << cdbltype << " a_over_p = " << vinfo_.Mul(vinfo_.Neg("alpha"), "one_over_p") << ";     // a/p from MEST\n";
         os_ << indent5 << dbltype << " aop_PQ[3];\n";
-        os_ << indent5 << "aop_PQ[0] = a_over_p * PQ[0];\n";
-        os_ << indent5 << "aop_PQ[1] = a_over_p * PQ[1];\n";
-        os_ << indent5 << "aop_PQ[2] = a_over_p * PQ[2];\n";
+        os_ << indent5 << "aop_PQ[0] = " << vinfo_.Mul("a_over_p", "PQ[0]") << ";\n";
+        os_ << indent5 << "aop_PQ[1] = " << vinfo_.Mul("a_over_p", "PQ[1]") << ";\n";
+        os_ << indent5 << "aop_PQ[2] = " << vinfo_.Mul("a_over_p", "PQ[2]") << ";\n";
     }
 
     if(hasketvrr)
     {
         os_ << "\n";
-        os_ << indent5 << "// NOTE: Minus sign\n";
-        os_ << indent5 << "// NOTE2: Plus sign taken care of on aoq_PQ!\n";
-        os_ << indent5 << cdbltype << " a_over_q =  -alpha * one_over_q;     // a/q from MEST\n";
+        os_ << indent5 << dbltype << " a_over_q =  " << vinfo_.Mul("alpha", "one_over_q") << ";     // a/q from MEST\n";
         os_ << indent5 << dbltype << " aoq_PQ[3];\n";
-        os_ << indent5 << "aoq_PQ[0] = -a_over_q * PQ[0];\n";
-        os_ << indent5 << "aoq_PQ[1] = -a_over_q * PQ[1];\n";
-        os_ << indent5 << "aoq_PQ[2] = -a_over_q * PQ[2];\n";
+        os_ << indent5 << "aoq_PQ[0] = " << vinfo_.Mul("a_over_q", "PQ[0]") << ";\n";
+        os_ << indent5 << "aoq_PQ[1] = " << vinfo_.Mul("a_over_q", "PQ[1]") << ";\n";
+        os_ << indent5 << "aoq_PQ[2] = " << vinfo_.Mul("a_over_q", "PQ[2]") << ";\n\n";
+
+        os_ << indent5 << "// Put a minus sign here so we don't have to in RR routines\n";
+        os_ << indent5 << "a_over_q = " << vinfo_.Neg("a_over_q") << ";\n";
 
     }
 
@@ -573,7 +576,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent5 << "// Maximum v value: " << info_.L() << "\n";
     os_ << indent5 << "//////////////////////////////////////////////\n";
     os_ << indent5 << "// The parameter to the Fjt function\n";
-    os_ << indent5 << cdbltype << " F_x = R2 * alpha;\n";
+    os_ << indent5 << cdbltype << " F_x = " << vinfo_.Mul("R2", "alpha") << ";\n";
     os_ << "\n";
     os_ << "\n";
 
@@ -590,14 +593,19 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n\n"; 
 
 
-    os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0}) << ", &F_x, "
-                   << info_.L() << ");\n";
+    os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
+                   << ", &F_x, " << info_.L() << ");\n";
 
 
-    os_ << indent5 << vinfo_.ConstDoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << " * P_prefac * Q_prefac;\n";
+    // prefac = sqrt(1/PQalpha_sum) * P_prefac * Q_prefac
+    os_ << indent5 << vinfo_.DoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << ";\n";
+    os_ << indent5 << "prefac = " << vinfo_.Mul(vinfo_.Mul("P_prefac", "Q_prefac"), "prefac") << ";\n";
+
+    const std::string name0000 = PrimVarName({0,0,0,0});
+    const std::string name0000n = name0000 + "[n]";
 
     os_ << indent5 << "for(n = 0; n <= " << info_.L() << "; n++)\n"
-        << indent6 << PrimVarName({0,0,0,0}) << "[n] *= prefac;\n";
+        << indent6 << name0000n << " = " << vinfo_.Mul(name0000n, "prefac") << ";\n";
 
 
     if(vrr_writer_.HasVRR())

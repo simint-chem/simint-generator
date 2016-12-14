@@ -621,7 +621,9 @@ with open(sinfofile, 'w') as sf:
 
   sf.write("#pragma once\n\n")
 
-  if "avx" in cpuflags:
+  if "avx512" in cpuflags:
+    sf.write("#define SIMINT_AVX512\n")
+  elif "avx" in cpuflags:
     sf.write("#define SIMINT_AVX\n")
   elif "sse2" in cpuflags:
     sf.write("#define SIMINT_SSE\n")
@@ -642,7 +644,9 @@ with open(sinfofile, 'w') as sf:
 cmflagfile = os.path.join(outdir_cmake, "DefaultFlags_generated.cmake")
 with open(cmflagfile, 'w') as sf:
 
-  if "avx" in cpuflags and "fma" in cpuflags:
+  if "avx512" in cpuflags:
+    sf.write("include(cmake/DefaultFlags_avx512.cmake)")
+  elif "avx" in cpuflags and "fma" in cpuflags:
     sf.write("include(cmake/DefaultFlags_avxfma.cmake)")
   elif "avx" in cpuflags:
     sf.write("include(cmake/DefaultFlags_avx.cmake)")

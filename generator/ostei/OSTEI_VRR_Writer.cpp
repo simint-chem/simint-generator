@@ -158,78 +158,35 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepS
         }
 
 
-        if(info_.HasFMA())
+        if(it.type == RRStepType::I || it.type == RRStepType::J)
         {
-            if(it.type == RRStepType::I || it.type == RRStepType::J)
-            {
-                os << indent6 << primname << " = ";
-                if(it.type == RRStepType::I)
-                    os << "P_PA" << stepdir; 
-                else
-                    os << "P_PB" << stepdir;
+            std::string ppa = StringBuilder("P_PA", stepdir);
 
-                os << " * " << srcname[0] << ";\n";
-            }
-            else
-            {
-                os << indent6 << primname;
+            if(it.type != RRStepType::I)
+                ppa = StringBuilder("P_PB", stepdir);
 
-                if(it.type == RRStepType::K)
-                    os << " = Q_PA" << stepdir;
-                else
-                    os << " = Q_PB" << stepdir;
-
-                os << " * " << srcname[0] << ";\n";
-            }
-
-            if(it.src[1])
-                os << indent6 << primname << " = " << vinfo_.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
-            if(it.src[2] && it.src[3])
-                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const0, vinfo_.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
-            if(it.src[4] && it.src[5])
-                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const1, vinfo_.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
-            if(it.src[6])
-                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
-            if(it.src[7])
-                os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
+            os << indent6 << primname << " = " << vinfo_.Mul(ppa, srcname[0]) << ";\n";
         }
         else
         {
-            if(it.type == RRStepType::I || it.type == RRStepType::J)
-            {
-                os << indent6 << primname;
+            std::string qpa = StringBuilder("Q_PA", stepdir);
 
-                if(it.type == RRStepType::I)
-                    os << " = P_PA" << stepdir;
-                else                            
-                    os << " = P_PB" << stepdir;
+            if(it.type != RRStepType::K)
+                qpa = StringBuilder("Q_PB", stepdir);
 
-                os << " * " << srcname[0];
-            }
-            else
-            {
-                os << indent6 << primname;
-
-                if(it.type == RRStepType::K)
-                    os << " = Q_PA" << stepdir;
-                else
-                    os << " = Q_PB" << stepdir;
-
-                os << " * " << srcname[0];
-            }
-
-            if(it.src[1])
-                os << " + " << aoppq << " * " << srcname[1]; 
-            if(it.src[2] && it.src[3])
-                os << " + " << vrr_const0 << " * (" << srcname[2] << " + " << aover << " * " << srcname[3] << ")"; 
-            if(it.src[4] && it.src[5])
-                os << " + " << vrr_const1 << " * (" << srcname[4] << " + " << aover << " * " << srcname[5] << ")"; 
-            if(it.src[6])
-                os << " + " << vrr_const2 << " * " << srcname[6];
-            if(it.src[7])
-                os << " + " << vrr_const3 << " * " << srcname[7];
-            os << ";\n";
+            os << indent6 << primname << " = " << vinfo_.Mul(qpa, srcname[0]) << ";\n";
         }
+
+        if(it.src[1])
+            os << indent6 << primname << " = " << vinfo_.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
+        if(it.src[2] && it.src[3])
+            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const0, vinfo_.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
+        if(it.src[4] && it.src[5])
+            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const1, vinfo_.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
+        if(it.src[6])
+            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
+        if(it.src[7])
+            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
         
         os << "\n";
 
@@ -256,29 +213,31 @@ void OSTEI_VRR_Writer::WriteVRR(std::ostream & os) const
     os << indent5 << "//////////////////////////////////////////////\n";
     os << "\n";
 
+    std::string cdbltype = vinfo_.ConstDoubleType();
+
     // constants
     for(const auto & it : vrr_algo_.GetAllInt_2p())
     {
         if(it == 1)
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
         else
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " << vinfo_.IntConstant(it) << " * one_over_2p;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2p = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2p") << ";\n"; 
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2q())
     {
         if(it == 1)
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
         else
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = " << vinfo_.IntConstant(it) << " * one_over_2q;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2q = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2q") << ";\n"; 
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2pq())
     {
         if(it == 1)
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
         else
-            os << indent5 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = " << vinfo_.IntConstant(it) << " * one_over_2pq;\n"; 
+            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2pq = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2pq") << ";\n"; 
     }
 
     os << "\n\n";
@@ -468,15 +427,15 @@ void OSTEI_VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 
         for(const auto & it : vrr_algo_.GetIntReq_2p(am))
             os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " 
-                          << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2p;\n"; 
+                          << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)),  "one_over_2p") << ";\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2q(am))
             os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = "
-                          << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2q;\n"; 
+                          << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)), "one_over_2q") << ";\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
             os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = "
-               << vinfo_.DoubleSet1(std::to_string(it)) << " * one_over_2pq;\n"; 
+               << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)), "one_over_2pq") << ";\n"; 
 
         // Write out the steps
         WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n");

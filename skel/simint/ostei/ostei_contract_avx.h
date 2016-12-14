@@ -54,6 +54,7 @@ void contract_all(int ncart,
         union double4 tmp = (union double4)PRIM_INT[n];
         PRIM_PTR[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
     }
+
     #else
 
     // GCC is missing some instructions from the above block
@@ -114,6 +115,7 @@ void contract_all_fac(int ncart,
         union double4 tmp = (union double4)((*factor)*PRIM_INT[n]);
         PRIM_PTR[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
     }
+
     #else
 
     // GCC is missing some instructions from the above block

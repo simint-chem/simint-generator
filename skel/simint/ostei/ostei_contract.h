@@ -2,7 +2,9 @@
 
 #include "simint/vectorization/vectorization.h"
 
-#ifdef SIMINT_AVX
+#if defined SIMINT_AVX512
+    #include "simint/ostei/ostei_contract_avx512.h"
+#elif defined SIMINT_AVX
     #include "simint/ostei/ostei_contract_avx.h"
 #elif defined SIMINT_SSE
     #include "simint/ostei/ostei_contract_sse.h"

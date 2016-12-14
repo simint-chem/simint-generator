@@ -5,8 +5,7 @@
  */
 
 
-#ifndef SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
-#define SIMINT_GUARD_GENERATOR__VECTORINFO_HPP_
+#pragma once
 
 #include "generator/StringBuilder.hpp"
 
@@ -25,11 +24,18 @@ public:
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const = 0;
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const = 0;
 
+
+    virtual std::string Neg(const std::string & a) const = 0;
+    virtual std::string Add(const std::string & a, const std::string & b) const = 0;
+    virtual std::string Sub(const std::string & a, const std::string & b) const = 0;
+    virtual std::string Mul(const std::string & a, const std::string & b) const = 0;
+    virtual std::string Div(const std::string & a, const std::string & b) const = 0;
+    virtual std::string Sqrt(const std::string & val) const = 0;
+    virtual std::string RSqrt(const std::string & val) const = 0
+;
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const = 0;
     virtual std::string FMSub(const std::string & a, const std::string & b, const std::string & c) const = 0;
 
-    virtual std::string Sqrt(const std::string & val) const = 0;
-    virtual std::string RSqrt(const std::string & val) const = 0;
 
     virtual std::string IntConstant(int i) const = 0;
 
@@ -80,15 +86,40 @@ public:
     virtual std::string DoubleLoad(const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "]"; }
 
     virtual std::string DoubleStore(const std::string & var, const std::string & ptr, const std::string & idx) const { return ptr + "[" + idx + "] = " + var; }
+    
+    virtual std::string Neg(const std::string & a) const
+    {
+        return StringBuilder("(-", a, ")");
+    }
+
+    virtual std::string Add(const std::string & a, const std::string & b) const
+    {
+        return StringBuilder("(", a, " + ", b, ")");
+    }
+
+    virtual std::string Sub(const std::string & a, const std::string & b) const
+    {
+        return StringBuilder("(", a, " - ", b, ")");
+    }
+
+    virtual std::string Mul(const std::string & a, const std::string & b) const
+    {
+        return StringBuilder("(", a, " * ", b, ")");
+    }
+
+    virtual std::string Div(const std::string & a, const std::string & b) const
+    {
+        return StringBuilder("(", a, " / ", b, ")");
+    }
 
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("fma(", a, ", ", b, ", ", c, ")");
+        return StringBuilder("(", a, " * ", b, " + ", c, ")");
     }
 
     virtual std::string FMSub(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("fma(", a, ", ", b, ", -", c, ")");
+        return StringBuilder("(", a, " * ", b, " - ", c, ")");
     }
 
     virtual std::string Sqrt(const std::string & val) const
@@ -113,8 +144,9 @@ public:
 class BasicIntelSIMDVector : public VectorInfo
 {
 public:
-    BasicIntelSIMDVector(int width)
-        : width_(width), dwidth_(width/64)
+    BasicIntelSIMDVector(int width, bool has_fma, bool has_arithmetic)
+        : width_(width), dwidth_(width/64),
+          has_fma_(has_fma), has_arithmetic_(has_arithmetic)
     {
         if(width == 128)
             swidth_ = "";
@@ -150,14 +182,60 @@ public:
         return StringBuilder("_mm", swidth_, "_store_pd(", ptrstr, ", ", var, ")");
     }
 
+    virtual std::string Neg(const std::string & a) const
+    {
+        if(has_arithmetic_)
+            return StringBuilder("(-", a, ")");
+        else
+            return Mul(DoubleSet1("-1.0"), a);
+    }
+
+    virtual std::string Add(const std::string & a, const std::string & b) const
+    {
+        if(has_arithmetic_)
+            return StringBuilder("(", a, " + ", b, ")");
+        else
+            return StringBuilder("_mm", swidth_, "_add_pd(", a, ", ", b, ")");
+    }
+
+    virtual std::string Sub(const std::string & a, const std::string & b) const
+    {
+        if(has_arithmetic_)
+            return StringBuilder("(", a, " - ", b, ")");
+        else
+            return StringBuilder("_mm", swidth_, "_sub_pd(", a, ", ", b, ")");
+    }
+
+    virtual std::string Mul(const std::string & a, const std::string & b) const
+    {
+        if(has_arithmetic_)
+            return StringBuilder("(", a, " * ", b, ")");
+        else
+            return StringBuilder("_mm", swidth_, "_mul_pd(", a, ", ", b, ")");
+    }
+
+    virtual std::string Div(const std::string & a, const std::string & b) const
+    {
+        if(has_arithmetic_)
+            return StringBuilder("(", a, " / ", b, ")");
+        else
+            return StringBuilder("_mm", swidth_, "_div_pd(", a, ", ", b, ")");
+    }
+
     virtual std::string FMAdd(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("_mm", swidth_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
+        if(has_fma_)
+            return StringBuilder("_mm", swidth_, "_fmadd_pd(", a, ", ", b, ", ", c, ")");
+        else
+            return Add(Mul(a, b), c);
     }
 
     virtual std::string FMSub(const std::string & a, const std::string & b, const std::string & c) const
     {
-        return StringBuilder("_mm", swidth_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
+        if(has_fma_)
+            return StringBuilder("_mm", swidth_, "_fmsub_pd(", a, ", ", b, ", ", c, ")");
+        else
+            return Sub(Mul(a, b), c);
     }
 
     virtual std::string Sqrt(const std::string & val) const
@@ -179,11 +257,7 @@ private:
     int width_;
     std::string swidth_; // for 128, is empty (_mm_set1_pd, etc)
     int dwidth_;
+    bool has_fma_;
+    bool has_arithmetic_;
 };
 
-
-
-
-
-
-#endif

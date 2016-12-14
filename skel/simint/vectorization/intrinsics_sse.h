@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emmintrin.h>
+#include <immintrin.h>
 #include <math.h>
 
 union double2

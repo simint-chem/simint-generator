@@ -53,14 +53,16 @@ void boys_F_split_large_n(SIMINT_DBLTYPE * restrict F,
     boys_F_split_single((double *)(F + n), (double *)(x), n);
 
     // factors for the recursion
-    const SIMINT_DBLTYPE x2 = SIMINT_SET1(2.0)*(*x);
-    const SIMINT_DBLTYPE ex = SIMINT_EXP(-(*x));
+    const SIMINT_DBLTYPE x2 = SIMINT_MUL(SIMINT_SET1(2.0), (*x));
+    const SIMINT_DBLTYPE ex = SIMINT_EXP(SIMINT_NEG(*x));
 
     // now recur down
     for(int n2 = n-1; n2 >= 0; n2--)
     {
         const SIMINT_DBLTYPE den = SIMINT_SET1(1.0 / (2.0 * n2 + 1));
-        F[n2] = den * (x2 * F[(n2+1)] + ex);
+
+        //F[n2] = den * (x2 * F[(n2+1)] + ex);
+        F[n2] = SIMINT_MUL(den, ( SIMINT_MUL(x2, SIMINT_ADD(F[(n2+1)], ex) ) ) );
     }
 }
 

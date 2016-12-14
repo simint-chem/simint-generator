@@ -56,10 +56,18 @@ GeneratorInfoBase::GeneratorInfoBase(QAM finalam,
       options_(options),
       scalar_(false)
 {
-    if(HasCPUFlag("avx"))
-        vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(256));
+    if(HasCPUFlag("avx512"))
+    {
+        bool has_fma = HasCPUFlag("fma");
+        vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(512, has_fma, false));
+    }
+    else if(HasCPUFlag("avx"))
+    {
+        bool has_fma = HasCPUFlag("fma");
+        vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(256, has_fma, true));
+    }
     else if(HasCPUFlag("sse2"))
-        vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(128));
+        vector_ = std::unique_ptr<VectorInfo>(new BasicIntelSIMDVector(128, false, true));
     else
     {
         scalar_ = true;
