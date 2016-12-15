@@ -28,13 +28,6 @@ include(cmake/DefaultFlags.cmake)
 include(cmake/DefaultFlags_generated.cmake)
 
 
-##################################################
-# OpenMP dependency
-##################################################
-find_package(OpenMP REQUIRED)
-list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
-
-
 message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
 message(STATUS "       SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
 message(STATUS "  SIMINT_C_LINK_FLAGS: ${SIMINT_C_LINK_FLAGS}")

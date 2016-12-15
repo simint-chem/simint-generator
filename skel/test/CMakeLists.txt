@@ -32,8 +32,11 @@ endif()
 ##################################################
 # OpenMP dependency
 ##################################################
-list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}") 
-list(APPEND SIMINT_TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
+find_package(OpenMP) # OpenMP is optional (for our clang friends)
+if(OPENMP_FOUND)
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}")
+  list(APPEND SIMINT_TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
+endif()
 
 
 message(STATUS "       SIMINT_TESTS_CXX_INCLUDES: ${SIMINT_TESTS_CXX_INCLUDES}")

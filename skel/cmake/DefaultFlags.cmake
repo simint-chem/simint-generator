@@ -23,7 +23,8 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 
   list(APPEND SIMINT_C_LINK_FLAGS "-mkl;-static-intel")
 
-elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
+elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
+       "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
   list(APPEND SIMINT_C_FLAGS "-std=c99")
   list(APPEND SIMINT_C_FLAGS "-Wall;-Wextra;-pedantic")
@@ -37,8 +38,15 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wno-unused-parameter")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wno-unused-variable")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wno-unused-variable")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-DSIMINT_GCC")
+
+  if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+    list(APPEND SIMINT_TESTS_CXX_FLAGS "-DSIMINT_CLANG")
+  elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
+    list(APPEND SIMINT_TESTS_CXX_FLAGS "-DSIMINT_GCC")
+  endif()
 
 else()
+
   message(FATAL_ERROR "Unsupported compiler")
+
 endif()

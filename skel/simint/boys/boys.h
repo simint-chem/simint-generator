@@ -62,7 +62,7 @@ void boys_F_split_large_n(SIMINT_DBLTYPE * restrict F,
         const SIMINT_DBLTYPE den = SIMINT_SET1(1.0 / (2.0 * n2 + 1));
 
         //F[n2] = den * (x2 * F[(n2+1)] + ex);
-        F[n2] = SIMINT_MUL(den, ( SIMINT_MUL(x2, SIMINT_ADD(F[(n2+1)], ex) ) ) );
+        F[n2] = SIMINT_MUL(den, ( SIMINT_FMA(x2, F[(n2+1)], ex)));
     }
 }
 

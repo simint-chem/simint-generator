@@ -4,7 +4,9 @@
 #include "test/Common.hpp"
 #include "test/Timer.h"
 
-#include <omp.h>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 
 #ifdef BENCHMARK_VALIDATE
 #include "test/ValeevRef.hpp"
@@ -28,7 +30,11 @@ int main(int argc, char ** argv)
     std::string basfile(argv[1]);
 
     // number of threads
-    const int nthread = omp_get_max_threads();
+    #ifdef _OPENMP
+        const int nthread = omp_get_max_threads();
+    #else
+        const int nthread = 1;
+    #endif
 
     // read in the shell info
     ShellMap shellmap = ReadBasis(basfile);
@@ -117,7 +123,9 @@ int main(int argc, char ** argv)
 	    const size_t brasize = i_size * j_size;
 
         // do one shell pair at a time on the bra side
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic)
+        #endif
         for(size_t ab = 0; ab < brasize; ab++)
         {
 
@@ -144,7 +152,12 @@ int main(int argc, char ** argv)
             const size_t nshell1234 = P.nshell12 * Q.nshell12;
             const size_t ncont1234 = nshell1234 * ncart1234;
 
-            int ithread = omp_get_thread_num();
+            #ifdef _OPENMP
+                const int ithread = omp_get_thread_num();
+            #else
+                const int ithread = 0;
+            #endif
+
             double * res_ints = all_res_ints + ithread * maxsize;
             double * const simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
 
@@ -171,7 +184,9 @@ int main(int argc, char ** argv)
                                 res_ref, false);
             std::pair<double, double> err2 = CalcError(res_ints, res_ref, ncont1234);
 
+            #ifdef _OPENMP
             #pragma omp critical
+            #endif
             {
                 err.first = std::max(err.first, err2.first);
                 err.second = std::max(err.second, err2.second);

@@ -2,7 +2,9 @@
 #include <atomic>
 #include <cmath>
 
-#include <omp.h>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 
 #include "simint/simint.h"
 #include "test/Common.hpp"
@@ -59,7 +61,11 @@ int main(int argc, char ** argv)
     const int maxsize = maxparams.second * maxparams.second * max_ncart * max_ncart;
 
     // get the number of threads
-    int nthread = omp_get_max_threads();
+    #ifdef _OPENMP
+        const int nthread = omp_get_max_threads();
+    #else
+        const int nthread = 1;
+    #endif
 
     /* contracted workspace */
     double * all_simint_work = (double *)SIMINT_ALLOC(nthread * SIMINT_OSTEI_MAX_WORKMEM);
@@ -111,11 +117,17 @@ int main(int argc, char ** argv)
 
 
         // do bra one at a time
+        #ifdef _OPENMP
         #pragma omp parallel for
+        #endif
         for(size_t a = 0; a < shellmap[i].size(); a++)
         for(size_t b = 0; b < shellmap[j].size(); b++)
         {
-            int ithread = omp_get_thread_num();
+            #ifdef _OPENMP
+                const int ithread = omp_get_thread_num();
+            #else
+                const int ithread = 0;
+            #endif
 
             double * res_simint = all_res_simint + ithread * maxsize;
             double * simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
@@ -163,7 +175,9 @@ int main(int argc, char ** argv)
             /////////////////////////////////
             // Update the error map
             /////////////////////////////////
+            #ifdef _OPENMP
             #pragma omp critical
+            #endif
             {
                 UpdateErrorMap(errors, {{i, j, k, l}}, CalcError(res_simint, res_valeev, ncont1234));
             }

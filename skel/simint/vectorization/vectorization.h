@@ -57,11 +57,12 @@
 
 #if defined SIMINT_AVX512
 
-    #define SIMINT_DBLTYPE  __m512d
-    #define SIMINT_SET1     _mm512_set1_pd
-    #define SIMINT_ADD(a,b) _mm512_add_pd((a), (b))
-    #define SIMINT_MUL(a,b) _mm512_mul_pd((a), (b))
-    #define SIMINT_NEG(a)   (-(a))
+    #define SIMINT_DBLTYPE    __m512d
+    #define SIMINT_SET1        _mm512_set1_pd
+    #define SIMINT_NEG(a)      (-(a))
+    #define SIMINT_ADD(a,b)    _mm512_add_pd((a), (b))
+    #define SIMINT_MUL(a,b)    _mm512_mul_pd((a), (b))
+    #define SIMINT_FMA(a,b,c)  _mm512_fmadd_pd((a), (b), (c))
 
     #ifdef SIMINT_INTEL
         #define SIMINT_EXP  _mm512_exp_pd
@@ -71,11 +72,17 @@
 
 #elif defined SIMINT_AVX
 
-    #define SIMINT_DBLTYPE  __m256d
-    #define SIMINT_SET1     _mm256_set1_pd
-    #define SIMINT_MUL(a,b) _mm256_mul_pd((a), (b))
-    #define SIMINT_ADD(a,b) _mm256_add_pd((a), (b))
-    #define SIMINT_NEG(a)   (-(a))
+    #define SIMINT_DBLTYPE     __m256d
+    #define SIMINT_SET1        _mm256_set1_pd
+    #define SIMINT_NEG(a)      (-(a))
+    #define SIMINT_ADD(a,b)    _mm256_add_pd((a), (b))
+    #define SIMINT_MUL(a,b)    _mm256_mul_pd((a), (b))
+
+    #ifdef SIMINT_HAS_FMA
+      #define SIMINT_FMA(a,b,c)  _mm256_fmadd_pd((a), (b), (c))
+    #else
+      #define SIMINT_FMA(a,b,c)  SIMINT_ADD(SIMINT_MUL((a),(b)),(c))
+    #endif
 
     #ifdef SIMINT_INTEL
         #define SIMINT_EXP  _mm256_exp_pd
@@ -85,11 +92,17 @@
 
 #elif defined SIMINT_SSE
 
-    #define SIMINT_DBLTYPE  __m128d
-    #define SIMINT_SET1     _mm_set1_pd
-    #define SIMINT_MUL(a,b) _mm_mul_pd((a), (b))
-    #define SIMINT_ADD(a,b) _mm_add_pd((a), (b))
-    #define SIMINT_NEG(a)   (-(a))
+    #define SIMINT_DBLTYPE     __m128d
+    #define SIMINT_SET1        _mm_set1_pd
+    #define SIMINT_NEG(a)      (-(a))
+    #define SIMINT_ADD(a,b)    _mm_add_pd((a), (b))
+    #define SIMINT_MUL(a,b)    _mm_mul_pd((a), (b))
+
+    #ifdef SIMINT_HAS_FMA
+      #define SIMINT_FMA(a,b,c)  _mm_fmadd_pd((a), (b), (c))
+    #else
+      #define SIMINT_FMA(a,b,c)  SIMINT_ADD(SIMINT_MUL((a),(b)),(c))
+    #endif
 
     #ifdef SIMINT_INTEL
         #define SIMINT_EXP  _mm_exp_pd
@@ -99,11 +112,12 @@
 
 #else
 
-    #define SIMINT_DBLTYPE  double
+    #define SIMINT_DBLTYPE     double
     #define SIMINT_SET1
-    #define SIMINT_MUL(a,b) ((a)*(b))
-    #define SIMINT_ADD(a,b) ((a)+(b))
-    #define SIMINT_NEG(a)   (-(a))
-    #define SIMINT_EXP      exp
+    #define SIMINT_NEG(a)      (-(a))
+    #define SIMINT_ADD(a,b)    ((a)+(b))
+    #define SIMINT_MUL(a,b)    ((a)*(b))
+    #define SIMINT_FMA(a,b,c)  (((a)*(b))+(c))
+    #define SIMINT_EXP         exp
 
 #endif

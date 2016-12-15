@@ -34,7 +34,8 @@ void contract_all(int ncart,
                   __m256d const * restrict PRIM_INT,
                   double * restrict PRIM_PTR)
 {
-    #ifdef SIMINT_INTEL
+    #ifndef SIMINT_GCC
+
     int n, n4;
     const int nbatch = ncart/4;
 
@@ -51,7 +52,7 @@ void contract_all(int ncart,
     const int done = ncart - left;
     for(n = done; n < ncart; n++)
     {
-        union double4 tmp = (union double4)PRIM_INT[n];
+        union double4 tmp = { PRIM_INT[n] };
         PRIM_PTR[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
     }
 
