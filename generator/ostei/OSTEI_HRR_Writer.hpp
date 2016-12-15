@@ -30,7 +30,6 @@ class OSTEI_HRR_Writer
     protected:
         const OSTEI_HRR_Algorithm_Base & hrr_algo_; 
         const OSTEI_GeneratorInfo & info_;
-        const VectorInfo & vinfo_;
 
         int start_external_;
         int start_general_;

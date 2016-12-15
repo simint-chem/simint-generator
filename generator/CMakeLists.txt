@@ -50,7 +50,6 @@ endif()
 # Common generator functionality
 #################################
 add_library(generator_common OBJECT
-                         GeneratorInfoBase.cpp
                          CommandLine.cpp
                          Types.cpp
 

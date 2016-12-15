@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "generator/CommandLine.hpp"
+#include "generator/StringBuilder.hpp"
 
 #include "generator/ostei/Algorithms.hpp"
 #include "generator/ostei/OSTEI_GeneratorInfo.hpp"
@@ -18,7 +19,6 @@ int main(int argc, char ** argv)
     // other stuff
     std::string fpath;
     std::string hpath;
-    std::string cpuflags;
 
     bool finalamset = false;
 
@@ -35,8 +35,6 @@ int main(int argc, char ** argv)
             fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-oh")
             hpath = GetNextArg(iarg, otheropt);
-        else if(argstr == "-c")
-            cpuflags = GetNextArg(iarg, otheropt);
         else if(argstr == "-q")
         {
             finalam[0] = GetIArg(iarg, otheropt);   
@@ -72,7 +70,7 @@ int main(int argc, char ** argv)
     if(!ofh.is_open())
         throw std::runtime_error(StringBuilder("Cannot open file: ", hpath, "\n"));
 
-    OSTEI_GeneratorInfo info(finalam, 0, Compiler::Intel, cpuflags, options);
+    OSTEI_GeneratorInfo info(finalam, 0, options);
 
     // output to source file
     // Include the main header file

@@ -93,7 +93,7 @@ class Makowski_VRR : public OSTEI_VRR_Algorithm_Base
     private:
         virtual VRRStep VRRStep_(const Quartet & q, RRStepType rrstep)
         {
-            const Gaussian * g;
+            const Gaussian * g = nullptr;
             VRRStep vs;
             vs.type = rrstep;
 

@@ -6,9 +6,10 @@ add_library(ostei_generator_common OBJECT
                          OSTEI_HRR_Algorithm_Base.cpp
                          OSTEI_VRR_Writer.cpp
                          OSTEI_HRR_Writer.cpp
+
+                         OSTEI_Writer_Base.cpp
                          OSTEI_Writer.cpp
-                         OSTEI_Writer_Basic.cpp
-                         OSTEIDeriv1_Writer_Basic.cpp
+                         OSTEIDeriv1_Writer.cpp
            )
 
 

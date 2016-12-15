@@ -26,7 +26,7 @@ static bool IsPointer(const std::string & var)
 ///////////////////////////////
 OSTEI_VRR_Writer::OSTEI_VRR_Writer(const OSTEI_VRR_Algorithm_Base & vrr_algo, const OSTEI_GeneratorInfo & info,
                                    int start_external, int start_general)
-    : vrr_algo_(vrr_algo), info_(info), vinfo_(info_.GetVectorInfo()),
+    : vrr_algo_(vrr_algo), info_(info),
       start_external_(start_external), start_general_(start_general)
 { 
 }
@@ -76,7 +76,7 @@ void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     {
         // add +1 fromm required m values to account for 0
         os << indent5 << "// AM = (" << am[0] << " " << am[1] << " | " << am[2] << " " << am[3] << " )\n";
-        os << indent5 << vinfo_.DoubleType() << " " << PrimVarName(am)
+        os << indent5 << "SIMINT_DBLTYPE " << PrimVarName(am)
            << "[" << (vrr_algo_.GetMReq(am)+1) << " * " 
            << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
     }
@@ -165,7 +165,7 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepS
             if(it.type != RRStepType::I)
                 ppa = StringBuilder("P_PB", stepdir);
 
-            os << indent6 << primname << " = " << vinfo_.Mul(ppa, srcname[0]) << ";\n";
+            os << indent6 << primname << " = SIMINT_MUL(" << ppa << ", " << srcname[0] << ");\n";
         }
         else
         {
@@ -174,19 +174,19 @@ void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepS
             if(it.type != RRStepType::K)
                 qpa = StringBuilder("Q_PB", stepdir);
 
-            os << indent6 << primname << " = " << vinfo_.Mul(qpa, srcname[0]) << ";\n";
+            os << indent6 << primname << " = SIMINT_MUL(" << qpa << ", " << srcname[0] << ");\n";
         }
 
         if(it.src[1])
-            os << indent6 << primname << " = " << vinfo_.FMAdd(aoppq, srcname[1], primname) << ";\n"; 
+            os << indent6 << primname << " = SIMINT_FMADD( " << aoppq << ", " << srcname[1] << ", " << primname << ");\n";
         if(it.src[2] && it.src[3])
-            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const0, vinfo_.FMAdd(aover, srcname[3], srcname[2]), primname) << ";\n"; 
+            os << indent6 << primname << " = SIMINT_FMADD( " << vrr_const0 << ", SIMINT_FMADD(" << aover << ", " << srcname[3] << ", " << srcname[2] << "), " << primname << ");\n";
         if(it.src[4] && it.src[5])
-            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const1, vinfo_.FMAdd(aover, srcname[5], srcname[4]), primname) << ";\n"; 
+            os << indent6 << primname << " = SIMINT_FMADD( " << vrr_const1 << ", SIMINT_FMADD(" << aover << ", " << srcname[5] << ", " << srcname[4] << "), " << primname << ");\n";
         if(it.src[6])
-            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const2, srcname[6], primname) << ";\n";
+            os << indent6 << primname << " = SIMINT_FMADD( " << vrr_const2 << ", " << srcname[6] << ", " << primname << ");\n";
         if(it.src[7])
-            os << indent6 << primname << " = " << vinfo_.FMAdd(vrr_const3, srcname[7], primname) << ";\n";
+            os << indent6 << primname << " = SIMINT_FMADD( " << vrr_const3 << ", " << srcname[7] << ", " << primname << ");\n";
         
         os << "\n";
 
@@ -213,31 +213,29 @@ void OSTEI_VRR_Writer::WriteVRR(std::ostream & os) const
     os << indent5 << "//////////////////////////////////////////////\n";
     os << "\n";
 
-    std::string cdbltype = vinfo_.ConstDoubleType();
-
     // constants
     for(const auto & it : vrr_algo_.GetAllInt_2p())
     {
         if(it == 1)
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2p = one_over_2p;\n"; 
         else
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2p = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2p") << ";\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2p = SIMINT_MUL(const_" << it << ", one_over_2p);\n";
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2q())
     {
         if(it == 1)
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2q = one_over_2q;\n"; 
         else
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2q = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2q") << ";\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2q = SIMINT_MUL(const_" << it << ", one_over_2q);\n";
     }
 
     for(const auto & it : vrr_algo_.GetAllInt_2pq())
     {
         if(it == 1)
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2pq = one_over_2pq;\n"; 
         else
-            os << indent5 << cdbltype << " vrr_const_" << it << "_over_2pq = " << vinfo_.Mul(vinfo_.IntConstant(it), "one_over_2pq") << ";\n"; 
+            os << indent5 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2pq = SIMINT_MUL(const_" << it << ", one_over_2pq);\n";
     }
 
     os << "\n\n";
@@ -398,17 +396,17 @@ void OSTEI_VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
               << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
     // final target
-    prototype << indent3 << vinfo_.DoubleType() << " * const restrict " << PrimVarName(am) << ",\n";
+    prototype << indent3 << "SIMINT_DBLTYPE * const restrict " << PrimVarName(am) << ",\n";
 
     for(const auto & it : vrr_algo_.GetAMReq(am))
-        prototype << indent3 << vinfo_.ConstDoubleType() << " * const restrict " << PrimVarName(it) << ",\n";
+        prototype << indent3 << "const SIMINT_DBLTYPE * const restrict " << PrimVarName(it) << ",\n";
     
     for(const auto & it : vrr_algo_.GetVarReq(am))
     {
         if(IsPointer(it))
-            prototype << indent3 << vinfo_.ConstDoubleType() << " * " << it << ",\n";
+            prototype << indent3 << "const SIMINT_DBLTYPE * " << it << ",\n";
         else
-            prototype << indent3 << vinfo_.ConstDoubleType() << " " << it << ",\n";
+            prototype << indent3 << "const SIMINT_DBLTYPE " << it << ",\n";
     }
 
     prototype << indent3 << "const int num_n)";
@@ -426,16 +424,13 @@ void OSTEI_VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
         os << "    int n = 0;\n";
 
         for(const auto & it : vrr_algo_.GetIntReq_2p(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2p = " 
-                          << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)),  "one_over_2p") << ";\n"; 
+            os << indent1 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2p = SIMINT_MUL(SIMINT_DBLSET1(" << it << "), one_over_2p);\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2q(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2q = "
-                          << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)), "one_over_2q") << ";\n"; 
+            os << indent1 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2q = SIMINT_MUL(SIMINT_DBLSET1(" << it << "), one_over_2q);\n"; 
 
         for(const auto & it : vrr_algo_.GetIntReq_2pq(am))
-            os << indent1 << vinfo_.ConstDoubleType() << " vrr_const_" << it << "_over_2pq = "
-               << vinfo_.Mul(vinfo_.DoubleSet1(std::to_string(it)), "one_over_2pq") << ";\n"; 
+            os << indent1 << "const SIMINT_DBLTYPE vrr_const_" << it << "_over_2pq = SIMINT_MUL(SIMINT_DBLSET1(" << it << "), one_over_2pq);\n"; 
 
         // Write out the steps
         WriteVRRSteps_(os, am, vrr_algo_.GetSteps(am), "num_n");

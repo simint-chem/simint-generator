@@ -8,9 +8,7 @@
 #ifndef SIMINT_GUARD_GENERATOR__GENERATORINFOBASE_HPP_
 #define SIMINT_GUARD_GENERATOR__GENERATORINFOBASE_HPP_
 
-#include <memory>
 #include "generator/Types.hpp"
-#include "generator/VectorInfo.hpp"
 #include "generator/Ncart.hpp"
 #include "generator/Options.hpp"
 
@@ -30,15 +28,11 @@ public:
      * Vector information is is determined based on the CPU flags passed in through \p cpuflagsstr
      * 
      * \param [in] finalam The final target AM quartet desired
-     * \param [in] compiler The compiler to target for the generated code
-     * \param [in] cpuflagsstr A comma-separated list of CPU flags to consider when generating the code
+     * \param [in] deriv Derivative to generate code for
      * \param [in] options Options for code generation
      */
-    GeneratorInfoBase(QAM finalam,
-                      int deriv,
-                      Compiler compiler,
-                      const std::string & cpuflagsstr,
-                      const OptionMap & options);
+    GeneratorInfoBase(QAM finalam, int deriv, const OptionMap & options)
+        : finalam_(finalam), deriv_(deriv), options_(options) { }
 
 
     virtual ~GeneratorInfoBase() = default;
@@ -86,37 +80,11 @@ public:
         return am == finalam_;
     }
 
-    /*! \brief Check for the existance of a CPU flags
-     *
-     * \param [in] flag Flag to check. Must be lowercase
-     * \return True if that CPU flag has been set.
-     */   
-    bool HasCPUFlag(const std::string & flag) const
-    {
-        return cpuflags_.count(flag);
-    }
-
-    /*! \brief Check if FMA is available (based on CPU flags)
-     * 
-     * \return True if the fma CPU flags has been set
-     */   
-    bool HasFMA(void) const
-    {
-        return HasCPUFlag("fma");
-    }
-
-    /*! \brief Get the information regarding the vector types
-     */   
-    const VectorInfo & GetVectorInfo(void) const
-    {
-        return *(vector_);
-    }
-
     /*! \brief Generate scalar code?
      */   
     bool Scalar(void) const
     {
-        return scalar_;
+        return GetOption(Option::Scalar);
     }
 
     /*! \brief Generate vectorized code?
@@ -134,24 +102,11 @@ private:
     //! The requested derivative
     int deriv_;
 
-    //! The compiler the generated source is to be compiled with
-    Compiler compiler_;
-
-    //! CPU flags to consider for intrinsics and CPU capabilities
-    StringSet cpuflags_;
-
     //! Code generation options
     OptionMap options_;
 
     //! Generate scalar code?
     bool scalar_;
-
-    //! Get the vector intrinsics, etc, for this generation run
-    std::unique_ptr<VectorInfo> vector_;
-
-    /*! \brief Split a string of cpuflags into a set
-     */
-    static StringSet ConvertCPUFlags(std::string cpuflagsstr);
 };
 
 

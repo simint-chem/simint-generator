@@ -25,3 +25,29 @@ static inline __m512d simint_exp_vec8(__m512d x)
     return res.d_512;
 }
 
+#if defined SIMINT_AVX512
+
+    #define SIMINT_SIMD_LEN 8
+
+    #define SIMINT_DBLTYPE         __m512d
+    #define SIMINT_UNIONTYPE       union double8
+    #define SIMINT_UNIONMEMBER(a)  (a.d_512)
+    #define SIMINT_DBLLOAD(p,i)    _mm512_load_pd((p) + (i))
+    #define SIMINT_DBLSET1(a)      _mm512_set1_pd((a))
+    #define SIMINT_NEG(a)          (-(a))
+    #define SIMINT_ADD(a,b)        _mm512_add_pd((a), (b))
+    #define SIMINT_SUB(a,b)        _mm512_sub_pd((a), (b))
+    #define SIMINT_MUL(a,b)        _mm512_mul_pd((a), (b))
+    #define SIMINT_DIV(a,b)        _mm512_div_pd((a), (b))
+    #define SIMINT_SQRT(a)         _mm512_sqrt_pd((a))
+    #define SIMINT_FMADD(a,b,c)    _mm512_fmadd_pd((a), (b), (c))
+    #define SIMINT_FMSUB(a,b,c)    _mm512_fmsub_pd((a), (b), (c))
+
+    #ifdef SIMINT_INTEL
+        #define SIMINT_EXP  _mm512_exp_pd
+    #else
+        #define SIMINT_EXP  simint_exp_vec8
+    #endif
+
+#endif
+

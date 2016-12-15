@@ -10,7 +10,7 @@
 /////////////////////////////
 // Basic OSTEI Writer
 /////////////////////////////
-void OSTEI_Writer_Basic::DeclareContwork(void) const
+void OSTEIDeriv1_Writer::DeclareContwork(void) const
 {
     if(info_.ContMemoryReq() == 0)
         return;
@@ -31,7 +31,7 @@ void OSTEI_Writer_Basic::DeclareContwork(void) const
 }
 
 
-void OSTEI_Writer_Basic::ZeroContwork(void) const
+void OSTEIDeriv1_Writer::ZeroContwork(void) const
 {
     size_t contmem = info_.ContMemoryReq();
     if(contmem > 0)
@@ -40,7 +40,7 @@ void OSTEI_Writer_Basic::ZeroContwork(void) const
 }
 
 
-void OSTEI_Writer_Basic::FreeContwork(void) const
+void OSTEIDeriv1_Writer::FreeContwork(void) const
 {
     size_t contmem = info_.ContMemoryReq();
 
@@ -51,7 +51,7 @@ void OSTEI_Writer_Basic::FreeContwork(void) const
     }       
 }
 
-void OSTEI_Writer_Basic::WriteShellOffsets(void) const
+void OSTEIDeriv1_Writer::WriteShellOffsets(void) const
 {
     os_ << indent5 << "// calculate the shell offsets\n";
     os_ << indent5 << "// these are the offset from the shell pointed to by cd\n";
@@ -92,7 +92,7 @@ void OSTEI_Writer_Basic::WriteShellOffsets(void) const
 }
 
 
-void OSTEI_Writer_Basic::WriteShellOffsets_Scalar(void) const
+void OSTEIDeriv1_Writer::WriteShellOffsets_Scalar(void) const
 {
     os_ << indent5 << "// Move pointers if this is the end of a shell\n";
     os_ << indent5 << "// Handle if the first element of the vector is a new shell\n";
@@ -108,7 +108,7 @@ void OSTEI_Writer_Basic::WriteShellOffsets_Scalar(void) const
 }
 
 
-void OSTEI_Writer_Basic::WriteAccumulation(void) const
+void OSTEIDeriv1_Writer::WriteAccumulation(void) const
 {
     os_ << "\n\n";
     os_ << indent5 << "////////////////////////////////////\n";
@@ -151,7 +151,7 @@ void OSTEI_Writer_Basic::WriteAccumulation(void) const
 }
 
 
-void OSTEI_Writer_Basic::WriteFile_Permute_(void) const
+void OSTEIDeriv1_Writer::WriteFile_Permute_(void) const
 {
     QAM am = info_.FinalAM();
     QAM tocall = am;
@@ -225,7 +225,7 @@ void OSTEI_Writer_Basic::WriteFile_Permute_(void) const
 }
 
 
-void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
+void OSTEIDeriv1_Writer::WriteFile_NoPermute_(void) const
 {
     const QAM am = info_.FinalAM();
     const int ncart = NCART(am);
@@ -249,10 +249,6 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     const bool hasoneover2p = true;
     const bool hasoneover2q = true;
     const bool hasoneover2pq = true;
-
-
-    std::string dbltype = vinfo_.DoubleType();
-    std::string cdbltype = vinfo_.ConstDoubleType();
 
 
     // add includes
@@ -360,12 +356,8 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     {
         os_ << indent1 << "// Create constants\n";
         for(const auto & it : cm)
-            os_ << indent1 << vinfo_.NewConstDoubleSet1(it.first, it.second) << ";\n";
+            os_ << indent1 << "const SIMINT_DBLTYPE " << it.first << " = SIMINT_DBLSET1(" << it.second << ");\n";
     }
-
-    // some constants used here
-    std::string const1_str = vinfo_.IntConstant(1);
-    std::string consthalf_str = info_.Vectorized() ? "one_half" : "0.5";
 
 
     os_ << "\n\n";
@@ -426,29 +418,19 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << "\n";
 
     os_ << indent4 << "// Load these one per loop over i\n";
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("P_alpha", "P.alpha[i]") << ";\n";
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("P_prefac", "P.prefac[i]") << ";\n";
-    os_ << indent4 << cdbltype << " Pxyz[3] = { " << vinfo_.DoubleSet1("P.x[i]") << ", "
-                                               << vinfo_.DoubleSet1("P.y[i]") << ", "
-                                               << vinfo_.DoubleSet1("P.z[i]") << " };\n";
+    os_ << indent4 << "const SIMINT_DBLTYPE P_alpha = SIMINT_DBLSET1(P.alpha[i]);\n";
+    os_ << indent4 << "const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);\n";
+    os_ << indent4 << "const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };\n";
                              
-    os_ << indent4 << vinfo_.NewConstDoubleSet1("bra_screen_max", "P.screen[i]") << ";\n";
+    os_ << indent4 << "const SIMINT_DBLTYPE bra_screen_max = SIMINT_DBLSET1(P.screen[i]);\n";
     os_ << "\n";
 
     if(hasbravrr)
     {
         if(vrr_writer_.HasVRR_I())
-        {
-            os_ << indent4 << cdbltype << " P_PA[3] = { " << vinfo_.DoubleSet1("P.PA_x[i]") << ", "
-                                                          << vinfo_.DoubleSet1("P.PA_y[i]") << ", "
-                                                          << vinfo_.DoubleSet1("P.PA_z[i]") << " };\n";
-        }
+            os_ << indent4 << "const SIMINT_DBLTYPE P_PA[3] = { SIMINT_DBLSET1(P.PA_x[i]), SIMINT_DBLSET1(P.PA_y[i]), SIMINT_DBLSET1(P.PA_z[i]) };\n";
         else
-        {
-            os_ << indent4 << cdbltype << " P_PB[3] = { " << vinfo_.DoubleSet1("P.PB_x[i]") << ", "
-                                                          << vinfo_.DoubleSet1("P.PB_y[i]") << ", "
-                                                          << vinfo_.DoubleSet1("P.PB_z[i]") << " };\n";
-        }
+            os_ << indent4 << "const SIMINT_DBLTYPE P_PB[3] = { SIMINT_DBLSET1(P.PB_x[i]), SIMINT_DBLSET1(P.PB_y[i]), SIMINT_DBLSET1(P.PB_z[i]) };\n";
     }
 
     os_ << "\n";
@@ -469,8 +451,8 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
         os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
         os_ << indent5 << "if(check_screen)\n";
         os_ << indent5 << "{\n";
-        os_ << indent6 << cdbltype << " screen_max = (" << vinfo_.Mul("bra_screen_max", vinfo_.DoubleLoad("Q.screen", "j")) << ");\n";
-        os_ << indent6 << vinfo_.UnionType() << " screen_max_v = { screen_max };\n";
+        os_ << indent6 << "const SIMINT_DBLTYPE screen_max = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));\n";
+        os_ << indent6 << "SIMINT_UNIONTYPE screen_max_v = { screen_max };\n";
         os_ << indent6 << "not_screened = 0;\n";
         os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
         os_ << indent7 << "not_screened = ( screen_max_v.d[n] >= screen_tol ? 1 : not_screened );\n";
@@ -494,79 +476,70 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     //       so we always want to run this
     vrr_writer_.DeclarePrimArrays(os_);
 
-    os_ << indent5 << vinfo_.NewConstDoubleLoad("Q_alpha", "Q.alpha", "j") << ";\n";
-    os_ << indent5 << cdbltype << " PQalpha_mul = " << vinfo_.Mul("P_alpha", "Q_alpha") << ";\n";
-    os_ << indent5 << cdbltype << " PQalpha_sum = " << vinfo_.Add("P_alpha", "Q_alpha") << ";\n";
-    os_ << indent5 << cdbltype << " one_over_PQalpha_sum = " << vinfo_.Div(const1_str, "PQalpha_sum") << ";\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE Q_alpha = SIMINT_DBLLOAD(Q.alpha, j);\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE PQalpha_mul = SIMINT_MUL(P_alpha, Q_alpha);\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE PQalpha_sum = SIMINT_ADD(P_alpha, Q_alpha);\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE one_over_PQalpha_sum = SIMINT_DIV(const_1, PQalpha_sum);\n";
     os_ << "\n";
     os_ << "\n";
     os_ << indent5 << "/* construct R2 = (Px - Qx)**2 + (Py - Qy)**2 + (Pz -Qz)**2 */\n";
-    os_ << indent5 << dbltype << " PQ[3];\n";
-    os_ << indent5 << "PQ[0] = " << vinfo_.Sub("Pxyz[0]", vinfo_.DoubleLoad("Q.x", "j")) << ";\n";
-    os_ << indent5 << "PQ[1] = " << vinfo_.Sub("Pxyz[1]", vinfo_.DoubleLoad("Q.y", "j")) << ";\n";
-    os_ << indent5 << "PQ[2] = " << vinfo_.Sub("Pxyz[2]", vinfo_.DoubleLoad("Q.z", "j")) << ";\n";
+    os_ << indent5 << "SIMINT_DBLTYPE PQ[3];\n";
+    os_ << indent5 << "PQ[0] = SIMINT_SUB(Pxyz[0], SIMINT_DBLLOAD(Q.x, j));\n";
+    os_ << indent5 << "PQ[1] = SIMINT_SUB(Pxyz[1], SIMINT_DBLLOAD(Q.y, j));\n";
+    os_ << indent5 << "PQ[2] = SIMINT_SUB(Pxyz[2], SIMINT_DBLLOAD(Q.z, j));\n";
 
 
-    os_ << indent5 << dbltype << " R2 = " << vinfo_.Mul("PQ[0]", "PQ[0]") << ";\n";
-    os_ << indent5 << " R2 = " << vinfo_.FMAdd("PQ[1]", "PQ[1]", "R2")    << ";\n";
-    os_ << indent5 << " R2 = " << vinfo_.FMAdd("PQ[2]", "PQ[2]", "R2")    << ";\n";
+    os_ << indent5 << "SIMINT_DBLTYPE R2 = SIMINT_MUL(PQ[0], PQ[0]);\n";
+    os_ << indent5 << " R2 = SIMINT_FMADD(PQ[1], PQ[1], R2);\n";
+    os_ << indent5 << " R2 = SIMINT_FMADD(PQ[2], PQ[2], R2);\n";
     os_ << "\n";
-    os_ << indent5 << cdbltype << " alpha = " << vinfo_.Mul("PQalpha_mul", "one_over_PQalpha_sum") << ";   // alpha from MEST\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE alpha = SIMINT_MUL(PQalpha_mul, one_over_PQalpha_sum); // alpha from MEST\n";
 
     if(hasoneoverp)
-        os_ << indent5 << cdbltype << " one_over_p = " << vinfo_.Div(const1_str, "P_alpha") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE one_over_p = SIMINT_DIV(const_1, P_alpha);\n";
 
     if(hasoneoverq)
-        os_ << indent5 << cdbltype << " one_over_q = " << vinfo_.Div(const1_str, "Q_alpha") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE one_over_q = SIMINT_DIV(const_1, Q_alpha);\n";
 
     if(hasoneover2p)    
-        os_ << indent5 << cdbltype << " one_over_2p = " << vinfo_.Mul(consthalf_str, "one_over_p") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE one_over_2p = SIMINT_MUL(one_half, one_over_p);\n";
 
     if(hasoneover2q)    
-        os_ << indent5 << cdbltype << " one_over_2q = " << vinfo_.Mul(consthalf_str, "one_over_q") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE one_over_2q = SIMINT_MUL(one_half, one_over_q);\n";
 
     if(hasoneover2pq)
-        os_ << indent5 << cdbltype << " one_over_2pq = " << vinfo_.Mul(consthalf_str, "one_over_PQalpha_sum") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE one_over_2pq = SIMINT_MUL(one_half, one_over_PQalpha_sum);\n";
 
     if(hasketvrr)
     {
         if(vrr_writer_.HasVRR_K())
-        {
-            os_ << indent5 << cdbltype << " Q_PA[3] = { " << vinfo_.DoubleLoad("Q.PA_x", "j") << ", "
-                                                          << vinfo_.DoubleLoad("Q.PA_y", "j") << ", "
-                                                          << vinfo_.DoubleLoad("Q.PA_z", "j") << " };\n";
-        }
+            os_ << indent5 << "const SIMINT_DBLTYPE Q_PA[3] = { SIMINT_DBLLOAD(Q.PA_x, j), SIMINT_DBLLOAD(Q.PA_y, j), SIMINT_DBLLOAD(Q.PA_z, j) };\n"; 
         else
-        {
-            os_ << indent5 << cdbltype << " Q_PB[3] = { " << vinfo_.DoubleLoad("Q.PB_x", "j") << ", "
-                                                          << vinfo_.DoubleLoad("Q.PB_y", "j") << ", "
-                                                          << vinfo_.DoubleLoad("Q.PB_z", "j") << " };\n";
-        }
+            os_ << indent5 << "const SIMINT_DBLTYPE Q_PB[3] = { SIMINT_DBLLOAD(Q.PB_x, j), SIMINT_DBLLOAD(Q.PB_y, j), SIMINT_DBLLOAD(Q.PB_z, j) };\n"; 
     }
 
     if(hasbravrr)
     {
         os_ << "\n";
         os_ << indent5 << "// NOTE: Minus sign!\n";
-        os_ << indent5 << cdbltype << " a_over_p = " << vinfo_.Mul(vinfo_.Neg("alpha"), "one_over_p") << ";     // a/p from MEST\n";
-        os_ << indent5 << dbltype << " aop_PQ[3];\n";
-        os_ << indent5 << "aop_PQ[0] = " << vinfo_.Mul("a_over_p", "PQ[0]") << ";\n";
-        os_ << indent5 << "aop_PQ[1] = " << vinfo_.Mul("a_over_p", "PQ[1]") << ";\n";
-        os_ << indent5 << "aop_PQ[2] = " << vinfo_.Mul("a_over_p", "PQ[2]") << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE a_over_p = SIMINT_MUL(SIMINT_NEG(alpha), one_over_p);\n";
+        os_ << indent5 << "SIMINT_DBLTYPE aop_PQ[3];\n";
+        os_ << indent5 << "aop_PQ[0] = SIMINT_MUL(a_over_p, PQ[0]);\n";
+        os_ << indent5 << "aop_PQ[1] = SIMINT_MUL(a_over_p, PQ[1]);\n";
+        os_ << indent5 << "aop_PQ[2] = SIMINT_MUL(a_over_p, PQ[2]);\n";
     }
 
     if(hasketvrr)
     {
         os_ << "\n";
-        os_ << indent5 << dbltype << " a_over_q =  " << vinfo_.Mul("alpha", "one_over_q") << ";     // a/q from MEST\n";
-        os_ << indent5 << dbltype << " aoq_PQ[3];\n";
-        os_ << indent5 << "aoq_PQ[0] = " << vinfo_.Mul("a_over_q", "PQ[0]") << ";\n";
-        os_ << indent5 << "aoq_PQ[1] = " << vinfo_.Mul("a_over_q", "PQ[1]") << ";\n";
-        os_ << indent5 << "aoq_PQ[2] = " << vinfo_.Mul("a_over_q", "PQ[2]") << ";\n\n";
+        os_ << indent5 << "SIMINT_DBLTYPE a_over_q = SIMINT_MUL(alpha, one_over_q);\n";
+        os_ << indent5 << "SIMINT_DBLTYPE aoq_PQ[3];\n";
+        os_ << indent5 << "aoq_PQ[0] = SIMINT_MUL(a_over_q, PQ[0]);\n";
+        os_ << indent5 << "aoq_PQ[1] = SIMINT_MUL(a_over_q, PQ[1]);\n";
+        os_ << indent5 << "aoq_PQ[2] = SIMINT_MUL(a_over_q, PQ[2]);\n";
 
         os_ << indent5 << "// Put a minus sign here so we don't have to in RR routines\n";
-        os_ << indent5 << "a_over_q = " << vinfo_.Neg("a_over_q") << ";\n";
-
+        os_ << indent5 << "a_over_q = SIMINT_NEG(a_over_q);\n";
     }
 
     os_ << "\n";
@@ -576,17 +549,17 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
     os_ << indent5 << "// Maximum v value: " << info_.L() << "\n";
     os_ << indent5 << "//////////////////////////////////////////////\n";
     os_ << indent5 << "// The parameter to the Fjt function\n";
-    os_ << indent5 << cdbltype << " F_x = " << vinfo_.Mul("R2", "alpha") << ";\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE F_x = SIMINT_MUL(R2, alpha);\n";
     os_ << "\n";
     os_ << "\n";
 
     // we need to zero out any that are beyond the end of the batch (that's been clipped)
     if(info_.Vectorized())
     {
-        os_ << indent5 << vinfo_.UnionType() << " Q_prefac_u = { " << vinfo_.DoubleLoad("Q.prefac", "j") << " };\n";
+        os_ << indent5 << "SIMINT_UNIONTYPE Q_prefac_u = { SIMINT_DBLLOAD(Q.prefac, j) };\n";
         os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
         os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
-        os_ << indent5 << cdbltype << " Q_prefac = Q_prefac_u." << vinfo_.UnionMember() << ";\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = SIMINT_UNIONMEMBER(Q_prefac_u);\n";
     }
     else
         os_ << indent5 << "const double Q_prefac = Q.prefac[j];\n";
@@ -598,14 +571,14 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
     // prefac = sqrt(1/PQalpha_sum) * P_prefac * Q_prefac
-    os_ << indent5 << vinfo_.DoubleType() << " prefac = " << vinfo_.Sqrt("one_over_PQalpha_sum") << ";\n";
-    os_ << indent5 << "prefac = " << vinfo_.Mul(vinfo_.Mul("P_prefac", "Q_prefac"), "prefac") << ";\n";
+    os_ << indent5 << "SIMINT_DBLTYPE prefac = SIMINT_SQRT(one_over_PQalpha_sum);\n";
+    os_ << indent5 << "prefac = SIMINT_MUL(SIMINT_MUL(P_prefac, Q_prefac), prefac);\n";
 
     const std::string name0000 = PrimVarName({0,0,0,0});
     const std::string name0000n = name0000 + "[n]";
 
     os_ << indent5 << "for(n = 0; n <= " << info_.L() << "; n++)\n"
-        << indent6 << name0000n << " = " << vinfo_.Mul(name0000n, "prefac") << ";\n";
+        << indent6 << name0000n << " = SIMINT_MUL(" << name0000n << ", prefac);\n";
 
 
     if(vrr_writer_.HasVRR())
@@ -647,7 +620,7 @@ void OSTEI_Writer_Basic::WriteFile_NoPermute_(void) const
 
 
 
-void OSTEI_Writer_Basic::WriteFile(void) const
+void OSTEIDeriv1_Writer::WriteFile(void) const
 {
     const QAM am = info_.FinalAM();
 

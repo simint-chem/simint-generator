@@ -1,21 +1,18 @@
 #pragma once
 
-// Automatically generated. Includes SIMINT_AVX, SIMINT_SSE, etc
+#include <stdlib.h>
+
+// Defines SIMINT_AVX, etc
 #include "simint/simint_config.h"
 
 #if defined SIMINT_AVX512
   #include "simint/vectorization/intrinsics_avx512.h"
-  #define SIMINT_SIMD_LEN 8
 #elif defined SIMINT_AVX
   #include "simint/vectorization/intrinsics_avx.h"
-  #define SIMINT_SIMD_LEN 4
 #elif defined SIMINT_SSE
   #include "simint/vectorization/intrinsics_sse.h"
-  #define SIMINT_SIMD_LEN 2
 #else
-  #include <stdlib.h>
   #include "simint/vectorization/intrinsics_scalar.h"
-  #define SIMINT_SIMD_LEN 1
 #endif
 
 #define SIMINT_SIMD_ALIGN_DBL (SIMINT_SIMD_LEN*8)
@@ -54,70 +51,3 @@
 // Number of shells to use in a batch
 #define SIMINT_NSHELL_SIMD (2*SIMINT_SIMD_LEN)
 
-
-#if defined SIMINT_AVX512
-
-    #define SIMINT_DBLTYPE    __m512d
-    #define SIMINT_SET1        _mm512_set1_pd
-    #define SIMINT_NEG(a)      (-(a))
-    #define SIMINT_ADD(a,b)    _mm512_add_pd((a), (b))
-    #define SIMINT_MUL(a,b)    _mm512_mul_pd((a), (b))
-    #define SIMINT_FMA(a,b,c)  _mm512_fmadd_pd((a), (b), (c))
-
-    #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm512_exp_pd
-    #else
-        #define SIMINT_EXP  simint_exp_vec8
-    #endif
-
-#elif defined SIMINT_AVX
-
-    #define SIMINT_DBLTYPE     __m256d
-    #define SIMINT_SET1        _mm256_set1_pd
-    #define SIMINT_NEG(a)      (-(a))
-    #define SIMINT_ADD(a,b)    _mm256_add_pd((a), (b))
-    #define SIMINT_MUL(a,b)    _mm256_mul_pd((a), (b))
-
-    #ifdef SIMINT_HAS_FMA
-      #define SIMINT_FMA(a,b,c)  _mm256_fmadd_pd((a), (b), (c))
-    #else
-      #define SIMINT_FMA(a,b,c)  SIMINT_ADD(SIMINT_MUL((a),(b)),(c))
-    #endif
-
-    #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm256_exp_pd
-    #else
-        #define SIMINT_EXP  simint_exp_vec4
-    #endif
-
-#elif defined SIMINT_SSE
-
-    #define SIMINT_DBLTYPE     __m128d
-    #define SIMINT_SET1        _mm_set1_pd
-    #define SIMINT_NEG(a)      (-(a))
-    #define SIMINT_ADD(a,b)    _mm_add_pd((a), (b))
-    #define SIMINT_MUL(a,b)    _mm_mul_pd((a), (b))
-
-    #ifdef SIMINT_HAS_FMA
-      #define SIMINT_FMA(a,b,c)  _mm_fmadd_pd((a), (b), (c))
-    #else
-      #define SIMINT_FMA(a,b,c)  SIMINT_ADD(SIMINT_MUL((a),(b)),(c))
-    #endif
-
-    #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm_exp_pd
-    #else
-        #define SIMINT_EXP  simint_exp_vec2
-    #endif
-
-#else
-
-    #define SIMINT_DBLTYPE     double
-    #define SIMINT_SET1
-    #define SIMINT_NEG(a)      (-(a))
-    #define SIMINT_ADD(a,b)    ((a)+(b))
-    #define SIMINT_MUL(a,b)    ((a)*(b))
-    #define SIMINT_FMA(a,b,c)  (((a)*(b))+(c))
-    #define SIMINT_EXP         exp
-
-#endif

@@ -15,6 +15,7 @@ set(SIMINT_BUILD_SHARED    FALSE CACHE BOOL "Build a shared library, rather than
 # Basic options for simint
 ##################################################
 list(APPEND SIMINT_C_INCLUDES "${CMAKE_SOURCE_DIR}")
+list(APPEND SIMINT_C_INCLUDES "${CMAKE_BINARY_DIR}/stage") # some CMake-generated files go here
 
 # Default to "Release"
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -25,7 +26,6 @@ endif()
 # Read the default flags and generated flags file
 ##################################################
 include(cmake/DefaultFlags.cmake)
-include(cmake/DefaultFlags_generated.cmake)
 
 
 message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
@@ -44,6 +44,15 @@ endif()
 # Install the config file
 configure_file("simintConfig.cmake.in" "simintConfig.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/simintConfig.cmake DESTINATION cmake)
+
+# Configure & install the simint_config header
+configure_file("simint/simint_config.h.in" "${CMAKE_BINARY_DIR}/stage/simint/simint_config.h" @ONLY)
+
+foreach(def ${SIMINT_CONFIG_DEFINES})
+  file(APPEND "${CMAKE_BINARY_DIR}/stage/simint/simint_config.h" "#define ${def}\n")
+endforeach()
+
+install(FILES ${CMAKE_BINARY_DIR}/stage/simint/simint_config.h DESTINATION simint)
 
 # Main code subdirectory
 add_subdirectory(simint)

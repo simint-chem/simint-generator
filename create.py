@@ -44,7 +44,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 
-parser.add_argument("-c", type=str, required=False, default="", help="CPU Flags (comma separated)")
 parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
 
 parser.add_argument("-ve", required=False, type=int, default=0, help="External VRR for this L value and above")
@@ -210,8 +209,6 @@ for q in valid:
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
 
-    if args.c:
-        cmdline.extend(["-c", str(args.c)])
     if args.i:
         cmdline.append("-i")
     if args.S:
@@ -314,8 +311,6 @@ for q in valid:
       cmdline.extend(["-o", outfile])
       cmdline.extend(["-oh", headerfile])
 
-      if args.c:
-          cmdline.extend(["-c", str(args.c)])
       if args.i:
           cmdline.append("-i")
       if args.S:
@@ -426,9 +421,6 @@ for q in valid:
     cmdline.extend(["-vg", str(args.vg)]) 
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
-
-    if args.c:
-        cmdline.extend(["-c", str(args.c)])
 
     if args.i:
         cmdline.append("-i")
@@ -548,9 +540,6 @@ for q in valid:
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
 
-    if args.c:
-        cmdline.extend(["-c", str(args.c)])
-
     if args.i:
         cmdline.append("-i")
     if args.S:
@@ -612,8 +601,7 @@ with open(headerfile, 'w') as hfile:
 ####################################################
 # Overall config header
 ####################################################
-cpuflags = args.c.lower().split(',')
-sinfofile = os.path.join(outdir, "simint_config.h")
+sinfofile = os.path.join(outdir, "simint_config.h.in")
 with open(sinfofile, 'w') as sf:
 
   # Parse the cpu flags
@@ -621,40 +609,8 @@ with open(sinfofile, 'w') as sf:
 
   sf.write("#pragma once\n\n")
 
-  if "avx512" in cpuflags:
-    sf.write("#define SIMINT_AVX512\n")
-  elif "avx" in cpuflags:
-    sf.write("#define SIMINT_AVX\n")
-  elif "sse2" in cpuflags:
-    sf.write("#define SIMINT_SSE\n")
-  else:
-    sf.write("#define SIMINT_SCALAR\n")
-
   if args.p:
     sf.write("#define SIMINT_OSTEI_PERMUTATIONS\n")
   else:
     sf.write("#define SIMINT_OSTEI_NO_PERMUTATIONS\n")
-
-  sf.write("\n\n")
-
-
-####################################################
-# Cmake flags file
-####################################################
-cmflagfile = os.path.join(outdir_cmake, "DefaultFlags_generated.cmake")
-with open(cmflagfile, 'w') as sf:
-
-  if "avx512" in cpuflags:
-    sf.write("include(cmake/DefaultFlags_avx512.cmake)")
-  elif "avx" in cpuflags and "fma" in cpuflags:
-    sf.write("include(cmake/DefaultFlags_avxfma.cmake)")
-  elif "avx" in cpuflags:
-    sf.write("include(cmake/DefaultFlags_avx.cmake)")
-  elif "sse2" in cpuflags:
-    sf.write("include(cmake/DefaultFlags_sse.cmake)")
-  else:
-    sf.write("include(cmake/DefaultFlags_scalar.cmake)")
-  sf.write("\n")
-
-
 

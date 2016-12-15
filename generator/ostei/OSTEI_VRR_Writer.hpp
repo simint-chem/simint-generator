@@ -36,7 +36,6 @@ class OSTEI_VRR_Writer
     private:
         const OSTEI_VRR_Algorithm_Base & vrr_algo_;
         const OSTEI_GeneratorInfo & info_;
-        const VectorInfo & vinfo_;
 
         int start_external_;
         int start_general_;

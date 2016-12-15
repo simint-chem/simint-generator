@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "generator/CommandLine.hpp"
+#include "generator/StringBuilder.hpp"
 
 #include "generator/ostei/Algorithms.hpp"
 #include "generator/ostei/OSTEI_GeneratorInfo.hpp"
@@ -18,7 +19,6 @@ int main(int argc, char ** argv)
     // other stuff
     std::string fpath;
     std::string hpath;
-    std::string cpuflags;
     QAM finalam;
 
     bool finalamset = false;
@@ -36,8 +36,6 @@ int main(int argc, char ** argv)
             fpath = GetNextArg(iarg, otheropt);
         else if(argstr == "-oh")
             hpath = GetNextArg(iarg, otheropt);
-        else if(argstr == "-c")
-            cpuflags = GetNextArg(iarg, otheropt);
         else if(argstr == "-q")
         {
             finalam[0] = GetIArg(iarg, otheropt);   
@@ -78,9 +76,7 @@ int main(int argc, char ** argv)
     
 
     // Information for this OSTEI
-    OSTEI_GeneratorInfo info(finalam, 1,
-                             Compiler::Intel,
-                             cpuflags, options);
+    OSTEI_GeneratorInfo info(finalam, 1, options);
 
 
     //////////////////////////////////////////////////////////////
@@ -88,8 +84,8 @@ int main(int argc, char ** argv)
     //////////////////////////////////////////////////////////////
 
     // algorithms used
-    std::unique_ptr<OSTEI_HRR_Algorithm_Base> hrralgo(new Makowski_HRR(options));
-    std::unique_ptr<OSTEI_VRR_Algorithm_Base> vrralgo(new Makowski_VRR(options));
+    Makowski_HRR hrralgo(options);
+    Makowski_VRR vrralgo(options);
 
     // Working backwards, I need:
     // 1.) HRR Steps
@@ -114,25 +110,25 @@ int main(int argc, char ** argv)
         std::cout << it[0] << it[1] << it[2] << it[3] << "\n";
     std::cout << "\n";
 
-    hrralgo->Create(needed_am);
-    OSTEI_HRR_Writer hrr_writer(*hrralgo, info,
+    hrralgo.Create(needed_am);
+    OSTEI_HRR_Writer hrr_writer(hrralgo, info,
                                 options[Option::ExternalHRR],
                                 options[Option::GeneralHRR]);
 
-    QuartetSet topquartets = hrralgo->TopQuartets();
+    QuartetSet topquartets = hrralgo.TopQuartets();
 
     // 2.) VRR Steps
-    vrralgo->Create(topquartets);
-    OSTEI_VRR_Writer vrr_writer(*vrralgo, info,
+    vrralgo.Create(topquartets);
+    OSTEI_VRR_Writer vrr_writer(vrralgo, info,
                                 options[Option::ExternalVRR],
                                 options[Option::GeneralVRR]);
 
 
     // set the contracted quartets
-    info.SetContQ(hrralgo->TopAM());
+    info.SetContQ(hrralgo.TopAM());
 
     // Create the OSTEI_Writer and write the file
-    OSTEIDeriv1_Writer_Basic ostei_deriv1_writer(of, ofh, info, vrr_writer, hrr_writer);
+    OSTEIDeriv1_Writer ostei_deriv1_writer(of, ofh, info, vrr_writer, hrr_writer);
     ostei_deriv1_writer.WriteFile();
 
 

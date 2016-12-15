@@ -9,7 +9,7 @@
 ////////////////////////
 OSTEI_HRR_Writer::OSTEI_HRR_Writer(const OSTEI_HRR_Algorithm_Base & hrr_algo, const OSTEI_GeneratorInfo & info, 
                                    int start_external, int start_general)
-    : hrr_algo_(hrr_algo), info_(info), vinfo_(info.GetVectorInfo()),
+    : hrr_algo_(hrr_algo), info_(info),
       start_external_(start_external), start_general_(start_general)
 { }
 
