@@ -51,7 +51,6 @@ parser.add_argument("-vg", required=False, type=int, default=0, help="General VR
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
 parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
-parser.add_argument("-i",  required=False, action='store_true', help="Use intrinsics")
 parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
 
 parser.add_argument("outdir", type=str, help="Output directory")
@@ -95,12 +94,6 @@ if not os.path.isfile(hrr_gen):
 if not os.path.isfile(vrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(vrr_gen))
   quit(1)
-
-
-if args.S and args.i:
-  print("Intrinsics don't make sense with scalar code")
-  quit(1)
-
 
 
 ####################################################
@@ -209,8 +202,6 @@ for q in valid:
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
 
-    if args.i:
-        cmdline.append("-i")
     if args.S:
         cmdline.append("-S")
 
@@ -311,8 +302,6 @@ for q in valid:
       cmdline.extend(["-o", outfile])
       cmdline.extend(["-oh", headerfile])
 
-      if args.i:
-          cmdline.append("-i")
       if args.S:
           cmdline.append("-S")
 
@@ -422,8 +411,6 @@ for q in valid:
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
 
-    if args.i:
-        cmdline.append("-i")
     if args.S:
         cmdline.append("-S")
 
@@ -540,8 +527,6 @@ for q in valid:
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
 
-    if args.i:
-        cmdline.append("-i")
     if args.S:
         cmdline.append("-S")
 
