@@ -483,8 +483,8 @@ void OSTEI_Writer::WriteFile_NoPermute_(void) const
 
 
     os_ << indent5 << "SIMINT_DBLTYPE R2 = SIMINT_MUL(PQ[0], PQ[0]);\n";
-    os_ << indent5 << " R2 = SIMINT_FMADD(PQ[1], PQ[1], R2);\n";
-    os_ << indent5 << " R2 = SIMINT_FMADD(PQ[2], PQ[2], R2);\n";
+    os_ << indent5 << "R2 = SIMINT_FMADD(PQ[1], PQ[1], R2);\n";
+    os_ << indent5 << "R2 = SIMINT_FMADD(PQ[2], PQ[2], R2);\n";
     os_ << "\n";
     os_ << indent5 << "const SIMINT_DBLTYPE alpha = SIMINT_MUL(PQalpha_mul, one_over_PQalpha_sum); // alpha from MEST\n";
 
