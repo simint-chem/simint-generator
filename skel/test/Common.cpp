@@ -246,21 +246,24 @@ std::pair<double, double> CalcError(double const * const restrict calc, double c
 void PrintTimingHeader(void)
 {
     // Timing header
-    printf("%13s %12s  %12s  %16s  %16s  %16s  %12s\n",
-                           "Quartet", "NCont", "NPrim", "Ticks(Fill)", "Ticks(Ints)",
-                                                        "Ticks(Total)", "Ticks/Prim");
+    printf("%13s %12s %12s %16s %16s %16s %16s %16s %16s\n",
+                           "Quartet", "NCont", "NPrim",
+                           "Ticks(Fill)", "Ticks(Ints)", "FullTicks(Ints)",
+                           "Time(Fill)", "Time(Ints)", "FullTime(Ints)");
 }
 
 
 void PrintAMTimingInfo(int i, int j, int k, int l, size_t nshell1234, size_t nprim1234, const TimeContrib & info)
 {
-        printf("( %d %d | %d %d ) %12lu  %12lu  %16llu  %16llu  %16llu  %12.3f\n",
+        printf("( %d %d | %d %d ) %12lu %12lu %16llu %16llu %16llu %16llu %16llu %16llu\n",
                                                                       i, j, k, l,
                                                                       nshell1234, nprim1234,
-                                                                      info.fill_shell_pair.load(),
-                                                                      info.integrals.load(),
-                                                                      info.TotalTime(),
-                                                                      (double)(info.TotalTime())/(double)(nprim1234));
+                                                                      info.ticks_shell_pair.load(),
+                                                                      info.ticks_integrals.load(),
+                                                                      info.fullticks_integrals.load(),
+                                                                      info.time_shell_pair.load(),
+                                                                      info.time_integrals.load(),
+                                                                      info.fulltime_integrals.load());
 }
 
 bool UniqueQuartet(int i, int j, int k, int l)

@@ -43,7 +43,7 @@ endif()
 
 # Install the config file
 configure_file("simintConfig.cmake.in" "simintConfig.cmake" @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/simintConfig.cmake DESTINATION cmake)
+install(FILES ${CMAKE_BINARY_DIR}/simintConfig.cmake DESTINATION share/cmake/simint)
 
 # Configure & install the simint_config header
 configure_file("simint/simint_config.h.in" "${CMAKE_BINARY_DIR}/stage/simint/simint_config.h" @ONLY)
@@ -52,7 +52,7 @@ foreach(def ${SIMINT_CONFIG_DEFINES})
   file(APPEND "${CMAKE_BINARY_DIR}/stage/simint/simint_config.h" "#define ${def}\n")
 endforeach()
 
-install(FILES ${CMAKE_BINARY_DIR}/stage/simint/simint_config.h DESTINATION simint)
+install(FILES ${CMAKE_BINARY_DIR}/stage/simint/simint_config.h DESTINATION include/simint)
 
 # Main code subdirectory
 add_subdirectory(simint)

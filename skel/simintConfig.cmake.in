@@ -1,10 +1,12 @@
 # This file allows for simint to be found by CMake when building
 # another project
 
-# This file gets installed into the cmake subdirectory. Therefore,
+# This file gets installed into the share/cmake/simint subdirectory. Therefore,
 # we need to search my parent for the header, etc
 set(SIMINT_CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR})
 get_filename_component(SIMINT_PARENT ${SIMINT_CONFIG_PATH} DIRECTORY)
+get_filename_component(SIMINT_PARENT ${SIMINT_PARENT} DIRECTORY)
+get_filename_component(SIMINT_PARENT ${SIMINT_PARENT} DIRECTORY)
 
 find_library(SIMINT_LIBRARY NAMES simint PATHS ${SIMINT_PARENT}/lib 
              NO_DEFAULT_PATH)

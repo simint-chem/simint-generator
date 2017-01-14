@@ -18,12 +18,20 @@
 //! Contributions to timings
 struct TimeContrib
 {
-    std::atomic<TimerType> fill_shell_pair;
-    std::atomic<TimerType> integrals;
+    std::atomic<TimerType> ticks_shell_pair;
+    std::atomic<TimerType> ticks_integrals;
+    std::atomic<TimerType> fullticks_integrals;
+    std::atomic<TimerType> time_shell_pair;
+    std::atomic<TimerType> time_integrals;
+    std::atomic<TimerType> fulltime_integrals;
 
     TimeContrib(const TimeContrib & rhs) noexcept
-      : fill_shell_pair(rhs.fill_shell_pair.load()),
-        integrals(rhs.integrals.load())
+      : ticks_shell_pair(rhs.ticks_shell_pair.load()),
+        ticks_integrals(rhs.ticks_integrals.load()),
+        fullticks_integrals(rhs.fullticks_integrals.load()),
+        time_shell_pair(rhs.time_shell_pair.load()),
+        time_integrals(rhs.time_integrals.load()),
+        fulltime_integrals(rhs.fulltime_integrals.load())
     { }
 
     TimeContrib(TimeContrib && rhs) noexcept
@@ -33,20 +41,20 @@ struct TimeContrib
     TimeContrib & operator=(const TimeContrib &) noexcept = delete;
     TimeContrib & operator=(TimeContrib &&) noexcept = delete;
 
-    TimerType TotalTime(void) const noexcept
-    {
-        return fill_shell_pair + integrals; 
-    }
-
     TimeContrib(void) noexcept
     {
-        fill_shell_pair = integrals = 0;
+        ticks_shell_pair = ticks_integrals = fullticks_integrals = 0;
+        time_shell_pair = time_integrals = fulltime_integrals = 0;
     }
 
     TimeContrib & operator+=(const TimeContrib & rhs) noexcept
     {
-        fill_shell_pair += rhs.fill_shell_pair;
-        integrals += rhs.integrals;
+        ticks_shell_pair += rhs.ticks_shell_pair;
+        ticks_integrals += rhs.ticks_integrals;
+        fullticks_integrals += rhs.fullticks_integrals;
+        time_shell_pair += rhs.time_shell_pair;
+        time_integrals += rhs.time_integrals;
+        fulltime_integrals += rhs.fulltime_integrals;
         return *this;
     }
 };
