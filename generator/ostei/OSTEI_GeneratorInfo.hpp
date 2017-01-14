@@ -77,6 +77,20 @@ public:
         return !UseStack();
     }
 
+    bool IsUnique(void) const
+    {
+        QAM am = FinalAM();
+
+        if(am[0] < am[1])
+            return false;
+        if(am[2] < am[3])
+            return false;
+        if( (am[0] + am[1]) < (am[2] + am[3]) )
+            return false;
+        if( (am[0] + am[1]) == (am[2] + am[3]) && (am[0] < am[2]) ) 
+            return false;
+        return true;
+    }
 
 private:
     //////////////////////////////////

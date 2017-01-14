@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
     // in SIMINT_OSTEI_MAX_WORKMEM
     //
     // (for your information, OSTEI = Obara-Saika Two-Electron Integral)
-    double * simint_work = SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    double * work = SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
 
 
     ////////////////////////////////////////
@@ -162,7 +162,7 @@ int main(int argc, char ** argv)
             /////////////////////////////////////
             
             // Should always return one in this case (since we aren't batching)
-            simint_compute_eri_sharedwork(&left_pair, &right_pair, 0.0, simint_work, target);
+            simint_compute_eri(&left_pair, &right_pair, 0.0, work, target);
 
             // keep track of how many shells and integrals we calculated
             ncomputed_shell++;
@@ -213,7 +213,7 @@ int main(int argc, char ** argv)
         simint_free_shell(&shells[i]);
 
     SIMINT_FREE(target);
-    SIMINT_FREE(simint_work);
+    SIMINT_FREE(work);
     SIMINT_FREE(integrals);
 
     simint_finalize();

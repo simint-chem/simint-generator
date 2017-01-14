@@ -150,8 +150,33 @@ void OSTEI_Writer::WriteAccumulation(void) const
     }
 }
 
+std::string OSTEI_Writer::FunctionName_(QAM am) const
+{
+    return StringBuilder("ostei_",
+                         amchar[am[0]], "_",
+                         amchar[am[1]], "_" ,
+                         amchar[am[2]], "_",
+                         amchar[am[3]]);
+}
 
-void OSTEI_Writer::WriteFile_Permute_(void) const
+std::string OSTEI_Writer::FunctionPrototype_(QAM am) const
+{
+    std::string fname = FunctionName_(am);
+    std::string indent(fname.length()+1+4, ' '); // +4 for return type
+
+    std::stringstream ss;
+    ss << "int " << fname << "(";
+    ss << "struct simint_multi_shellpair const P,\n";
+    ss << indent << "struct simint_multi_shellpair const Q,\n";
+    ss << indent << "double screen_tol,\n";
+    ss << indent << "double * const restrict contwork,\n";
+    ss << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    return ss.str();
+}
+
+
+
+void OSTEI_Writer::WriteFile_SpecialPermute_(void) const
 {
     QAM am = info_.FinalAM();
     QAM tocall = am;
@@ -171,27 +196,17 @@ void OSTEI_Writer::WriteFile_Permute_(void) const
         std::swap(tocall[2], tocall[3]);
     }
 
-    std::string funcline = StringBuilder("int ostei_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string indent(funcline.length(), ' ');
-
+     
     // start output to the file
     // we only need this one include
     os_ << "#include \"simint/ostei/gen/ostei_generated.h\"\n";
-    os_ << "\n";
+    os_ << "\n\n\n";
 
-    os_ << "\n\n";
-    os_ << funcline;
-    os_ << "struct simint_multi_shellpair const P,\n";
-    os_ << indent << "struct simint_multi_shellpair const Q,\n";
-    os_ << indent << "double screen_tol,\n";
-    os_ << indent << "double * const restrict contwork,\n";
-    os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    os_ << FunctionPrototype_(am);
     os_ << "{\n";
     os_ << indent1 << "// Can be accomplished by swapping some variables\n";
     os_ << indent1 << "// and calling another function\n";
-    os_ << indent1 << "// Note that the struct was passed by copy\n";
     os_ << "\n";
-
 
     const char * P_var = "P";
     const char * Q_var = "Q";
@@ -212,20 +227,18 @@ void OSTEI_Writer::WriteFile_Permute_(void) const
 	    Q_var = "Q_tmp";
     }
 
- 
-    os_ << indent1 << "return ostei_sharedwork_" << amchar[tocall[0]] << "_" 
-                                               << amchar[tocall[1]] << "_" 
-                                               << amchar[tocall[2]] << "_" 
-                                               << amchar[tocall[3]] << "(" << P_var << ", " << Q_var << ", screen_tol, "
-                                                                    << "contwork, " << ArrVarName(am) << ");\n"; 
+
+    std::string ftocall = FunctionName_(tocall); 
+    os_ << indent1 << "return " << ftocall
+        << "(" << P_var << ", " << Q_var << ", screen_tol, "
+        << "contwork, " << ArrVarName(am) << ");\n"; 
 
     os_ << "}\n";
     os_ << "\n";
 
 }
 
-
-void OSTEI_Writer::WriteFile_NoPermute_(void) const
+void OSTEI_Writer::WriteFile_Full_(void) const
 {
     const QAM am = info_.FinalAM();
     const int ncart = NCART(am);
@@ -286,22 +299,12 @@ void OSTEI_Writer::WriteFile_NoPermute_(void) const
     // Write out all the includes
     for(const auto & it : includes)
         os_ << "#include " << it << "\n";
-
+    os_ << "\n\n";
 
     //////////////////////////////
     // Function name & signature
     //////////////////////////////
-    std::string funcline = StringBuilder("int ostei_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string indent(funcline.length(), ' ');
-
-
-    os_ << "\n\n";
-    os_ << funcline;
-    os_ << "struct simint_multi_shellpair const P,\n";
-    os_ << indent << "struct simint_multi_shellpair const Q,\n";
-    os_ << indent << "double screen_tol,\n";
-    os_ << indent << "double * const restrict contwork,\n";
-    os_ << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    os_ << FunctionPrototype_(am);
     os_ << "{\n";
     os_ << "\n";
 
@@ -313,8 +316,9 @@ void OSTEI_Writer::WriteFile_NoPermute_(void) const
     // If there is no HRR, integrals are accumulated from inside the primitive loop
     // directly into the final integral array that was passed into this function, so it must be zeroed first
     if(!hashrr)
-        os_ << indent1 << "memset(" << ArrVarName(am) << ", 0, P.nshell12_clip * Q.nshell12_clip * " << ncart << " * sizeof(double));\n";
-    os_ << "\n";
+        os_ << indent1 << "memset(" << ArrVarName(am)
+                       << ", 0, P.nshell12_clip * Q.nshell12_clip * "
+                       << ncart << " * sizeof(double));\n\n";
 
 
     // abcd = index within simd loop, 
@@ -601,16 +605,20 @@ void OSTEI_Writer::WriteFile_NoPermute_(void) const
 
     os_ << indent1 << "}  // close loop over ab\n";
     os_ << "\n";
-    os_ << "\n";
-
-    os_ << "\n";
-
-
     os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
     os_ << "\n";
 }
 
+
+void OSTEI_Writer::WriteFile_SinglePermutation_(void) const
+{
+}
+
+
+void OSTEI_Writer::WriteFile_Permutations_(void) const
+{
+}
 
 
 void OSTEI_Writer::WriteFile(void) const
@@ -618,66 +626,20 @@ void OSTEI_Writer::WriteFile(void) const
     const QAM am = info_.FinalAM();
 
     // is this a special permutation? Handle it if so.
-    if( ( (am[0] == 0 && am[1] > 0)  && ( am[2] == 0 || am[3] == 0 ) ) ||
-        ( (am[2] == 0 && am[3] > 0)  && ( am[0] == 0 || am[1] == 0 ) ) )
+    if( ( ( am[0] == 0 && am[1] > 0 ) && ( am[2] == 0 || am[3] == 0 ) ) ||
+        ( ( am[2] == 0 && am[3] > 0 ) && ( am[0] == 0 || am[1] == 0 ) ) )
     {
-        WriteFile_Permute_();
+        WriteFile_SpecialPermute_();
     }
     else
-        WriteFile_NoPermute_();
+        WriteFile_Full_();
 
+    // Add to the header
+    osh_ << FunctionPrototype_(am) << ";\n\n";
 
-    // for header and for non-shared-work version
-    // note - no return type
-    std::string funcline = StringBuilder("ostei_sharedwork_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string funcline2 = StringBuilder("ostei_", amchar[am[0]], "_", amchar[am[1]], "_" , amchar[am[2]], "_", amchar[am[3]], "(");
-    std::string funcindent = std::string(funcline.length()+4, ' ');  // +4 for return type
-    std::string funcindent2 = std::string(funcline2.length()+4, ' ');
-    std::stringstream sscwork, ssig, ssig2;
-
-    // comment out contwork if its not needed
-    ssig  << "struct simint_multi_shellpair const P,\n"
-          << funcindent << "struct simint_multi_shellpair const Q,\n"
-          << funcindent << "double screen_tol,\n"
-          << funcindent << "double * const restrict contwork,\n"
-          << funcindent << "double * const restrict " << ArrVarName(am) << ")";
-    ssig2 << "struct simint_multi_shellpair const P,\n"
-          << funcindent2 << "struct simint_multi_shellpair const Q,\n"
-          << funcindent2 << "double screen_tol,\n"
-          << funcindent2 << "double * const restrict " << ArrVarName(am) << ")";
-
-
-    // create the version that allocates contwork for the user
-    os_ << "\n\n";
-    os_ << "int " << funcline2 << ssig2.str() << "\n";
-    os_ << "{\n";
-    size_t contmem = info_.ContMemoryReq();
-    if(contmem == 0)
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, NULL, ", ArrVarName(am), ");");
-    else
-    {
-        size_t contnel = info_.ContNElements();
-
-        os_ << indent1 << "// Workspace for contracted integrals\n";
-        if(info_.UseHeap())
-            os_ << indent1 << "double * const contwork = SIMINT_ALLOC(SIMINT_NSHELL_SIMD * " << contmem << ");\n\n";
-        else
-            os_ << indent1 << "double contwork[SIMINT_NSHELL_SIMD * " << contnel << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
-
-        os_ << indent1 << "int ret = " << StringBuilder(funcline, "P, Q, screen_tol, contwork, ", ArrVarName(am), ");");
-
-    }
-
-    os_ << "\n\n"; 
-
-    FreeContwork();
-    os_ << indent1 << "return ret;\n";
-    os_ << "}\n";
-
-
-    // Add both versions to the header
-    osh_ << "int " << funcline << ssig.str() << ";\n\n";
-    osh_ << "int " << funcline2 << ssig2.str() << ";\n\n";
+//    // Write out the code for permuting final integrals, if necessary
+//    if(info_.FinalPermute())
+//        WriteFile_Permutations_();
 }
 
 

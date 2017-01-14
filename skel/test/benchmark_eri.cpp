@@ -184,7 +184,7 @@ int main(int argc, char ** argv)
 
             // actually calculate
             CLOCK(ticks_0, time_0);
-            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_ints);
+            int simint_ret = simint_compute_eri(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_ints);
             CLOCK(ticks_1, time_1);
             time_am.ticks_integrals += (ticks_1 - ticks_0);
             time_am.time_integrals += (time_1 - time_0);

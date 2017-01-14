@@ -1,6 +1,7 @@
 #include <math.h> // for fabs()
 
 #include "simint/simint_eri.h"
+#include "simint/ostei/ostei_config.h"
 #include "simint/constants.h"
 #include "simint/shell/shell_screen.h"
 #include "simint/vectorization/vectorization.h"
@@ -47,6 +48,9 @@ double
 simint_shellscreen_schwarz(struct simint_shell const * A,
                            struct simint_shell const * B)
 {
+    // workspace
+    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+
     const int ncart1 = ((A->am+1) * (A->am+2))/2;
     const int ncart2 = ((B->am+1) * (B->am+2))/2;
     const int ncart12 = ncart1*ncart2;
@@ -60,7 +64,7 @@ simint_shellscreen_schwarz(struct simint_shell const * A,
     simint_create_multi_shellpair(1, A, 1, B, &P, 0);
 
     // calculate (ab|ab)
-    simint_compute_eri(&P, &P, 0.0, integrals);
+    simint_compute_eri(&P, &P, 0.0, work, integrals);
 
     // find the max value
     double max = 0;
@@ -71,7 +75,7 @@ simint_shellscreen_schwarz(struct simint_shell const * A,
     }
 
     simint_free_multi_shellpair(&P);
-
+    SIMINT_FREE(work);
     return max;
 }
 
@@ -139,6 +143,8 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     struct simint_multi_shellpair P;
     simint_initialize_multi_shellpair(&P);
 
+    // workspace
+    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
 
     double total_max = 0.0;
 
@@ -164,7 +170,7 @@ simint_primscreen_schwarz(struct simint_shell const * A,
             simint_create_multi_shellpair(1, &new_A, 1, &new_B, &P, 0);
 
             // calculate (ab|ab)
-            simint_compute_eri(&P, &P, 0.0, integrals);
+            simint_compute_eri(&P, &P, 0.0, work, integrals);
 
             // find the maximum value and store in the output array
             double max = 0;
@@ -205,6 +211,7 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     simint_free_multi_shellpair(&P);
     simint_free_shell(&new_A);
     simint_free_shell(&new_B);
+    SIMINT_FREE(work);
 
     return total_max;
 }
@@ -215,10 +222,11 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
                               struct simint_shell const * B,
                               double * restrict out)
 {
+    // workspace
+    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+
     const int same_shell = compare_shell(A, B);
-
     double total_max = 0.0;
-
     int idx = 0;
 
     // we manually calculate [00|00] for all primitives
@@ -255,5 +263,6 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
         }
     }
 
+    SIMINT_FREE(work);
     return total_max;
 }

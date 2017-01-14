@@ -87,6 +87,13 @@ public:
         return GetOption(Option::Scalar);
     }
 
+    /*! \brief Generate code for permuting final integrals
+     */   
+    bool FinalPermute(void) const
+    {
+        return GetOption(Option::FinalPermute);
+    }
+
     /*! \brief Generate vectorized code?
      */   
     bool Vectorized(void) const

@@ -113,37 +113,40 @@ int main(int argc, char ** argv)
     // space for all (although this overestimates
     // since we are exploiting some symmetry)
 
+    // Allocate some required workspace
+    double * work = SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+
     // Argument is the number of doubles
     double * targets = SIMINT_ALLOC(7*7*7*7 * sizeof(double));
     int ncomputed = 0;
     int ntotal = 0;
 
     // 3rd argument is the screening tolerance. Set to 0.0 to disable
-    ncomputed = simint_compute_eri(&ss_pair, &ss_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&ss_pair, &ss_pair, 0.0, work, targets+ntotal);
     printf("Computed %d contracted ssss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&ps_pair, &ss_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&ps_pair, &ss_pair, 0.0, work, targets+ntotal);
     ncomputed *= 3;
     printf("Computed %d contracted psss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&ps_pair, &ps_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&ps_pair, &ps_pair, 0.0, work, targets+ntotal);
     ncomputed *= 9;
     printf("Computed %d contracted psps integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &ss_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &ss_pair, 0.0, work, targets+ntotal);
     ncomputed *= 9;
     printf("Computed %d contracted ppss integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &ps_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &ps_pair, 0.0, work, targets+ntotal);
     ncomputed *= 27;
     printf("Computed %d contracted ppps integrals\n", ncomputed);
     ntotal += ncomputed;
 
-    ncomputed = simint_compute_eri(&pp_pair, &pp_pair, 0.0, targets+ntotal);
+    ncomputed = simint_compute_eri(&pp_pair, &pp_pair, 0.0, work, targets+ntotal);
     ncomputed *= 81;
     printf("Computed %d contracted pppp integrals\n", ncomputed);
     ntotal += ncomputed;
@@ -165,6 +168,7 @@ int main(int argc, char ** argv)
     simint_free_multi_shellpair(&ps_pair);
     simint_free_multi_shellpair(&pp_pair);
     SIMINT_FREE(targets);
+    SIMINT_FREE(work);
     simint_finalize();
 
     return 0;

@@ -165,7 +165,7 @@ int main(int argc, char ** argv)
             ////////////////////////////
             // Calculate the integrals
             ////////////////////////////
-            int simint_ret = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_simint);
+            int simint_ret = simint_compute_eri(&P, &Q, SIMINT_SCREEN_TOL, simint_work, res_simint);
 
             // if the return is < 0, it didn't calculate anything
             // (everything was screened)

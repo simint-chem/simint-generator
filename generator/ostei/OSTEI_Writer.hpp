@@ -59,8 +59,14 @@ private:
     void WriteShellOffsets_Scalar(void) const;
     void WriteAccumulation(void) const;
 
-    void WriteFile_Permute_(void) const;
-    void WriteFile_NoPermute_(void) const;
+    std::string FunctionName_(QAM am) const;
+    std::string FunctionPrototype_(QAM am) const;
+
+    void WriteFile_Full_(void) const;
+    void WriteFile_SpecialPermute_(void) const;
+
+    void WriteFile_Permutations_(void) const;
+    void WriteFile_SinglePermutation_(void) const;
 };
 
 
