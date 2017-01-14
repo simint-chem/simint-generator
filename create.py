@@ -9,18 +9,18 @@ import re
 import shutil
 
 
-def ValidQuartet(q):
+def UniqueQuartet(q):
   if q[0] < q[1]:
     return False
 
   if q[2] < q[3]:
     return False
 
-  if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
-    return False
+  #if  ( q[0] + q[1] ) < ( q[2] + q[3] ):
+  #  return False
 
-  if (q[0] + q[1]) == (q[2]+q[3]) and (q[0] < q[2]):
-    return False
+  #if (q[0] + q[1]) == (q[2]+q[3]) and (q[0] < q[2]):
+  #  return False
 
   return True
 
@@ -44,7 +44,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
 
-parser.add_argument("-p", required=False, action='store_true', help="Generate code for permuted angular momentum quartets")
+parser.add_argument("-p", required=False, action='store_true', help="Permute the final am (rather than generate full code for permuted angular momentum quartets)")
 
 parser.add_argument("-ve", required=False, type=int, default=0, help="External VRR for this L value and above")
 parser.add_argument("-vg", required=False, type=int, default=0, help="General VRR for this L value and above")
@@ -145,7 +145,7 @@ for i in range(1, maxam+1):
 
     if ij >= args.he and ij < args.hg:
       valid.add((i,j));
-      if args.p:
+      if not args.p:
           valid.add((j, i))
 
 for i in range(maxam+1, 2*maxam):
@@ -154,7 +154,7 @@ for i in range(maxam+1, 2*maxam):
 
     if ij >= args.he and ij < args.hg:
       valid.add((i,j));
-      if args.p:
+      if not args.p:
         valid.add((j, i))
 
 
@@ -254,7 +254,7 @@ for i in range(0, maxam*2+1):
     if ij >= args.ve and ij < args.vg:
       valid.add((i, 0, j, 0))
 
-      if args.p:
+      if not args.p:
         valid.add((0, i, 0, j))
         valid.add((i, 0, 0, j))
         valid.add((0, i, j, 0))
@@ -350,7 +350,7 @@ for i in range(0, maxam + 1):
     for k in range(0, maxam + 1):
       for l in range(0, maxam + 1):
         q = (i,j,k,l)
-        if args.p or ValidQuartet(q):
+        if not args.p or UniqueQuartet(q):
           valid.add(q)
         else:
           invalid.add(q)
@@ -414,6 +414,9 @@ for q in valid:
     if args.S:
         cmdline.append("-S")
 
+    if args.p:
+        cmdline.append("-p")
+
     print()
     print("Command line:")
     print(' '.join(cmdline))
@@ -468,7 +471,7 @@ for i in range(0, maxam + 1):
         q = (i,j,k,l)
         if max(q) > maxder1:
           continue
-        if args.p or ValidQuartet(q):
+        if not args.p or UniqueQuartet(q):
           valid.add(q)
         else:
           invalid.add(q)
@@ -530,6 +533,9 @@ for q in valid:
     if args.S:
         cmdline.append("-S")
 
+    if args.p:
+        cmdline.append("-p")
+
     print()
     print("Command line:")
     print(' '.join(cmdline))
@@ -588,14 +594,8 @@ with open(headerfile, 'w') as hfile:
 ####################################################
 sinfofile = os.path.join(outdir, "simint_config.h.in")
 with open(sinfofile, 'w') as sf:
-
-  # Parse the cpu flags
-
-
   sf.write("#pragma once\n\n")
-
-  if args.p:
-    sf.write("#define SIMINT_OSTEI_PERMUTATIONS\n")
-  else:
-    sf.write("#define SIMINT_OSTEI_NO_PERMUTATIONS\n")
+  sf.write("// If nothing is here, that is ok.\n")
+  sf.write("// Consider this reserved for future use\n");
+  
 

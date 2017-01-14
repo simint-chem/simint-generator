@@ -62,6 +62,16 @@ void simint_ostei_init(void)
     simint_osteifunc_array[0][1][1][0][0] = ostei_p_p_s_s;
     simint_osteifunc_array[0][1][1][1][0] = ostei_p_p_p_s;
     simint_osteifunc_array[0][1][1][1][1] = ostei_p_p_p_p;
+    simint_osteifunc_array[0][0][0][0][1] = ostei_s_s_s_p;
+    simint_osteifunc_array[0][0][0][1][0] = ostei_s_s_p_s;
+    simint_osteifunc_array[0][0][0][1][1] = ostei_s_s_p_p;
+    simint_osteifunc_array[0][0][1][0][0] = ostei_s_p_s_s;
+    simint_osteifunc_array[0][0][1][0][1] = ostei_s_p_s_p;
+    simint_osteifunc_array[0][0][1][1][0] = ostei_s_p_p_s;
+    simint_osteifunc_array[0][0][1][1][1] = ostei_s_p_p_p;
+    simint_osteifunc_array[0][1][0][0][1] = ostei_p_s_s_p;
+    simint_osteifunc_array[0][1][0][1][1] = ostei_p_s_p_p;
+    simint_osteifunc_array[0][1][1][0][1] = ostei_p_p_s_p;
     #endif
 
 
@@ -81,132 +91,6 @@ void simint_ostei_init(void)
     simint_osteifunc_array[0][2][2][2][0] = ostei_d_d_d_s;
     simint_osteifunc_array[0][2][2][2][1] = ostei_d_d_d_p;
     simint_osteifunc_array[0][2][2][2][2] = ostei_d_d_d_d;
-    #endif
-
-
-    #if SIMINT_OSTEI_MAXAM >= 3
-    simint_osteifunc_array[0][2][2][3][0] = ostei_d_d_f_s;
-    simint_osteifunc_array[0][3][0][0][0] = ostei_f_s_s_s;
-    simint_osteifunc_array[0][3][0][1][0] = ostei_f_s_p_s;
-    simint_osteifunc_array[0][3][0][1][1] = ostei_f_s_p_p;
-    simint_osteifunc_array[0][3][0][2][0] = ostei_f_s_d_s;
-    simint_osteifunc_array[0][3][0][2][1] = ostei_f_s_d_p;
-    simint_osteifunc_array[0][3][0][3][0] = ostei_f_s_f_s;
-    simint_osteifunc_array[0][3][1][0][0] = ostei_f_p_s_s;
-    simint_osteifunc_array[0][3][1][1][0] = ostei_f_p_p_s;
-    simint_osteifunc_array[0][3][1][1][1] = ostei_f_p_p_p;
-    simint_osteifunc_array[0][3][1][2][0] = ostei_f_p_d_s;
-    simint_osteifunc_array[0][3][1][2][1] = ostei_f_p_d_p;
-    simint_osteifunc_array[0][3][1][2][2] = ostei_f_p_d_d;
-    simint_osteifunc_array[0][3][1][3][0] = ostei_f_p_f_s;
-    simint_osteifunc_array[0][3][1][3][1] = ostei_f_p_f_p;
-    simint_osteifunc_array[0][3][2][0][0] = ostei_f_d_s_s;
-    simint_osteifunc_array[0][3][2][1][0] = ostei_f_d_p_s;
-    simint_osteifunc_array[0][3][2][1][1] = ostei_f_d_p_p;
-    simint_osteifunc_array[0][3][2][2][0] = ostei_f_d_d_s;
-    simint_osteifunc_array[0][3][2][2][1] = ostei_f_d_d_p;
-    simint_osteifunc_array[0][3][2][2][2] = ostei_f_d_d_d;
-    simint_osteifunc_array[0][3][2][3][0] = ostei_f_d_f_s;
-    simint_osteifunc_array[0][3][2][3][1] = ostei_f_d_f_p;
-    simint_osteifunc_array[0][3][2][3][2] = ostei_f_d_f_d;
-    simint_osteifunc_array[0][3][3][0][0] = ostei_f_f_s_s;
-    simint_osteifunc_array[0][3][3][1][0] = ostei_f_f_p_s;
-    simint_osteifunc_array[0][3][3][1][1] = ostei_f_f_p_p;
-    simint_osteifunc_array[0][3][3][2][0] = ostei_f_f_d_s;
-    simint_osteifunc_array[0][3][3][2][1] = ostei_f_f_d_p;
-    simint_osteifunc_array[0][3][3][2][2] = ostei_f_f_d_d;
-    simint_osteifunc_array[0][3][3][3][0] = ostei_f_f_f_s;
-    simint_osteifunc_array[0][3][3][3][1] = ostei_f_f_f_p;
-    simint_osteifunc_array[0][3][3][3][2] = ostei_f_f_f_d;
-    simint_osteifunc_array[0][3][3][3][3] = ostei_f_f_f_f;
-    #endif
-
-
-    #if SIMINT_OSTEI_MAXAM >= 4
-    simint_osteifunc_array[0][3][2][4][0] = ostei_f_d_g_s;
-    simint_osteifunc_array[0][3][3][4][0] = ostei_f_f_g_s;
-    simint_osteifunc_array[0][3][3][4][1] = ostei_f_f_g_p;
-    simint_osteifunc_array[0][4][0][0][0] = ostei_g_s_s_s;
-    simint_osteifunc_array[0][4][0][1][0] = ostei_g_s_p_s;
-    simint_osteifunc_array[0][4][0][1][1] = ostei_g_s_p_p;
-    simint_osteifunc_array[0][4][0][2][0] = ostei_g_s_d_s;
-    simint_osteifunc_array[0][4][0][2][1] = ostei_g_s_d_p;
-    simint_osteifunc_array[0][4][0][2][2] = ostei_g_s_d_d;
-    simint_osteifunc_array[0][4][0][3][0] = ostei_g_s_f_s;
-    simint_osteifunc_array[0][4][0][3][1] = ostei_g_s_f_p;
-    simint_osteifunc_array[0][4][0][4][0] = ostei_g_s_g_s;
-    simint_osteifunc_array[0][4][1][0][0] = ostei_g_p_s_s;
-    simint_osteifunc_array[0][4][1][1][0] = ostei_g_p_p_s;
-    simint_osteifunc_array[0][4][1][1][1] = ostei_g_p_p_p;
-    simint_osteifunc_array[0][4][1][2][0] = ostei_g_p_d_s;
-    simint_osteifunc_array[0][4][1][2][1] = ostei_g_p_d_p;
-    simint_osteifunc_array[0][4][1][2][2] = ostei_g_p_d_d;
-    simint_osteifunc_array[0][4][1][3][0] = ostei_g_p_f_s;
-    simint_osteifunc_array[0][4][1][3][1] = ostei_g_p_f_p;
-    simint_osteifunc_array[0][4][1][3][2] = ostei_g_p_f_d;
-    simint_osteifunc_array[0][4][1][4][0] = ostei_g_p_g_s;
-    simint_osteifunc_array[0][4][1][4][1] = ostei_g_p_g_p;
-    simint_osteifunc_array[0][4][2][0][0] = ostei_g_d_s_s;
-    simint_osteifunc_array[0][4][2][1][0] = ostei_g_d_p_s;
-    simint_osteifunc_array[0][4][2][1][1] = ostei_g_d_p_p;
-    simint_osteifunc_array[0][4][2][2][0] = ostei_g_d_d_s;
-    simint_osteifunc_array[0][4][2][2][1] = ostei_g_d_d_p;
-    simint_osteifunc_array[0][4][2][2][2] = ostei_g_d_d_d;
-    simint_osteifunc_array[0][4][2][3][0] = ostei_g_d_f_s;
-    simint_osteifunc_array[0][4][2][3][1] = ostei_g_d_f_p;
-    simint_osteifunc_array[0][4][2][3][2] = ostei_g_d_f_d;
-    simint_osteifunc_array[0][4][2][3][3] = ostei_g_d_f_f;
-    simint_osteifunc_array[0][4][2][4][0] = ostei_g_d_g_s;
-    simint_osteifunc_array[0][4][2][4][1] = ostei_g_d_g_p;
-    simint_osteifunc_array[0][4][2][4][2] = ostei_g_d_g_d;
-    simint_osteifunc_array[0][4][3][0][0] = ostei_g_f_s_s;
-    simint_osteifunc_array[0][4][3][1][0] = ostei_g_f_p_s;
-    simint_osteifunc_array[0][4][3][1][1] = ostei_g_f_p_p;
-    simint_osteifunc_array[0][4][3][2][0] = ostei_g_f_d_s;
-    simint_osteifunc_array[0][4][3][2][1] = ostei_g_f_d_p;
-    simint_osteifunc_array[0][4][3][2][2] = ostei_g_f_d_d;
-    simint_osteifunc_array[0][4][3][3][0] = ostei_g_f_f_s;
-    simint_osteifunc_array[0][4][3][3][1] = ostei_g_f_f_p;
-    simint_osteifunc_array[0][4][3][3][2] = ostei_g_f_f_d;
-    simint_osteifunc_array[0][4][3][3][3] = ostei_g_f_f_f;
-    simint_osteifunc_array[0][4][3][4][0] = ostei_g_f_g_s;
-    simint_osteifunc_array[0][4][3][4][1] = ostei_g_f_g_p;
-    simint_osteifunc_array[0][4][3][4][2] = ostei_g_f_g_d;
-    simint_osteifunc_array[0][4][3][4][3] = ostei_g_f_g_f;
-    simint_osteifunc_array[0][4][4][0][0] = ostei_g_g_s_s;
-    simint_osteifunc_array[0][4][4][1][0] = ostei_g_g_p_s;
-    simint_osteifunc_array[0][4][4][1][1] = ostei_g_g_p_p;
-    simint_osteifunc_array[0][4][4][2][0] = ostei_g_g_d_s;
-    simint_osteifunc_array[0][4][4][2][1] = ostei_g_g_d_p;
-    simint_osteifunc_array[0][4][4][2][2] = ostei_g_g_d_d;
-    simint_osteifunc_array[0][4][4][3][0] = ostei_g_g_f_s;
-    simint_osteifunc_array[0][4][4][3][1] = ostei_g_g_f_p;
-    simint_osteifunc_array[0][4][4][3][2] = ostei_g_g_f_d;
-    simint_osteifunc_array[0][4][4][3][3] = ostei_g_g_f_f;
-    simint_osteifunc_array[0][4][4][4][0] = ostei_g_g_g_s;
-    simint_osteifunc_array[0][4][4][4][1] = ostei_g_g_g_p;
-    simint_osteifunc_array[0][4][4][4][2] = ostei_g_g_g_d;
-    simint_osteifunc_array[0][4][4][4][3] = ostei_g_g_g_f;
-    simint_osteifunc_array[0][4][4][4][4] = ostei_g_g_g_g;
-    #endif
-
-
-    #ifdef SIMINT_OSTEI_PERMUTATIONS
-    #if SIMINT_OSTEI_MAXAM >= 1
-    simint_osteifunc_array[0][0][0][0][1] = ostei_s_s_s_p;
-    simint_osteifunc_array[0][0][0][1][0] = ostei_s_s_p_s;
-    simint_osteifunc_array[0][0][0][1][1] = ostei_s_s_p_p;
-    simint_osteifunc_array[0][0][1][0][0] = ostei_s_p_s_s;
-    simint_osteifunc_array[0][0][1][0][1] = ostei_s_p_s_p;
-    simint_osteifunc_array[0][0][1][1][0] = ostei_s_p_p_s;
-    simint_osteifunc_array[0][0][1][1][1] = ostei_s_p_p_p;
-    simint_osteifunc_array[0][1][0][0][1] = ostei_p_s_s_p;
-    simint_osteifunc_array[0][1][0][1][1] = ostei_p_s_p_p;
-    simint_osteifunc_array[0][1][1][0][1] = ostei_p_p_s_p;
-    #endif
-
-
-    #if SIMINT_OSTEI_MAXAM >= 2
     simint_osteifunc_array[0][0][0][0][2] = ostei_s_s_s_d;
     simint_osteifunc_array[0][0][0][1][2] = ostei_s_s_p_d;
     simint_osteifunc_array[0][0][0][2][0] = ostei_s_s_d_s;
@@ -261,6 +145,40 @@ void simint_ostei_init(void)
 
 
     #if SIMINT_OSTEI_MAXAM >= 3
+    simint_osteifunc_array[0][2][2][3][0] = ostei_d_d_f_s;
+    simint_osteifunc_array[0][3][0][0][0] = ostei_f_s_s_s;
+    simint_osteifunc_array[0][3][0][1][0] = ostei_f_s_p_s;
+    simint_osteifunc_array[0][3][0][1][1] = ostei_f_s_p_p;
+    simint_osteifunc_array[0][3][0][2][0] = ostei_f_s_d_s;
+    simint_osteifunc_array[0][3][0][2][1] = ostei_f_s_d_p;
+    simint_osteifunc_array[0][3][0][3][0] = ostei_f_s_f_s;
+    simint_osteifunc_array[0][3][1][0][0] = ostei_f_p_s_s;
+    simint_osteifunc_array[0][3][1][1][0] = ostei_f_p_p_s;
+    simint_osteifunc_array[0][3][1][1][1] = ostei_f_p_p_p;
+    simint_osteifunc_array[0][3][1][2][0] = ostei_f_p_d_s;
+    simint_osteifunc_array[0][3][1][2][1] = ostei_f_p_d_p;
+    simint_osteifunc_array[0][3][1][2][2] = ostei_f_p_d_d;
+    simint_osteifunc_array[0][3][1][3][0] = ostei_f_p_f_s;
+    simint_osteifunc_array[0][3][1][3][1] = ostei_f_p_f_p;
+    simint_osteifunc_array[0][3][2][0][0] = ostei_f_d_s_s;
+    simint_osteifunc_array[0][3][2][1][0] = ostei_f_d_p_s;
+    simint_osteifunc_array[0][3][2][1][1] = ostei_f_d_p_p;
+    simint_osteifunc_array[0][3][2][2][0] = ostei_f_d_d_s;
+    simint_osteifunc_array[0][3][2][2][1] = ostei_f_d_d_p;
+    simint_osteifunc_array[0][3][2][2][2] = ostei_f_d_d_d;
+    simint_osteifunc_array[0][3][2][3][0] = ostei_f_d_f_s;
+    simint_osteifunc_array[0][3][2][3][1] = ostei_f_d_f_p;
+    simint_osteifunc_array[0][3][2][3][2] = ostei_f_d_f_d;
+    simint_osteifunc_array[0][3][3][0][0] = ostei_f_f_s_s;
+    simint_osteifunc_array[0][3][3][1][0] = ostei_f_f_p_s;
+    simint_osteifunc_array[0][3][3][1][1] = ostei_f_f_p_p;
+    simint_osteifunc_array[0][3][3][2][0] = ostei_f_f_d_s;
+    simint_osteifunc_array[0][3][3][2][1] = ostei_f_f_d_p;
+    simint_osteifunc_array[0][3][3][2][2] = ostei_f_f_d_d;
+    simint_osteifunc_array[0][3][3][3][0] = ostei_f_f_f_s;
+    simint_osteifunc_array[0][3][3][3][1] = ostei_f_f_f_p;
+    simint_osteifunc_array[0][3][3][3][2] = ostei_f_f_f_d;
+    simint_osteifunc_array[0][3][3][3][3] = ostei_f_f_f_f;
     simint_osteifunc_array[0][0][0][0][3] = ostei_s_s_s_f;
     simint_osteifunc_array[0][0][0][1][3] = ostei_s_s_p_f;
     simint_osteifunc_array[0][0][0][2][3] = ostei_s_s_d_f;
@@ -406,6 +324,71 @@ void simint_ostei_init(void)
 
 
     #if SIMINT_OSTEI_MAXAM >= 4
+    simint_osteifunc_array[0][3][2][4][0] = ostei_f_d_g_s;
+    simint_osteifunc_array[0][3][3][4][0] = ostei_f_f_g_s;
+    simint_osteifunc_array[0][3][3][4][1] = ostei_f_f_g_p;
+    simint_osteifunc_array[0][4][0][0][0] = ostei_g_s_s_s;
+    simint_osteifunc_array[0][4][0][1][0] = ostei_g_s_p_s;
+    simint_osteifunc_array[0][4][0][1][1] = ostei_g_s_p_p;
+    simint_osteifunc_array[0][4][0][2][0] = ostei_g_s_d_s;
+    simint_osteifunc_array[0][4][0][2][1] = ostei_g_s_d_p;
+    simint_osteifunc_array[0][4][0][2][2] = ostei_g_s_d_d;
+    simint_osteifunc_array[0][4][0][3][0] = ostei_g_s_f_s;
+    simint_osteifunc_array[0][4][0][3][1] = ostei_g_s_f_p;
+    simint_osteifunc_array[0][4][0][4][0] = ostei_g_s_g_s;
+    simint_osteifunc_array[0][4][1][0][0] = ostei_g_p_s_s;
+    simint_osteifunc_array[0][4][1][1][0] = ostei_g_p_p_s;
+    simint_osteifunc_array[0][4][1][1][1] = ostei_g_p_p_p;
+    simint_osteifunc_array[0][4][1][2][0] = ostei_g_p_d_s;
+    simint_osteifunc_array[0][4][1][2][1] = ostei_g_p_d_p;
+    simint_osteifunc_array[0][4][1][2][2] = ostei_g_p_d_d;
+    simint_osteifunc_array[0][4][1][3][0] = ostei_g_p_f_s;
+    simint_osteifunc_array[0][4][1][3][1] = ostei_g_p_f_p;
+    simint_osteifunc_array[0][4][1][3][2] = ostei_g_p_f_d;
+    simint_osteifunc_array[0][4][1][4][0] = ostei_g_p_g_s;
+    simint_osteifunc_array[0][4][1][4][1] = ostei_g_p_g_p;
+    simint_osteifunc_array[0][4][2][0][0] = ostei_g_d_s_s;
+    simint_osteifunc_array[0][4][2][1][0] = ostei_g_d_p_s;
+    simint_osteifunc_array[0][4][2][1][1] = ostei_g_d_p_p;
+    simint_osteifunc_array[0][4][2][2][0] = ostei_g_d_d_s;
+    simint_osteifunc_array[0][4][2][2][1] = ostei_g_d_d_p;
+    simint_osteifunc_array[0][4][2][2][2] = ostei_g_d_d_d;
+    simint_osteifunc_array[0][4][2][3][0] = ostei_g_d_f_s;
+    simint_osteifunc_array[0][4][2][3][1] = ostei_g_d_f_p;
+    simint_osteifunc_array[0][4][2][3][2] = ostei_g_d_f_d;
+    simint_osteifunc_array[0][4][2][3][3] = ostei_g_d_f_f;
+    simint_osteifunc_array[0][4][2][4][0] = ostei_g_d_g_s;
+    simint_osteifunc_array[0][4][2][4][1] = ostei_g_d_g_p;
+    simint_osteifunc_array[0][4][2][4][2] = ostei_g_d_g_d;
+    simint_osteifunc_array[0][4][3][0][0] = ostei_g_f_s_s;
+    simint_osteifunc_array[0][4][3][1][0] = ostei_g_f_p_s;
+    simint_osteifunc_array[0][4][3][1][1] = ostei_g_f_p_p;
+    simint_osteifunc_array[0][4][3][2][0] = ostei_g_f_d_s;
+    simint_osteifunc_array[0][4][3][2][1] = ostei_g_f_d_p;
+    simint_osteifunc_array[0][4][3][2][2] = ostei_g_f_d_d;
+    simint_osteifunc_array[0][4][3][3][0] = ostei_g_f_f_s;
+    simint_osteifunc_array[0][4][3][3][1] = ostei_g_f_f_p;
+    simint_osteifunc_array[0][4][3][3][2] = ostei_g_f_f_d;
+    simint_osteifunc_array[0][4][3][3][3] = ostei_g_f_f_f;
+    simint_osteifunc_array[0][4][3][4][0] = ostei_g_f_g_s;
+    simint_osteifunc_array[0][4][3][4][1] = ostei_g_f_g_p;
+    simint_osteifunc_array[0][4][3][4][2] = ostei_g_f_g_d;
+    simint_osteifunc_array[0][4][3][4][3] = ostei_g_f_g_f;
+    simint_osteifunc_array[0][4][4][0][0] = ostei_g_g_s_s;
+    simint_osteifunc_array[0][4][4][1][0] = ostei_g_g_p_s;
+    simint_osteifunc_array[0][4][4][1][1] = ostei_g_g_p_p;
+    simint_osteifunc_array[0][4][4][2][0] = ostei_g_g_d_s;
+    simint_osteifunc_array[0][4][4][2][1] = ostei_g_g_d_p;
+    simint_osteifunc_array[0][4][4][2][2] = ostei_g_g_d_d;
+    simint_osteifunc_array[0][4][4][3][0] = ostei_g_g_f_s;
+    simint_osteifunc_array[0][4][4][3][1] = ostei_g_g_f_p;
+    simint_osteifunc_array[0][4][4][3][2] = ostei_g_g_f_d;
+    simint_osteifunc_array[0][4][4][3][3] = ostei_g_g_f_f;
+    simint_osteifunc_array[0][4][4][4][0] = ostei_g_g_g_s;
+    simint_osteifunc_array[0][4][4][4][1] = ostei_g_g_g_p;
+    simint_osteifunc_array[0][4][4][4][2] = ostei_g_g_g_d;
+    simint_osteifunc_array[0][4][4][4][3] = ostei_g_g_g_f;
+    simint_osteifunc_array[0][4][4][4][4] = ostei_g_g_g_g;
     simint_osteifunc_array[0][0][0][0][4] = ostei_s_s_s_g;
     simint_osteifunc_array[0][0][0][1][4] = ostei_s_s_p_g;
     simint_osteifunc_array[0][0][0][2][4] = ostei_s_s_d_g;
@@ -711,9 +694,6 @@ void simint_ostei_init(void)
     simint_osteifunc_array[0][4][4][2][4] = ostei_g_g_d_g;
     simint_osteifunc_array[0][4][4][3][4] = ostei_g_g_f_g;
     #endif
-
-    #endif
-
 }
 
 
@@ -739,6 +719,16 @@ void simint_ostei_deriv1_init(void)
     simint_osteifunc_array[1][1][1][0][0] = ostei_deriv1_p_p_s_s;
     simint_osteifunc_array[1][1][1][1][0] = ostei_deriv1_p_p_p_s;
     simint_osteifunc_array[1][1][1][1][1] = ostei_deriv1_p_p_p_p;
+    simint_osteifunc_array[1][0][0][0][1] = ostei_deriv1_s_s_s_p;
+    simint_osteifunc_array[1][0][0][1][0] = ostei_deriv1_s_s_p_s;
+    simint_osteifunc_array[1][0][0][1][1] = ostei_deriv1_s_s_p_p;
+    simint_osteifunc_array[1][0][1][0][0] = ostei_deriv1_s_p_s_s;
+    simint_osteifunc_array[1][0][1][0][1] = ostei_deriv1_s_p_s_p;
+    simint_osteifunc_array[1][0][1][1][0] = ostei_deriv1_s_p_p_s;
+    simint_osteifunc_array[1][0][1][1][1] = ostei_deriv1_s_p_p_p;
+    simint_osteifunc_array[1][1][0][0][1] = ostei_deriv1_p_s_s_p;
+    simint_osteifunc_array[1][1][0][1][1] = ostei_deriv1_p_s_p_p;
+    simint_osteifunc_array[1][1][1][0][1] = ostei_deriv1_p_p_s_p;
     #endif
 
 
@@ -758,132 +748,6 @@ void simint_ostei_deriv1_init(void)
     simint_osteifunc_array[1][2][2][2][0] = ostei_deriv1_d_d_d_s;
     simint_osteifunc_array[1][2][2][2][1] = ostei_deriv1_d_d_d_p;
     simint_osteifunc_array[1][2][2][2][2] = ostei_deriv1_d_d_d_d;
-    #endif
-
-
-    #if SIMINT_OSTEI_DERIV1_MAXAM >= 3
-    simint_osteifunc_array[1][2][2][3][0] = ostei_deriv1_d_d_f_s;
-    simint_osteifunc_array[1][3][0][0][0] = ostei_deriv1_f_s_s_s;
-    simint_osteifunc_array[1][3][0][1][0] = ostei_deriv1_f_s_p_s;
-    simint_osteifunc_array[1][3][0][1][1] = ostei_deriv1_f_s_p_p;
-    simint_osteifunc_array[1][3][0][2][0] = ostei_deriv1_f_s_d_s;
-    simint_osteifunc_array[1][3][0][2][1] = ostei_deriv1_f_s_d_p;
-    simint_osteifunc_array[1][3][0][3][0] = ostei_deriv1_f_s_f_s;
-    simint_osteifunc_array[1][3][1][0][0] = ostei_deriv1_f_p_s_s;
-    simint_osteifunc_array[1][3][1][1][0] = ostei_deriv1_f_p_p_s;
-    simint_osteifunc_array[1][3][1][1][1] = ostei_deriv1_f_p_p_p;
-    simint_osteifunc_array[1][3][1][2][0] = ostei_deriv1_f_p_d_s;
-    simint_osteifunc_array[1][3][1][2][1] = ostei_deriv1_f_p_d_p;
-    simint_osteifunc_array[1][3][1][2][2] = ostei_deriv1_f_p_d_d;
-    simint_osteifunc_array[1][3][1][3][0] = ostei_deriv1_f_p_f_s;
-    simint_osteifunc_array[1][3][1][3][1] = ostei_deriv1_f_p_f_p;
-    simint_osteifunc_array[1][3][2][0][0] = ostei_deriv1_f_d_s_s;
-    simint_osteifunc_array[1][3][2][1][0] = ostei_deriv1_f_d_p_s;
-    simint_osteifunc_array[1][3][2][1][1] = ostei_deriv1_f_d_p_p;
-    simint_osteifunc_array[1][3][2][2][0] = ostei_deriv1_f_d_d_s;
-    simint_osteifunc_array[1][3][2][2][1] = ostei_deriv1_f_d_d_p;
-    simint_osteifunc_array[1][3][2][2][2] = ostei_deriv1_f_d_d_d;
-    simint_osteifunc_array[1][3][2][3][0] = ostei_deriv1_f_d_f_s;
-    simint_osteifunc_array[1][3][2][3][1] = ostei_deriv1_f_d_f_p;
-    simint_osteifunc_array[1][3][2][3][2] = ostei_deriv1_f_d_f_d;
-    simint_osteifunc_array[1][3][3][0][0] = ostei_deriv1_f_f_s_s;
-    simint_osteifunc_array[1][3][3][1][0] = ostei_deriv1_f_f_p_s;
-    simint_osteifunc_array[1][3][3][1][1] = ostei_deriv1_f_f_p_p;
-    simint_osteifunc_array[1][3][3][2][0] = ostei_deriv1_f_f_d_s;
-    simint_osteifunc_array[1][3][3][2][1] = ostei_deriv1_f_f_d_p;
-    simint_osteifunc_array[1][3][3][2][2] = ostei_deriv1_f_f_d_d;
-    simint_osteifunc_array[1][3][3][3][0] = ostei_deriv1_f_f_f_s;
-    simint_osteifunc_array[1][3][3][3][1] = ostei_deriv1_f_f_f_p;
-    simint_osteifunc_array[1][3][3][3][2] = ostei_deriv1_f_f_f_d;
-    simint_osteifunc_array[1][3][3][3][3] = ostei_deriv1_f_f_f_f;
-    #endif
-
-
-    #if SIMINT_OSTEI_DERIV1_MAXAM >= 4
-    simint_osteifunc_array[1][3][2][4][0] = ostei_deriv1_f_d_g_s;
-    simint_osteifunc_array[1][3][3][4][0] = ostei_deriv1_f_f_g_s;
-    simint_osteifunc_array[1][3][3][4][1] = ostei_deriv1_f_f_g_p;
-    simint_osteifunc_array[1][4][0][0][0] = ostei_deriv1_g_s_s_s;
-    simint_osteifunc_array[1][4][0][1][0] = ostei_deriv1_g_s_p_s;
-    simint_osteifunc_array[1][4][0][1][1] = ostei_deriv1_g_s_p_p;
-    simint_osteifunc_array[1][4][0][2][0] = ostei_deriv1_g_s_d_s;
-    simint_osteifunc_array[1][4][0][2][1] = ostei_deriv1_g_s_d_p;
-    simint_osteifunc_array[1][4][0][2][2] = ostei_deriv1_g_s_d_d;
-    simint_osteifunc_array[1][4][0][3][0] = ostei_deriv1_g_s_f_s;
-    simint_osteifunc_array[1][4][0][3][1] = ostei_deriv1_g_s_f_p;
-    simint_osteifunc_array[1][4][0][4][0] = ostei_deriv1_g_s_g_s;
-    simint_osteifunc_array[1][4][1][0][0] = ostei_deriv1_g_p_s_s;
-    simint_osteifunc_array[1][4][1][1][0] = ostei_deriv1_g_p_p_s;
-    simint_osteifunc_array[1][4][1][1][1] = ostei_deriv1_g_p_p_p;
-    simint_osteifunc_array[1][4][1][2][0] = ostei_deriv1_g_p_d_s;
-    simint_osteifunc_array[1][4][1][2][1] = ostei_deriv1_g_p_d_p;
-    simint_osteifunc_array[1][4][1][2][2] = ostei_deriv1_g_p_d_d;
-    simint_osteifunc_array[1][4][1][3][0] = ostei_deriv1_g_p_f_s;
-    simint_osteifunc_array[1][4][1][3][1] = ostei_deriv1_g_p_f_p;
-    simint_osteifunc_array[1][4][1][3][2] = ostei_deriv1_g_p_f_d;
-    simint_osteifunc_array[1][4][1][4][0] = ostei_deriv1_g_p_g_s;
-    simint_osteifunc_array[1][4][1][4][1] = ostei_deriv1_g_p_g_p;
-    simint_osteifunc_array[1][4][2][0][0] = ostei_deriv1_g_d_s_s;
-    simint_osteifunc_array[1][4][2][1][0] = ostei_deriv1_g_d_p_s;
-    simint_osteifunc_array[1][4][2][1][1] = ostei_deriv1_g_d_p_p;
-    simint_osteifunc_array[1][4][2][2][0] = ostei_deriv1_g_d_d_s;
-    simint_osteifunc_array[1][4][2][2][1] = ostei_deriv1_g_d_d_p;
-    simint_osteifunc_array[1][4][2][2][2] = ostei_deriv1_g_d_d_d;
-    simint_osteifunc_array[1][4][2][3][0] = ostei_deriv1_g_d_f_s;
-    simint_osteifunc_array[1][4][2][3][1] = ostei_deriv1_g_d_f_p;
-    simint_osteifunc_array[1][4][2][3][2] = ostei_deriv1_g_d_f_d;
-    simint_osteifunc_array[1][4][2][3][3] = ostei_deriv1_g_d_f_f;
-    simint_osteifunc_array[1][4][2][4][0] = ostei_deriv1_g_d_g_s;
-    simint_osteifunc_array[1][4][2][4][1] = ostei_deriv1_g_d_g_p;
-    simint_osteifunc_array[1][4][2][4][2] = ostei_deriv1_g_d_g_d;
-    simint_osteifunc_array[1][4][3][0][0] = ostei_deriv1_g_f_s_s;
-    simint_osteifunc_array[1][4][3][1][0] = ostei_deriv1_g_f_p_s;
-    simint_osteifunc_array[1][4][3][1][1] = ostei_deriv1_g_f_p_p;
-    simint_osteifunc_array[1][4][3][2][0] = ostei_deriv1_g_f_d_s;
-    simint_osteifunc_array[1][4][3][2][1] = ostei_deriv1_g_f_d_p;
-    simint_osteifunc_array[1][4][3][2][2] = ostei_deriv1_g_f_d_d;
-    simint_osteifunc_array[1][4][3][3][0] = ostei_deriv1_g_f_f_s;
-    simint_osteifunc_array[1][4][3][3][1] = ostei_deriv1_g_f_f_p;
-    simint_osteifunc_array[1][4][3][3][2] = ostei_deriv1_g_f_f_d;
-    simint_osteifunc_array[1][4][3][3][3] = ostei_deriv1_g_f_f_f;
-    simint_osteifunc_array[1][4][3][4][0] = ostei_deriv1_g_f_g_s;
-    simint_osteifunc_array[1][4][3][4][1] = ostei_deriv1_g_f_g_p;
-    simint_osteifunc_array[1][4][3][4][2] = ostei_deriv1_g_f_g_d;
-    simint_osteifunc_array[1][4][3][4][3] = ostei_deriv1_g_f_g_f;
-    simint_osteifunc_array[1][4][4][0][0] = ostei_deriv1_g_g_s_s;
-    simint_osteifunc_array[1][4][4][1][0] = ostei_deriv1_g_g_p_s;
-    simint_osteifunc_array[1][4][4][1][1] = ostei_deriv1_g_g_p_p;
-    simint_osteifunc_array[1][4][4][2][0] = ostei_deriv1_g_g_d_s;
-    simint_osteifunc_array[1][4][4][2][1] = ostei_deriv1_g_g_d_p;
-    simint_osteifunc_array[1][4][4][2][2] = ostei_deriv1_g_g_d_d;
-    simint_osteifunc_array[1][4][4][3][0] = ostei_deriv1_g_g_f_s;
-    simint_osteifunc_array[1][4][4][3][1] = ostei_deriv1_g_g_f_p;
-    simint_osteifunc_array[1][4][4][3][2] = ostei_deriv1_g_g_f_d;
-    simint_osteifunc_array[1][4][4][3][3] = ostei_deriv1_g_g_f_f;
-    simint_osteifunc_array[1][4][4][4][0] = ostei_deriv1_g_g_g_s;
-    simint_osteifunc_array[1][4][4][4][1] = ostei_deriv1_g_g_g_p;
-    simint_osteifunc_array[1][4][4][4][2] = ostei_deriv1_g_g_g_d;
-    simint_osteifunc_array[1][4][4][4][3] = ostei_deriv1_g_g_g_f;
-    simint_osteifunc_array[1][4][4][4][4] = ostei_deriv1_g_g_g_g;
-    #endif
-
-
-    #ifdef SIMINT_OSTEI_PERMUTATIONS
-    #if SIMINT_OSTEI_DERIV1_MAXAM >= 1
-    simint_osteifunc_array[1][0][0][0][1] = ostei_deriv1_s_s_s_p;
-    simint_osteifunc_array[1][0][0][1][0] = ostei_deriv1_s_s_p_s;
-    simint_osteifunc_array[1][0][0][1][1] = ostei_deriv1_s_s_p_p;
-    simint_osteifunc_array[1][0][1][0][0] = ostei_deriv1_s_p_s_s;
-    simint_osteifunc_array[1][0][1][0][1] = ostei_deriv1_s_p_s_p;
-    simint_osteifunc_array[1][0][1][1][0] = ostei_deriv1_s_p_p_s;
-    simint_osteifunc_array[1][0][1][1][1] = ostei_deriv1_s_p_p_p;
-    simint_osteifunc_array[1][1][0][0][1] = ostei_deriv1_p_s_s_p;
-    simint_osteifunc_array[1][1][0][1][1] = ostei_deriv1_p_s_p_p;
-    simint_osteifunc_array[1][1][1][0][1] = ostei_deriv1_p_p_s_p;
-    #endif
-
-
-    #if SIMINT_OSTEI_DERIV1_MAXAM >= 2
     simint_osteifunc_array[1][0][0][0][2] = ostei_deriv1_s_s_s_d;
     simint_osteifunc_array[1][0][0][1][2] = ostei_deriv1_s_s_p_d;
     simint_osteifunc_array[1][0][0][2][0] = ostei_deriv1_s_s_d_s;
@@ -938,6 +802,40 @@ void simint_ostei_deriv1_init(void)
 
 
     #if SIMINT_OSTEI_DERIV1_MAXAM >= 3
+    simint_osteifunc_array[1][2][2][3][0] = ostei_deriv1_d_d_f_s;
+    simint_osteifunc_array[1][3][0][0][0] = ostei_deriv1_f_s_s_s;
+    simint_osteifunc_array[1][3][0][1][0] = ostei_deriv1_f_s_p_s;
+    simint_osteifunc_array[1][3][0][1][1] = ostei_deriv1_f_s_p_p;
+    simint_osteifunc_array[1][3][0][2][0] = ostei_deriv1_f_s_d_s;
+    simint_osteifunc_array[1][3][0][2][1] = ostei_deriv1_f_s_d_p;
+    simint_osteifunc_array[1][3][0][3][0] = ostei_deriv1_f_s_f_s;
+    simint_osteifunc_array[1][3][1][0][0] = ostei_deriv1_f_p_s_s;
+    simint_osteifunc_array[1][3][1][1][0] = ostei_deriv1_f_p_p_s;
+    simint_osteifunc_array[1][3][1][1][1] = ostei_deriv1_f_p_p_p;
+    simint_osteifunc_array[1][3][1][2][0] = ostei_deriv1_f_p_d_s;
+    simint_osteifunc_array[1][3][1][2][1] = ostei_deriv1_f_p_d_p;
+    simint_osteifunc_array[1][3][1][2][2] = ostei_deriv1_f_p_d_d;
+    simint_osteifunc_array[1][3][1][3][0] = ostei_deriv1_f_p_f_s;
+    simint_osteifunc_array[1][3][1][3][1] = ostei_deriv1_f_p_f_p;
+    simint_osteifunc_array[1][3][2][0][0] = ostei_deriv1_f_d_s_s;
+    simint_osteifunc_array[1][3][2][1][0] = ostei_deriv1_f_d_p_s;
+    simint_osteifunc_array[1][3][2][1][1] = ostei_deriv1_f_d_p_p;
+    simint_osteifunc_array[1][3][2][2][0] = ostei_deriv1_f_d_d_s;
+    simint_osteifunc_array[1][3][2][2][1] = ostei_deriv1_f_d_d_p;
+    simint_osteifunc_array[1][3][2][2][2] = ostei_deriv1_f_d_d_d;
+    simint_osteifunc_array[1][3][2][3][0] = ostei_deriv1_f_d_f_s;
+    simint_osteifunc_array[1][3][2][3][1] = ostei_deriv1_f_d_f_p;
+    simint_osteifunc_array[1][3][2][3][2] = ostei_deriv1_f_d_f_d;
+    simint_osteifunc_array[1][3][3][0][0] = ostei_deriv1_f_f_s_s;
+    simint_osteifunc_array[1][3][3][1][0] = ostei_deriv1_f_f_p_s;
+    simint_osteifunc_array[1][3][3][1][1] = ostei_deriv1_f_f_p_p;
+    simint_osteifunc_array[1][3][3][2][0] = ostei_deriv1_f_f_d_s;
+    simint_osteifunc_array[1][3][3][2][1] = ostei_deriv1_f_f_d_p;
+    simint_osteifunc_array[1][3][3][2][2] = ostei_deriv1_f_f_d_d;
+    simint_osteifunc_array[1][3][3][3][0] = ostei_deriv1_f_f_f_s;
+    simint_osteifunc_array[1][3][3][3][1] = ostei_deriv1_f_f_f_p;
+    simint_osteifunc_array[1][3][3][3][2] = ostei_deriv1_f_f_f_d;
+    simint_osteifunc_array[1][3][3][3][3] = ostei_deriv1_f_f_f_f;
     simint_osteifunc_array[1][0][0][0][3] = ostei_deriv1_s_s_s_f;
     simint_osteifunc_array[1][0][0][1][3] = ostei_deriv1_s_s_p_f;
     simint_osteifunc_array[1][0][0][2][3] = ostei_deriv1_s_s_d_f;
@@ -1081,8 +979,72 @@ void simint_ostei_deriv1_init(void)
     simint_osteifunc_array[1][3][3][2][3] = ostei_deriv1_f_f_d_f;
     #endif
 
-
     #if SIMINT_OSTEI_DERIV1_MAXAM >= 4
+    simint_osteifunc_array[1][3][2][4][0] = ostei_deriv1_f_d_g_s;
+    simint_osteifunc_array[1][3][3][4][0] = ostei_deriv1_f_f_g_s;
+    simint_osteifunc_array[1][3][3][4][1] = ostei_deriv1_f_f_g_p;
+    simint_osteifunc_array[1][4][0][0][0] = ostei_deriv1_g_s_s_s;
+    simint_osteifunc_array[1][4][0][1][0] = ostei_deriv1_g_s_p_s;
+    simint_osteifunc_array[1][4][0][1][1] = ostei_deriv1_g_s_p_p;
+    simint_osteifunc_array[1][4][0][2][0] = ostei_deriv1_g_s_d_s;
+    simint_osteifunc_array[1][4][0][2][1] = ostei_deriv1_g_s_d_p;
+    simint_osteifunc_array[1][4][0][2][2] = ostei_deriv1_g_s_d_d;
+    simint_osteifunc_array[1][4][0][3][0] = ostei_deriv1_g_s_f_s;
+    simint_osteifunc_array[1][4][0][3][1] = ostei_deriv1_g_s_f_p;
+    simint_osteifunc_array[1][4][0][4][0] = ostei_deriv1_g_s_g_s;
+    simint_osteifunc_array[1][4][1][0][0] = ostei_deriv1_g_p_s_s;
+    simint_osteifunc_array[1][4][1][1][0] = ostei_deriv1_g_p_p_s;
+    simint_osteifunc_array[1][4][1][1][1] = ostei_deriv1_g_p_p_p;
+    simint_osteifunc_array[1][4][1][2][0] = ostei_deriv1_g_p_d_s;
+    simint_osteifunc_array[1][4][1][2][1] = ostei_deriv1_g_p_d_p;
+    simint_osteifunc_array[1][4][1][2][2] = ostei_deriv1_g_p_d_d;
+    simint_osteifunc_array[1][4][1][3][0] = ostei_deriv1_g_p_f_s;
+    simint_osteifunc_array[1][4][1][3][1] = ostei_deriv1_g_p_f_p;
+    simint_osteifunc_array[1][4][1][3][2] = ostei_deriv1_g_p_f_d;
+    simint_osteifunc_array[1][4][1][4][0] = ostei_deriv1_g_p_g_s;
+    simint_osteifunc_array[1][4][1][4][1] = ostei_deriv1_g_p_g_p;
+    simint_osteifunc_array[1][4][2][0][0] = ostei_deriv1_g_d_s_s;
+    simint_osteifunc_array[1][4][2][1][0] = ostei_deriv1_g_d_p_s;
+    simint_osteifunc_array[1][4][2][1][1] = ostei_deriv1_g_d_p_p;
+    simint_osteifunc_array[1][4][2][2][0] = ostei_deriv1_g_d_d_s;
+    simint_osteifunc_array[1][4][2][2][1] = ostei_deriv1_g_d_d_p;
+    simint_osteifunc_array[1][4][2][2][2] = ostei_deriv1_g_d_d_d;
+    simint_osteifunc_array[1][4][2][3][0] = ostei_deriv1_g_d_f_s;
+    simint_osteifunc_array[1][4][2][3][1] = ostei_deriv1_g_d_f_p;
+    simint_osteifunc_array[1][4][2][3][2] = ostei_deriv1_g_d_f_d;
+    simint_osteifunc_array[1][4][2][3][3] = ostei_deriv1_g_d_f_f;
+    simint_osteifunc_array[1][4][2][4][0] = ostei_deriv1_g_d_g_s;
+    simint_osteifunc_array[1][4][2][4][1] = ostei_deriv1_g_d_g_p;
+    simint_osteifunc_array[1][4][2][4][2] = ostei_deriv1_g_d_g_d;
+    simint_osteifunc_array[1][4][3][0][0] = ostei_deriv1_g_f_s_s;
+    simint_osteifunc_array[1][4][3][1][0] = ostei_deriv1_g_f_p_s;
+    simint_osteifunc_array[1][4][3][1][1] = ostei_deriv1_g_f_p_p;
+    simint_osteifunc_array[1][4][3][2][0] = ostei_deriv1_g_f_d_s;
+    simint_osteifunc_array[1][4][3][2][1] = ostei_deriv1_g_f_d_p;
+    simint_osteifunc_array[1][4][3][2][2] = ostei_deriv1_g_f_d_d;
+    simint_osteifunc_array[1][4][3][3][0] = ostei_deriv1_g_f_f_s;
+    simint_osteifunc_array[1][4][3][3][1] = ostei_deriv1_g_f_f_p;
+    simint_osteifunc_array[1][4][3][3][2] = ostei_deriv1_g_f_f_d;
+    simint_osteifunc_array[1][4][3][3][3] = ostei_deriv1_g_f_f_f;
+    simint_osteifunc_array[1][4][3][4][0] = ostei_deriv1_g_f_g_s;
+    simint_osteifunc_array[1][4][3][4][1] = ostei_deriv1_g_f_g_p;
+    simint_osteifunc_array[1][4][3][4][2] = ostei_deriv1_g_f_g_d;
+    simint_osteifunc_array[1][4][3][4][3] = ostei_deriv1_g_f_g_f;
+    simint_osteifunc_array[1][4][4][0][0] = ostei_deriv1_g_g_s_s;
+    simint_osteifunc_array[1][4][4][1][0] = ostei_deriv1_g_g_p_s;
+    simint_osteifunc_array[1][4][4][1][1] = ostei_deriv1_g_g_p_p;
+    simint_osteifunc_array[1][4][4][2][0] = ostei_deriv1_g_g_d_s;
+    simint_osteifunc_array[1][4][4][2][1] = ostei_deriv1_g_g_d_p;
+    simint_osteifunc_array[1][4][4][2][2] = ostei_deriv1_g_g_d_d;
+    simint_osteifunc_array[1][4][4][3][0] = ostei_deriv1_g_g_f_s;
+    simint_osteifunc_array[1][4][4][3][1] = ostei_deriv1_g_g_f_p;
+    simint_osteifunc_array[1][4][4][3][2] = ostei_deriv1_g_g_f_d;
+    simint_osteifunc_array[1][4][4][3][3] = ostei_deriv1_g_g_f_f;
+    simint_osteifunc_array[1][4][4][4][0] = ostei_deriv1_g_g_g_s;
+    simint_osteifunc_array[1][4][4][4][1] = ostei_deriv1_g_g_g_p;
+    simint_osteifunc_array[1][4][4][4][2] = ostei_deriv1_g_g_g_d;
+    simint_osteifunc_array[1][4][4][4][3] = ostei_deriv1_g_g_g_f;
+    simint_osteifunc_array[1][4][4][4][4] = ostei_deriv1_g_g_g_g;
     simint_osteifunc_array[1][0][0][0][4] = ostei_deriv1_s_s_s_g;
     simint_osteifunc_array[1][0][0][1][4] = ostei_deriv1_s_s_p_g;
     simint_osteifunc_array[1][0][0][2][4] = ostei_deriv1_s_s_d_g;
@@ -1388,9 +1350,6 @@ void simint_ostei_deriv1_init(void)
     simint_osteifunc_array[1][4][4][2][4] = ostei_deriv1_g_g_d_g;
     simint_osteifunc_array[1][4][4][3][4] = ostei_deriv1_g_g_f_g;
     #endif
-
-    #endif
-
 }
 
 

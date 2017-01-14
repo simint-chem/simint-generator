@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "generator/Types.hpp"
 #include "generator/Printing.hpp"
 #include "generator/Naming.hpp"
@@ -10,6 +12,20 @@
 /////////////////////////////
 // Basic OSTEI Writer
 /////////////////////////////
+bool OSTEI_Writer::IsSpecialPermutation_(QAM am) const
+{
+    // is this a special permutation? Handle it that way if it is
+    // NOTE: We never switch bra/ket, since that would affect the
+    //       vectorization (since we vectorize on the ket)
+    if( ( am[0] == 0 && am[1] > 0 ) && ( am[2] == 0 || am[3] == 0 ) )
+        return true;
+    if( ( am[2] == 0 && am[3] > 0 ) && ( am[0] == 0 || am[1] == 0 ) )
+        return true;
+
+    return false;
+}
+
+
 void OSTEI_Writer::DeclareContwork(void) const
 {
     if(info_.ContMemoryReq() == 0)
@@ -30,26 +46,6 @@ void OSTEI_Writer::DeclareContwork(void) const
     os_ << "\n";
 }
 
-
-void OSTEI_Writer::ZeroContwork(void) const
-{
-    size_t contmem = info_.ContMemoryReq();
-    if(contmem > 0)
-        os_ << indent3 << "memset(contwork, 0, SIMINT_NSHELL_SIMD * " << contmem << ");\n";
-    
-}
-
-
-void OSTEI_Writer::FreeContwork(void) const
-{
-    size_t contmem = info_.ContMemoryReq();
-
-    if(contmem > 0 && info_.UseHeap())
-    {
-        os_ << indent1 << "// Free contracted workspace\n";
-        os_ << indent1 << "SIMINT_FREE(contwork);\n\n";
-    }       
-}
 
 void OSTEI_Writer::WriteShellOffsets(void) const
 {
@@ -170,75 +166,134 @@ std::string OSTEI_Writer::FunctionPrototype_(QAM am) const
     ss << indent << "struct simint_multi_shellpair const Q,\n";
     ss << indent << "double screen_tol,\n";
     ss << indent << "double * const restrict contwork,\n";
-    ss << indent << "double * const restrict " << ArrVarName(am) << ")\n";
+    ss << indent << "double * const restrict " << ArrVarName(am) << ")";
     return ss.str();
 }
 
-
-
-void OSTEI_Writer::WriteFile_SpecialPermute_(void) const
+void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
 {
-    QAM am = info_.FinalAM();
-    QAM tocall = am;
+    QAM permuted = am;
+    if(swap12)
+        std::swap(permuted[0], permuted[1]);
+    if(swap34)
+        std::swap(permuted[2], permuted[3]);
 
-    bool swap_ab = false;
-    bool swap_cd = false;
+    // is this permutation unique?
+    if(swap34 && !swap12 && permuted[2] == permuted[3])
+        return;
+    if(swap12 && !swap34 && permuted[0] == permuted[1])
+        return;
+    if(swap12 && swap34 && (permuted[0] == permuted[1] || permuted[2] == permuted[3]))
+        return;
 
-    // TODO - more thoroughly check?
-    if(am[0] == 0)
-    {
-        swap_ab = true;
-        std::swap(tocall[0], tocall[1]);
-    }
-    if(am[2] == 0)
-    {
-        swap_cd = true;
-        std::swap(tocall[2], tocall[3]);
-    }
-
-     
-    // start output to the file
-    // we only need this one include
-    os_ << "#include \"simint/ostei/gen/ostei_generated.h\"\n";
-    os_ << "\n\n\n";
-
-    os_ << FunctionPrototype_(am);
+    // output of the function starts here
+    os_ << FunctionPrototype_(permuted) << "\n";
     os_ << "{\n";
-    os_ << indent1 << "// Can be accomplished by swapping some variables\n";
-    os_ << indent1 << "// and calling another function\n";
-    os_ << "\n";
 
     const char * P_var = "P";
     const char * Q_var = "Q";
 
-    if(swap_ab)
+    if(swap12)
     {
+        P_var = "P_tmp";
+        os_ << indent1 << "double P_AB[3*P.nshell12];\n";
     	os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
         os_ << indent1 << "P_tmp.PA_x = P.PB_x;  P_tmp.PA_y = P.PB_y;  P_tmp.PA_z = P.PB_z;\n";
         os_ << indent1 << "P_tmp.PB_x = P.PA_x;  P_tmp.PB_y = P.PA_y;  P_tmp.PB_z = P.PA_z;\n";
-        P_var = "P_tmp";
+        os_ << indent1 << "P_tmp.AB_x = P_AB;\n";
+        os_ << indent1 << "P_tmp.AB_y = P_AB + P.nshell12;\n";
+        os_ << indent1 << "P_tmp.AB_z = P_AB + 2*P.nshell12;\n";
+        os_ << "\n";
+        os_ << indent1 << "for(int i = 0; i < P.nshell12; i++)\n";
+        os_ << indent1 << "{\n";
+        os_ << indent2 << "P_tmp.AB_x[i] = -P.AB_x[i];\n";
+        os_ << indent2 << "P_tmp.AB_y[i] = -P.AB_y[i];\n";
+        os_ << indent2 << "P_tmp.AB_z[i] = -P.AB_z[i];\n";
+        os_ << indent1 << "}\n\n";
     }
 
-    if(swap_cd)
+    if(swap34)
     {
+	    Q_var = "Q_tmp";
+        os_ << indent1 << "double Q_AB[3*Q.nshell12];\n";
     	os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
 		os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
         os_ << indent1 << "Q_tmp.PB_x = Q.PA_x;  Q_tmp.PB_y = Q.PA_y;  Q_tmp.PB_z = Q.PA_z;\n";
-	    Q_var = "Q_tmp";
+        os_ << indent1 << "Q_tmp.AB_x = Q_AB;\n";
+        os_ << indent1 << "Q_tmp.AB_y = Q_AB + Q.nshell12;\n";
+        os_ << indent1 << "Q_tmp.AB_z = Q_AB + 2*Q.nshell12;\n";
+        os_ << "\n";
+        os_ << indent1 << "for(int i = 0; i < Q.nshell12; i++)\n";
+        os_ << indent1 << "{\n";
+        os_ << indent2 << "Q_tmp.AB_x[i] = -Q.AB_x[i];\n";
+        os_ << indent2 << "Q_tmp.AB_y[i] = -Q.AB_y[i];\n";
+        os_ << indent2 << "Q_tmp.AB_z[i] = -Q.AB_z[i];\n";
+        os_ << indent1 << "}\n\n";
     }
 
-
-    std::string ftocall = FunctionName_(tocall); 
-    os_ << indent1 << "return " << ftocall
+    std::string fname = FunctionName_(am); 
+    os_ << indent1 << "int ret = " << fname
         << "(" << P_var << ", " << Q_var << ", screen_tol, "
-        << "contwork, " << ArrVarName(am) << ");\n"; 
+        << "contwork, " << ArrVarName(permuted) << ");\n"; 
 
+
+    if(!IsSpecialPermutation_(permuted))
+    {
+        size_t ncart_abcd = NCART(am);
+        //size_t ncart_a  = NCART(am[0]);
+        size_t ncart_b  = NCART(am[1]);
+        size_t ncart_c  = NCART(am[2]);
+        size_t ncart_d  = NCART(am[3]);
+        size_t ncart_a2 = NCART(permuted[0]);
+        size_t ncart_b2 = NCART(permuted[1]);
+        size_t ncart_c2 = NCART(permuted[2]);
+        size_t ncart_d2 = NCART(permuted[3]);
+
+        size_t ncart_bcd = ncart_b * ncart_c * ncart_d;
+        size_t ncart_cd = ncart_c * ncart_d; 
+
+        char va = 'a';
+        char vb = 'b';
+        char vc = 'c';
+        char vd = 'd';
+
+        if(swap12)
+            std::swap(va, vb);
+        if(swap34)
+            std::swap(vc, vd);
+
+        std::string idx = StringBuilder("q*", ncart_abcd,
+                                        "+", va, "*", ncart_bcd,
+                                        "+", vb, "*", ncart_cd,
+                                        "+", vc, "*", ncart_d, "+", vd);
+
+        os_ << indent1 << "double buffer[" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n"; 
+
+
+        os_ << indent1 << "for(int q = 0; q < ret; q++)\n";
+        os_ << indent1 << "{\n";
+        os_ << indent2 << "int idx = 0;\n";
+        os_ << indent2 << "for(int a = 0; a < " << ncart_a2 << "; ++a)\n";
+        os_ << indent2 << "for(int b = 0; b < " << ncart_b2 << "; ++b)\n";
+        os_ << indent2 << "for(int c = 0; c < " << ncart_c2 << "; ++c)\n";
+        os_ << indent2 << "for(int d = 0; d < " << ncart_d2 << "; ++d)\n";
+        os_ << indent3 << "buffer[idx++] = " << ArrVarName(permuted) << "[" << idx << "];\n";
+        os_ << "\n";
+        os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd
+                       << ", buffer, " << ncart_abcd << "*sizeof(double));\n";
+        os_ << indent1 << "}\n";
+    }
+
+    os_ << "\n";
+    os_ << indent1 << "return ret;\n";
     os_ << "}\n";
     os_ << "\n";
 
+    osh_ << FunctionPrototype_(permuted) << ";\n\n";
 }
 
-void OSTEI_Writer::WriteFile_Full_(void) const
+
+void OSTEI_Writer::Write_Full_(void) const
 {
     const QAM am = info_.FinalAM();
     const int ncart = NCART(am);
@@ -304,7 +359,7 @@ void OSTEI_Writer::WriteFile_Full_(void) const
     //////////////////////////////
     // Function name & signature
     //////////////////////////////
-    os_ << FunctionPrototype_(am);
+    os_ << FunctionPrototype_(am) << "\n";
     os_ << "{\n";
     os_ << "\n";
 
@@ -391,7 +446,10 @@ void OSTEI_Writer::WriteFile_Full_(void) const
 
     if(hashrr)
     {
-        ZeroContwork();
+        size_t contmem = info_.ContMemoryReq();
+        if(contmem > 0)
+            os_ << indent3 << "memset(contwork, 0, SIMINT_NSHELL_SIMD * " << contmem << ");\n";
+
         os_ << indent3 << "abcd = 0;\n";
         os_ << "\n";
     }
@@ -611,13 +669,22 @@ void OSTEI_Writer::WriteFile_Full_(void) const
 }
 
 
-void OSTEI_Writer::WriteFile_SinglePermutation_(void) const
+void OSTEI_Writer::Write_Permutations_(void) const
 {
-}
+    ///////////////////////////////////////////////////////////
+    // Note that we never permute bra, ket. That would
+    // affect vectorization since we only vectorize on the ket
+    ///////////////////////////////////////////////////////////
+    QAM am = info_.FinalAM();
 
+    // permute 1,2
+    Write_Permute_(am, true, false);
 
-void OSTEI_Writer::WriteFile_Permutations_(void) const
-{
+    // permute 3,4
+    Write_Permute_(am, false, true);
+
+    // permute 1,2 and 3,4
+    Write_Permute_(am, true, true);
 }
 
 
@@ -626,20 +693,14 @@ void OSTEI_Writer::WriteFile(void) const
     const QAM am = info_.FinalAM();
 
     // is this a special permutation? Handle it if so.
-    if( ( ( am[0] == 0 && am[1] > 0 ) && ( am[2] == 0 || am[3] == 0 ) ) ||
-        ( ( am[2] == 0 && am[3] > 0 ) && ( am[0] == 0 || am[1] == 0 ) ) )
-    {
-        WriteFile_SpecialPermute_();
-    }
-    else
-        WriteFile_Full_();
+    Write_Full_();
 
     // Add to the header
     osh_ << FunctionPrototype_(am) << ";\n\n";
 
-//    // Write out the code for permuting final integrals, if necessary
-//    if(info_.FinalPermute())
-//        WriteFile_Permutations_();
+    // Write out the code for permuting final integrals, if necessary
+    if(info_.FinalPermute())
+        Write_Permutations_();
 }
 
 

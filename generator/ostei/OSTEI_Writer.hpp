@@ -53,8 +53,6 @@ public:
 
 private:
     void DeclareContwork(void) const;
-    void ZeroContwork(void) const;
-    void FreeContwork(void) const;
     void WriteShellOffsets(void) const;
     void WriteShellOffsets_Scalar(void) const;
     void WriteAccumulation(void) const;
@@ -62,11 +60,10 @@ private:
     std::string FunctionName_(QAM am) const;
     std::string FunctionPrototype_(QAM am) const;
 
-    void WriteFile_Full_(void) const;
-    void WriteFile_SpecialPermute_(void) const;
-
-    void WriteFile_Permutations_(void) const;
-    void WriteFile_SinglePermutation_(void) const;
+    bool IsSpecialPermutation_(QAM am) const;
+    void Write_Full_(void) const;
+    void Write_Permutations_(void) const;
+    void Write_Permute_(QAM am, bool swap12, bool swap34) const;
 };
 
 
