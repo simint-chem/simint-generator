@@ -363,6 +363,11 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << "{\n";
     os_ << "\n";
 
+    if(info_.Vectorized())
+    {
+        os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(contwork);\n";
+        os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
+    }
 
     ///////////////////////////////////
     // NOW IN THE ACTUAL OSTEI FUNCTION

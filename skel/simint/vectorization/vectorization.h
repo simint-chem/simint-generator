@@ -23,9 +23,17 @@
 #define SIMINT_SIMD_ALIGN SIMINT_SIMD_ALIGN_DBL
 
 
-#define ASSUME_ALIGN_DBL(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_DBL)
-#define ASSUME_ALIGN_INT(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_INT)
-#define ASSUME __assume
+#if defined SIMINT_GCC || defined SIMINT_CLANG
+    #define SIMINT_ASSUME_ALIGN_DBL(x)
+    #define SIMINT_ASSUME_ALIGN_INT(x)
+#elif defined SIMINT_INTEL
+    #define SIMINT_ASSUME_ALIGN_DBL(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_DBL)
+    #define SIMINT_ASSUME_ALIGN_INT(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_INT)
+#else
+    #define SIMINT_ASSUME_ALIGN_DBL(x)
+    #define SIMINT_ASSUME_ALIGN_INT(x)
+#endif
+
 
 
 // Aligned memory allocation

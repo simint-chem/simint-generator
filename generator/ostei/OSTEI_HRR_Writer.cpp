@@ -38,6 +38,9 @@ ConstantMap OSTEI_HRR_Writer::GetConstants(void) const
 void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                                       const std::string & ncart_ket, const std::string & ketstr) const
 {
+    //if(info_.Vectorized())
+    //    os << indent4 << "#pragma omp simd simdlen(SIMINT_SIMD_LEN)\n";
+
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
     os << indent4 << "{\n";
 
@@ -69,29 +72,32 @@ void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepLis
 void OSTEI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                                       const std::string & ncart_bra, const std::string & brastr) const
 {
-        os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
-        os << indent4 << "{\n"; 
-        for(const auto & it : steps)
-        {
-            //os << std::string(20, ' ') << "// " << it << "\n";
+    //if(info_.Vectorized())
+    //    os << indent4 << "#pragma omp simd simdlen(SIMINT_SIMD_LEN)\n";
 
-            const char * sign = " + ";
-            if(it.type == RRStepType::K) // Moving from L->K
-                sign = " - ";
+    os << indent4 << "for(ibra = 0; ibra < " << ncart_bra << "; ++ibra)\n"; 
+    os << indent4 << "{\n"; 
+    for(const auto & it : steps)
+    {
+        //os << std::string(20, ' ') << "// " << it << "\n";
 
-            os << std::string(20, ' ');
+        const char * sign = " + ";
+        if(it.type == RRStepType::K) // Moving from L->K
+            sign = " - ";
+
+        os << std::string(20, ' ');
     
-            os << HRRKetStepVar_(it.target, brastr);
+        os << HRRKetStepVar_(it.target, brastr);
 
-            os << " = ";
-            os << HRRKetStepVar_(it.src[0], brastr);
-            os << sign << "( hCD[" << static_cast<int>(it.xyz) << "] * ";
-            os << HRRKetStepVar_(it.src[1], brastr);
-            os << " );";
-            os << "\n\n";
-        }
+        os << " = ";
+        os << HRRKetStepVar_(it.src[0], brastr);
+        os << sign << "( hCD[" << static_cast<int>(it.xyz) << "] * ";
+        os << HRRKetStepVar_(it.src[1], brastr);
+        os << " );";
+        os << "\n\n";
+    }
 
-        os << indent4 << "}\n"; 
+    os << indent4 << "}\n"; 
 }
 
 
