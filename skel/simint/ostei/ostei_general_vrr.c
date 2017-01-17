@@ -35,14 +35,17 @@ void ostei_general_vrr1(int i, int num_n,
             const int idx1 = n*(ncart1) + ri->idx[dir][0];
             const int idx2 = idx1 + ncart1;
 
-            output[outidx] = PA[dir]*theta1[idx1] + aop_PQ[dir]*theta1[idx2];
+            output[outidx] = SIMINT_FMADD(PA[dir], theta1[idx1], SIMINT_MUL(aop_PQ[dir], theta1[idx2]));
 
             if(ri->ijk[dir] > 1)
             {
                 const int idx3 = n*(ncart2) + ri->idx[dir][1];
                 const int idx4 = (n+1)*(ncart2) + ri->idx[dir][1];
                 const SIMINT_DBLTYPE i1 = SIMINT_DBLSET1(ri->ijk[dir]-1);
-                output[outidx] += one_over_2p * i1 * (theta2[idx3] + a_over_p * theta2[idx4]);
+
+                const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_p, theta2[idx4], theta2[idx3]);
+                const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(i1, one_over_2p);
+                output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
             }
         }
         curidx++;
@@ -122,7 +125,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 
                         const int idx2 = idx1 + ncart1;
 
-                        output[outidx] = PA[dir]*theta1[idx1] + aop_PQ[dir]*theta1[idx2];
+                        output[outidx] = SIMINT_FMADD(PA[dir], theta1[idx1], SIMINT_MUL(aop_PQ[dir], theta1[idx2]));
 
                         if(ri->ijk[dir] > 1)
                         {
@@ -136,7 +139,9 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                             const int idx4 = idx3 + ncart2;
 
                             const SIMINT_DBLTYPE ival = SIMINT_DBLSET1(ri->ijk[dir]-1);
-                            output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_p, theta2[idx4], theta2[idx3]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(ival, one_over_2p);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rj->ijk[dir])
@@ -151,7 +156,9 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                             const int idx6 = idx5 + ncart3;
 
                             const SIMINT_DBLTYPE jval = SIMINT_DBLSET1(rj->ijk[dir]);
-                            output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_p, theta3[idx6], theta3[idx5]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(jval, one_over_2p);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rk->ijk[dir])
@@ -164,7 +171,8 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_l;
 
                             const SIMINT_DBLTYPE kval = SIMINT_DBLSET1(rk->ijk[dir]);
-                            output[outidx] += one_over_2pq * kval * theta4[idx7];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, kval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta4[idx7], output[outidx]);
                         }
 
                         if(rl->ijk[dir])
@@ -177,7 +185,8 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
                                              idx_l_1;
 
                             const SIMINT_DBLTYPE lval = SIMINT_DBLSET1(rl->ijk[dir]);
-                            output[outidx] += one_over_2pq * lval * theta5[idx8];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, lval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta5[idx8], output[outidx]);
                         }
                     }
 
@@ -260,7 +269,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 
                         const int idx2 = idx1 + ncart1;
 
-                        output[outidx] = PB[dir]*theta1[idx1] + aop_PQ[dir]*theta1[idx2];
+                        output[outidx] = SIMINT_FMADD(PB[dir], theta1[idx1], SIMINT_MUL(aop_PQ[dir], theta1[idx2]));
 
                         if(ri->ijk[dir])
                         {
@@ -274,7 +283,9 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                             const int idx4 = idx3 + ncart2;
 
                             const SIMINT_DBLTYPE ival = SIMINT_DBLSET1(ri->ijk[dir]);
-                            output[outidx] += one_over_2p * ival * (theta2[idx3] + a_over_p * theta2[idx4]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_p, theta2[idx4], theta2[idx3]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(ival, one_over_2p);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rj->ijk[dir] > 1)
@@ -289,7 +300,9 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                             const int idx6 = idx5 + ncart3;
 
                             const SIMINT_DBLTYPE jval = SIMINT_DBLSET1(rj->ijk[dir]-1);
-                            output[outidx] += one_over_2p * jval * (theta3[idx5] + a_over_p * theta3[idx6]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_p, theta3[idx6], theta3[idx5]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(jval, one_over_2p);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rk->ijk[dir])
@@ -302,7 +315,8 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_l;
 
                             const SIMINT_DBLTYPE kval = SIMINT_DBLSET1(rk->ijk[dir]);
-                            output[outidx] += one_over_2pq * kval * theta4[idx7];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, kval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta4[idx7], output[outidx]);
                         }
 
                         if(rl->ijk[dir])
@@ -315,7 +329,8 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
                                              idx_l_1;
 
                             const SIMINT_DBLTYPE lval = SIMINT_DBLSET1(rl->ijk[dir]);
-                            output[outidx] += one_over_2pq * lval * theta5[idx8];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, lval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta5[idx8], output[outidx]);
                         }
                     }
 
@@ -398,7 +413,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
 
                         const int idx2 = idx1 + ncart1;
 
-                        output[outidx] = QC[dir]*theta1[idx1] + aoq_PQ[dir]*theta1[idx2];
+                        output[outidx] = SIMINT_FMADD(QC[dir], theta1[idx1], SIMINT_MUL(aoq_PQ[dir], theta1[idx2]));
 
                         if(rk->ijk[dir] > 1)
                         {
@@ -412,7 +427,9 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                             const int idx4 = idx3 + ncart2;
 
                             const SIMINT_DBLTYPE kval = SIMINT_DBLSET1(rk->ijk[dir]-1);
-                            output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_q, theta2[idx4], theta2[idx3]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(one_over_2q, kval);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rl->ijk[dir])
@@ -427,7 +444,9 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                             const int idx6 = idx5 + ncart3;
 
                             const SIMINT_DBLTYPE lval = SIMINT_DBLSET1(rl->ijk[dir]);
-                            output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_q, theta3[idx6], theta3[idx5]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(one_over_2q, lval);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(ri->ijk[dir])
@@ -440,7 +459,8 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_l;
 
                             const SIMINT_DBLTYPE ival = SIMINT_DBLSET1(ri->ijk[dir]);
-                            output[outidx] += one_over_2pq * ival * theta4[idx7];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, ival);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta4[idx7], output[outidx]);
                         }
 
                         if(rj->ijk[dir])
@@ -453,7 +473,8 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
                                              idx_l;
 
                             const SIMINT_DBLTYPE jval = SIMINT_DBLSET1(rj->ijk[dir]);
-                            output[outidx] += one_over_2pq * jval * theta5[idx8];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, jval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta5[idx8], output[outidx]);
                         }
                     }
 
@@ -535,7 +556,7 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
 
                         const int idx2 = idx1 + ncart1;
 
-                        output[outidx] = QD[dir]*theta1[idx1] + aoq_PQ[dir]*theta1[idx2];
+                        output[outidx] = SIMINT_FMADD(QD[dir], theta1[idx1], SIMINT_MUL(aoq_PQ[dir], theta1[idx2]));
 
                         if(rk->ijk[dir])
                         {
@@ -549,7 +570,9 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                             const int idx4 = idx3 + ncart2;
 
                             const SIMINT_DBLTYPE kval = SIMINT_DBLSET1(rk->ijk[dir]);
-                            output[outidx] += one_over_2q * kval * (theta2[idx3] + a_over_q * theta2[idx4]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_q, theta2[idx4], theta2[idx3]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(one_over_2q, kval);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(rl->ijk[dir] > 1)
@@ -564,7 +587,9 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                             const int idx6 = idx5 + ncart3;
 
                             const SIMINT_DBLTYPE lval = SIMINT_DBLSET1(rl->ijk[dir]-1);
-                            output[outidx] += one_over_2q * lval * (theta3[idx5] + a_over_q * theta3[idx6]);
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_FMADD(a_over_q, theta3[idx6], theta3[idx5]);
+                            const SIMINT_DBLTYPE tmp2 = SIMINT_MUL(one_over_2q, lval);
+                            output[outidx] = SIMINT_FMADD(tmp1, tmp2, output[outidx]);
                         }
 
                         if(ri->ijk[dir])
@@ -577,7 +602,8 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_l_1;
 
                             const SIMINT_DBLTYPE ival = SIMINT_DBLSET1(ri->ijk[dir]);
-                            output[outidx] += one_over_2pq * ival * theta4[idx7];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, ival);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta4[idx7], output[outidx]);
                         }
 
                         if(rj->ijk[dir])
@@ -590,7 +616,8 @@ void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
                                              idx_l_1;
 
                             const SIMINT_DBLTYPE jval = SIMINT_DBLSET1(rj->ijk[dir]);
-                            output[outidx] += one_over_2pq * jval * theta5[idx8];
+                            const SIMINT_DBLTYPE tmp1 = SIMINT_MUL(one_over_2pq, jval);
+                            output[outidx] = SIMINT_FMADD(tmp1, theta5[idx8], output[outidx]);
                         }
                     }
 
