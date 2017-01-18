@@ -582,7 +582,7 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
   hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(maxam))
-  hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
+  hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(0))
   hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(-1))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
   hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
