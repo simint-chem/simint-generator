@@ -1,3 +1,17 @@
+v0.5
+Released 2017-01-19
+---------------------
+* Interface changes:
+  * simint_compute_eri_sharedwork has been changed to
+    simint_compute_eri and the old simint_compute_eri has
+    been removed.
+
+* Separate microarchitecture packages reduced to one
+* Compiler fixes for GCC and Intel
+* Experimental support for Intel KNL
+* Better handling of permutational symmetry for higher AM
+
+
 v0.4
 Released 2016-11-08
 ---------------------

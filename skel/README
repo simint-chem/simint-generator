@@ -26,34 +26,7 @@ Compiler:
   GCC v4.9 or above
 
 CMake 3.0.2 or above
-Intel CPU
-
-
-
----------------------------
-Selecting the right library
----------------------------
-
-There are currently four versions. Make sure you select
-the correct one for you CPU
-
-1.) simint-avxfma
-    Intel CPUs with AVX and FMA support
-      * Haswell
-
-2.) simint-avx
-    Intel CPUs with AVX support
-      * Sandy Bridge (not tested)
-      * Ivy Bridge
-      * Haswell
-
-3.) simint-sse
-    Intel CPUs with SSSE3 support
-      * Basically any CPU make in the last 10 years
-
-4.) simint-scalar
-    Should work with basically any CPU, but isn't vectorized...
-
+Intel CPU (may work on others, but not tested)
 
 
 ---------------------------
@@ -66,16 +39,40 @@ Generally, from within the extracted directory:
     mkdir build; cd build
     CC=icc CXX=icpc cmake (...other options...)  ../
 
-Other options (besides CMake standard options):
+Most importantly, you need to select which feature set to compile with.
+This is done with the SIMINT_VECTOR variable
+
+    -DSIMINT_VECTOR=scalar
+         ONLY FOR USE WITH simint-scalar (and only useful for benchmarks)
+
+    -DSIMINT_VECTOR=sse
+         Intel CPUs with SSSE3 support
+           * Basically any CPU make in the last 10 years
+
+    -DSIMINT_VECTOR=avx
+         Intel CPUs with AVX support
+           * Sandy Bridge (not tested)
+           * Ivy Bridge
+           * Haswell (if you want)
+
+    -DSIMINT_VECTOR=avxfma
+         Intel CPUs with AVX and FMA support
+           * Haswell
+
+    -DSIMINT_VECTOR=micavx512
+         Intel KNL (experimental)
+
+Other options: 
 
     -DSIMINT_BUILD_SHARED:Bool=True
-        Build shared library, rather than a static library (default is static library)
+         Build shared library, rather than a static library (default is static library)
 
 
-    -DSIMINT_TESTS_CXX_FLAGS="flag1;flag2"
     -DSIMINT_C_FLAGS="flag1;flag2"
+    -DSIMINT_TESTS_CXX_FLAGS="flag1;flag2"
 
-        Additional flags to pass to Simint, separated by semicolon. For example,
+         Additional flags to pass to Simint and the testing features, respectively.
+         The flags are separated by semicolon. For example,
             -DSIMINT_C_FLAGS="-no-vec;-no-simd"           disable compiler-generated vectorization
             -DSIMINT_TESTS_CXX_FLAGS="-no-vec;-no-simd"   disable compiler-generated vectorization
    
