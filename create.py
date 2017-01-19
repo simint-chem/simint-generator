@@ -41,11 +41,9 @@ topdir = os.path.dirname(thisfile)
 amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", type=int, required=True, help="Maximum AM")
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
-
-parser.add_argument("-p", required=False, action='store_true', help="Permute the final am (rather than generate full code for permuted angular momentum quartets)")
-
+parser.add_argument("-l", type=int, required=True, help="Maximum AM")
+parser.add_argument("-p", type=int, required=True, help="Start permuting the slow way when AM of a center reaches this value")
 parser.add_argument("-ve", required=False, type=int, default=0, help="External VRR for this L value and above")
 parser.add_argument("-vg", required=False, type=int, default=0, help="General VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
@@ -145,8 +143,9 @@ for i in range(1, maxam+1):
 
     if ij >= args.he and ij < args.hg:
       valid.add((i,j));
-      if not args.p:
-          valid.add((j, i))
+
+      #if i < args.p and j < args.p:
+      valid.add((j, i))
 
 for i in range(maxam+1, 2*maxam):
   for j in range(1, 2*maxam-i+1):
@@ -154,8 +153,9 @@ for i in range(maxam+1, 2*maxam):
 
     if ij >= args.he and ij < args.hg:
       valid.add((i,j));
-      if not args.p:
-        valid.add((j, i))
+
+      #if i < args.p and j < args.p:
+      valid.add((j, i))
 
 
 
@@ -254,7 +254,7 @@ for i in range(0, maxam*2+1):
     if ij >= args.ve and ij < args.vg:
       valid.add((i, 0, j, 0))
 
-      if not args.p:
+      if i < (2*args.p+1) and j < (2*args.p+1):
         valid.add((0, i, 0, j))
         valid.add((i, 0, 0, j))
         valid.add((0, i, j, 0))
@@ -350,7 +350,7 @@ for i in range(0, maxam + 1):
     for k in range(0, maxam + 1):
       for l in range(0, maxam + 1):
         q = (i,j,k,l)
-        if not args.p or UniqueQuartet(q):
+        if UniqueQuartet(q) or max(q) < args.p:
           valid.add(q)
         else:
           invalid.add(q)
@@ -414,7 +414,7 @@ for q in valid:
     if args.S:
         cmdline.append("-S")
 
-    if args.p:
+    if max(q) >= args.p:
         cmdline.append("-p")
 
     print()
@@ -471,7 +471,7 @@ for i in range(0, maxam + 1):
         q = (i,j,k,l)
         if max(q) > maxder1:
           continue
-        if not args.p or UniqueQuartet(q):
+        if UniqueQuartet(q) or max(q) < args.p:
           valid.add(q)
         else:
           invalid.add(q)
@@ -533,7 +533,7 @@ for q in valid:
     if args.S:
         cmdline.append("-S")
 
-    if args.p:
+    if max(q) >= args.p:
         cmdline.append("-p")
 
     print()

@@ -324,8 +324,7 @@ void OSTEI_Writer::Write_Full_(void) const
                         "<math.h>",
                         "\"simint/ostei/gen/ostei_generated.h\"",
                         "\"simint/vectorization/vectorization.h\"",
-                        "\"simint/boys/boys.h\"",
-                        "\"simint/ostei/ostei_contract.h\""};
+                        "\"simint/boys/boys.h\""};
 
     // Constants
     ConstantMap cm;
@@ -511,13 +510,8 @@ void OSTEI_Writer::Write_Full_(void) const
         os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
         os_ << indent5 << "if(check_screen)\n";
         os_ << indent5 << "{\n";
-        os_ << indent6 << "const SIMINT_DBLTYPE screen_max = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));\n";
-        os_ << indent6 << "SIMINT_UNIONTYPE screen_max_v = { screen_max };\n";
-        os_ << indent6 << "not_screened = 0;\n";
-        os_ << indent6 << "for(n = 0; n < SIMINT_SIMD_LEN; n++)\n";
-        os_ << indent7 << "not_screened = ( screen_max_v.d[n] >= screen_tol ? 1 : not_screened );\n";
-
-        os_ << indent6 << "if(not_screened == 0)\n";
+        os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
+        os_ << indent6 << "if(vmax > screen_tol)\n";
         os_ << indent6 << "{\n";
         for(const auto it : info_.GetContQ())
             os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
@@ -619,7 +613,7 @@ void OSTEI_Writer::Write_Full_(void) const
         os_ << indent5 << "SIMINT_UNIONTYPE Q_prefac_u = { SIMINT_DBLLOAD(Q.prefac, j) };\n";
         os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
         os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
-        os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = SIMINT_UNIONMEMBER(Q_prefac_u);\n";
+        os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = Q_prefac_u.v;\n";
     }
     else
         os_ << indent5 << "const double Q_prefac = Q.prefac[j];\n";

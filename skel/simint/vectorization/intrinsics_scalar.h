@@ -1,12 +1,15 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined SIMINT_SCALAR
 
     #define SIMINT_SIMD_LEN 1
 
     #define SIMINT_DBLTYPE         double
     //#define SIMINT_UNIONTYPE       double
-    //#define SIMINT_UNIONMEMBER(a)  (a)
     #define SIMINT_DBLLOAD(p,i)    ((p)[(i)])
     #define SIMINT_DBLSET1(a)      ((a)) 
     #define SIMINT_NEG(a)          (-(a))
@@ -19,5 +22,22 @@
     #define SIMINT_FMSUB(a,b,c)    SIMINT_SUB(SIMINT_MUL((a),(b)),(c))
     #define SIMINT_EXP(a)          exp((a))
 
-#endif
 
+    ////////////////////////////////////////
+    // Special functions
+    ////////////////////////////////////////
+
+    static inline
+    void contract(int ncart,
+                  double const * restrict PRIM_INT,
+                  double * restrict PRIM_PTR)
+    {
+        for(int np = 0; np < ncart; ++np)
+            PRIM_PTR[np] += PRIM_INT[np]; 
+    }
+
+#endif // defined SIMINT_SCALAR
+
+#ifdef __cplusplus
+}
+#endif
