@@ -77,7 +77,28 @@ DoubletSet GenerateDoubletTargets(DAM am, DoubletType type)
 int GaussianOrder(const ExpList & ijk)
 {
     int am = ijk[0] + ijk[1] + ijk[2];
-
+/*
+    // new way - much faster than the lookup
+    if(am == 0)
+        return 0;
+    else if(am == 1)
+        return ijk[0]*0 + ijk[1]*1 + ijk[2]*2;
+    else
+    {
+        if(ijk[0])
+            return GaussianOrder(ExpList{ijk[0]-1, ijk[1], ijk[2]});
+        else if(ijk[1])
+        {
+            int ncart1 = (am*(am+1))/2;
+            int ncart2 = ((am-1)*am)/2;
+            return ncart1-ncart2+GaussianOrder(ExpList{0, ijk[1]-1, ijk[2]});
+        }
+        else
+            return ((am+1)*(am+2))/2 - 1;
+    }
+*/
+/*
+    // Old way. Slow, but foolproof
     const std::vector<ExpList> & v = gorder_map.at(am);
 
     auto it = std::find(v.begin(), v.end(), ijk);
@@ -85,6 +106,16 @@ int GaussianOrder(const ExpList & ijk)
         throw std::runtime_error("Gaussian not found in gorder_map");
 
     return std::distance(v.begin(), it);
+*/
+
+    const std::vector<int> & v = gindex_map.at(am);
+
+    auto it = std::find(v.begin(), v.end(), HashExpList(ijk));
+    if(it == v.end())
+        throw std::runtime_error("Gaussian not found in gindex_map");
+
+    return std::distance(v.begin(), it);
+
 }
 
 

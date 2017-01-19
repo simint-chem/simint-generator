@@ -52,7 +52,10 @@ struct TaggedQAM
 };
 
 extern
-std::map<int, std::vector<ExpList>> gorder_map; // in Ordering.cpp
+std::map<int, const std::vector<ExpList>> gorder_map; // in Ordering.cpp
+
+extern
+std::map<int, const std::vector<int>> gindex_map; // in Ordering.cpp
 
 
 /*! \brief Get the index of this gaussian in the standard order
@@ -442,6 +445,15 @@ inline std::ostream & operator<<(std::ostream & os, const Quartet & q)
 }
 
 
+// "Hash" an ExpList. Each value is expected to be 0 <= i <= 256
+inline int HashExpList(const ExpList & e)
+{
+    int i = 0;
+    i |= (e[0] << 0x00);
+    i |= (e[1] << 0x08);
+    i |= (e[2] << 0x10);
+    return i;
+}
 
 typedef std::set<std::string> StringSet;
 typedef std::set<int> IntSet;

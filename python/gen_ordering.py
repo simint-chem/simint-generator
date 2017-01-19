@@ -23,7 +23,7 @@ print("------------------------------------")
 
 
 # Output to file
-with open(args.filename + ".c", 'w') as f:
+with open(args.filename, 'w') as f:
   f.write("/*\n")
   f.write(" Generated with:\n")
   f.write("   " + " ".join(sys.argv[:]))
@@ -47,6 +47,19 @@ with open(args.filename + ".c", 'w') as f:
 
     for g in gmap[i]:
       f.write("        " + str(g) + ",\n")
+    f.write("      }\n")
+    f.write("},\n")
+  f.write("};\n")
+
+  f.write("\n\n")
+
+  f.write("std::map<const int, const std::vector<int>> gindex_map = {\n")
+
+  for i in range(0, maxam+1):
+    f.write("{{ {:2}, {{\n".format(i))
+
+    for g in gmap[i]:
+      f.write("        /*" + str(g) + "*/ " + g.hashstr() + ",\n")
     f.write("      }\n")
     f.write("},\n")
   f.write("};\n")
