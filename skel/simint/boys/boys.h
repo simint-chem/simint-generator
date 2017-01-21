@@ -71,10 +71,14 @@ void boys_F_split(SIMINT_DBLTYPE * restrict F,
                   SIMINT_DBLTYPE const * restrict x,
                   int n)
 {
-    if(n > 1)
-        boys_F_split_large_n(F, x, n);
+    //double max = vector_max(*x);
+    //double min = vector_min(*x);
+    //if(max < BOYS_SHORTGRID_MAXX || min > BOYS_SHORTGRID_MAXX)
+    //else
+    if(n < 2)
+        boys_F_split_small_n((double *)F, (double const *)x, n);
     else
-        boys_F_split_small_n((double *)F, (double *)x, n);
+        boys_F_split_large_n(F, x, n);
 }
 
 
