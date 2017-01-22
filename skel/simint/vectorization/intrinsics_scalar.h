@@ -18,6 +18,7 @@ extern "C" {
     #define SIMINT_MUL(a,b)        ((a)*(b))
     #define SIMINT_DIV(a,b)        ((a)/(b))
     #define SIMINT_SQRT(a)         sqrt((a))
+    #define SIMINT_POW(a, p)       pow((a), (p))
     #define SIMINT_FMADD(a,b,c)    SIMINT_ADD(SIMINT_MUL((a),(b)),(c))
     #define SIMINT_FMSUB(a,b,c)    SIMINT_SUB(SIMINT_MUL((a),(b)),(c))
     #define SIMINT_EXP(a)          exp((a))
@@ -35,6 +36,20 @@ extern "C" {
         for(int np = 0; np < ncart; ++np)
             PRIM_PTR[np] += PRIM_INT[np]; 
     }
+
+    static inline
+    double vector_min(double v)
+    {
+        return v;
+    }
+
+
+    static inline
+    double vector_max(double v)
+    {
+        return v;
+    }
+
 
 #endif // defined SIMINT_SCALAR
 
