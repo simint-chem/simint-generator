@@ -621,7 +621,7 @@ void OSTEI_Writer::Write_Full_(void) const
 
 
     os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
-                   << ", &F_x, " << info_.L() << ");\n";
+                   << ", F_x, " << info_.L() << ");\n";
 
 
     // prefac = sqrt(1/PQalpha_sum) * P_prefac * Q_prefac

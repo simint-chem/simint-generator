@@ -43,6 +43,7 @@ static inline __m256d simint_exp_vec4(__m256d x)
     #define SIMINT_MUL(a,b)        _mm256_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm256_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm256_sqrt_pd((a))
+    #define SIMINT_POW(a,p)        _mm256_pow_pd((a), (p))
 
     #ifdef SIMINT_FMA
       #define SIMINT_FMADD(a,b,c)  _mm256_fmadd_pd((a), (b), (c))
@@ -176,11 +177,22 @@ static inline __m256d simint_exp_vec4(__m256d x)
 
 
     static inline
+    double vector_min(__m256d v)
+    {
+        SIMINT_UNIONTYPE m = { v };
+        double min = m.d[0];
+        for(int n = 1; n < SIMINT_SIMD_LEN; n++)
+            min = (m.d[n] < min ? m.d[n] : min);
+        return min;
+    }
+
+
+    static inline
     double vector_max(__m256d v)
     {
         SIMINT_UNIONTYPE m = { v };
-        double max = 0.0;
-        for(int n = 0; n < SIMINT_SIMD_LEN; n++)
+        double max = m.d[0];
+        for(int n = 1; n < SIMINT_SIMD_LEN; n++)
             max = (m.d[n] > max ? m.d[n] : max);
         return max;
     }

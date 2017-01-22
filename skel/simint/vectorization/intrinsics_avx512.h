@@ -41,6 +41,7 @@ static inline __m512d simint_exp_vec8(__m512d x)
     #define SIMINT_MUL(a,b)        _mm512_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm512_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm512_sqrt_pd((a))
+    #define SIMINT_POW(a,p)        _mm512_pow_pd((a), (p))
     #define SIMINT_FMADD(a,b,c)    _mm512_fmadd_pd((a), (b), (c))
     #define SIMINT_FMSUB(a,b,c)    _mm512_fmsub_pd((a), (b), (c))
 
@@ -132,6 +133,13 @@ static inline __m512d simint_exp_vec8(__m512d x)
         contract_fac(ncart, offsets, factor, PRIM_INT, PRIM_PTR);
 
         #endif
+    }
+
+
+    static inline
+    double vector_min(__m512d v)
+    {
+        return _mm512_reduce_min_pd(v);
     }
 
 

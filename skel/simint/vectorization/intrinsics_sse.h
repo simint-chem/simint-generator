@@ -38,6 +38,7 @@ static inline __m128d simint_exp_vec2(__m128d x)
     #define SIMINT_MUL(a,b)        _mm_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm_sqrt_pd((a))
+    #define SIMINT_POW(a,p)        _mm_pow_pd((a), (p))
 
     #ifdef SIMINT_FMA
       #define SIMINT_FMADD(a,b,c)  _mm_fmadd_pd((a), (b), (c))
@@ -64,12 +65,16 @@ static inline __m128d simint_exp_vec2(__m128d x)
                   __m128d const * restrict PRIM_INT,
                   double * restrict PRIM_PTR)
     {
-        for(int np = 0; np < ncart; ++np)
+        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            SIMINT_UNIONTYPE vtmp = { PRIM_INT[np] };
+            double const * restrict prim_int_tmp = (double *)PRIM_INT + n;
+            double * restrict prim_ptr_tmp = PRIM_PTR + offsets[n]*ncart;
 
-            for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
-                PRIM_PTR[offsets[n]*ncart] += vtmp.d[n]; 
+            for(int np = 0; np < ncart; ++np)
+            {
+                prim_ptr_tmp[np] += *prim_int_tmp;
+                prim_int_tmp += SIMINT_SIMD_LEN;
+            }
         }
     }
 
@@ -82,6 +87,17 @@ static inline __m128d simint_exp_vec2(__m128d x)
         //TODO efficient algorithm for this
         int offsets[2] = {0, 0};
         contract(ncart, offsets, PRIM_INT, PRIM_PTR);
+    }
+
+
+    static inline
+    double vector_min(__m128d v)
+    {
+        SIMINT_UNIONTYPE m = { v };
+        double min = m.d[0];
+        for(int n = 1; n < SIMINT_SIMD_LEN; n++)
+            min = (m.d[n] < min ? m.d[n] : min);
+        return min;
     }
 
 

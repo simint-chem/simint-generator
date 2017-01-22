@@ -11,50 +11,59 @@ extern "C" {
 #endif
 
 static inline
-void boys_F_split_single(double * restrict F,
-                         double const * restrict x,
-                         int n)
-{
-    for(int i = 0; i < SIMINT_SIMD_LEN; i++)
-    {
-        if(x[i] < BOYS_SHORTGRID_MAXX)
-            F[i] = boys_F_taylor_single(x[i], n);
-        else
-            F[i] = boys_F_long_single(x[i], n); 
-    }
-}
-
-
-static inline
-void boys_F_split_small_n(double * restrict F,
-                          double const * restrict x,
+void boys_F_split_small_n(SIMINT_DBLTYPE * restrict F,
+                          SIMINT_DBLTYPE x,
                           int n)
 {
     // n is small - just do it all of them via
     // lookup or longfac (no recursion)
-
-    for(int i = 0; i < SIMINT_SIMD_LEN; i++)
+    if(vector_min(x) > BOYS_SHORTGRID_MAXX)
+        boys_F_long_vec(F, x, n);
+    else if(vector_max(x) < BOYS_SHORTGRID_MAXX)
+        boys_F_taylor_vec(F, x, n);
+    else
     {
-        if(x[i] < BOYS_SHORTGRID_MAXX)
-            boys_F_taylor(F + i, x[i], n);
-        else
-            boys_F_long(F + i, x[i], n); 
+        double * restrict Fd = (double *)F;
+        double const * restrict xd = (double *)(&x);
+
+        for(int i = 0; i < SIMINT_SIMD_LEN; i++)
+        {
+            if(xd[i] < BOYS_SHORTGRID_MAXX)
+                boys_F_taylor(Fd + i, xd[i], n);
+            else
+                boys_F_long(Fd + i, xd[i], n); 
+        }
     }
 }
 
 
 static inline
 void boys_F_split_large_n(SIMINT_DBLTYPE * restrict F,
-                          SIMINT_DBLTYPE const * restrict x,
+                          SIMINT_DBLTYPE x,
                           int n)
 {
     // n is large - do only the highest, then recur down
 
-    boys_F_split_single((double *)(F + n), (double *)(x), n);
+    if(vector_min(x) > BOYS_SHORTGRID_MAXX)
+        F[n] = boys_F_long_single_vec(x, n);
+    else if(vector_max(x) < BOYS_SHORTGRID_MAXX)
+        F[n] = boys_F_taylor_single_vec(x, n);
+    else
+    {
+        double * restrict Fd = (double *)F;
+        double const * restrict xd = (double *)(&x);
+        for(int i = 0; i < SIMINT_SIMD_LEN; i++)
+        {
+            if(xd[i] < BOYS_SHORTGRID_MAXX)
+                Fd[n*SIMINT_SIMD_LEN+i] = boys_F_taylor_single(xd[i], n);
+            else
+                Fd[n*SIMINT_SIMD_LEN+i] = boys_F_long_single(xd[i], n); 
+        }
+    }
 
     // factors for the recursion
-    const SIMINT_DBLTYPE x2 = SIMINT_MUL(SIMINT_DBLSET1(2.0), (*x));
-    const SIMINT_DBLTYPE ex = SIMINT_EXP(SIMINT_NEG(*x));
+    const SIMINT_DBLTYPE x2 = SIMINT_MUL(SIMINT_DBLSET1(2.0), (x));
+    const SIMINT_DBLTYPE ex = SIMINT_EXP(SIMINT_NEG(x));
 
     // now recur down
     for(int n2 = n-1; n2 >= 0; n2--)
@@ -68,15 +77,11 @@ void boys_F_split_large_n(SIMINT_DBLTYPE * restrict F,
 
 static inline
 void boys_F_split(SIMINT_DBLTYPE * restrict F,
-                  SIMINT_DBLTYPE const * restrict x,
+                  SIMINT_DBLTYPE x,
                   int n)
 {
-    //double max = vector_max(*x);
-    //double min = vector_min(*x);
-    //if(max < BOYS_SHORTGRID_MAXX || min > BOYS_SHORTGRID_MAXX)
-    //else
     if(n < 2)
-        boys_F_split_small_n((double *)F, (double const *)x, n);
+        boys_F_split_small_n(F, x, n);
     else
         boys_F_split_large_n(F, x, n);
 }

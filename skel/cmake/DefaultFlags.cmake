@@ -8,6 +8,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 
   list(APPEND SIMINT_CONFIG_DEFINES "SIMINT_INTEL")
   list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-qopenmp")
   list(APPEND SIMINT_C_FLAGS "-qopt-report=5;-w3")
   list(APPEND SIMINT_C_FLAGS "-wd10397;-wd981;-wd869")
 
@@ -32,6 +33,7 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
   endif()
 
   list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-fopenmp-simd")
   list(APPEND SIMINT_C_FLAGS "-Wall;-Wextra;-pedantic")
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-parameter")
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-variable")
