@@ -63,12 +63,16 @@ static inline __m512d simint_exp_vec8(__m512d x)
                   __m512d const * restrict PRIM_INT,
                   double * restrict PRIM_PTR)
     {
-        for(int np = 0; np < ncart; ++np)
+        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            SIMINT_UNIONTYPE vtmp = { PRIM_INT[np] };
+            double const * restrict prim_int_tmp = (double *)PRIM_INT + n;
+            double * restrict prim_ptr_tmp = PRIM_PTR + offsets[n]*ncart;
 
-            for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
-                PRIM_PTR[offsets[n]*ncart] += vtmp.d[n]; 
+            for(int np = 0; np < ncart; ++np)
+            {
+                prim_ptr_tmp[np] += *prim_int_tmp;
+                prim_int_tmp += SIMINT_SIMD_LEN;
+            }
         }
     }
 
