@@ -1,3 +1,11 @@
+v0.6
+Released 2017-01-24
+---------------------
+* Fixed major bug in SSE and AVX512 contraction code
+* Implemented vectorized Boys function
+* Fixes some issues with Clang
+
+
 v0.5
 Released 2017-01-19
 ---------------------

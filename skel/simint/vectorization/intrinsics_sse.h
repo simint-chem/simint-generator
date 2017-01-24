@@ -14,13 +14,23 @@ union double2
 };
 
 
-// Missing GCC vectorized exp
+// Missing GCC vectorized exp and pow
 static inline __m128d simint_exp_vec2(__m128d x)
 {
     union double2 u = { x };
     union double2 res;
     for(int i = 0; i < 2; i++)
         res.d[i] = exp(u.d[i]);
+    return res.v;
+}
+
+static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
+{
+    union double2 ua = { a };
+    union double2 up = { p };
+    union double2 res;
+    for(int i = 0; i < 2; i++)
+        res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
 }
 
@@ -38,7 +48,6 @@ static inline __m128d simint_exp_vec2(__m128d x)
     #define SIMINT_MUL(a,b)        _mm_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm_sqrt_pd((a))
-    #define SIMINT_POW(a,p)        _mm_pow_pd((a), (p))
 
     #ifdef SIMINT_FMA
       #define SIMINT_FMADD(a,b,c)  _mm_fmadd_pd((a), (b), (c))
@@ -49,9 +58,11 @@ static inline __m128d simint_exp_vec2(__m128d x)
     #endif
 
     #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm_exp_pd
+        #define SIMINT_EXP(a)       _mm_exp_pd((a))
+        #define SIMINT_POW(a,p)     _mm_pow_pd((a), (p))
     #else
-        #define SIMINT_EXP  simint_exp_vec2
+        #define SIMINT_EXP(a)       simint_exp_vec2((a))
+        #define SIMINT_POW(a,p)     simint_pow_vec2((a), (p))
     #endif
 
 

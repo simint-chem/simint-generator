@@ -18,13 +18,23 @@ union double4
 };
 
 
-// Missing GCC vectorized exp
+// Missing GCC vectorized exp and pow
 static inline __m256d simint_exp_vec4(__m256d x)
 {
     union double4 u = { x };
     union double4 res;
     for(int i = 0; i < 4; i++)
         res.d[i] = exp(u.d[i]);
+    return res.v;
+}
+
+static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
+{
+    union double4 ua = { a };
+    union double4 up = { p };
+    union double4 res;
+    for(int i = 0; i < 4; i++)
+        res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
 }
 
@@ -43,7 +53,6 @@ static inline __m256d simint_exp_vec4(__m256d x)
     #define SIMINT_MUL(a,b)        _mm256_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm256_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm256_sqrt_pd((a))
-    #define SIMINT_POW(a,p)        _mm256_pow_pd((a), (p))
 
     #ifdef SIMINT_FMA
       #define SIMINT_FMADD(a,b,c)  _mm256_fmadd_pd((a), (b), (c))
@@ -54,9 +63,11 @@ static inline __m256d simint_exp_vec4(__m256d x)
     #endif
 
     #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm256_exp_pd
+        #define SIMINT_EXP(a)       _mm256_exp_pd((a))
+        #define SIMINT_POW(a,p)     _mm256_pow_pd((a), (p))
     #else
-        #define SIMINT_EXP  simint_exp_vec4
+        #define SIMINT_EXP(a)       simint_exp_vec4((a))
+        #define SIMINT_POW(a,p)     simint_pow_vec4((a), (p))
     #endif
 
 
@@ -144,7 +155,7 @@ static inline __m256d simint_exp_vec4(__m256d x)
                           __m256d const * restrict factor,
                           double * restrict PRIM_PTR)
     {
-        #ifdef SIMINT_INTEL
+        #ifndef SIMINT_GCC
         int n, n4;
         const int nbatch = ncart/4;
 

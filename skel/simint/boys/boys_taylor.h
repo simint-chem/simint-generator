@@ -62,7 +62,12 @@ void boys_F_taylor_vec(SIMINT_DBLTYPE * restrict F, SIMINT_DBLTYPE x, int n)
     double * restrict Fd = (double *)F;
     double * restrict xd = (double *)&x;
 
-    #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    // workaround for GCC missing simdlen??
+    #if defined SIMINT_GCC
+      #pragma omp simd
+    #else
+      #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    #endif
     for(int v = 0; v < SIMINT_SIMD_LEN; v++)
     {
         const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(xd[v]+BOYS_SHORTGRID_LOOKUPFAC2));
@@ -95,7 +100,12 @@ SIMINT_DBLTYPE boys_F_taylor_single_vec(SIMINT_DBLTYPE x, int n)
     double * retd = (double *)&ret;
     double * restrict xd = (double *)&x;
 
-    #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    // workaround for GCC missing simdlen??
+    #if defined SIMINT_GCC
+      #pragma omp simd
+    #else
+      #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    #endif
     for(int v = 0; v < SIMINT_SIMD_LEN; v++)
     {
         const int lookup_idx = (int)(BOYS_SHORTGRID_LOOKUPFAC*(xd[v]+BOYS_SHORTGRID_LOOKUPFAC2));

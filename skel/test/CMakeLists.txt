@@ -29,17 +29,6 @@ if(SIMINT_TESTS_BENCHMARK_VALIDATE)
     list(APPEND SIMINT_TESTS_CXX_FLAGS "-DBENCHMARK_VALIDATE;-g")
 endif()
 
-
-##################################################
-# OpenMP dependency
-##################################################
-find_package(OpenMP) # OpenMP is optional (for our clang friends)
-if(OPENMP_FOUND)
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "${OpenMP_CXX_FLAGS}")
-  list(APPEND SIMINT_TESTS_LINK_FLAGS "${OpenMP_CXX_FLAGS}") 
-endif()
-
-
 message(STATUS "       SIMINT_TESTS_CXX_INCLUDES: ${SIMINT_TESTS_CXX_INCLUDES}")
 message(STATUS "SIMINT_TESTS_CXX_SYSTEM_INCLUDES: ${SIMINT_TESTS_CXX_SYSTEM_INCLUDES}")
 message(STATUS "          SIMINT_TESTS_CXX_FLAGS: ${SIMINT_TESTS_CXX_FLAGS}")

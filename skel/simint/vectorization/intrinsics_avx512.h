@@ -17,13 +17,23 @@ union double8
 };
 
 
-// Missing GCC vectorized exp
+// Missing GCC vectorized exp and pow
 static inline __m512d simint_exp_vec8(__m512d x)
 {
     union double8 u = { x };
     union double8 res;
     for(int i = 0; i < 8; i++)
         res.d[i] = exp(u.d[i]);
+    return res.v;
+}
+
+static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
+{
+    union double8 ua = { a };
+    union double8 up = { p };
+    union double8 res;
+    for(int i = 0; i < 8; i++)
+        res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
 }
 
@@ -41,14 +51,15 @@ static inline __m512d simint_exp_vec8(__m512d x)
     #define SIMINT_MUL(a,b)        _mm512_mul_pd((a), (b))
     #define SIMINT_DIV(a,b)        _mm512_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm512_sqrt_pd((a))
-    #define SIMINT_POW(a,p)        _mm512_pow_pd((a), (p))
     #define SIMINT_FMADD(a,b,c)    _mm512_fmadd_pd((a), (b), (c))
     #define SIMINT_FMSUB(a,b,c)    _mm512_fmsub_pd((a), (b), (c))
 
     #ifdef SIMINT_INTEL
-        #define SIMINT_EXP  _mm512_exp_pd
+        #define SIMINT_EXP(a)       _mm512_exp_pd((a))
+        #define SIMINT_POW(a,p)     _mm512_pow_pd((a), (p))
     #else
-        #define SIMINT_EXP  simint_exp_vec8
+        #define SIMINT_EXP(a)       simint_exp_vec8((a))
+        #define SIMINT_POW(a,p)     simint_pow_vec8((a), (p))
     #endif
 
 
@@ -89,7 +100,6 @@ static inline __m512d simint_exp_vec8(__m512d x)
 
         #else
 
-        // GCC is missing some instructions from the above block
         int offsets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
         contract(ncart, offsets, PRIM_INT, PRIM_PTR);
 
@@ -132,7 +142,6 @@ static inline __m512d simint_exp_vec8(__m512d x)
 
         #else
 
-        // GCC is missing some instructions from the above block
         int offsets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
         contract_fac(ncart, offsets, factor, PRIM_INT, PRIM_PTR);
 
@@ -143,14 +152,30 @@ static inline __m512d simint_exp_vec8(__m512d x)
     static inline
     double vector_min(__m512d v)
     {
-        return _mm512_reduce_min_pd(v);
+        #ifdef SIMINT_GCC
+            union double8 u = { v };
+            double min = u.d[0];
+            for(int i = 1; i < 8; i++)
+                min = (u.d[i] < min ? u.d[i] : min);
+            return min;
+        #else
+            return _mm512_reduce_min_pd(v);
+        #endif
     }
 
 
     static inline
     double vector_max(__m512d v)
     {
-        return _mm512_reduce_max_pd(v);
+        #ifdef SIMINT_GCC
+            union double8 u = { v };
+            double max = u.d[0];
+            for(int i = 1; i < 8; i++)
+                max = (u.d[i] > max ? u.d[i] : max);
+            return max;
+        #else
+            return _mm512_reduce_max_pd(v);
+        #endif
     }
 
 #endif // defined SIMINT_AVX512 || defined SIMINT_MICAVX512
