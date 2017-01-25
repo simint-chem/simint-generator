@@ -88,22 +88,6 @@ void OSTEI_Writer::WriteShellOffsets(void) const
 }
 
 
-void OSTEI_Writer::WriteShellOffsets_Scalar(void) const
-{
-    os_ << indent5 << "// Move pointers if this is the end of a shell\n";
-    os_ << indent5 << "// Handle if the first element of the vector is a new shell\n";
-    os_ << indent5 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
-    os_ << indent5 << "{\n";
-    os_ << indent6 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
-    
-    for(const auto it : info_.GetContQ())
-        os_ << indent6 << PrimPtrName(it) << " += " << NCART(it.qam) << ";\n";
-
-    os_ << indent5 << "}\n";
-    os_ << indent5 << "iprimcd++;\n\n";
-}
-
-
 void OSTEI_Writer::WriteAccumulation(void) const
 {
     os_ << "\n\n";
@@ -111,39 +95,28 @@ void OSTEI_Writer::WriteAccumulation(void) const
     os_ << indent5 << "// Accumulate contracted integrals\n";
     os_ << indent5 << "////////////////////////////////////\n";
 
-    if(info_.Vectorized())
+    os_ << indent5 << "if(lastoffset == 0)\n";
+    os_ << indent5 << "{\n";
+
+    for(const auto it : info_.GetContQ())
     {
-        os_ << indent5 << "if(lastoffset == 0)\n";
-        os_ << indent5 << "{\n";
-
-        for(const auto it : info_.GetContQ())
-        {
-            int ncart = NCART(it.qam);
-            os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it.qam) << ", " << PrimPtrName(it.qam) << ");\n";
-        }
-        os_ << indent5 << "}\n";
-        os_ << indent5 << "else\n";
-        os_ << indent5 << "{\n";
-
-        for(const auto it : info_.GetContQ())
-        {
-            int ncart = NCART(it.qam);
-            os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
-        }
-
-        for(const auto it : info_.GetContQ())
-            os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
-
-        os_ << indent5 << "}\n";
+        int ncart = NCART(it.qam);
+        os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it.qam) << ", " << PrimPtrName(it.qam) << ");\n";
     }
-    else
+    os_ << indent5 << "}\n";
+    os_ << indent5 << "else\n";
+    os_ << indent5 << "{\n";
+
+    for(const auto it : info_.GetContQ())
     {
-        for(const auto it : info_.GetContQ())
-        {
-            int ncart = NCART(it.qam);
-            os_ << indent6 << "contract(" << ncart << ", " << PrimVarName(it) << ", " << PrimPtrName(it.qam) << ");\n";
-        }
+        int ncart = NCART(it.qam);
+        os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
     }
+
+    for(const auto it : info_.GetContQ())
+        os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
+
+    os_ << indent5 << "}\n";
 }
 
 std::string OSTEI_Writer::FunctionName_(QAM am) const
@@ -362,11 +335,8 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << "{\n";
     os_ << "\n";
 
-    if(info_.Vectorized())
-    {
-        os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(contwork);\n";
-        os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
-    }
+    os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(contwork);\n";
+    os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
 
     ///////////////////////////////////
     // NOW IN THE ACTUAL OSTEI FUNCTION
@@ -387,9 +357,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent1 << "const int check_screen = (screen_tol > 0.0);\n";
     os_ << indent1 << "int i, j;\n";
     os_ << indent1 << "int n;\n";
-
-    if(info_.Vectorized())
-        os_ << indent1 << "int not_screened;\n";
+    os_ << indent1 << "int not_screened;\n";
     
 
     // real_abcd is the absolute actual abcd in terms of all the shells that we are doing
@@ -498,33 +466,22 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
     os_ << indent4 << "{\n";
 
-    if(info_.Vectorized())
-        WriteShellOffsets();
-    else
-        WriteShellOffsets_Scalar();
+    WriteShellOffsets();
 
 
-    if(info_.Vectorized())
-    {
-        os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
-        os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
-        os_ << indent5 << "if(check_screen)\n";
-        os_ << indent5 << "{\n";
-        os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
-        os_ << indent6 << "if(vmax > screen_tol)\n";
-        os_ << indent6 << "{\n";
-        for(const auto it : info_.GetContQ())
-            os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
-        os_ << indent7 << "continue;\n";
-        os_ << indent6 << "}\n";
-        os_ << indent5 << "}\n\n";
-    }
-    else
-    {
-        os_ << indent5 << "// Skip if screened out\n";
-        os_ << indent5 << "if(check_screen && ( (bra_screen_max * Q.screen[j]) < screen_tol ) )\n";
-        os_ << indent6 << "continue;\n\n";
-    }
+    os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
+    os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
+    os_ << indent5 << "if(check_screen)\n";
+    os_ << indent5 << "{\n";
+    os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
+    os_ << indent6 << "if(vmax > screen_tol)\n";
+    os_ << indent6 << "{\n";
+    for(const auto it : info_.GetContQ())
+        os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
+    os_ << indent7 << "continue;\n";
+    os_ << indent6 << "}\n";
+    os_ << indent5 << "}\n\n";
+
 
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
@@ -608,18 +565,8 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << "\n";
 
     // we need to zero out any that are beyond the end of the batch (that's been clipped)
-    if(info_.Vectorized())
-    {
-        os_ << indent5 << "SIMINT_UNIONTYPE Q_prefac_u = { SIMINT_DBLLOAD(Q.prefac, j) };\n";
-        os_ << indent5 << "for(n = nlane; n < SIMINT_SIMD_LEN; n++)\n";
-        os_ << indent6 << "Q_prefac_u.d[n] = 0.0;\n";
-        os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = Q_prefac_u.v;\n";
-    }
-    else
-        os_ << indent5 << "const double Q_prefac = Q.prefac[j];\n";
+    os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = mask_load(nlane, Q.prefac + j);\n";
     os_ << "\n\n"; 
-
-
     os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
                    << ", F_x, " << info_.L() << ");\n";
 

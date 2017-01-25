@@ -19,7 +19,6 @@ enum class Option
     GeneralVRR,   //!< Write general VRR at this L value and above
     ExternalHRR,  //!< Write external HRR at this L value and above
     GeneralHRR,   //!< Write general HRR at this L value and above
-    Scalar,       //!< Generate Scalar code
     FinalPermute, //!< Generate code for permuting final integrals
 };
 
@@ -39,7 +38,6 @@ inline OptionMap DefaultOptions(void)
                       {Option::GeneralVRR, 0},
                       {Option::ExternalHRR, 0},
                       {Option::GeneralHRR, 0},
-                      {Option::Scalar, 0},
                       {Option::FinalPermute, 0},
                     };
 }

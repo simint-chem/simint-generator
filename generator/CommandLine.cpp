@@ -76,8 +76,6 @@ std::vector<std::string> ParseCommonOptions(OptionMap & options, int argc, char 
             options[Option::GeneralHRR] = GetIArg(i, argc, argv);
         else if(argstr == "-s")
             options[Option::StackMem] = GetIArg(i, argc, argv);
-        else if(argstr == "-S")
-            options[Option::Scalar] = 1;
         else if(argstr == "-p")
             options[Option::FinalPermute] = 1;
         else

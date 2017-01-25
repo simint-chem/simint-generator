@@ -54,7 +54,6 @@ public:
 private:
     void DeclareContwork(void) const;
     void WriteShellOffsets(void) const;
-    void WriteShellOffsets_Scalar(void) const;
     void WriteAccumulation(void) const;
 
     std::string FunctionName_(QAM am) const;

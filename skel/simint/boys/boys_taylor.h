@@ -19,7 +19,9 @@ void boys_F_taylor(double * restrict F, double x, int n)
 
     double const * restrict gridpts = &(boys_shortgrid[lookup_idx][0]);
 
+    #ifndef SIMINT_SCALAR
     #pragma omp simd
+    #endif
     for(int i = 0; i <= n; ++i)
     {
         double const * restrict gridpts2 = gridpts + i;
@@ -62,11 +64,13 @@ void boys_F_taylor_vec(SIMINT_DBLTYPE * restrict F, SIMINT_DBLTYPE x, int n)
     double * restrict Fd = (double *)F;
     double * restrict xd = (double *)&x;
 
-    // workaround for GCC missing simdlen??
-    #if defined SIMINT_GCC
-      #pragma omp simd
-    #else
-      #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    #ifndef SIMINT_SCALAR
+      // workaround for GCC missing simdlen??
+      #if defined __clang__ || defined __INTEL_COMPILER
+        #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+      #else
+        #pragma omp simd
+      #endif
     #endif
     for(int v = 0; v < SIMINT_SIMD_LEN; v++)
     {
@@ -100,11 +104,13 @@ SIMINT_DBLTYPE boys_F_taylor_single_vec(SIMINT_DBLTYPE x, int n)
     double * retd = (double *)&ret;
     double * restrict xd = (double *)&x;
 
-    // workaround for GCC missing simdlen??
-    #if defined SIMINT_GCC
-      #pragma omp simd
-    #else
-      #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+    #ifndef SIMINT_SCALAR
+      // workaround for GCC missing simdlen??
+      #if defined __clang__ || defined __INTEL_COMPILER
+        #pragma omp simd simdlen(SIMINT_SIMD_LEN)
+      #else
+        #pragma omp simd
+      #endif
     #endif
     for(int v = 0; v < SIMINT_SIMD_LEN; v++)
     {

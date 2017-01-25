@@ -42,7 +42,6 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     #define SIMINT_SIMD_LEN 8
 
     #define SIMINT_DBLTYPE         __m512d
-    #define SIMINT_UNIONTYPE       union double8
     #define SIMINT_DBLLOAD(p,i)    _mm512_load_pd((p) + (i))
     #define SIMINT_DBLSET1(a)      _mm512_set1_pd((a))
     #define SIMINT_NEG(a)          (SIMINT_MUL((a), (SIMINT_DBLSET1(-1.0)))) 
@@ -54,7 +53,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     #define SIMINT_FMADD(a,b,c)    _mm512_fmadd_pd((a), (b), (c))
     #define SIMINT_FMSUB(a,b,c)    _mm512_fmsub_pd((a), (b), (c))
 
-    #ifdef SIMINT_INTEL
+    #if defined __INTEL_COMPILER 
         #define SIMINT_EXP(a)       _mm512_exp_pd((a))
         #define SIMINT_POW(a,p)     _mm512_pow_pd((a), (p))
     #else
@@ -71,18 +70,18 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     void contract(int ncart,
                   int const * restrict offsets,
-                  __m512d const * restrict PRIM_INT,
-                  double * restrict PRIM_PTR)
+                  __m512d const * restrict src,
+                  double * restrict dest)
     {
         for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            double const * restrict prim_int_tmp = (double *)PRIM_INT + n;
-            double * restrict prim_ptr_tmp = PRIM_PTR + offsets[n]*ncart;
+            double const * restrict src_tmp = (double *)src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
 
             for(int np = 0; np < ncart; ++np)
             {
-                prim_ptr_tmp[np] += *prim_int_tmp;
-                prim_int_tmp += SIMINT_SIMD_LEN;
+                dest_tmp[np] += *src_tmp;
+                src_tmp += SIMINT_SIMD_LEN;
             }
         }
     }
@@ -90,18 +89,18 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
 
     static inline
     void contract_all(int ncart,
-                      __m512d const * restrict PRIM_INT,
-                      double * restrict PRIM_PTR)
+                      __m512d const * restrict src,
+                      double * restrict dest)
     {
-        #ifndef SIMINT_GCC
+        #if defined __clang__ || defined __INTEL_COMPILER
 
         for(int np = 0; np < ncart; np++)
-            PRIM_PTR[np] += _mm512_reduce_add_pd(PRIM_INT[np]);
+            dest[np] += _mm512_reduce_add_pd(src[np]);
 
         #else
 
         int offsets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-        contract(ncart, offsets, PRIM_INT, PRIM_PTR);
+        contract(ncart, offsets, src, dest);
 
         #endif
     }
@@ -111,19 +110,19 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     void contract_fac(int ncart,
                       int const * restrict offsets,
                       __m512d const * restrict factor,
-                      __m512d const * restrict PRIM_INT,
-                      double * restrict PRIM_PTR)
+                      __m512d const * restrict src,
+                      double * restrict dest)
     {
         for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            double const * restrict prim_int_tmp = (double *)PRIM_INT + n;
-            double * restrict prim_ptr_tmp = PRIM_PTR + offsets[n]*ncart;
+            double const * restrict src_tmp = (double *)src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
             double factor_tmp = *((double *)factor + n);
 
             for(int np = 0; np < ncart; ++np)
             {
-                prim_ptr_tmp[np] += factor_tmp * (*prim_int_tmp);
-                prim_int_tmp += SIMINT_SIMD_LEN;
+                dest_tmp[np] += factor_tmp * (*src_tmp);
+                src_tmp += SIMINT_SIMD_LEN;
             }
         }
     }
@@ -131,19 +130,19 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
 
     static inline
     void contract_all_fac(int ncart,
-                          __m512d const * restrict PRIM_INT,
+                          __m512d const * restrict src,
                           __m512d const * restrict factor,
-                          double * restrict PRIM_PTR)
+                          double * restrict dest)
     {
-        #ifndef SIMINT_GCC
+        #if defined __clang__ || defined __INTEL_COMPILER
 
         for(int np = 0; np < ncart; np++)
-            PRIM_PTR[np] += _mm512_reduce_add_pd(_mm512_mul_pd((*factor), PRIM_INT[np]));
+            dest[np] += _mm512_reduce_add_pd(_mm512_mul_pd((*factor), src[np]));
 
         #else
 
         int offsets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-        contract_fac(ncart, offsets, factor, PRIM_INT, PRIM_PTR);
+        contract_fac(ncart, offsets, factor, src, dest);
 
         #endif
     }
@@ -152,14 +151,14 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     double vector_min(__m512d v)
     {
-        #ifdef SIMINT_GCC
+        #if defined __clang__ || defined __INTEL_COMPILER
+            return _mm512_reduce_min_pd(v);
+        #else
             union double8 u = { v };
             double min = u.d[0];
             for(int i = 1; i < 8; i++)
                 min = (u.d[i] < min ? u.d[i] : min);
             return min;
-        #else
-            return _mm512_reduce_min_pd(v);
         #endif
     }
 
@@ -167,15 +166,24 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     double vector_max(__m512d v)
     {
-        #ifdef SIMINT_GCC
+        #if defined __clang__ || defined __INTEL_COMPILER
+            return _mm512_reduce_max_pd(v);
+        #else
             union double8 u = { v };
             double max = u.d[0];
             for(int i = 1; i < 8; i++)
                 max = (u.d[i] > max ? u.d[i] : max);
             return max;
-        #else
-            return _mm512_reduce_max_pd(v);
         #endif
+    }
+
+    static inline
+    __m512d mask_load(int nlane, double * memaddr)
+    {
+        union double8 u = { _mm512_load_pd(memaddr) };
+        for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
+            u.d[n] = 0.0;
+        return u.v;
     }
 
 #endif // defined SIMINT_AVX512 || defined SIMINT_MICAVX512

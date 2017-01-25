@@ -9,7 +9,6 @@ extern "C" {
     #define SIMINT_SIMD_LEN 1
 
     #define SIMINT_DBLTYPE         double
-    //#define SIMINT_UNIONTYPE       double
     #define SIMINT_DBLLOAD(p,i)    ((p)[(i)])
     #define SIMINT_DBLSET1(a)      ((a)) 
     #define SIMINT_NEG(a)          (-(a))
@@ -30,11 +29,31 @@ extern "C" {
 
     static inline
     void contract(int ncart,
-                  double const * restrict PRIM_INT,
-                  double * restrict PRIM_PTR)
+                  int const * restrict offsets,
+                  double const * restrict src,
+                  double * restrict dest)
     {
-        for(int np = 0; np < ncart; ++np)
-            PRIM_PTR[np] += PRIM_INT[np]; 
+        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+        {
+            double const * restrict src_tmp = (double *)src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
+
+            for(int np = 0; np < ncart; ++np)
+            {
+                dest_tmp[np] += *src_tmp;
+                src_tmp += SIMINT_SIMD_LEN;
+            }
+        }
+    }
+
+    static inline
+    void contract_all(int ncart,
+                      double const * restrict src,
+                      double * restrict dest)
+    {
+        // should never be called
+        int offsets[1] = {0};
+        contract(ncart, offsets, src, dest);
     }
 
     static inline
@@ -49,6 +68,17 @@ extern "C" {
     {
         return v;
     }
+
+
+    static inline
+    double mask_load(int nlane, double * memaddr)
+    {
+        if(nlane == 1)
+            return *memaddr;
+        else
+            return 0.0;
+    }
+
 
 
 #endif // defined SIMINT_SCALAR

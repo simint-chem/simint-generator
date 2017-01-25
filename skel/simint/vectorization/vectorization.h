@@ -3,16 +3,18 @@
 #include <stdlib.h>
 
 // Defines SIMINT_AVX, etc
-#include "simint/simint_config.h"
+#include "simint/vectorization/vector_config.h"
 
 #if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
   #include "simint/vectorization/intrinsics_avx512.h"
-#elif defined SIMINT_AVX
+#elif defined SIMINT_AVX || defined SIMINT_AVXFMA
   #include "simint/vectorization/intrinsics_avx.h"
 #elif defined SIMINT_SSE
   #include "simint/vectorization/intrinsics_sse.h"
-#else
+#elif defined SIMINT_SCALAR
   #include "simint/vectorization/intrinsics_scalar.h"
+#else
+  #error Vector type is not set
 #endif
 
 #define SIMINT_SIMD_ALIGN_DBL (SIMINT_SIMD_LEN*8)
@@ -23,12 +25,17 @@
 #define SIMINT_SIMD_ALIGN SIMINT_SIMD_ALIGN_DBL
 
 
-#if defined SIMINT_GCC || defined SIMINT_CLANG
-    #define SIMINT_ASSUME_ALIGN_DBL(x)
-    #define SIMINT_ASSUME_ALIGN_INT(x)
-#elif defined SIMINT_INTEL
+#if defined __INTEL_COMPILER
     #define SIMINT_ASSUME_ALIGN_DBL(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_DBL)
     #define SIMINT_ASSUME_ALIGN_INT(x)  __assume_aligned((x), SIMINT_SIMD_ALIGN_INT)
+#elif defined __clang__
+    // TODO - find these
+    #define SIMINT_ASSUME_ALIGN_DBL(x)
+    #define SIMINT_ASSUME_ALIGN_INT(x)
+#elif defined __GNUC__
+    // TODO - find these
+    #define SIMINT_ASSUME_ALIGN_DBL(x)
+    #define SIMINT_ASSUME_ALIGN_INT(x)
 #else
     #define SIMINT_ASSUME_ALIGN_DBL(x)
     #define SIMINT_ASSUME_ALIGN_INT(x)

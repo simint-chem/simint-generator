@@ -49,8 +49,6 @@ parser.add_argument("-vg", required=False, type=int, default=0, help="General VR
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
 parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
 parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
-parser.add_argument("-S",  required=False, action='store_true', help="Generate scalar code")
-
 parser.add_argument("outdir", type=str, help="Output directory")
 
 args = parser.parse_args()
@@ -81,9 +79,9 @@ if not os.path.isfile(ostei_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_gen))
   quit(1)
 
-if not os.path.isfile(ostei_deriv1_gen):
-  print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_deriv1_gen))
-  quit(1)
+#if not os.path.isfile(ostei_deriv1_gen):
+#  print("The file \"{}\" does not exist or is not a (binary) file".format(ostei_deriv1_gen))
+#  quit(1)
 
 if not os.path.isfile(hrr_gen):
   print("The file \"{}\" does not exist or is not a (binary) file".format(hrr_gen))
@@ -202,9 +200,6 @@ for q in valid:
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
 
-    if args.S:
-        cmdline.append("-S")
-
     print()
     print("Command line:")
     print(' '.join(cmdline))
@@ -301,9 +296,6 @@ for q in valid:
       cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
       cmdline.extend(["-o", outfile])
       cmdline.extend(["-oh", headerfile])
-
-      if args.S:
-          cmdline.append("-S")
 
       print()
       print("Command line:")
@@ -410,9 +402,6 @@ for q in valid:
     cmdline.extend(["-vg", str(args.vg)]) 
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
-
-    if args.S:
-        cmdline.append("-S")
 
     if max(q) >= args.p:
         cmdline.append("-p")
@@ -530,9 +519,6 @@ for q in valid:
     cmdline.extend(["-he", str(args.he)]) 
     cmdline.extend(["-hg", str(args.hg)]) 
 
-    if args.S:
-        cmdline.append("-S")
-
     if max(q) >= args.p:
         cmdline.append("-p")
 
@@ -592,10 +578,9 @@ with open(headerfile, 'w') as hfile:
 ####################################################
 # Overall config header
 ####################################################
-sinfofile = os.path.join(outdir, "simint_config.h.in")
-with open(sinfofile, 'w') as sf:
-  sf.write("#pragma once\n\n")
-  sf.write("// If nothing is here, that is ok.\n")
-  sf.write("// Consider this reserved for future use\n");
-  
+#sinfofile = os.path.join(outdir, "simint_config.h.in")
+#with open(sinfofile, 'w_') as sf:
+#  sf.write("#pragma once\n\n")
+#  sf.write("// If nothing is here, that is ok.\n")
+#  sf.write("// Consider this reserved for future use\n");
 

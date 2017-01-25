@@ -39,7 +39,6 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     #define SIMINT_SIMD_LEN 2
 
     #define SIMINT_DBLTYPE         __m128d
-    #define SIMINT_UNIONTYPE       union double2
     #define SIMINT_DBLLOAD(p,i)    _mm_load_pd((p) + (i))
     #define SIMINT_DBLSET1(a)      _mm_set1_pd((a))
     #define SIMINT_NEG(a)          (-(a))
@@ -57,7 +56,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
       #define SIMINT_FMSUB(a,b,c)  SIMINT_SUB(SIMINT_MUL((a),(b)),(c))
     #endif
 
-    #ifdef SIMINT_INTEL
+    #if defined __INTEL_COMPILER 
         #define SIMINT_EXP(a)       _mm_exp_pd((a))
         #define SIMINT_POW(a,p)     _mm_pow_pd((a), (p))
     #else
@@ -73,18 +72,18 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     void contract(int ncart,
                   int const * restrict offsets,
-                  __m128d const * restrict PRIM_INT,
-                  double * restrict PRIM_PTR)
+                  __m128d const * restrict src,
+                  double * restrict dest)
     {
         for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            double const * restrict prim_int_tmp = (double *)PRIM_INT + n;
-            double * restrict prim_ptr_tmp = PRIM_PTR + offsets[n]*ncart;
+            double const * restrict src_tmp = (double *)src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
 
             for(int np = 0; np < ncart; ++np)
             {
-                prim_ptr_tmp[np] += *prim_int_tmp;
-                prim_int_tmp += SIMINT_SIMD_LEN;
+                dest_tmp[np] += *src_tmp;
+                src_tmp += SIMINT_SIMD_LEN;
             }
         }
     }
@@ -92,19 +91,19 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
 
     static inline
     void contract_all(int ncart,
-                      __m128d const * restrict PRIM_INT,
-                      double * restrict PRIM_PTR)
+                      __m128d const * restrict src,
+                      double * restrict dest)
     {
         //TODO efficient algorithm for this
         int offsets[2] = {0, 0};
-        contract(ncart, offsets, PRIM_INT, PRIM_PTR);
+        contract(ncart, offsets, src, dest);
     }
 
 
     static inline
     double vector_min(__m128d v)
     {
-        SIMINT_UNIONTYPE m = { v };
+        union double2 m = { v };
         double min = m.d[0];
         for(int n = 1; n < SIMINT_SIMD_LEN; n++)
             min = (m.d[n] < min ? m.d[n] : min);
@@ -115,11 +114,21 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     double vector_max(__m128d v)
     {
-        SIMINT_UNIONTYPE m = { v };
+        union double2 m = { v };
         double max = 0.0;
         for(int n = 0; n < SIMINT_SIMD_LEN; n++)
             max = (m.d[n] > max ? m.d[n] : max);
         return max;
+    }
+
+
+    static inline
+    __m128d mask_load(int nlane, double * memaddr)
+    {
+        union double2 u = { _mm128_load_pd(memaddr) };
+        for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
+            u.d[n] = 0.0;
+        return u.v;
     }
 
 #endif // defined SIMINT_SSE
