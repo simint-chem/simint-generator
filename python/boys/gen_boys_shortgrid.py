@@ -36,12 +36,8 @@ x = mp.mpf(0)
 F = []
 pts = []
 
-while x < maxx or (x-maxx < inc):
-  x2 = 2*x                   # x2 = 2*x
-  ex = mp.exp(-x)
- 
+while x < maxx:
   F2 = BoysValue(maxn, x) 
-
   F.append(F2)
   pts.append(x)
   x += inc
