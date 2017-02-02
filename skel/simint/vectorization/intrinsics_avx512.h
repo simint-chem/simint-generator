@@ -108,36 +108,31 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
 
     static inline
     void contract_fac(int ncart,
+                      const __m512d factor,
                       int const * restrict offsets,
-                      __m512d const * restrict factor,
                       __m512d const * restrict src,
                       double * restrict dest)
     {
-        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+        for(int np = 0; np < ncart; ++np)
         {
-            double const * restrict src_tmp = (double *)src + n;
-            double * restrict dest_tmp = dest + offsets[n]*ncart;
-            double factor_tmp = *((double *)factor + n);
+            union double8 vtmp = { SIMINT_MUL(src[np], factor) };
 
-            for(int np = 0; np < ncart; ++np)
-            {
-                dest_tmp[np] += factor_tmp * (*src_tmp);
-                src_tmp += SIMINT_SIMD_LEN;
-            }
+            for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+                dest[offsets[n]*ncart] += vtmp.d[n]; 
         }
     }
 
 
     static inline
     void contract_all_fac(int ncart,
+                          const __m512d factor,
                           __m512d const * restrict src,
-                          __m512d const * restrict factor,
                           double * restrict dest)
     {
         #if defined __clang__ || defined __INTEL_COMPILER
 
         for(int np = 0; np < ncart; np++)
-            dest[np] += _mm512_reduce_add_pd(_mm512_mul_pd((*factor), src[np]));
+            dest[np] += _mm512_reduce_add_pd(_mm512_mul_pd(factor, src[np]));
 
         #else
 

@@ -25,6 +25,8 @@ class Makowski_HRR : public OSTEI_HRR_Algorithm_Base
     private:
         virtual HRRDoubletStep DoubletStep_(const Doublet & target, RRStepType steptype)
         {
+            const std::string tag = target.tag;
+
             if(target.am() == 0)
                 throw std::runtime_error("Cannot HRR step to an s doublet!");
 
@@ -60,13 +62,13 @@ class Makowski_HRR : public OSTEI_HRR_Algorithm_Base
             Doublet src1d, src2d;
             if(steptype == RRStepType::I || steptype == RRStepType::K)
             {
-                src1d = Doublet{target.type, common, src1g};
-                src2d = Doublet{target.type, common, target.right};
+                src1d = Doublet{target.type, common, src1g, tag};
+                src2d = Doublet{target.type, common, target.right, tag};
             }
             else
             {
-                src1d = Doublet{target.type, src1g, common};
-                src2d = Doublet{target.type, target.left, common};
+                src1d = Doublet{target.type, src1g, common, tag};
+                src2d = Doublet{target.type, target.left, common, tag};
             }
            
             XYZStep xyzstep = IdxToXYZStep(idx);

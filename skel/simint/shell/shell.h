@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "simint/ostei/ostei_config.h"
 
 
 #define SIMINT_SCREEN_NONE         0
@@ -68,6 +69,12 @@ struct simint_multi_shellpair
     double * PB_z;      //!< Pz - Bz
 
     double * alpha;     //!< New coefficients (from GPT)
+
+    #if SIMINT_OSTEI_MAXDER >= 0
+    double * alpha2;    //!< 2*exponent on the first center
+    double * beta2;     //!< 2*exponent on the first center
+    #endif
+
     double * prefac;    //!< Prefactors for each primitive pair, including coefficients and other factors
     double * screen;    //!< Screening information (value of g_{abab} for all primitive shell pair)
     double screen_max;  //!< Maximum value in the screen array

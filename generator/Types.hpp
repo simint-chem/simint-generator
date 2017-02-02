@@ -17,30 +17,46 @@
 #include <map>
 #include <utility>
 
+
 static const char * amchar = "spdfghiklmnoqrtuvwxyzabceSPDFGHIKLMNOQRTUVWXYZABCE0123456789";
 
 //! Doublet AM (ie, AM pair for bra or ket)
-typedef std::array<int, 2> DAM;
+typedef std::array<int, 2> DAM_;
 
 //! Quartet AM (ie, AM pair for bra or ket)
-typedef std::array<int, 4> QAM;
+typedef std::array<int, 4> QAM_;
 
 //! \brief Exponents on the xyz prefactor of a gaussian
 typedef std::array<int, 3> ExpList;
 
+
+extern
+std::map<int, const std::vector<ExpList>> gorder_map; // in Ordering.cpp
+
+extern
+std::map<int, const std::vector<int>> gindex_map; // in Ordering.cpp
+
+
 //! \brief An AM quartet with some sort of tag
-struct TaggedQAM
+struct QAM
 {
-    QAM qam;
+    QAM_ qam;
     std::string tag;
 
-    TaggedQAM(int i, int j, int k, int l, std::string itag)
+    QAM(int i, int j, int k, int l, std::string itag = "")
         : qam{i,j,k,l}, tag(std::move(itag)) { }
 
-    TaggedQAM(QAM iqam, std::string itag)
+    QAM(QAM_ iqam, std::string itag = "")
         : qam(iqam), tag(std::move(itag)) { }
 
-    bool operator<(const TaggedQAM & rhs) const
+    QAM notag(void) const
+    {
+        QAM q(*this);
+        q.tag = "";
+        return q;
+    }
+
+    bool operator<(const QAM & rhs) const
     {
         if(qam < rhs.qam)
             return true;
@@ -49,13 +65,84 @@ struct TaggedQAM
         else
             return false;
     }
+
+    int & operator[](int i)
+    {
+        return qam[i];
+    }
+
+    const int & operator[](int i) const
+    {
+        return qam[i];
+    }
+
+    bool operator==(const QAM & rhs) const
+    {
+        return qam == rhs.qam && tag == rhs.tag;
+    }
+
+    bool operator!=(const QAM & rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    QAM_::iterator begin(void) { return qam.begin(); }
+    QAM_::iterator end(void) { return qam.end(); }
 };
 
-extern
-std::map<int, const std::vector<ExpList>> gorder_map; // in Ordering.cpp
 
-extern
-std::map<int, const std::vector<int>> gindex_map; // in Ordering.cpp
+//! \brief An AM doublet with some sort of tag
+struct DAM
+{
+    DAM_ dam;
+    std::string tag;
+
+    DAM(int i, int j, std::string itag = "")
+        : dam{i,j}, tag(std::move(itag)) { }
+
+    DAM(DAM_ iqam, std::string itag = "")
+        : dam(iqam), tag(std::move(itag)) { }
+
+    DAM notag(void) const
+    {
+        DAM d(*this);
+        d.tag = "";
+        return d;
+    }
+
+    bool operator<(const DAM & rhs) const
+    {
+        if(dam < rhs.dam)
+            return true;
+        else if(dam == rhs.dam)
+            return tag < rhs.tag;
+        else
+            return false;
+    }
+
+    int & operator[](int i)
+    {
+        return dam[i];
+    }
+
+    const int & operator[](int i) const
+    {
+        return dam[i];
+    }
+
+    bool operator==(const DAM & rhs) const
+    {
+        return dam == rhs.dam && tag == rhs.tag;
+    }
+
+    bool operator!=(const DAM & rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    DAM_::iterator begin(void) { return dam.begin(); }
+    DAM_::iterator end(void) { return dam.end(); }
+};
 
 
 /*! \brief Get the index of this gaussian in the standard order
@@ -321,11 +408,19 @@ struct Doublet
     DoubletType type;
     Gaussian left;
     Gaussian right;
+    std::string tag;
 
     int am(void) const { return left.am() + right.am(); }
     int index(void) const { return left.index() * right.ncart() + right.index(); }
     int ncart(void) const { return left.ncart() * right.ncart(); }
-    DAM amlist(void) const { return {left.am(), right.am()}; }
+    DAM amlist(void) const { return {left.am(), right.am(), tag}; }
+
+    Doublet notag(void) const
+    {
+        Doublet d(*this);
+        d.tag = "";
+        return d;
+    }
 
     std::string str(void) const
     {
@@ -334,6 +429,9 @@ struct Doublet
           ss << "(" << left << "  " << right << "|";
         else
           ss << "|" << left << "  " << right << ")";
+
+        if(tag.size())
+            ss << "_" << tag;
 
         return ss.str();
     }
@@ -350,6 +448,11 @@ struct Doublet
             {
                 if(right < rhs.right)
                     return true;
+                else if(right == rhs.right)
+                {
+                    if(tag < rhs.tag)
+                        return true;
+                }
             }
         }
         return false;
@@ -359,7 +462,8 @@ struct Doublet
     {
         return (left == rhs.left &&
                 right == rhs.right &&
-                type == rhs.type);
+                type == rhs.type &&
+                tag == rhs.tag);
     }
 
     operator bool(void) const
@@ -380,12 +484,19 @@ struct Quartet
     Doublet bra;
     Doublet ket;
     int m;
+    std::string tag;
 
     int am(void) const { return bra.am() + ket.am(); }
     int index(void) const { return bra.index() * ket.ncart() + ket.index(); }
     int ncart(void) const { return bra.ncart() * ket.ncart(); }
     QAM amlist(void) const { return { bra.left.am(), bra.right.am(),
-                                          ket.left.am(), ket.right.am() }; }
+                                      ket.left.am(), ket.right.am(), tag }; }
+    Quartet notag(void) const
+    {
+        Quartet q(*this);
+        q.tag = "";
+        return q;
+    }
 
     Doublet get(DoubletType type) const
     {
@@ -398,6 +509,10 @@ struct Quartet
         ss << "( " << bra.left << "  " << bra.right << " | "
                    << ket.left << "  " << ket.right << " )^"
                    << m;
+
+        if(tag.size())
+            ss << "_" << tag;
+
         return ss.str();
     }
 
@@ -418,6 +533,11 @@ struct Quartet
                 {
                     if(m < rhs.m)
                         return true;
+                    else if(m == rhs.m)
+                    {
+                        if(tag < rhs.tag)
+                            return true;
+                    }
                 }
             }
         }
@@ -460,11 +580,9 @@ typedef std::set<int> IntSet;
 
 typedef std::set<QAM> QAMSet;
 typedef std::set<DAM> DAMSet;
-typedef std::set<TaggedQAM> TaggedQAMSet;
 
 typedef std::vector<QAM> QAMList;
 typedef std::vector<DAM> DAMList;
-typedef std::vector<TaggedQAM> TaggedQAMList;
 
 typedef std::set<Quartet> QuartetSet;
 typedef std::set<Doublet> DoubletSet;

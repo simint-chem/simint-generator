@@ -84,18 +84,6 @@ void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
     os << "\n\n";
 }
 
-void OSTEI_VRR_Writer::DeclarePrimPointers(std::ostream & os) const
-{
-    for(const auto & am : vrr_algo_.GetAllAM()) 
-    {
-        if(info_.IsContQ(am))
-            os << indent4 << "double * restrict " << PrimPtrName(am)
-               << " = " << ArrVarName(am) << " + abcd * " << NCART(am) << ";\n";
-    }
-
-    os << "\n\n";
-}
-
 void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepSet & vs, const std::string & num_n) const
 {
     os << "\n";

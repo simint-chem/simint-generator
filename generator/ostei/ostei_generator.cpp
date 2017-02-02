@@ -19,7 +19,7 @@ int main(int argc, char ** argv)
     // other stuff
     std::string fpath;
     std::string hpath;
-    QAM finalam;
+    QAM finalam{0,0,0,0};
 
     bool finalamset = false;
 

@@ -26,7 +26,7 @@ public:
     OSTEI_Writer_Base & operator=(const OSTEI_Writer_Base &) = default;
     OSTEI_Writer_Base & operator=(OSTEI_Writer_Base &&) = default;
 
-
+    void DeclarePrimPointers(void) const;
 
     virtual void WriteFile(void) const = 0;
 
@@ -37,7 +37,6 @@ protected:
     const OSTEI_GeneratorInfo & info_;
     const OSTEI_VRR_Writer & vrr_writer_;
     const OSTEI_HRR_Writer & hrr_writer_;
-
 };
 
 
@@ -77,14 +76,16 @@ public:
 
 private:
     void DeclareContwork(void) const;
-    void ZeroContwork(void) const;
-    void FreeContwork(void) const;
     void WriteShellOffsets(void) const;
-    void WriteShellOffsets_Scalar(void) const;
     void WriteAccumulation(void) const;
 
-    void WriteFile_Permute_(void) const;
-    void WriteFile_NoPermute_(void) const;
+    std::string FunctionName_(QAM am) const;
+    std::string FunctionPrototype_(QAM am) const;
+
+    bool IsSpecialPermutation_(QAM am) const;
+    void Write_Full_(void) const;
+    void Write_Permutations_(void) const;
+    void Write_Permute_(QAM am, bool swap12, bool swap34) const;
 };
 
 

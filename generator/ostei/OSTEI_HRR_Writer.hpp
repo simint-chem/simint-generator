@@ -34,9 +34,9 @@ class OSTEI_HRR_Writer
         int start_external_;
         int start_general_;
 
-        void WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+        void WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps, const std::string & tag,
                             const std::string & ncart_ket, const std::string & ketstr) const;
-        void WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+        void WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps, const std::string & tag,
                             const std::string & ncart_ket, const std::string & brastr) const;
 
         void WriteHRR_Bra_Inline_(std::ostream & os, QAM am) const;

@@ -298,13 +298,19 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
     // so store what we initially want
     //PrintQuartetSet(q, "Initial VRR");
 
+    // strip off the tags. They don't mean anything in VRR
+    QuartetSet qnew;
+    for(auto & it : q)
+        qnew.insert(it.notag());
+
+
     VRR_StepMap newmap;
 
     // solved quartets
     QuartetSet solvedquartets;
 
     // unsolved quartets
-    QuartetSet targets = q;
+    QuartetSet targets = qnew;
     PruneQuartets_(targets);
 
     for(int i = 0; i < 4; i++)
@@ -440,7 +446,7 @@ void OSTEI_VRR_Algorithm_Base::Create_WithOrder(const QuartetSet & q, IdxOrder i
 
 
     // order the AM
-    for(const auto & it : q) 
+    for(const auto & it : qnew) 
         AMOrder_AddWithDependencies_(amorder_, it.amlist());
 
 } 

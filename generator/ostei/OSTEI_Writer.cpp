@@ -36,16 +36,15 @@ void OSTEI_Writer::DeclareContwork(void) const
 
     for(const auto & it : info_.GetContQ())
     {
-        if(!info_.IsFinalAM(it.qam))
+        if(!info_.IsFinalAM(it))
         {
             os_ << indent1 << "double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
-            ptidx += NCART(it.qam);
+            ptidx += NCART(it);
         }
     }
 
     os_ << "\n";
 }
-
 
 void OSTEI_Writer::WriteShellOffsets(void) const
 {
@@ -65,7 +64,7 @@ void OSTEI_Writer::WriteShellOffsets(void) const
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
     
     for(const auto it : info_.GetContQ())
-        os_ << indent7 << PrimPtrName(it) << " += " << NCART(it.qam) << ";\n";
+        os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
 
     os_ << indent6 << "}\n";
     os_ << indent6 << "iprimcd++;\n";
@@ -100,8 +99,8 @@ void OSTEI_Writer::WriteAccumulation(void) const
 
     for(const auto it : info_.GetContQ())
     {
-        int ncart = NCART(it.qam);
-        os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it.qam) << ", " << PrimPtrName(it.qam) << ");\n";
+        int ncart = NCART(it);
+        os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
     }
     os_ << indent5 << "}\n";
     os_ << indent5 << "else\n";
@@ -109,12 +108,12 @@ void OSTEI_Writer::WriteAccumulation(void) const
 
     for(const auto it : info_.GetContQ())
     {
-        int ncart = NCART(it.qam);
+        int ncart = NCART(it);
         os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
     }
 
     for(const auto it : info_.GetContQ())
-        os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
+        os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
 
     os_ << indent5 << "}\n";
 }
@@ -439,9 +438,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "iprimcd = 0;\n";
     os_ << indent4 << "nprim_icd = Q.nprim12[cd];\n";
 
-    // Note: vrr_writer handles the prim pointers for s_s_s_s
-    //       so we always want to run this
-    vrr_writer_.DeclarePrimPointers(os_);
+    DeclarePrimPointers();
     os_ << "\n";
 
     os_ << indent4 << "// Load these one per loop over i\n";
@@ -477,7 +474,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent6 << "if(vmax > screen_tol)\n";
     os_ << indent6 << "{\n";
     for(const auto it : info_.GetContQ())
-        os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it.qam) << ";\n";
+        os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
     os_ << indent7 << "continue;\n";
     os_ << indent6 << "}\n";
     os_ << indent5 << "}\n\n";

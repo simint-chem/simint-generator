@@ -99,6 +99,38 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
         contract(ncart, offsets, src, dest);
     }
 
+    static inline
+    void contract_fac(int ncart,
+                      __m128d factor,
+                      int const * restrict offsets,
+                      __m128d const * restrict src,
+                      double * restrict dest)
+    {
+        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+        {
+            double const * restrict src_tmp = (double *)src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
+
+            for(int np = 0; np < ncart; ++np)
+            {
+                dest_tmp[np] += *src_tmp;
+                src_tmp += SIMINT_SIMD_LEN;
+            }
+        }
+    }
+
+
+    static inline
+    void contract_all_fac(int ncart,
+                          __m128d factor,
+                          __m128d const * restrict src,
+                          double * restrict dest)
+    {
+        //TODO efficient algorithm for this
+        int offsets[2] = {0, 0};
+        contract(ncart, offsets, src, dest);
+    }
+
 
     static inline
     double vector_min(__m128d v)

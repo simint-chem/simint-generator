@@ -36,17 +36,23 @@ ConstantMap OSTEI_HRR_Writer::GetConstants(void) const
 
 
 void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+                                      const std::string & tag,
                                       const std::string & ncart_ket, const std::string & ketstr) const
 {
-    //if(info_.Vectorized())
-    //    os << indent4 << "#pragma omp simd simdlen(SIMINT_SIMD_LEN)\n";
-
     os << indent4 << "for(iket = 0; iket < " << ncart_ket << "; ++iket)\n";
     os << indent4 << "{\n";
 
     for(const auto & it : steps)
     {
         //os << std::string(20, ' ') << "// " << it << "\n";
+
+        // add the appropriate integral tags
+        Doublet target(it.target);
+        Doublet src0(it.src[0]);
+        Doublet src1(it.src[1]);
+        target.tag = tag;
+        src0.tag = tag;
+        src1.tag = tag;
     
         const char * sign = " + ";
         if(it.type == RRStepType::I) // moving from J->I
@@ -54,12 +60,12 @@ void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepLis
 
         os << std::string(20, ' ');
 
-        os << HRRBraStepVar_(it.target, ncart_ket, ketstr);
+        os << HRRBraStepVar_(target, ncart_ket, ketstr);
 
         os << " = ";
-        os << HRRBraStepVar_(it.src[0], ncart_ket, ketstr);
+        os << HRRBraStepVar_(src0, ncart_ket, ketstr);
         os << sign << "( hAB[" << static_cast<int>(it.xyz) << "] * ";
-        os << HRRBraStepVar_(it.src[1], ncart_ket, ketstr);
+        os << HRRBraStepVar_(src1, ncart_ket, ketstr);
         os << " );";
         os << "\n\n";
     }
@@ -70,6 +76,7 @@ void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepLis
 
 
 void OSTEI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepList & steps,
+                                      const std::string & tag,
                                       const std::string & ncart_bra, const std::string & brastr) const
 {
     //if(info_.Vectorized())
@@ -81,18 +88,27 @@ void OSTEI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepLis
     {
         //os << std::string(20, ' ') << "// " << it << "\n";
 
+        // add the appropriate integral tags
+        Doublet target(it.target);
+        Doublet src0(it.src[0]);
+        Doublet src1(it.src[1]);
+        target.tag = tag;
+        src0.tag = tag;
+        src1.tag = tag;
+
         const char * sign = " + ";
         if(it.type == RRStepType::K) // Moving from L->K
             sign = " - ";
 
         os << std::string(20, ' ');
     
-        os << HRRKetStepVar_(it.target, brastr);
+        os << HRRKetStepVar_(target, brastr);
 
         os << " = ";
-        os << HRRKetStepVar_(it.src[0], brastr);
+
+        os << HRRKetStepVar_(src0, brastr);
         os << sign << "( hCD[" << static_cast<int>(it.xyz) << "] * ";
-        os << HRRKetStepVar_(it.src[1], brastr);
+        os << HRRKetStepVar_(src1, brastr);
         os << " );";
         os << "\n\n";
     }
@@ -102,16 +118,16 @@ void OSTEI_HRR_Writer::WriteKetSteps_(std::ostream & os, const HRRDoubletStepLis
 
 
 std::string OSTEI_HRR_Writer::HRRBraStepVar_(const Doublet & d, const std::string & ncart_ket, 
-                                           const std::string & ketstr) const
+                                             const std::string & ketstr) const
 {
-    std::string arrname = ArrVarName(d.left.am(), d.right.am(), ketstr);
+    std::string arrname = ArrVarName(d, ketstr);
     return StringBuilder("HRR_", arrname, "[", d.index(), " * ", ncart_ket, " + iket]"); 
 }
 
 
 std::string OSTEI_HRR_Writer::HRRKetStepVar_(const Doublet & d, const std::string & brastr) const
 {
-    std::string arrname = ArrVarName(brastr, d.left.am(), d.right.am());
+    std::string arrname = ArrVarName(brastr, d);
     return StringBuilder("HRR_", arrname, "[ibra * ", d.ncart(), " + ", d.index(), "]"); 
 }
 
@@ -203,7 +219,8 @@ void OSTEI_HRR_Writer::WriteHRR_Bra_Inline_(std::ostream & os, QAM am) const
     std::string ket_str = StringBuilder(amchar[am[2]], "_", amchar[am[3]]);
 
     // actually write out the steps now
-    WriteBraSteps_(os, hrr_algo_.GetBraSteps({am[0], am[1]}), ncart_ket_str, ket_str);
+    auto brasteps = hrr_algo_.GetBraSteps(DAM{am[0], am[1]});
+    WriteBraSteps_(os, brasteps, am.tag, ncart_ket_str, ket_str);
 }
 
 void OSTEI_HRR_Writer::WriteHRR_Ket_Inline_(std::ostream & os, QAM am) const
@@ -214,7 +231,8 @@ void OSTEI_HRR_Writer::WriteHRR_Ket_Inline_(std::ostream & os, QAM am) const
     // the bra part in string form
     std::string bra_str = StringBuilder(amchar[am[0]], "_", amchar[am[1]]);
 
-    WriteKetSteps_(os, hrr_algo_.GetKetSteps(DAM{am[2], am[3]}), ncart_bra_str, bra_str);
+    auto ketsteps = hrr_algo_.GetKetSteps(DAM{am[2], am[3]});
+    WriteKetSteps_(os, ketsteps, am.tag, ncart_bra_str, bra_str);
 }
 
 void OSTEI_HRR_Writer::WriteHRR_Bra_External_(std::ostream & os, QAM am) const
@@ -318,7 +336,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
         of << indent1 << "int iket;\n";
         of << "\n";
 
-        WriteBraSteps_(of, brasteps, "ncart_ket", "X_X"); 
+        WriteBraSteps_(of, brasteps, "", "ncart_ket", "X_X"); 
 
         of << "\n";
         of << "}\n";
@@ -363,7 +381,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
         of << indent1 << "int ibra;\n";
         of << "\n";
 
-        WriteKetSteps_(of, ketsteps, "ncart_bra", "X_X"); 
+        WriteKetSteps_(of, ketsteps, "", "ncart_bra", "X_X"); 
 
         of << "\n";
         of << "}\n";

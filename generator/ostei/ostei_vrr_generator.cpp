@@ -14,7 +14,7 @@ int main(int argc, char ** argv)
     try {
 
     // quartet we are looking for
-    QAM finalam;
+    QAM finalam{0,0,0,0};
 
     // other stuff
     std::string fpath;

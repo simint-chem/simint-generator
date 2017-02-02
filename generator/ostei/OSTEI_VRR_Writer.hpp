@@ -26,7 +26,6 @@ class OSTEI_VRR_Writer
         bool HasVRR_L(void) const;
 
         void DeclarePrimArrays(std::ostream & os) const;
-        void DeclarePrimPointers(std::ostream & os) const;
 
 
         virtual ConstantMap GetConstants(void) const;

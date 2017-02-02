@@ -35,7 +35,7 @@ extern "C" {
     {
         for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
         {
-            double const * restrict src_tmp = (double *)src + n;
+            double const * restrict src_tmp = src + n;
             double * restrict dest_tmp = dest + offsets[n]*ncart;
 
             for(int np = 0; np < ncart; ++np)
@@ -51,9 +51,38 @@ extern "C" {
                       double const * restrict src,
                       double * restrict dest)
     {
-        // should never be called
         int offsets[1] = {0};
         contract(ncart, offsets, src, dest);
+    }
+
+    static inline
+    void contract_fac(int ncart,
+                      double factor,
+                      int const * restrict offsets,
+                      double const * restrict src,
+                      double * restrict dest)
+    {
+        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+        {
+            double const * restrict src_tmp = src + n;
+            double * restrict dest_tmp = dest + offsets[n]*ncart;
+
+            for(int np = 0; np < ncart; ++np)
+            {
+                dest_tmp[np] += factor*(*src_tmp);
+                src_tmp += SIMINT_SIMD_LEN;
+            }
+        }
+    }
+
+    static inline
+    void contract_all_fac(int ncart,
+                          double factor,
+                          double const * restrict src,
+                          double * restrict dest)
+    {
+        int offsets[1] = {0};
+        contract_fac(ncart, factor, offsets, src, dest);
     }
 
     static inline

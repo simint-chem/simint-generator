@@ -74,18 +74,20 @@ void OSTEI_HRR_Algorithm_Base::AMOrder_AddWithDependencies_(QAMList & order,
         // prefer ket first
         if(allketam_.count(ketam))
         {
+            // tag gets re-added here
             smap[iam] = DoubletType::KET;
             DAMSet dam = GetKetAMReq(ketam);
             for(const auto & it : dam)
-                qamnew.insert({iam[0], iam[1], it[0], it[1]});
+                qamnew.insert({iam[0], iam[1], it[0], it[1], iam.tag});
         }
         else
         {
             // do bra
+            // tag gets re-added here
             smap[iam] = DoubletType::BRA;
             DAMSet dam = GetBraAMReq(braam);
             for(const auto & it : dam)
-                qamnew.insert({it[0], it[1], iam[2], iam[3]});
+                qamnew.insert({it[0], it[1], iam[2], iam[3], iam.tag});
         }
 
         amdone.insert(iam);
@@ -168,6 +170,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am)
 
     for(auto & iam : am)
     {
+        // strip of the tag here
         auto add_targets = GenerateDoubletTargets({iam[2],iam[3]}, DoubletType::KET);
         initkets.insert(add_targets.begin(), add_targets.end());
     }
@@ -212,6 +215,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am)
     DoubletSet initbras, solvedbras, prunedbra;
     for(auto & iam : am)
     {
+        // this strips off the tag
         auto add_targets = GenerateDoubletTargets({iam[0],iam[1]}, DoubletType::BRA);
         initbras.insert(add_targets.begin(), add_targets.end());
     }
@@ -279,33 +283,32 @@ QuartetSet OSTEI_HRR_Algorithm_Base::TopQuartets(void) const
 
 RRStepType OSTEI_HRR_Algorithm_Base::GetBraRRStep(DAM dam) const
 {
-    return brasteps_.at(dam).begin()->type;
+    return brasteps_.at(dam.notag()).begin()->type;
 }
 
 RRStepType OSTEI_HRR_Algorithm_Base::GetKetRRStep(DAM dam) const
 {
-    return ketsteps_.at(dam).begin()->type;
+    return ketsteps_.at(dam.notag()).begin()->type;
 }
 
 DAMSet OSTEI_HRR_Algorithm_Base::GetBraAMReq(DAM am) const
 {
-    return brareq_.at(am);
+    return brareq_.at(am.notag());
 }
 
 DAMSet OSTEI_HRR_Algorithm_Base::GetKetAMReq(DAM am) const
 {
-    return ketreq_.at(am);
+    return ketreq_.at(am.notag());
 }
-
 
 HRRDoubletStepList OSTEI_HRR_Algorithm_Base::GetBraSteps(DAM am) const
 {
-    return brasteps_.at(am);
+    return brasteps_.at(am.notag());
 }
 
 HRRDoubletStepList OSTEI_HRR_Algorithm_Base::GetKetSteps(DAM am) const
 {
-    return ketsteps_.at(am);
+    return ketsteps_.at(am.notag());
 }
 
 bool OSTEI_HRR_Algorithm_Base::HasHRR(void) const
@@ -339,20 +342,20 @@ QAMList OSTEI_HRR_Algorithm_Base::GenerateAMReq(QAM am, RRStepType rrstep) const
     switch(rrstep)
     {
         case RRStepType::I:
-            req.push_back({am[0]-1, am[1]+1, am[2]  , am[3]  });
-            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  });
+            req.push_back({am[0]-1, am[1]+1, am[2]  , am[3]  , am.tag });
+            req.push_back({am[0]-1, am[1]  , am[2]  , am[3]  , am.tag });
             break;
         case RRStepType::J:
-            req.push_back({am[0]+1, am[1]-1, am[2]  , am[3]  });
-            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  });
+            req.push_back({am[0]+1, am[1]-1, am[2]  , am[3]  , am.tag });
+            req.push_back({am[0]  , am[1]-1, am[2]  , am[3]  , am.tag });
             break;
         case RRStepType::K:
-            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]+1});
-            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  });
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]+1, am.tag});
+            req.push_back({am[0]  , am[1]  , am[2]-1, am[3]  , am.tag});
             break;
         case RRStepType::L:
-            req.push_back({am[0]  , am[1]  , am[2]+1, am[3]-1});
-            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1});
+            req.push_back({am[0]  , am[1]  , am[2]+1, am[3]-1, am.tag});
+            req.push_back({am[0]  , am[1]  , am[2]  , am[3]-1, am.tag});
             break;
     }
 

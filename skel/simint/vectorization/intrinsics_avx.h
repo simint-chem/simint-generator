@@ -133,14 +133,14 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
 
     static inline
     void contract_fac(int ncart,
+                      const __m256d factor,
                       int const * restrict offsets,
-                      __m256d const * restrict factor,
                       __m256d const * restrict src,
                       double * restrict dest)
     {
         for(int np = 0; np < ncart; ++np)
         {
-            union double4 vtmp = { SIMINT_MUL(src[np], *factor) };
+            union double4 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
                 dest[offsets[n]*ncart] += vtmp.d[n]; 
@@ -150,8 +150,8 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
 
     static inline
     void contract_all_fac(int ncart,
+                          const __m256d factor,
                           __m256d const * restrict src,
-                          __m256d const * restrict factor,
                           double * restrict dest)
     {
         #if defined __clang__ || defined __INTEL_COMPILER
@@ -161,8 +161,8 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
 
         for(n = 0, n4 = 0; n < nbatch; n++, n4 += 4)
         {
-            __m256d t1 = _mm256_hadd_pd(SIMINT_MUL((*factor), src[n4]), SIMINT_MUL((*factor), src[n4+1]));
-            __m256d t2 = _mm256_hadd_pd(SIMINT_MUL((*factor), src[n4+2]), SIMINT_MUL((*factor), src[n4+3]));
+            __m256d t1 = _mm256_hadd_pd(SIMINT_MUL(factor, src[n4]), SIMINT_MUL(factor, src[n4+1]));
+            __m256d t2 = _mm256_hadd_pd(SIMINT_MUL(factor, src[n4+2]), SIMINT_MUL(factor, src[n4+3]));
             __m256d t3 = _mm256_set_m128d(  _mm256_extractf128_pd(t2, 0) + _mm256_extractf128_pd(t2, 1),
                                             _mm256_extractf128_pd(t1, 0) + _mm256_extractf128_pd(t1, 1));
             _mm256_storeu_pd(dest + n4, (_mm256_loadu_pd(dest + n4) + t3));
@@ -172,7 +172,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
         const int done = ncart - left;
         for(n = done; n < ncart; n++)
         {
-            __m256d vtmp = SIMINT_MUL((*factor), src[n]);
+            __m256d vtmp = SIMINT_MUL(factor, src[n]);
             union double4 tmp = { vtmp };
             dest[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
         }

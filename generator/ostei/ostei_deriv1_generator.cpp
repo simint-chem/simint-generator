@@ -9,7 +9,7 @@
 #include "generator/ostei/OSTEI_VRR_Writer.hpp"
 #include "generator/ostei/OSTEI_HRR_Writer.hpp"
 #include "generator/ostei/OSTEI_Writer.hpp"
-
+#include "generator/Printing.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -19,7 +19,7 @@ int main(int argc, char ** argv)
     // other stuff
     std::string fpath;
     std::string hpath;
-    QAM finalam;
+    QAM finalam{0,0,0,0};
 
     bool finalamset = false;
 
@@ -93,22 +93,19 @@ int main(int argc, char ** argv)
     std::set<QAM> needed_am;
 
     // We only need to do three centers. The fourth is free
+    const char * dir[4] = {"2a", "2b", "2c", "2d"};
     for(int i = 0; i < 3; i++)
     {
-        QAM amtmp_p(finalam);
+        QAM amtmp_p(finalam.qam, dir[i]);
         QAM amtmp_m(finalam);
-        amtmp_p[i]++;
-        amtmp_m[i]--;
+        amtmp_p.qam[i]++;
+        amtmp_m.qam[i]--;
 
         needed_am.insert(amtmp_p);
         if(ValidQAM(amtmp_m))
             needed_am.insert(amtmp_m);
     }
 
-    std::cout << "Here\n";
-    for(auto it : needed_am)
-        std::cout << it[0] << it[1] << it[2] << it[3] << "\n";
-    std::cout << "\n";
 
     hrralgo.Create(needed_am);
     OSTEI_HRR_Writer hrr_writer(hrralgo, info,
@@ -116,6 +113,9 @@ int main(int argc, char ** argv)
                                 options[Option::GeneralHRR]);
 
     QuartetSet topquartets = hrralgo.TopQuartets();
+
+    PrintQuartetSet(topquartets, "HERE");
+    std::cout << "\n";
 
     // 2.) VRR Steps
     vrralgo.Create(topquartets);

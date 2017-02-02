@@ -55,6 +55,12 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
                     SWAP_D(P->alpha)
                     SWAP_D(P->prefac)
                     SWAP_D(P->screen)
+
+                    #if SIMINT_OSTEI_MAXDER >= 0
+                    SWAP_D(P->alpha2);
+                    SWAP_D(P->beta2);
+                    #endif
+
                     swapped = 1;
                 }
             }
@@ -77,7 +83,13 @@ static void simint_allocate_multi_shellpair_base(int npair, int nprim,
     const size_t ishell12_size = npair * sizeof(int);
     const size_t dshell12_size = npair * sizeof(double);
 
+
+    #if SIMINT_OSTEI_MAXDER >= 0
+    const size_t memsize = dprim_size*14 + dshell12_size*3 + ishell12_size;
+    #else
     const size_t memsize = dprim_size*12 + dshell12_size*3 + ishell12_size;
+    #endif
+
 
     // Allocate one large space.
     // Only allocate if the currently allocated memory is too small
@@ -102,10 +114,15 @@ static void simint_allocate_multi_shellpair_base(int npair, int nprim,
     P->prefac     = P->ptr + dprim_size*(dcount++);
     P->screen     = P->ptr + dprim_size*(dcount++);
 
-    P->AB_x       = P->ptr + 12*dprim_size;
-    P->AB_y       = P->ptr + 12*dprim_size +   dshell12_size;
-    P->AB_z       = P->ptr + 12*dprim_size + 2*dshell12_size;
-    P->nprim12    = P->ptr + 12*dprim_size + 3*dshell12_size;
+    #if SIMINT_OSTEI_MAXDER >= 0
+    P->alpha2     = P->ptr + dprim_size*(dcount++);
+    P->beta2      = P->ptr + dprim_size*(dcount++);
+    #endif
+
+    P->AB_x       = P->ptr + dcount*dprim_size;
+    P->AB_y       = P->ptr + dcount*dprim_size +   dshell12_size;
+    P->AB_z       = P->ptr + dcount*dprim_size + 2*dshell12_size;
+    P->nprim12    = P->ptr + dcount*dprim_size + 3*dshell12_size;
 }
 
 
@@ -371,6 +388,12 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                 P->PB_z[idx] = P->z[idx] - B->z;
 
                 P->alpha[idx] = ab_sum;
+
+                #if SIMINT_OSTEI_MAXDER >= 0
+                P->alpha2[idx] = 2.0 * alpha_i;
+                P->beta2[idx] = 2.0 * alpha_j;
+                #endif
+
                 ++idx;
             }
         }
@@ -387,7 +410,16 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
         {
             // fill in alpha = 1 until next boundary
             while(idx < SIMINT_SIMD_ROUND(idx))
-                P->alpha[idx++] = 1.0;
+            {
+                P->alpha[idx] = 1.0;
+
+                #if SIMINT_OSTEI_MAXDER >= 0
+                P->alpha2[idx] = 1.0;
+                P->beta2[idx] = 1.0;
+                #endif
+
+                idx++;
+            }
         }
 
         P->nprim12[sasb] = nprim;

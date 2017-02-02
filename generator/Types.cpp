@@ -27,15 +27,15 @@ QuartetSet GenerateQuartetTargets(QAM am)
         Gaussian cur2 = Gaussian{am[1], 0, 0};
         for(int j = 0; j < nam2; j++)
         {
-            Doublet bra{DoubletType::BRA, cur1, cur2};
+            Doublet bra{DoubletType::BRA, cur1, cur2, am.tag};
             Gaussian cur3 = Gaussian{am[2], 0, 0};
             for(int k = 0; k < nam3; k++)
             {
                 Gaussian cur4 = Gaussian{am[3], 0, 0};
                 for(int l = 0; l < nam4; l++)
                 {
-                    Doublet ket{DoubletType::KET, cur3, cur4};
-                    qs.insert(Quartet{bra, ket, 0});
+                    Doublet ket{DoubletType::KET, cur3, cur4, am.tag};
+                    qs.insert(Quartet{bra, ket, 0, am.tag});
                     cur4.Iterate();
                 } 
 
@@ -63,7 +63,7 @@ DoubletSet GenerateDoubletTargets(DAM am, DoubletType type)
         Gaussian cur2 = Gaussian{am[1], 0, 0};
         for(int j = 0; j < nam2; j++)
         {
-            ds.insert(Doublet{type, cur1, cur2});
+            ds.insert(Doublet{type, cur1, cur2, am.tag});
             cur2.Iterate();
         }
         cur1.Iterate();
@@ -77,36 +77,6 @@ DoubletSet GenerateDoubletTargets(DAM am, DoubletType type)
 int GaussianOrder(const ExpList & ijk)
 {
     int am = ijk[0] + ijk[1] + ijk[2];
-/*
-    // new way - much faster than the lookup
-    if(am == 0)
-        return 0;
-    else if(am == 1)
-        return ijk[0]*0 + ijk[1]*1 + ijk[2]*2;
-    else
-    {
-        if(ijk[0])
-            return GaussianOrder(ExpList{ijk[0]-1, ijk[1], ijk[2]});
-        else if(ijk[1])
-        {
-            int ncart1 = (am*(am+1))/2;
-            int ncart2 = ((am-1)*am)/2;
-            return ncart1-ncart2+GaussianOrder(ExpList{0, ijk[1]-1, ijk[2]});
-        }
-        else
-            return ((am+1)*(am+2))/2 - 1;
-    }
-*/
-/*
-    // Old way. Slow, but foolproof
-    const std::vector<ExpList> & v = gorder_map.at(am);
-
-    auto it = std::find(v.begin(), v.end(), ijk);
-    if(it == v.end())
-        throw std::runtime_error("Gaussian not found in gorder_map");
-
-    return std::distance(v.begin(), it);
-*/
 
     const std::vector<int> & v = gindex_map.at(am);
 

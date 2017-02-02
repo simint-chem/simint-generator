@@ -519,8 +519,8 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                         do
                         {
                             {
-                                // the 9 unique components
-                                double myints[9] = {0.0};
+                                // the 12 total components
+                                double myints[12] = {0.0};
                                 
                                 for(int m = 0; m < A[i].nprim; m++)
                                 for(int n = 0; n < B[j].nprim; n++)
@@ -608,11 +608,14 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                                     }
 
                                     // The fourth center can be determined from the other three
+                                    myints[3*3+0] = -(myints[0*3+0] + myints[1*3+0] + myints[2*3+0]);
+                                    myints[3*3+1] = -(myints[0*3+1] + myints[1*3+1] + myints[2*3+1]);
+                                    myints[3*3+2] = -(myints[0*3+2] + myints[1*3+2] + myints[2*3+2]);
                                 }
 
                                 // copy to the final integrals
-                                std::copy(myints, myints+9, integrals + idxstart + idx);
-                                idx += 9;
+                                std::copy(myints, myints+12, integrals + idxstart + idx);
+                                idx += 12;
 
                             }
                         } while(IterateGaussian(g4));
