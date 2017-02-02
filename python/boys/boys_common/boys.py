@@ -8,9 +8,6 @@
 
 import mpmath as mp  # arbitrary-precision math
 
-# precision of the BoysValue
-eps = 1e-16
-
 def BoysValue(n, x):
     F = []
 
@@ -24,3 +21,17 @@ def BoysValue(n, x):
 
     return F
 
+
+def BoysValue_Asymptotic(n, x):
+    F = []
+
+    if x == mp.mpf("0"):
+        for i in range(0, n+1):
+            F.append(mp.mpf(1.0)/(mp.mpf(2.0*i+1)))
+    else:
+        for i in range(0, n+1):
+            val = mp.sqrt( mp.pi() / mp.power(x, 2*i+1) )
+            val *= ( mp.fac2(2*i-1) / mp.power("2", i+1) )
+            F.append(val)
+
+    return F

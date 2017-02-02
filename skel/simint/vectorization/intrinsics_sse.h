@@ -125,7 +125,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     __m128d mask_load(int nlane, double * memaddr)
     {
-        union double2 u = { _mm128_load_pd(memaddr) };
+        union double2 u = { _mm_load_pd(memaddr) };
         for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
             u.d[n] = 0.0;
         return u.v;
