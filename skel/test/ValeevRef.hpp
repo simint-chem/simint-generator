@@ -12,9 +12,9 @@ void ValeevRef_Finalize(void);
 
 
 // Calculating reference integrals
-void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
-                         simint_shell const * const B, int nshell2,
-                         simint_shell const * const C, int nshell3,
-                         simint_shell const * const D, int nshell4,
+void ValeevRef_Integrals(simint_shell const * const A, int nshellA,
+                         simint_shell const * const B, int nshellB,
+                         simint_shell const * const C, int nshellC,
+                         simint_shell const * const D, int nshellD,
                          double * const integrals, int deriv, bool normalize);
 

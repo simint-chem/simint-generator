@@ -570,7 +570,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << "\n";
     os_ << indent5 << "//////////////////////////////////////////////\n";
     os_ << indent5 << "// Fjt function section\n";
-    os_ << indent5 << "// Maximum v value: " << info_.L() << "\n";
+    os_ << indent5 << "// Maximum v value: " << (info_.L()+1) << "\n";
     os_ << indent5 << "//////////////////////////////////////////////\n";
     os_ << indent5 << "// The parameter to the Fjt function\n";
     os_ << indent5 << "const SIMINT_DBLTYPE F_x = SIMINT_MUL(R2, alpha);\n";
@@ -581,7 +581,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = mask_load(nlane, Q.prefac + j);\n";
     os_ << "\n\n"; 
     os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
-                   << ", F_x, " << info_.L() << ");\n";
+                   << ", F_x, " << (info_.L()+1) << ");\n";
 
 
     // prefac = sqrt(1/PQalpha_sum) * P_prefac * Q_prefac
@@ -591,7 +591,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     const std::string name0000 = PrimVarName({0,0,0,0});
     const std::string name0000n = name0000 + "[n]";
 
-    os_ << indent5 << "for(n = 0; n <= " << info_.L() << "; n++)\n"
+    os_ << indent5 << "for(n = 0; n <= " << (info_.L()+1) << "; n++)\n"
         << indent6 << name0000n << " = SIMINT_MUL(" << name0000n << ", prefac);\n";
 
 

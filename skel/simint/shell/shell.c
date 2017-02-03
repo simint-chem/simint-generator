@@ -367,19 +367,22 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
             {
                 const double alpha_j = B->alpha[j];
                 const double ab_sum = alpha_i + alpha_j;
-                const double oo_ab_sum = 1.0 / ab_sum;
                 const double ab_mul = alpha_i * alpha_j;
 
+                // multiplying by reciprocal of ab_sum resulted
+                // in small numerical differences
+                //const double oo_ab_sum = 1.0 / ab_sum;
+
                 P->prefac[idx] = A->coef[i] * B->coef[j]
-                                 * exp(-Xab * ab_mul * oo_ab_sum)
-                                 * SQRT_TWO_PI_52 * oo_ab_sum;
+                                 * exp(-Xab * ab_mul / ab_sum)
+                                 * SQRT_TWO_PI_52 / ab_sum;
 
                 if(same_shell && (i != j))
                     P->prefac[idx] *= 2.0;
 
-                P->x[idx] = (AxAa + alpha_j * B->x) * oo_ab_sum;
-                P->y[idx] = (AyAa + alpha_j * B->y) * oo_ab_sum;
-                P->z[idx] = (AzAa + alpha_j * B->z) * oo_ab_sum;
+                P->x[idx] = (AxAa + alpha_j * B->x) / ab_sum;
+                P->y[idx] = (AyAa + alpha_j * B->y) / ab_sum;
+                P->z[idx] = (AzAa + alpha_j * B->z) / ab_sum;
                 P->PA_x[idx] = P->x[idx] - A->x;
                 P->PA_y[idx] = P->y[idx] - A->y;
                 P->PA_z[idx] = P->z[idx] - A->z;
@@ -390,8 +393,19 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                 P->alpha[idx] = ab_sum;
 
                 #if SIMINT_OSTEI_MAXDER >= 0
-                P->alpha2[idx] = 2.0 * alpha_i;
-                P->beta2[idx] = 2.0 * alpha_j;
+                if(same_shell && (i != j))
+                {
+                    // there is already a factor of 2.0 in the prefac,
+                    // so we don't need it here (work it out and see
+                    // for yourself why we don't need it)
+                    P->alpha2[idx] = (alpha_i + alpha_j);
+                    P->beta2[idx] = (alpha_i + alpha_j);
+                }
+                else
+                {
+                    P->alpha2[idx] = 2.0 * alpha_i;
+                    P->beta2[idx] = 2.0 * alpha_j;
+                }
                 #endif
 
                 ++idx;

@@ -170,7 +170,7 @@ int main(int argc, char ** argv)
             // if the return is < 0, it didn't calculate anything
             // (everything was screened)
             if(simint_ret < 0)
-                std::fill(res_simint, res_simint + nshell1234*ncart1234, 0.0);
+                std::fill(res_simint, res_simint + nshell1234*ncart1234*12, 0.0);
 
             /////////////////////////////////
             // Update the error map
@@ -179,10 +179,10 @@ int main(int argc, char ** argv)
             #pragma omp critical
             #endif
             {
-                UpdateErrorMap(errors, {{i, j, k, l}}, CalcError(res_simint, res_valeev, ncont1234));
+                UpdateErrorMap(errors, {{i, j, k, l}}, CalcError(res_simint, res_valeev, ncont1234*12));
             }
 
-
+/*
             // For debugging
             int m = 0;
             for(int m1 = 0; m1 < nshell1; m1++)
@@ -208,7 +208,7 @@ int main(int argc, char ** argv)
                     printf("\n");
                 }
             }
-
+*/
 
             simint_free_multi_shellpair(&P);
 

@@ -68,6 +68,32 @@ static void free_array(long double* array)
 }
 
 
+// copies a shell and moves it by delta in direction dir
+// (used in numerical differentiation)
+static void copy_gaussian_move(simint_shell const * src,
+                               simint_shell * dest,
+                               int dir, double delta)
+{
+    simint_copy_shell(src, dest);
+    if(dir == 0)
+        dest->x += delta;
+    else if(dir == 1)
+        dest->y += delta;
+    else if(dir == 2)
+        dest->z += delta;
+}
+
+
+static void FormDeriv(int ncart_abcd,
+                      double const * buf_p, double const * buf_m,
+                      double * dest, double delta)
+{
+    for(int i = 0; i < ncart_abcd; i++)
+        dest[i] = (buf_p[i] - buf_m[i]) / (2.0*delta);
+}
+
+
+
 static void Valeev_F(long double *F, int n, long double x)
 {
     int i, m;
@@ -408,10 +434,10 @@ void ValeevRef_Finalize(void)
 
 
 // Helper for calculating via simint_shell structures
-static void ValeevRef_Deriv0(simint_shell const * const A, int nshell1,
-                             simint_shell const * const B, int nshell2,
-                             simint_shell const * const C, int nshell3,
-                             simint_shell const * const D, int nshell4,
+static void ValeevRef_Deriv0(simint_shell const * const A, int nshellA,
+                             simint_shell const * const B, int nshellB,
+                             simint_shell const * const C, int nshellC,
+                             simint_shell const * const D, int nshellD,
                              double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
@@ -421,16 +447,16 @@ static void ValeevRef_Deriv0(simint_shell const * const A, int nshell1,
     const int am3 = C[0].am;
     const int am4 = D[0].am;
 
-    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
+    const int n234 = nshellB * nshellC * nshellD * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
-    for(int i = 0; i < nshell1; i++)
+    for(int i = 0; i < nshellA; i++)
     {
         const int idxstart = i * n234;
         int idx = 0;
 
-        for(int j = 0; j < nshell2; j++)
-        for(int k = 0; k < nshell3; k++)
-        for(int l = 0; l < nshell4; l++)
+        for(int j = 0; j < nshellB; j++)
+        for(int k = 0; k < nshellC; k++)
+        for(int l = 0; l < nshellD; l++)
         {
             long double vA[3] = { A[i].x, A[i].y, A[i].z };
             long double vB[3] = { B[j].x, B[j].y, B[j].z };
@@ -477,10 +503,10 @@ static void ValeevRef_Deriv0(simint_shell const * const A, int nshell1,
 }
 
 
-static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
-                             simint_shell const * const B, int nshell2,
-                             simint_shell const * const C, int nshell3,
-                             simint_shell const * const D, int nshell4,
+static void ValeevRef_Deriv1(simint_shell const * const A, int nshellA,
+                             simint_shell const * const B, int nshellB,
+                             simint_shell const * const C, int nshellC,
+                             simint_shell const * const D, int nshellD,
                              double * const integrals, bool normalize)
 {
     int inorm = (normalize ? 1 : 0);
@@ -490,16 +516,16 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
     const int am3 = C[0].am;
     const int am4 = D[0].am;
 
-    const int n234 = nshell2 * nshell3 * nshell4 * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
+    const int n234 = nshellB * nshellC * nshellD * NCART(am1) * NCART(am2) * NCART(am3) * NCART(am4);
 
-    for(int i = 0; i < nshell1; i++)
+    for(int i = 0; i < nshellA; i++)
     {
         const int idxstart = i * n234;
         int idx = 0;
 
-        for(int j = 0; j < nshell2; j++)
-        for(int k = 0; k < nshell3; k++)
-        for(int l = 0; l < nshell4; l++)
+        for(int j = 0; j < nshellB; j++)
+        for(int k = 0; k < nshellC; k++)
+        for(int l = 0; l < nshellD; l++)
         {
             long double vA[3] = { A[i].x, A[i].y, A[i].z };
             long double vB[3] = { B[j].x, B[j].y, B[j].z };
@@ -553,6 +579,7 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                                                                          g2[0], g2[1], g2[2], B[j].alpha[n], vB,
                                                                          g3[0], g3[1], g3[2], C[k].alpha[o], vC,
                                                                          g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
                                         valp *= 2 * A[i].alpha[m];
                                         valm *= g1[d];  // ok, may be zero
                     
@@ -577,6 +604,7 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                                                                          gm[0], gm[1], gm[2], B[j].alpha[n], vB,
                                                                          g3[0], g3[1], g3[2], C[k].alpha[o], vC,
                                                                          g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
                                         valp *= 2 * B[j].alpha[n];
                                         valm *= g2[d];  // ok, may be zero
                     
@@ -601,6 +629,7 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
                                                                          g2[0], g2[1], g2[2], B[j].alpha[n], vB,
                                                                          gm[0], gm[1], gm[2], C[k].alpha[o], vC,
                                                                          g4[0], g4[1], g4[2], D[l].alpha[p], vD, inorm);
+
                                         valp *= 2 * C[k].alpha[o];
                                         valm *= g3[d];  // ok, may be zero
                     
@@ -626,18 +655,143 @@ static void ValeevRef_Deriv1(simint_shell const * const A, int nshell1,
     }
 }
 
-void ValeevRef_Integrals(simint_shell const * const A, int nshell1,
-                         simint_shell const * const B, int nshell2,
-                         simint_shell const * const C, int nshell3,
-                         simint_shell const * const D, int nshell4,
+
+
+static
+void ValeevRef_NumDeriv1(simint_shell const * const A, int nshellA,
+                         simint_shell const * const B, int nshellB,
+                         simint_shell const * const C, int nshellC,
+                         simint_shell const * const D, int nshellD,
+                         double * const integrals, bool normalize)
+{
+    const double delta = 1e-8;
+    const int ncart_a = NCART(A->am);
+    const int ncart_b = NCART(B->am);
+    const int ncart_c = NCART(C->am);
+    const int ncart_d = NCART(D->am);
+    const int ncart_abcd = ncart_a * ncart_b * ncart_c * ncart_d;
+    double buf_p[ncart_abcd];
+    double buf_m[ncart_abcd];
+
+    simint_shell tmp_p, tmp_m;
+    simint_initialize_shell(&tmp_p);
+    simint_initialize_shell(&tmp_m);
+
+
+    double * integrals_ptr = integrals;
+
+    for(int i = 0; i < nshellA; i++)
+    for(int j = 0; j < nshellB; j++)
+    for(int k = 0; k < nshellC; k++)
+    for(int l = 0; l < nshellD; l++)
+    {
+        // Ax
+        copy_gaussian_move(A+i, &tmp_p, 0,  delta);
+        copy_gaussian_move(A+i, &tmp_m, 0, -delta);
+        ValeevRef_Deriv0(&tmp_p, 1, B+j, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(&tmp_m, 1, B+j, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 0*ncart_abcd, delta);
+
+        // Ay
+        copy_gaussian_move(A+i, &tmp_p, 1,  delta);
+        copy_gaussian_move(A+i, &tmp_m, 1, -delta);
+        ValeevRef_Deriv0(&tmp_p, 1, B+j, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(&tmp_m, 1, B+j, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 1*ncart_abcd, delta);
+                         
+        // Az
+        copy_gaussian_move(A+i, &tmp_p, 2,  delta);
+        copy_gaussian_move(A+i, &tmp_m, 2, -delta);
+        ValeevRef_Deriv0(&tmp_p, 1, B+j, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(&tmp_m, 1, B+j, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 2*ncart_abcd, delta);
+
+        // Bx
+        copy_gaussian_move(B+j, &tmp_p, 0,  delta);
+        copy_gaussian_move(B+j, &tmp_m, 0, -delta);
+        ValeevRef_Deriv0(A+i, 1, &tmp_p, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, &tmp_m, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 3*ncart_abcd, delta);
+
+        // By
+        copy_gaussian_move(B+j, &tmp_p, 1,  delta);
+        copy_gaussian_move(B+j, &tmp_m, 1, -delta);
+        ValeevRef_Deriv0(A+i, 1, &tmp_p, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, &tmp_m, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 4*ncart_abcd, delta);
+
+        // Bz
+        copy_gaussian_move(B+j, &tmp_p, 2,  delta);
+        copy_gaussian_move(B+j, &tmp_m, 2, -delta);
+        ValeevRef_Deriv0(A+i, 1, &tmp_p, 1, C+k, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, &tmp_m, 1, C+k, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 5*ncart_abcd, delta);
+
+        // Cx
+        copy_gaussian_move(C+k, &tmp_p, 0,  delta);
+        copy_gaussian_move(C+k, &tmp_m, 0, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_p, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_m, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 6*ncart_abcd, delta);
+
+        // Cy
+        copy_gaussian_move(C+k, &tmp_p, 1,  delta);
+        copy_gaussian_move(C+k, &tmp_m, 1, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_p, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_m, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 7*ncart_abcd, delta);
+
+        // Cz
+        copy_gaussian_move(C+k, &tmp_p, 2,  delta);
+        copy_gaussian_move(C+k, &tmp_m, 2, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_p, 1, D+l, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, &tmp_m, 1, D+l, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 8*ncart_abcd, delta);
+
+        // Dx
+        copy_gaussian_move(D+l, &tmp_p, 0,  delta);
+        copy_gaussian_move(D+l, &tmp_m, 0, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_p, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_m, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 9*ncart_abcd, delta);
+
+        // Dy
+        copy_gaussian_move(D+l, &tmp_p, 1,  delta);
+        copy_gaussian_move(D+l, &tmp_m, 1, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_p, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_m, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 10*ncart_abcd, delta);
+
+        // Dz
+        copy_gaussian_move(D+l, &tmp_p, 2,  delta);
+        copy_gaussian_move(D+l, &tmp_m, 2, -delta);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_p, 1, buf_p, normalize);
+        ValeevRef_Deriv0(A+i, 1, B+j, 1, C+k, 1, &tmp_m, 1, buf_m, normalize);
+        FormDeriv(ncart_abcd, buf_p, buf_m, integrals_ptr + 11*ncart_abcd, delta);
+        
+        integrals_ptr += ncart_abcd * 12;
+    }
+
+    simint_free_shell(&tmp_p);
+    simint_free_shell(&tmp_m);
+
+}
+
+void ValeevRef_Integrals(simint_shell const * const A, int nshellA,
+                         simint_shell const * const B, int nshellB,
+                         simint_shell const * const C, int nshellC,
+                         simint_shell const * const D, int nshellD,
                          double * const integrals, int deriv, bool normalize)
 {
     if(deriv == 0)
-        ValeevRef_Deriv0(A, nshell1, B, nshell2, C, nshell3, D, nshell4,
+        ValeevRef_Deriv0(A, nshellA, B, nshellB, C, nshellC, D, nshellD,
                          integrals, normalize);
     else if(deriv == 1)
-        ValeevRef_Deriv1(A, nshell1, B, nshell2, C, nshell3, D, nshell4,
+        ValeevRef_Deriv1(A, nshellA, B, nshellB, C, nshellC, D, nshellD,
                          integrals, normalize);
+    else if(deriv == -1)
+        ValeevRef_NumDeriv1(A, nshellA, B, nshellB, C, nshellC, D, nshellD,
+                            integrals, normalize);
     else
         throw std::runtime_error("Invlalid derivative for ValeevRef");
 }
