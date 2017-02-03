@@ -118,7 +118,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
             union double8 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
-                dest[offsets[n]*ncart] += vtmp.d[n]; 
+                dest[offsets[n]*ncart+np] += vtmp.d[n]; 
         }
     }
 

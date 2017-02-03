@@ -106,16 +106,12 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
                       __m128d const * restrict src,
                       double * restrict dest)
     {
-        for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+        for(int np = 0; np < ncart; ++np)
         {
-            double const * restrict src_tmp = (double *)src + n;
-            double * restrict dest_tmp = dest + offsets[n]*ncart;
+            union double2 vtmp = { SIMINT_MUL(src[np], factor) };
 
-            for(int np = 0; np < ncart; ++np)
-            {
-                dest_tmp[np] += *src_tmp;
-                src_tmp += SIMINT_SIMD_LEN;
-            }
+            for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
+                dest[offsets[n]*ncart+np] += vtmp.d[n]; 
         }
     }
 

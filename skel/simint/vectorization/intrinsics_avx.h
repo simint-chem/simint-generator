@@ -143,7 +143,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
             union double4 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
-                dest[offsets[n]*ncart] += vtmp.d[n]; 
+                dest[offsets[n]*ncart+np] += vtmp.d[n]; 
         }
     }
 
@@ -181,7 +181,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
 
         // GCC is missing some instructions from the above block
         int offsets[4] = {0, 0, 0, 0};
-        contract_fac(ncart, offsets, factor, src, dest);
+        contract_fac(ncart, factor, offsets, src, dest);
 
         #endif
     }
