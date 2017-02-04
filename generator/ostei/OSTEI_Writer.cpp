@@ -597,7 +597,13 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent3 << "\n";
 
     if(hrr_writer_.HasHRR())
+    {
         hrr_writer_.WriteHRR(os_);
+        os_ << "\n";
+        os_ << indent3 << "}  // close HRR loop\n";
+        os_ << "\n\n";
+    }
+
 
     os_ << indent2 << "}   // close loop cdbatch\n";
 

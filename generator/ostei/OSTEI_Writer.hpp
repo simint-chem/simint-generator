@@ -78,6 +78,7 @@ private:
     void DeclareContwork(void) const;
     void WriteShellOffsets(void) const;
     void WriteAccumulation(void) const;
+    void WriteFormDeriv(void) const;
 
     std::string FunctionName_(QAM am) const;
     std::string FunctionPrototype_(QAM am) const;

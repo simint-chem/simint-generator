@@ -274,6 +274,154 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     osh_ << FunctionPrototype_(permuted) << ";\n\n";
 }
 
+void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
+{
+    QAM am = info_.FinalAM();
+    const int ncart1 = NCART(am[0]);
+    const int ncart2 = NCART(am[1]);
+    const int ncart3 = NCART(am[2]);
+    const int ncart4 = NCART(am[3]);
+
+    const int ncart2p = NCART(am[1]+1);
+    const int ncart3p = NCART(am[2]+1);
+    const int ncart2m = NCART(am[1]-1);
+    const int ncart3m = NCART(am[2]-1);
+
+    std::string outvar = HRRVarName(am);
+    std::string invar_1p = HRRVarName(QAM({am[0]+1, am[1]  , am[2]  , am[3]  }, "2a"));
+    std::string invar_2p = HRRVarName(QAM({am[0],   am[1]+1, am[2]  , am[3]  }, "2b"));
+    std::string invar_3p = HRRVarName(QAM({am[0],   am[1]  , am[2]+1, am[3]  }, "2c"));
+    std::string invar_1m = HRRVarName({am[0]-1, am[1]  , am[2]  , am[3]  });
+    std::string invar_2m = HRRVarName({am[0],   am[1]-1, am[2]  , am[3]  });
+    std::string invar_3m = HRRVarName({am[0],   am[1]  , am[2]-1, am[3]  });
+
+    os_ << indent4 << "struct RecurInfo const * const aminfo_1 = &recurinfo_array[am_recur_map[" << am[0] << "]];\n";
+    os_ << indent4 << "struct RecurInfo const * const aminfo_2 = &recurinfo_array[am_recur_map[" << am[1] << "]];\n";
+    os_ << indent4 << "struct RecurInfo const * const aminfo_3 = &recurinfo_array[am_recur_map[" << am[2] << "]];\n";
+    os_ << indent4 << "struct RecurInfo const * const aminfo_4 = &recurinfo_array[am_recur_map[" << am[3] << "]];\n";
+    os_ << "\n";
+
+
+    os_ << indent4 << "double * restrict " << outvar << " = " << ArrVarName(am)
+                   << " + real_abcd * " << ncart1*ncart2*ncart3*ncart4 << " * 12;\n\n";
+    os_ << indent4 << "int idx_x, idx_y, idx_z;\n";
+    os_ << indent4 << "int full_idx_x, full_idx_y, full_idx_z;\n";
+    os_ << indent4 << "int nijkl = 0;\n";
+    os_ << indent4 << "for(int n1 = 0; n1 < " << ncart1 << "; n1++)\n";
+    os_ << indent4 << "for(int n2 = 0; n2 < " << ncart2 << "; n2++)\n";
+    os_ << indent4 << "for(int n3 = 0; n3 < " << ncart3 << "; n3++)\n";
+    os_ << indent4 << "for(int n4 = 0; n4 < " << ncart4 << "; n4++)\n";
+    os_ << indent4 << "{\n";
+    os_ << indent5 << "struct RecurInfo const * aminfo_n1 = aminfo_1 + n1;\n";
+    os_ << indent5 << "struct RecurInfo const * aminfo_n2 = aminfo_2 + n2;\n";
+    os_ << indent5 << "struct RecurInfo const * aminfo_n3 = aminfo_3 + n3;\n";
+    os_ << indent5 << "struct RecurInfo const * aminfo_n4 = aminfo_4 + n4;\n";
+    os_ << "\n\n";
+    os_ << indent5 << "// First Center\n";
+    os_ << indent5 << "idx_x = aminfo_n1->idx[0][2];\n";
+    os_ << indent5 << "idx_y = aminfo_n1->idx[1][2];\n";
+    os_ << indent5 << "idx_z = aminfo_n1->idx[2][2];\n";
+    os_ << indent5 << "full_idx_x = idx_x * " << ncart2*ncart3*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_y = idx_y * " << ncart2*ncart3*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_z = idx_z * " << ncart2*ncart3*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+
+    os_ << indent5 << outvar << "[nijkl*12 + 0] = " << invar_1p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 1] = " << invar_1p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 2] = " << invar_1p << "[full_idx_z];\n";
+
+    if(am[0] > 0)
+    {
+        os_ << indent5 << "idx_x = aminfo_n1->idx[0][0];\n";
+        os_ << indent5 << "idx_y = aminfo_n1->idx[1][0];\n";
+        os_ << indent5 << "idx_z = aminfo_n1->idx[2][0];\n";
+        os_ << indent5 << "full_idx_x = idx_x * " << ncart2*ncart3*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_y = idx_y * " << ncart2*ncart3*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_z = idx_z * " << ncart2*ncart3*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << outvar << "[nijkl*12 + 0] -= " << invar_1m << "[full_idx_x];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 1] -= " << invar_1m << "[full_idx_y];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 2] -= " << invar_1m << "[full_idx_z];\n";
+    }
+
+    os_ << "\n\n";
+    os_ << indent5 << "// Second Center\n";
+    os_ << indent5 << "idx_x = aminfo_n2->idx[0][2];\n";
+    os_ << indent5 << "idx_y = aminfo_n2->idx[1][2];\n";
+    os_ << indent5 << "idx_z = aminfo_n2->idx[2][2];\n";
+    os_ << indent5 << "full_idx_x = n1 * " << ncart2p*ncart3*ncart4
+                   << " + idx_x * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_y = n1 * " << ncart2p*ncart3*ncart4
+                   << " + idx_y * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_z = n1 * " << ncart2p*ncart3*ncart4
+                   << " + idx_z * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+
+    os_ << indent5 << outvar << "[nijkl*12 + 3] = " << invar_2p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 4] = " << invar_2p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 5] = " << invar_2p << "[full_idx_z];\n";
+
+    if(am[1] > 0)
+    {
+        os_ << indent5 << "idx_x = aminfo_n2->idx[0][0];\n";
+        os_ << indent5 << "idx_y = aminfo_n2->idx[1][0];\n";
+        os_ << indent5 << "idx_z = aminfo_n2->idx[2][0];\n";
+        os_ << indent5 << "full_idx_x = n1 * " << ncart2m*ncart3*ncart4
+                       << " + idx_x * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_y = n1 * " << ncart2m*ncart3*ncart4
+                       << " + idx_y * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_z = n1 * " << ncart2m*ncart3*ncart4
+                       << " + idx_z * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << outvar << "[nijkl*12 + 3] -= " << invar_2m << "[full_idx_x];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 4] -= " << invar_2m << "[full_idx_y];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 5] -= " << invar_2m << "[full_idx_z];\n";
+    }
+
+    os_ << "\n\n";
+    os_ << indent5 << "// Third Center\n";
+    os_ << indent5 << "idx_x = aminfo_n3->idx[0][2];\n";
+    os_ << indent5 << "idx_y = aminfo_n3->idx[1][2];\n";
+    os_ << indent5 << "idx_z = aminfo_n3->idx[2][2];\n";
+    os_ << indent5 << "full_idx_x = n1 * " << ncart2*ncart3p*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_y = n1 * " << ncart2*ncart3p*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
+    os_ << indent5 << "full_idx_z = n1 * " << ncart2*ncart3p*ncart4
+                   << " + n2 * " << ncart3*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
+
+    os_ << indent5 << outvar << "[nijkl*12 + 6] = " << invar_3p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 7] = " << invar_3p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 8] = " << invar_3p << "[full_idx_z];\n";
+
+    if(am[2] > 0)
+    {
+        os_ << indent5 << "idx_x = aminfo_n3->idx[0][0];\n";
+        os_ << indent5 << "idx_y = aminfo_n3->idx[1][0];\n";
+        os_ << indent5 << "idx_z = aminfo_n3->idx[2][0];\n";
+        os_ << indent5 << "full_idx_x = n1 * " << ncart2*ncart3m*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_y = n1 * " << ncart2*ncart3m*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "full_idx_z = n1 * " << ncart2*ncart3m*ncart4
+                       << " + n2 * " << ncart3*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << outvar << "[nijkl*12 + 6] -= " << invar_3m << "[full_idx_x];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 7] -= " << invar_3m << "[full_idx_y];\n";
+        os_ << indent5 << outvar << "[nijkl*12 + 8] -= " << invar_3m << "[full_idx_z];\n";
+    }
+
+    os_ << "\n\n";
+    os_ << indent5 << "// Fourth Center\n";
+    os_ << indent5 << outvar << "[nijkl*12 +  9] = -(" << outvar << "[nijkl*12 + 0] + " << outvar << "[nijkl*12 + 3] + " << outvar << "[nijkl*12 + 6]);\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 10] = -(" << outvar << "[nijkl*12 + 1] + " << outvar << "[nijkl*12 + 4] + " << outvar << "[nijkl*12 + 7]);\n";
+    os_ << indent5 << outvar << "[nijkl*12 + 11] = -(" << outvar << "[nijkl*12 + 2] + " << outvar << "[nijkl*12 + 5] + " << outvar << "[nijkl*12 + 8]);\n";
+
+    os_ << indent5 << "nijkl++;\n";
+    os_ << indent4 << "} // close loop for forming derivatives\n\n";
+    
+}
 
 void OSTEIDeriv1_Writer::Write_Full_(void) const
 {
@@ -306,6 +454,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
                         "<math.h>",
                         "\"simint/ostei/gen/ostei_deriv1_generated.h\"",
                         "\"simint/vectorization/vectorization.h\"",
+                        "\"simint/ostei/recur_lookup.h\"",
                         "\"simint/boys/boys.h\""};
 
     // Constants
@@ -612,8 +761,12 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
         os_ << indent3 << "abcd += nshellbatch;\n";
     os_ << indent3 << "\n";
 
-    if(hrr_writer_.HasHRR())
-        hrr_writer_.WriteHRR(os_);
+    hrr_writer_.WriteHRR(os_);
+    WriteFormDeriv();
+
+    os_ << "\n";
+    os_ << indent3 << "}  // close HRR loop\n";
+    os_ << "\n\n";
 
     os_ << indent2 << "}   // close loop cdbatch\n";
 

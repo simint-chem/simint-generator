@@ -56,7 +56,7 @@ args = parser.parse_args()
 
 
 maxam = args.l
-maxder1 = maxam-1
+maxder1 = args.l-1
 
 
 

@@ -203,11 +203,6 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
         }
     }
 
-
-    os << "\n";
-    os << indent3 << "}  // close HRR loop\n";
-    os << "\n";
-    os << "\n";
 }
 
 void OSTEI_HRR_Writer::WriteHRR_Bra_Inline_(std::ostream & os, QAM am) const

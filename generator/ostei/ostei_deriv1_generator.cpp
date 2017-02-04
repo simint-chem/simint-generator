@@ -114,9 +114,6 @@ int main(int argc, char ** argv)
 
     QuartetSet topquartets = hrralgo.TopQuartets();
 
-    PrintQuartetSet(topquartets, "HERE");
-    std::cout << "\n";
-
     // 2.) VRR Steps
     vrralgo.Create(topquartets);
     OSTEI_VRR_Writer vrr_writer(vrralgo, info,
