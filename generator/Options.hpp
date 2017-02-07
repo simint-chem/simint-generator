@@ -14,7 +14,6 @@
  */
 enum class Option
 {
-    StackMem,     //!< Limit of the amount of memory to consider when allocating on the stack
     ExternalVRR,  //!< Write external VRR at this L value and above
     GeneralVRR,   //!< Write general VRR at this L value and above
     ExternalHRR,  //!< Write external HRR at this L value and above
@@ -33,7 +32,6 @@ typedef std::map<Option, int> OptionMap;
 inline OptionMap DefaultOptions(void)
 {
     return OptionMap{
-                      {Option::StackMem, 0},
                       {Option::ExternalVRR, 0},
                       {Option::GeneralVRR, 0},
                       {Option::ExternalHRR, 0},

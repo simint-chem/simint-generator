@@ -50,16 +50,6 @@ public:
         return contq_.count(am);
     }
 
-    bool UseStack(void) const
-    {
-        return memory_ <= static_cast<size_t>(GetOption(Option::StackMem));
-    }
-
-    bool UseHeap(void) const
-    {
-        return !UseStack();
-    }
-
     bool IsUnique(void) const
     {
         QAM am = FinalAM();
