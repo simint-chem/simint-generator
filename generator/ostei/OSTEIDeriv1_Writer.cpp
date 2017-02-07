@@ -244,7 +244,7 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         if(swap34)
             std::swap(vc, vd);
 
-        std::string idx = StringBuilder("q*", ncart_abcd,
+        std::string idx = StringBuilder("q*12", ncart_abcd,
                                         "+", va, "*", ncart_bcd,
                                         "+", vb, "*", ncart_cd,
                                         "+", vc, "*", ncart_d, "+", vd);
@@ -259,10 +259,13 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         os_ << indent2 << "for(int b = 0; b < " << ncart_b2 << "; ++b)\n";
         os_ << indent2 << "for(int c = 0; c < " << ncart_c2 << "; ++c)\n";
         os_ << indent2 << "for(int d = 0; d < " << ncart_d2 << "; ++d)\n";
-        os_ << indent3 << "buffer[idx++] = " << ArrVarName(permuted) << "[" << idx << "];\n";
+        os_ << indent2 << "{\n";
+        os_ << indent3 << "memcpy(buffer, &" << ArrVarName(permuted) << "[" << idx << "], 12*sizeof(double));\n";
+        os_ << indent3 << "idx += 12;\n";
+        os_ << indent2 << "}\n";
         os_ << "\n";
-        os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd
-                       << ", buffer, " << ncart_abcd << "*sizeof(double));\n";
+        os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd << "*12"
+                       << ", buffer, " << ncart_abcd << "*12*sizeof(double));\n";
         os_ << indent1 << "}\n";
     }
 

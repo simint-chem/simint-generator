@@ -54,7 +54,7 @@ void ostei_general_vrr1(int i, int num_n,
 
 
 
-void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
+void ostei_general_vrr_I(int i, int j, int k, int l, int num_n,
                          SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
                          SIMINT_DBLTYPE one_over_2pq,
                          const SIMINT_DBLTYPE aop_PQ[3],
@@ -198,7 +198,7 @@ void ostei_general_vrr_i(int i, int j, int k, int l, int num_n,
 }
 
 
-void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
+void ostei_general_vrr_J(int i, int j, int k, int l, int num_n,
                          SIMINT_DBLTYPE one_over_2p, SIMINT_DBLTYPE a_over_p,
                          SIMINT_DBLTYPE one_over_2pq,
                          const SIMINT_DBLTYPE aop_PQ[3],
@@ -342,7 +342,7 @@ void ostei_general_vrr_j(int i, int j, int k, int l, int num_n,
 }
 
 
-void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
+void ostei_general_vrr_K(int i, int j, int k, int l, int num_n,
                          SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
                          SIMINT_DBLTYPE one_over_2pq,
                          const SIMINT_DBLTYPE aoq_PQ[3],
@@ -485,7 +485,7 @@ void ostei_general_vrr_k(int i, int j, int k, int l, int num_n,
     }
 }
 
-void ostei_general_vrr_l(int i, int j, int k, int l, int num_n,
+void ostei_general_vrr_L(int i, int j, int k, int l, int num_n,
                          SIMINT_DBLTYPE one_over_2q, SIMINT_DBLTYPE a_over_q,
                          SIMINT_DBLTYPE one_over_2pq,
                          const SIMINT_DBLTYPE aoq_PQ[3],

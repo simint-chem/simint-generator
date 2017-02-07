@@ -22,6 +22,10 @@ int main(int argc, char ** argv)
 
     bool finalamset = false;
 
+    bool bra_i = false;
+    bool ket_k = false;
+    bool do_bra = false;
+
     // parse command line
     OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
@@ -41,6 +45,12 @@ int main(int argc, char ** argv)
             finalam[1] = GetIArg(iarg, otheropt);   
             finalamset = true;
         }
+        else if(argstr == "-bra_i")
+            bra_i = true;
+        else if(argstr == "-ket_k")
+            ket_k = true;
+        else if(argstr == "-bra")
+            do_bra = true;
         else
         {
             std::cout << "\n\n";
@@ -57,7 +67,17 @@ int main(int argc, char ** argv)
     CMDLINE_ASSERT( finalamset == true, "AM doublet (-q) required" )
 
     // We can do bras and kets at the same time
-    QAM am{finalam[0], finalam[1], finalam[0], finalam[1]};
+    QAM am{0, 0, 0, 0};
+    if(do_bra)
+    {
+        am[0] = finalam[0];
+        am[1] = finalam[1];
+    }
+    else
+    {
+        am[2] = finalam[0];
+        am[3] = finalam[1];
+    }
 
     std::ofstream of(fpath);
     if(!of.is_open())
@@ -72,9 +92,15 @@ int main(int argc, char ** argv)
 
     OSTEI_GeneratorInfo info(am, 0, options);
 
+
+    // Recursion directions
+    RRStepType brasteptype = (bra_i ? RRStepType::I : RRStepType::J);
+    RRStepType ketsteptype = (ket_k ? RRStepType::K : RRStepType::L);
+
+
     // The algorithm to use
     Makowski_HRR hrralgo(options);
-    hrralgo.Create(am);
+    hrralgo.Create(am, brasteptype, ketsteptype);
 
     OSTEI_HRR_Writer hrr_writer(hrralgo, info);
     hrr_writer.WriteHRRFile(of, ofh);

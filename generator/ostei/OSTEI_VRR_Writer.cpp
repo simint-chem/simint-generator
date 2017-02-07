@@ -6,12 +6,6 @@
 #include <algorithm> // std::count
 
 
-// map from RRStepType to a character, for creating function names
-static const std::map<RRStepType, char> rrstep_char{ {RRStepType::I, 'I'},
-                                                     {RRStepType::J, 'J'},
-                                                     {RRStepType::K, 'K'},
-                                                     {RRStepType::L, 'L'} };
-
 static bool IsPointer(const std::string & var)
 {
     static const std::set<std::string> ptrvars{
@@ -261,7 +255,7 @@ void OSTEI_VRR_Writer::WriteVRR_External_(std::ostream & os, QAM am) const
     // iterate over increasing am
     RRStepType rrstep = vrr_algo_.GetRRStep(am);
 
-    os << indent5 << "VRR_" << rrstep_char.at(rrstep) << "_" 
+    os << indent5 << "VRR_" << RRStepTypeToStr(rrstep) << "_" 
                   << amchar[am[0]] << "_" << amchar[am[1]] << "_"
                   << amchar[am[2]] << "_" << amchar[am[3]]  << "(\n";
 
@@ -274,6 +268,10 @@ void OSTEI_VRR_Writer::WriteVRR_External_(std::ostream & os, QAM am) const
         os << indent7 << it << ",\n";
 
     os << indent7 << (vrr_algo_.GetMReq(am)+1) << ");\n";
+
+    // Mark this as required in the log file
+    std::cout << "SIMINT EXTERNAL VRR " << RRStepTypeToStr(rrstep)
+              << " " << am[0] << " " << am[1] << " " << am[2] << " " << am[3] << "\n";
 }
 
 void OSTEI_VRR_Writer::WriteVRR_General_(std::ostream & os, QAM am) const
@@ -377,7 +375,7 @@ void OSTEI_VRR_Writer::WriteVRRFile(std::ostream & os, std::ostream & osh) const
 
     std::stringstream prototype;
 
-    char stepchar = rrstep_char.at(rrstep);
+    std::string stepchar = RRStepTypeToStr(rrstep);
 
     prototype << "void VRR_" << stepchar << "_"
               << amchar[am[0]] << "_" << amchar[am[1]] << "_"

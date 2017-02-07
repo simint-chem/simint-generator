@@ -16,6 +16,8 @@ class OSTEI_HRR_Algorithm_Base
 
         void Create(QAM am);
         void Create(std::set<QAM> am);
+        void Create(QAM am, RRStepType brasteptype, RRStepType ketsteptype);
+        void Create(std::set<QAM> am, RRStepType brasteptype, RRStepType ketsteptype);
         
         QAMSet TopAM(void) const;
         QuartetSet TopQuartets(void) const;

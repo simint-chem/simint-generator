@@ -234,7 +234,7 @@ void OSTEI_HRR_Writer::WriteHRR_Bra_External_(std::ostream & os, QAM am) const
 {
     // call function
     RRStepType rrstep = hrr_algo_.GetBraRRStep({am[0], am[1]});
-    os << indent4 << "HRR_BRA_" << RRStepTypeToStr(rrstep) << "_"
+    os << indent4 << "HRR_" << RRStepTypeToStr(rrstep) << "_"
        << amchar[am[0]] << "_" << amchar[am[1]] << "(\n";
 
     // pointer to result buffer
@@ -242,15 +242,19 @@ void OSTEI_HRR_Writer::WriteHRR_Bra_External_(std::ostream & os, QAM am) const
 
     // pointer to requirements
     for(const auto & it : hrr_algo_.GetBraAMReq({am[0], am[1]}))
-        os << indent5 << "" << HRRVarName({it[0], it[1], am[2], am[3]}) << ",\n";
+        os << indent5 << "" << HRRVarName({it[0], it[1], am[2], am[3], am.tag}) << ",\n";
 
     os << indent5 << "hAB, " << NCART(am[2], am[3]) << ");\n"; 
+
+    // Mark this as required in the log file
+    std::cout << "SIMINT EXTERNAL HRR " << RRStepTypeToStr(rrstep)
+              << " " << am[0] << " " << am[1] << "\n";
 }
 
 void OSTEI_HRR_Writer::WriteHRR_Ket_External_(std::ostream & os, QAM am) const
 {
     RRStepType rrstep = hrr_algo_.GetKetRRStep({am[2], am[3]});
-    os << indent4 << "HRR_KET_" << RRStepTypeToStr(rrstep) << "_"
+    os << indent4 << "HRR_" << RRStepTypeToStr(rrstep) << "_"
        << amchar[am[2]] << "_" << amchar[am[3]] << "(\n";
 
     // pointer to result buffer
@@ -258,9 +262,13 @@ void OSTEI_HRR_Writer::WriteHRR_Ket_External_(std::ostream & os, QAM am) const
 
     // pointer to requirements
     for(const auto & it : hrr_algo_.GetKetAMReq({am[2], am[3]}))
-        os << indent5 << "" << HRRVarName({am[0], am[1], it[0], it[1]}) << ",\n";
+        os << indent5 << "" << HRRVarName({am[0], am[1], it[0], it[1], am.tag}) << ",\n";
 
     os << indent5 << "hCD, " << NCART(DAM{am[0], am[1]}) << ");\n";
+
+    // Mark this as required in the log file
+    std::cout << "SIMINT EXTERNAL HRR " << RRStepTypeToStr(rrstep)
+              << " " << am[2] << " " << am[3] << "\n";
 }
 
 void OSTEI_HRR_Writer::WriteHRR_Bra_General_(std::ostream & os, QAM am) const
@@ -312,7 +320,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
 
         std::stringstream prototype;
 
-        prototype << "void HRR_BRA_" << steptypestr << "_";
+        prototype << "void HRR_" << steptypestr << "_";
         prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(";
 
         // pointer to result buffer
@@ -357,7 +365,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
 
         std::stringstream prototype;
 
-        prototype << "void HRR_KET_" << steptypestr << "_";
+        prototype << "void HRR_" << steptypestr << "_";
         prototype << amchar[ketam[0]] << "_" << amchar[ketam[1]] << "(";
 
         // pointer to result buffer

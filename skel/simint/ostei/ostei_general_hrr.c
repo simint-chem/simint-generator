@@ -2,7 +2,7 @@
 #include "simint/ostei/recur_lookup.h"
 
 
-void ostei_general_hrr_i(int i, int j, int k, int l,
+void ostei_general_hrr_I(int i, int j, int k, int l,
                          const double AB[3],
                          const double * theta1,
                          const double * theta2,
@@ -54,7 +54,7 @@ void ostei_general_hrr_i(int i, int j, int k, int l,
 
 
 
-void ostei_general_hrr_j(int i, int j, int k, int l,
+void ostei_general_hrr_J(int i, int j, int k, int l,
                          const double AB[3],
                          const double * theta1,
                          const double * theta2,
@@ -105,7 +105,7 @@ void ostei_general_hrr_j(int i, int j, int k, int l,
 }
 
 
-void ostei_general_hrr_k(int i, int j, int k, int l,
+void ostei_general_hrr_K(int i, int j, int k, int l,
                          const double CD[3],
                          const double * theta1,
                          const double * theta2,
@@ -155,7 +155,7 @@ void ostei_general_hrr_k(int i, int j, int k, int l,
     }
 }
 
-void ostei_general_hrr_l(int i, int j, int k, int l,
+void ostei_general_hrr_L(int i, int j, int k, int l,
                          const double CD[3],
                          const double * theta1,
                          const double * theta2,

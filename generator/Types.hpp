@@ -182,13 +182,13 @@ inline std::string RRStepTypeToStr(RRStepType step)
     switch(step)
     {
         case RRStepType::I:
-            return "i";
+            return "I";
         case RRStepType::J:
-            return "j";
+            return "J";
         case RRStepType::K:
-            return "k";
+            return "K";
         case RRStepType::L:
-            return "l";
+            return "L";
         default:
             throw std::logic_error("Missing RRStepType");
     }

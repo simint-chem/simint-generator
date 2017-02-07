@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
     //! \todo We are doing all this work even if it is a special
     //        permutation
     //////////////////////////////////////////////////////////////
-
+    
     // algorithms used
     Makowski_HRR hrralgo(options);
     Makowski_VRR vrralgo(options);

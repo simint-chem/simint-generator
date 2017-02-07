@@ -154,17 +154,36 @@ void OSTEI_HRR_Algorithm_Base::Create(QAM am)
     Create(std::set<QAM>{am});
 }
 
+void OSTEI_HRR_Algorithm_Base::Create(QAM am,
+                                      RRStepType brasteptype,
+                                      RRStepType ketsteptype)
+{
+    Create(std::set<QAM>{am}, brasteptype, ketsteptype);
+}
+
+
 void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am)
 {
-    // What is the am we base the direction on?
     QAM highest_am = *(am.rbegin());
+	
+    // What direction are we going for the bra?
+	RRStepType brasteptype = RRStepType::J;  // Moving I->J
+	if(highest_am[0] < highest_am[1])
+	    brasteptype = RRStepType::I; // Moving J->I
 
-    // First, we need a list of doublet steps for the ket
-    // What direction are we going?
-    RRStepType ketsteptype = RRStepType::L;  // Moving K->L
-    if(highest_am[2] < highest_am[3])
-        ketsteptype = RRStepType::K; // Moving L->K
+	// What direction are we going for the ket?
+	RRStepType ketsteptype = RRStepType::L;  // Moving K->L
+	if(highest_am[2] < highest_am[3])
+	    ketsteptype = RRStepType::K; // Moving L->K
 
+    Create(am, brasteptype, ketsteptype);
+}
+
+
+void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
+                                      RRStepType brasteptype,
+                                      RRStepType ketsteptype)
+{
     // we need the kets from the original targets
     DoubletSet initkets, solvedkets, prunedket;
 
@@ -204,12 +223,6 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am)
     for(const auto & it2 : it.second)
         std::cout << it2 << "\n";
 
-
-    // Now for the bras
-    // What direction are we going?
-    RRStepType brasteptype = RRStepType::J; // Moving I -> J
-    if(highest_am[0] < highest_am[1])
-        brasteptype = RRStepType::I;  // Moving J -> I
 
     // we need the bras from the original targets
     DoubletSet initbras, solvedbras, prunedbra;
@@ -303,12 +316,18 @@ DAMSet OSTEI_HRR_Algorithm_Base::GetKetAMReq(DAM am) const
 
 HRRDoubletStepList OSTEI_HRR_Algorithm_Base::GetBraSteps(DAM am) const
 {
-    return brasteps_.at(am.notag());
+    if(brasteps_.count(am.notag()))
+        return brasteps_.at(am.notag());
+    else
+        return HRRDoubletStepList();
 }
 
 HRRDoubletStepList OSTEI_HRR_Algorithm_Base::GetKetSteps(DAM am) const
 {
-    return ketsteps_.at(am.notag());
+    if(ketsteps_.count(am.notag()))
+        return ketsteps_.at(am.notag());
+    else
+        return HRRDoubletStepList();
 }
 
 bool OSTEI_HRR_Algorithm_Base::HasHRR(void) const

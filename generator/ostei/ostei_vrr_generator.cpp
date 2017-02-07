@@ -26,6 +26,8 @@ int main(int argc, char ** argv)
     OptionMap options = DefaultOptions();
     std::vector<std::string> otheropt = ParseCommonOptions(options, argc, argv);
 
+    IdxOrder order{0, -1, -1, -1};
+
     // parse specific options
     size_t iarg = 0;
     while(iarg < otheropt.size())
@@ -43,6 +45,12 @@ int main(int argc, char ** argv)
             finalam[3] = GetIArg(iarg, otheropt);   
             finalamset = true;
         }
+        else if(argstr == "-center_j")
+            order = IdxOrder{1, -1, -1, -1};
+        else if(argstr == "-center_k")
+            order = IdxOrder{2, -1, -1, -1};
+        else if(argstr == "-center_l")
+            order = IdxOrder{3, -1, -1, -1};
         else
         {
             std::cout << "\n\n";
@@ -77,39 +85,10 @@ int main(int argc, char ** argv)
     of << "\n#include \"simint/ostei/gen/ostei_generated.h\"\n";
 
     // create the algorithm and write the file
-    if(finalam[0] > 0)
-    {
-        Makowski_VRR vrralgo_i(options);
-        vrralgo_i.Create_WithOrder(finalam, {0, -1, -1, -1});
-        OSTEI_VRR_Writer vrr_writer_i(vrralgo_i, info);
-        vrr_writer_i.WriteVRRFile(of, ofh);
-    }
-
-    if(finalam[1] > 0)
-    {
-        Makowski_VRR vrralgo_j(options);
-        vrralgo_j.Create_WithOrder(finalam, {1, -1, -1, -1});
-        OSTEI_VRR_Writer vrr_writer_j(vrralgo_j, info);
-        vrr_writer_j.WriteVRRFile(of, ofh);
-    }
-
-
-    if(finalam[2] > 0)
-    {
-        Makowski_VRR vrralgo_k(options);
-        vrralgo_k.Create_WithOrder(finalam, {2, -1, -1, -1});
-        OSTEI_VRR_Writer vrr_writer_k(vrralgo_k, info);
-        vrr_writer_k.WriteVRRFile(of, ofh);
-    }
-
-    if(finalam[3] > 0)
-    {
-        Makowski_VRR vrralgo_l(options);
-        vrralgo_l.Create_WithOrder(finalam, {3, -1, -1, -1});
-        OSTEI_VRR_Writer vrr_writer_l(vrralgo_l, info);
-        vrr_writer_l.WriteVRRFile(of, ofh);
-    }
-
+    Makowski_VRR vrralgo(options);
+    vrralgo.Create_WithOrder(finalam, order);
+    OSTEI_VRR_Writer vrr_writer(vrralgo, info);
+    vrr_writer.WriteVRRFile(of, ofh);
 
     } // close try block
     catch(std::exception & ex)
