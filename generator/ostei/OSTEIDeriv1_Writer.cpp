@@ -306,7 +306,7 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
                    << " + real_abcd * " << ncart1*ncart2*ncart3*ncart4 << " * 12;\n\n";
     os_ << indent4 << "int idx_x, idx_y, idx_z;\n";
     os_ << indent4 << "int full_idx_x, full_idx_y, full_idx_z;\n";
-    os_ << indent4 << "int nijkl = 0;\n";
+    os_ << indent4 << "int startidx = 0;\n";
     os_ << indent4 << "for(int n1 = 0; n1 < " << ncart1 << "; n1++)\n";
     os_ << indent4 << "for(int n2 = 0; n2 < " << ncart2 << "; n2++)\n";
     os_ << indent4 << "for(int n3 = 0; n3 < " << ncart3 << "; n3++)\n";
@@ -328,9 +328,9 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
     os_ << indent5 << "full_idx_z = idx_z * " << ncart2*ncart3*ncart4
                    << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
 
-    os_ << indent5 << outvar << "[nijkl*12 + 0] = " << invar_1p << "[full_idx_x];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 1] = " << invar_1p << "[full_idx_y];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 2] = " << invar_1p << "[full_idx_z];\n";
+    os_ << indent5 << outvar << "[startidx + 0] = " << invar_1p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[startidx + 1] = " << invar_1p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[startidx + 2] = " << invar_1p << "[full_idx_z];\n";
 
     if(am[0] > 0)
     {
@@ -343,9 +343,9 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
                        << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
         os_ << indent5 << "full_idx_z = idx_z * " << ncart2*ncart3*ncart4
                        << " + n2 * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
-        os_ << indent5 << outvar << "[nijkl*12 + 0] -= " << invar_1m << "[full_idx_x];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 1] -= " << invar_1m << "[full_idx_y];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 2] -= " << invar_1m << "[full_idx_z];\n";
+        os_ << indent5 << "if(idx_x >= 0) " << outvar << "[startidx + 0] -= " << invar_1m << "[full_idx_x];\n";
+        os_ << indent5 << "if(idx_y >= 0) " << outvar << "[startidx + 1] -= " << invar_1m << "[full_idx_y];\n";
+        os_ << indent5 << "if(idx_z >= 0) " << outvar << "[startidx + 2] -= " << invar_1m << "[full_idx_z];\n";
     }
 
     os_ << "\n\n";
@@ -360,9 +360,9 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
     os_ << indent5 << "full_idx_z = n1 * " << ncart2p*ncart3*ncart4
                    << " + idx_z * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
 
-    os_ << indent5 << outvar << "[nijkl*12 + 3] = " << invar_2p << "[full_idx_x];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 4] = " << invar_2p << "[full_idx_y];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 5] = " << invar_2p << "[full_idx_z];\n";
+    os_ << indent5 << outvar << "[startidx + 3] = " << invar_2p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[startidx + 4] = " << invar_2p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[startidx + 5] = " << invar_2p << "[full_idx_z];\n";
 
     if(am[1] > 0)
     {
@@ -375,9 +375,9 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
                        << " + idx_y * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
         os_ << indent5 << "full_idx_z = n1 * " << ncart2m*ncart3*ncart4
                        << " + idx_z * " << ncart3*ncart4 << " + n3 * " << ncart4 << " + n4;\n";             
-        os_ << indent5 << outvar << "[nijkl*12 + 3] -= " << invar_2m << "[full_idx_x];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 4] -= " << invar_2m << "[full_idx_y];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 5] -= " << invar_2m << "[full_idx_z];\n";
+        os_ << indent5 << "if(idx_x >= 0) " << outvar << "[startidx + 3] -= " << invar_2m << "[full_idx_x];\n";
+        os_ << indent5 << "if(idx_y >= 0) " << outvar << "[startidx + 4] -= " << invar_2m << "[full_idx_y];\n";
+        os_ << indent5 << "if(idx_z >= 0) " << outvar << "[startidx + 5] -= " << invar_2m << "[full_idx_z];\n";
     }
 
     os_ << "\n\n";
@@ -386,15 +386,15 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
     os_ << indent5 << "idx_y = aminfo_n3->idx[1][2];\n";
     os_ << indent5 << "idx_z = aminfo_n3->idx[2][2];\n";
     os_ << indent5 << "full_idx_x = n1 * " << ncart2*ncart3p*ncart4
-                   << " + n2 * " << ncart3*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
+                   << " + n2 * " << ncart3p*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
     os_ << indent5 << "full_idx_y = n1 * " << ncart2*ncart3p*ncart4
-                   << " + n2 * " << ncart3*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
+                   << " + n2 * " << ncart3p*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
     os_ << indent5 << "full_idx_z = n1 * " << ncart2*ncart3p*ncart4
-                   << " + n2 * " << ncart3*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
+                   << " + n2 * " << ncart3p*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
 
-    os_ << indent5 << outvar << "[nijkl*12 + 6] = " << invar_3p << "[full_idx_x];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 7] = " << invar_3p << "[full_idx_y];\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 8] = " << invar_3p << "[full_idx_z];\n";
+    os_ << indent5 << outvar << "[startidx + 6] = " << invar_3p << "[full_idx_x];\n";
+    os_ << indent5 << outvar << "[startidx + 7] = " << invar_3p << "[full_idx_y];\n";
+    os_ << indent5 << outvar << "[startidx + 8] = " << invar_3p << "[full_idx_z];\n";
 
     if(am[2] > 0)
     {
@@ -402,23 +402,23 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
         os_ << indent5 << "idx_y = aminfo_n3->idx[1][0];\n";
         os_ << indent5 << "idx_z = aminfo_n3->idx[2][0];\n";
         os_ << indent5 << "full_idx_x = n1 * " << ncart2*ncart3m*ncart4
-                       << " + n2 * " << ncart3*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
+                       << " + n2 * " << ncart3m*ncart4 << " + idx_x * " << ncart4 << " + n4;\n";             
         os_ << indent5 << "full_idx_y = n1 * " << ncart2*ncart3m*ncart4
-                       << " + n2 * " << ncart3*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
+                       << " + n2 * " << ncart3m*ncart4 << " + idx_y * " << ncart4 << " + n4;\n";             
         os_ << indent5 << "full_idx_z = n1 * " << ncart2*ncart3m*ncart4
-                       << " + n2 * " << ncart3*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
-        os_ << indent5 << outvar << "[nijkl*12 + 6] -= " << invar_3m << "[full_idx_x];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 7] -= " << invar_3m << "[full_idx_y];\n";
-        os_ << indent5 << outvar << "[nijkl*12 + 8] -= " << invar_3m << "[full_idx_z];\n";
+                       << " + n2 * " << ncart3m*ncart4 << " + idx_z * " << ncart4 << " + n4;\n";             
+        os_ << indent5 << "if(idx_x >= 0) " << outvar << "[startidx + 6] -= " << invar_3m << "[full_idx_x];\n";
+        os_ << indent5 << "if(idx_y >= 0) " << outvar << "[startidx + 7] -= " << invar_3m << "[full_idx_y];\n";
+        os_ << indent5 << "if(idx_z >= 0) " << outvar << "[startidx + 8] -= " << invar_3m << "[full_idx_z];\n";
     }
 
     os_ << "\n\n";
     os_ << indent5 << "// Fourth Center\n";
-    os_ << indent5 << outvar << "[nijkl*12 +  9] = -(" << outvar << "[nijkl*12 + 0] + " << outvar << "[nijkl*12 + 3] + " << outvar << "[nijkl*12 + 6]);\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 10] = -(" << outvar << "[nijkl*12 + 1] + " << outvar << "[nijkl*12 + 4] + " << outvar << "[nijkl*12 + 7]);\n";
-    os_ << indent5 << outvar << "[nijkl*12 + 11] = -(" << outvar << "[nijkl*12 + 2] + " << outvar << "[nijkl*12 + 5] + " << outvar << "[nijkl*12 + 8]);\n";
+    os_ << indent5 << outvar << "[startidx +  9] = -(" << outvar << "[startidx + 0] + " << outvar << "[startidx + 3] + " << outvar << "[startidx + 6]);\n";
+    os_ << indent5 << outvar << "[startidx + 10] = -(" << outvar << "[startidx + 1] + " << outvar << "[startidx + 4] + " << outvar << "[startidx + 7]);\n";
+    os_ << indent5 << outvar << "[startidx + 11] = -(" << outvar << "[startidx + 2] + " << outvar << "[startidx + 5] + " << outvar << "[startidx + 8]);\n";
 
-    os_ << indent5 << "nijkl++;\n";
+    os_ << indent5 << "startidx += 12;\n";
     os_ << indent4 << "} // close loop for forming derivatives\n\n";
     
 }
