@@ -54,6 +54,8 @@ class OSTEI_VRR_Algorithm_Base
         StringSet GetAllVarReq(void) const;
         StringSet GetVarReq(QAM am) const;
 
+        size_t GetPrimNElements(void) const;
+
         QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false) const;
         StringSet GenerateVarReq(RRStepType rrstep) const;
         StringSet GenerateVarReq(QAM am, RRStepType rrstep) const;

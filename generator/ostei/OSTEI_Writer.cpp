@@ -28,10 +28,7 @@ bool OSTEI_Writer::IsSpecialPermutation_(QAM am) const
 
 void OSTEI_Writer::DeclareContwork(void) const
 {
-    if(info_.ContMemoryReq() == 0)
-        return;
-
-    os_ << indent1 << "// partition workspace into shells\n";
+    os_ << indent1 << "// partition workspace\n";
     size_t ptidx = 0;
 
     for(const auto & it : info_.GetContQ())
@@ -42,6 +39,9 @@ void OSTEI_Writer::DeclareContwork(void) const
             ptidx += NCART(it);
         }
     }
+
+    if(info_.PrimUseHeap())
+        os_ << indent1 << "SIMINT_DBLTYPE * const restrict primwork = (SIMINT_DBLTYPE *)(contwork + (SIMINT_NSHELL_SIMD * " << ptidx << "));\n";
 
     os_ << "\n";
 }
@@ -374,9 +374,11 @@ void OSTEI_Writer::Write_Full_(void) const
 
 
     // Declare the temporary space 
-    // Only needed if we are doing HRR
-    if(hashrr)
-        DeclareContwork();
+    DeclareContwork();
+
+    // Note: vrr_writer handles the prim arrays for s_s_s_s
+    //       so we always want to run this
+    vrr_writer_.DeclarePrimArrays(os_);
 
 
     os_ << indent1 << "// Create constants\n";
@@ -479,10 +481,6 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent6 << "}\n";
     os_ << indent5 << "}\n\n";
 
-
-    // Note: vrr_writer handles the prim arrays for s_s_s_s
-    //       so we always want to run this
-    vrr_writer_.DeclarePrimArrays(os_);
 
     os_ << indent5 << "const SIMINT_DBLTYPE Q_alpha = SIMINT_DBLLOAD(Q.alpha, j);\n";
     os_ << indent5 << "const SIMINT_DBLTYPE PQalpha_mul = SIMINT_MUL(P_alpha, Q_alpha);\n";

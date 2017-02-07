@@ -45,7 +45,6 @@ parser.add_argument("-ve", required=False, type=int, default=0, help="External V
 parser.add_argument("-vg", required=False, type=int, default=0, help="General VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
 parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
-parser.add_argument("-s",  required=False, type=int, default=0,    help="Max contracted integral stack size in bytes (per shell quartet)")
 parser.add_argument("-d1", action="store_true",  help="Generate code for 1st derivatives")
 parser.add_argument("outdir", type=str, help="Output directory")
 
@@ -162,8 +161,9 @@ print()
 headerbase = "ostei_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
 
-# Maximum required contwork
-maxworksize = 0  # number of elements
+# Maximum required contwork and primwork
+maxworksize_cont = 0  # number of elements
+maxworksize_prim = 0  # number of elements
 
 # Required external HRR and VRR
 reqext_hrr = []
@@ -202,7 +202,6 @@ for q in valid:
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
-    cmdline.extend(["-s", str(args.s)])
     cmdline.extend(["-ve", str(args.ve)]) 
     cmdline.extend(["-vg", str(args.vg)]) 
     cmdline.extend(["-he", str(args.he)]) 
@@ -230,8 +229,9 @@ for q in valid:
 
   # reopen the logfile, find contwork and requirements
   for line in open(logfile, 'r').readlines():
-    if line.startswith("CONTWORK SIZE"):
-      maxworksize = max(maxworksize, int(line.split()[2]))
+    if line.startswith("WORK SIZE"):
+      maxworksize_cont = max(maxworksize_cont, int(line.split()[2]))
+      maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
       reqext_hrr.append(tuple(line.split()[3:]))
     elif line.startswith("SIMINT EXTERNAL VRR"):
@@ -322,7 +322,6 @@ for q in valid:
     cmdline.extend(["-q", str(q[0]), str(q[1]), str(q[2]), str(q[3])])
     cmdline.extend(["-o", outfile])
     cmdline.extend(["-oh", headerfile])
-    cmdline.extend(["-s", str(args.s)])
     cmdline.extend(["-ve", str(args.ve)]) 
     cmdline.extend(["-vg", str(args.vg)]) 
     cmdline.extend(["-he", str(args.he)]) 
@@ -350,8 +349,9 @@ for q in valid:
 
   # reopen the logfile, find contwork and requirements
   for line in open(logfile, 'r').readlines():
-    if line.startswith("CONTWORK SIZE"):
-      maxworksize = max(maxworksize, int(line.split()[2]))
+    if line.startswith("WORK SIZE"):
+      maxworksize_cont = max(maxworksize_cont, int(line.split()[2]))
+      maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
       reqext_hrr.append(tuple(line.split()[3:]))
     elif line.startswith("SIMINT EXTERNAL VRR"):
@@ -382,8 +382,11 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(maxam))
   hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
   hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(maxam1))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE ((SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD * {})))\n".format(maxworksize))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
+
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_CONT  (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*{}))\n".format(maxworksize_cont))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_PRIM  (SIMINT_SIMD_LEN*{})\n".format(maxworksize_prim))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE       (SIMINT_OSTEI_MAX_WORKSIZE_CONT + SIMINT_OSTEI_MAX_WORKSIZE_PRIM)\n")
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM        (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n")
 
 

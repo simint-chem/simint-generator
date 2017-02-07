@@ -20,14 +20,14 @@ public:
     void SetContQ(const QAMSet & q)
     {
         contq_ = q;
-        nelements_ = 0;
+        cont_nelements_ = 0;
         for(const auto & it : contq_)
         {
             if(it != FinalAM())
-                nelements_ += NCART(it.qam);
+                cont_nelements_ += NCART(it.qam);
         }
 
-        memory_ = nelements_ * sizeof(double);
+        cont_memory_ = cont_nelements_ * sizeof(double);
     }
 
     QAMSet GetContQ(void) const
@@ -37,17 +37,40 @@ public:
 
     size_t ContMemoryReq(void) const
     {
-        return memory_;
+        return cont_memory_;
     }
 
     size_t ContNElements(void) const
     {
-        return nelements_;
+        return cont_nelements_;
+    }
+
+    size_t PrimNElements(void) const
+    {
+        if(PrimUseHeap())
+            return prim_nelements_;
+        else
+            return 0;
     }
     
     bool IsContQ(const QAM & am) const
     {
         return contq_.count(am);
+    }
+
+    void SetPrimNElements(size_t nelements)
+    {
+        prim_nelements_ = nelements;
+    }
+
+    bool PrimUseStack(void) const
+    {
+        return false;
+    }
+
+    bool PrimUseHeap(void) const
+    {
+        return !(PrimUseStack());
     }
 
     bool IsUnique(void) const
@@ -70,8 +93,9 @@ private:
     // Memory for contracted quartets
     //////////////////////////////////
     QAMSet contq_;
-    size_t memory_;
-    size_t nelements_;
+    size_t cont_memory_;
+    size_t cont_nelements_;
+    size_t prim_nelements_;
 
 };
 

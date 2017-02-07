@@ -123,6 +123,7 @@ int main(int argc, char ** argv)
 
     // set the contracted quartets
     info.SetContQ(hrralgo.TopAM());
+    info.SetPrimNElements(vrralgo.GetPrimNElements());
 
     // Create the OSTEI_Writer and write the file
     OSTEIDeriv1_Writer ostei_deriv1_writer(of, ofh, info, vrr_writer, hrr_writer);
@@ -130,7 +131,7 @@ int main(int argc, char ** argv)
 
 
     // For information
-    std::cout << "\nCONTWORK SIZE: " << info.ContNElements() << "  " << info.ContMemoryReq() << "\n";
+    std::cout << "\nWORK SIZE: " << info.ContNElements() << "  " << info.PrimNElements() << "\n";
 
     }
     catch(std::exception & ex)

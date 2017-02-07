@@ -28,10 +28,7 @@ bool OSTEIDeriv1_Writer::IsSpecialPermutation_(QAM am) const
 
 void OSTEIDeriv1_Writer::DeclareContwork(void) const
 {
-    if(info_.ContMemoryReq() == 0)
-        return;
-
-    os_ << indent1 << "// partition workspace into shells\n";
+    os_ << indent1 << "// partition workspace\n";
     size_t ptidx = 0;
 
     for(const auto & it : info_.GetContQ())
@@ -42,6 +39,9 @@ void OSTEIDeriv1_Writer::DeclareContwork(void) const
             ptidx += NCART(it);
         }
     }
+
+    if(info_.PrimUseHeap())
+        os_ << indent1 << "SIMINT_DBLTYPE * const restrict primwork = (SIMINT_DBLTYPE *)(contwork + (SIMINT_NSHELL_SIMD * " << ptidx << "));\n";
 
     os_ << "\n";
 }
@@ -536,9 +536,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
 
     // Declare the temporary space 
-    // Only needed if we are doing HRR
-    if(hashrr)
-        DeclareContwork();
+    DeclareContwork();
 
 
     os_ << indent1 << "// Create constants\n";

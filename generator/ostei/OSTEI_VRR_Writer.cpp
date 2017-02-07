@@ -60,21 +60,34 @@ bool OSTEI_VRR_Writer::HasVRR_L(void) const
     return vrr_algo_.HasVRR_L();
 }
 
+
 void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
 {
-    os << indent5 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
-    os << indent5 << "// with m as the slowest index\n";
+    os << indent1 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
+    os << indent1 << "// with m as the slowest index\n";
 
-
-    for(const auto & am : vrr_algo_.GetAllAM()) 
+    if(info_.PrimUseStack())
     {
-        // add +1 fromm required m values to account for 0
-        os << indent5 << "// AM = (" << am[0] << " " << am[1] << " | " << am[2] << " " << am[3] << " )\n";
-        os << indent5 << "SIMINT_DBLTYPE " << PrimVarName(am)
-           << "[" << (vrr_algo_.GetMReq(am)+1) << " * " 
-           << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+        for(const auto & am : vrr_algo_.GetAllAM()) 
+        {
+            os << indent1 << "SIMINT_DBLTYPE " << PrimVarName(am)
+               << "[" << (vrr_algo_.GetMReq(am)+1) << " * " 
+               << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+        }
     }
+    else
+    {
+        size_t count = 0;
 
+        for(const auto & am : vrr_algo_.GetAllAM()) 
+        {
+            // add +1 fromm required m values to account for 0
+            os << indent1 << "SIMINT_DBLTYPE * const restrict " << PrimVarName(am)
+               << " = primwork + " << count << ";\n";
+
+            count += (vrr_algo_.GetMReq(am)+1) * NCART(am);
+        }
+    }
     os << "\n\n";
 }
 

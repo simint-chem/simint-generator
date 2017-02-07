@@ -8,7 +8,7 @@
 #include <algorithm>
 #include "generator/Printing.hpp"
 #include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp"
-
+#include "generator/Ncart.hpp"
 
 OSTEI_VRR_Algorithm_Base::OSTEI_VRR_Algorithm_Base(const OptionMap & options)
     : options_(options)
@@ -126,6 +126,13 @@ int OSTEI_VRR_Algorithm_Base::GetMaxInt(void) const
     return maxint_;
 }
 
+size_t OSTEI_VRR_Algorithm_Base::GetPrimNElements(void) const
+{
+    size_t mem = 0;
+    for(const auto & am : GetAllAM()) 
+        mem += NCART(am) * (GetMReq(am)+1);
+    return mem;
+}
 
 void OSTEI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const
 {
