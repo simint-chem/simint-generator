@@ -52,6 +52,6 @@ target_compile_options(test_common PRIVATE ${SIMINT_TESTS_CXX_FLAGS})
 
 # Various testing and benchmarking
 ADDTEST(test_eri test_eri.cpp)
-ADDTEST(test_deriv1 test_deriv1.cpp)
+ADDTEST(test_eri_deriv1 test_eri_deriv1.cpp)
 ADDTEST(benchmark_eri benchmark_eri.cpp)
 ADDTEST(screentest screentest.cpp)
