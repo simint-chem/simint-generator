@@ -3,10 +3,6 @@
 
 #include "generator/Types.hpp"
 #include "generator/GeneratorInfoBase.hpp"
-#include "generator/Options.hpp"
-
-
-
 
 class OSTEI_GeneratorInfo : public GeneratorInfoBase
 {
@@ -14,61 +10,12 @@ public:
 
     using GeneratorInfoBase::GeneratorInfoBase;
 
-    //////////////////////////////////
-    // Memory for contracted quartets
-    //////////////////////////////////
-    void SetContQ(const QAMSet & q)
-    {
-        contq_ = q;
-        cont_nelements_ = 0;
-        for(const auto & it : contq_)
-        {
-            if(it != FinalAM())
-                cont_nelements_ += NCART(it.qam);
-        }
-
-        cont_memory_ = cont_nelements_ * sizeof(double);
-    }
-
-    QAMSet GetContQ(void) const
-    {
-        return contq_;
-    }
-
-    size_t ContMemoryReq(void) const
-    {
-        return cont_memory_;
-    }
-
-    size_t ContNElements(void) const
-    {
-        return cont_nelements_;
-    }
-
-    size_t PrimNElements(void) const
-    {
-        if(PrimUseHeap())
-            return prim_nelements_;
-        else
-            return 0;
-    }
-    
-    bool IsContQ(const QAM & am) const
-    {
-        return contq_.count(am);
-    }
-
-    void SetPrimNElements(size_t nelements)
-    {
-        prim_nelements_ = nelements;
-    }
-
     bool PrimUseStack(void) const
     {
         // I have found heap to be slightly faster, possibly
         // due to better cache behavior. Feel free to test
         // in the future
-        return true;
+        return false;
     }
 
     bool PrimUseHeap(void) const
@@ -105,8 +52,11 @@ private:
     //////////////////////////////////
     // Memory for contracted quartets
     //////////////////////////////////
+    QAMSet bcontq_;
+    QAMSet primq_;
     QAMSet contq_;
-    size_t cont_memory_;
+
+    size_t bcont_nelements_;
     size_t cont_nelements_;
     size_t prim_nelements_;
 

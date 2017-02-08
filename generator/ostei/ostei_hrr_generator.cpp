@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
 
 
     // The algorithm to use
-    Makowski_HRR hrralgo(options);
+    Makowski_HRR hrralgo(info);
     hrralgo.Create(am, brasteptype, ketsteptype);
 
     OSTEI_HRR_Writer hrr_writer(hrralgo, info);

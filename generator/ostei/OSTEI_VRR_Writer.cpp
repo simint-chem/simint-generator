@@ -25,70 +25,9 @@ OSTEI_VRR_Writer::OSTEI_VRR_Writer(const OSTEI_VRR_Algorithm_Base & vrr_algo, co
 { 
 }
 
-bool OSTEI_VRR_Writer::HasVRR(void) const
+const OSTEI_VRR_Algorithm_Base & OSTEI_VRR_Writer::Algo(void) const
 {
-    return vrr_algo_.HasVRR();
-}
-
-bool OSTEI_VRR_Writer::HasBraVRR(void) const
-{
-    return vrr_algo_.HasBraVRR();
-}
-
-bool OSTEI_VRR_Writer::HasKetVRR(void) const
-{
-    return vrr_algo_.HasKetVRR();
-}
-
-bool OSTEI_VRR_Writer::HasVRR_I(void) const
-{
-    return vrr_algo_.HasVRR_I();
-}
-
-bool OSTEI_VRR_Writer::HasVRR_J(void) const
-{
-    return vrr_algo_.HasVRR_J();
-}
-
-bool OSTEI_VRR_Writer::HasVRR_K(void) const
-{
-    return vrr_algo_.HasVRR_K();
-}
-
-bool OSTEI_VRR_Writer::HasVRR_L(void) const
-{
-    return vrr_algo_.HasVRR_L();
-}
-
-
-void OSTEI_VRR_Writer::DeclarePrimArrays(std::ostream & os) const
-{
-    os << indent1 << "// Holds the auxiliary integrals ( i 0 | k 0 )^m in the primitive basis\n";
-    os << indent1 << "// with m as the slowest index\n";
-
-    if(info_.PrimUseStack())
-    {
-        for(const auto & am : vrr_algo_.GetAllAM()) 
-        {
-            os << indent1 << "SIMINT_DBLTYPE " << PrimVarName(am)
-               << "[" << (vrr_algo_.GetMReq(am)+1) << " * " 
-               << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
-        }
-    }
-    else
-    {
-        size_t count = 0;
-
-        for(const auto & am : vrr_algo_.GetAllAM()) 
-        {
-            // add +1 fromm required m values to account for 0
-            os << indent1 << "SIMINT_DBLTYPE * const restrict " << PrimVarName(am)
-               << " = primwork + " << count << ";\n";
-
-            count += (vrr_algo_.GetMReq(am)+1) * NCART(am);
-        }
-    }
-    os << "\n\n";
+    return vrr_algo_;
 }
 
 void OSTEI_VRR_Writer::WriteVRRSteps_(std::ostream & os, QAM am, const VRR_StepSet & vs, const std::string & num_n) const

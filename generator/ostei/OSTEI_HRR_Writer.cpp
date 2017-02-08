@@ -14,26 +14,10 @@ OSTEI_HRR_Writer::OSTEI_HRR_Writer(const OSTEI_HRR_Algorithm_Base & hrr_algo, co
 { }
 
 
-bool OSTEI_HRR_Writer::HasHRR(void) const
+const OSTEI_HRR_Algorithm_Base & OSTEI_HRR_Writer::Algo(void) const
 {
-    return hrr_algo_.HasHRR();
+    return hrr_algo_;
 }
-
-bool OSTEI_HRR_Writer::HasBraHRR(void) const
-{
-    return hrr_algo_.HasBraHRR();
-}
-
-bool OSTEI_HRR_Writer::HasKetHRR(void) const
-{
-    return hrr_algo_.HasKetHRR();
-}
-
-ConstantMap OSTEI_HRR_Writer::GetConstants(void) const
-{
-    return ConstantMap();
-}
-
 
 void OSTEI_HRR_Writer::WriteBraSteps_(std::ostream & os, const HRRDoubletStepList & steps,
                                       const std::string & tag,
@@ -141,25 +125,26 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
     os << indent3 << "//////////////////////////////////////////////\n";
     os << "\n\n";
 
-    if(HasBraHRR())
+    if(hrr_algo_.HasBraHRR())
         os << indent3 << "const double hAB[3] = { P.AB_x[ab], P.AB_y[ab], P.AB_z[ab] };\n"; 
     os << "\n\n";
 
     os << indent3 << "for(abcd = 0; abcd < nshellbatch; ++abcd, ++real_abcd)\n";
     os << indent3 << "{\n";
 
-    if(HasKetHRR())
+    if(hrr_algo_.HasKetHRR())
         os << indent4 << "const double hCD[3] = { Q.AB_x[cd+abcd], Q.AB_y[cd+abcd], Q.AB_z[cd+abcd] };\n";
     os << "\n";
     os << indent4 << "// set up HRR pointers\n";
     for(const auto & it : hrr_algo_.TopAM())
         os << indent4 << "double const * restrict " << HRRVarName(it) << " = " << ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";
 
-    // and also for the integral, but only if we aren't doing a derivative
+    // and also for the final integral
     if(info_.Deriv() == 0)
         os << indent4 << "double * restrict " << HRRVarName(finalam) << " = " << ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << ";\n";
+    else if(info_.Deriv() == 1)
+        os << indent4 << "double * restrict " << HRRVarName(finalam) << " = " << ArrVarName(finalam) << " + real_abcd * " << NCART(finalam) << " * 12;\n";
     os << "\n";
-
 
     for(auto am : hrr_algo_.GetAMOrder())
     {
@@ -168,12 +153,6 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
         if(steptype == DoubletType::BRA)
         {
             os << indent4 << "// form " << ArrVarName(am) << "\n";
-            // allocate temporary if needed
-            // temporary is needed even for the "final am" if we are doing derivatives, since
-            // it will actually be an intermediate
-            if(!info_.IsContQ(am) && (info_.Deriv() > 0 || !info_.IsFinalAM(am)))
-                os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
-
             int L = am[0] + am[1];
 
             if(L < start_external_)
@@ -187,10 +166,6 @@ void OSTEI_HRR_Writer::WriteHRR(std::ostream & os) const
         else
         {
             os << indent4 << "// form " << ArrVarName(am) << "\n";
-            // allocate temporary if needed
-            if(!info_.IsContQ(am) && !info_.IsFinalAM(am))
-                os << indent4 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
-
             int L = am[2] + am[3];
 
             if(L < start_external_)

@@ -9,24 +9,13 @@
 // foward declare
 class OSTEI_GeneratorInfo;
 
-
-
 class OSTEI_VRR_Writer
 {   
     public:
         OSTEI_VRR_Writer(const OSTEI_VRR_Algorithm_Base & vrr_algo, const OSTEI_GeneratorInfo & info,
                          int start_external = 0, int start_general = 0);
 
-        bool HasVRR(void) const;
-        bool HasBraVRR(void) const;
-        bool HasKetVRR(void) const;
-        bool HasVRR_I(void) const;
-        bool HasVRR_J(void) const;
-        bool HasVRR_K(void) const;
-        bool HasVRR_L(void) const;
-
-        void DeclarePrimArrays(std::ostream & os) const;
-
+        const OSTEI_VRR_Algorithm_Base & Algo(void) const;
 
         virtual ConstantMap GetConstants(void) const;
         virtual void WriteVRR(std::ostream & os) const;

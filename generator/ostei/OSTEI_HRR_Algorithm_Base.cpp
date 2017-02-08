@@ -11,14 +11,9 @@
 #include "generator/ostei/OSTEI_HRR_Algorithm_Base.hpp"
 
 
-OSTEI_HRR_Algorithm_Base::OSTEI_HRR_Algorithm_Base(const OptionMap & options)
-    : options_(options)
+OSTEI_HRR_Algorithm_Base::OSTEI_HRR_Algorithm_Base(const OSTEI_GeneratorInfo & info)
+    : info_(info)
 {
-}
-
-int OSTEI_HRR_Algorithm_Base::GetOption(Option opt) const
-{
-    return options_.at(opt);
 }
 
 void OSTEI_HRR_Algorithm_Base::PruneDoublets_(DoubletSet & d, DoubletSet & pruned, RRStepType steptype)
@@ -353,6 +348,18 @@ DoubletType OSTEI_HRR_Algorithm_Base::GetDoubletStep(QAM am) const
 QAMList OSTEI_HRR_Algorithm_Base::GetAMOrder(void) const
 {
     return amorder_;
+}
+
+QAMSet OSTEI_HRR_Algorithm_Base::GetIntermediates(void) const
+{
+    QAMSet ret;
+    for(const auto & it : amorder_)
+    {
+        if(!topqam_.count(it) && (info_.Deriv() > 0 || !info_.IsFinalAM(it)))
+            ret.insert(it);
+    }
+
+    return ret;
 }
 
 QAMList OSTEI_HRR_Algorithm_Base::GenerateAMReq(QAM am, RRStepType rrstep) const

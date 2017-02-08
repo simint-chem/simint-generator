@@ -21,7 +21,8 @@ OSTEI_Writer_Base::OSTEI_Writer_Base(std::ostream & os,
 
 void OSTEI_Writer_Base::DeclarePrimPointers(void) const
 {
-    for(const auto & it : info_.GetContQ())
+    auto topq = hrr_writer_.Algo().TopAM();
+    for(const auto & it : topq)
     {
         os_ << indent4 << "double * restrict " << PrimPtrName(it)
             << " = " << ArrVarName(it) << " + abcd * " << NCART(it) << ";\n";

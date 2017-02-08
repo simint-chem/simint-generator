@@ -2,7 +2,7 @@
 
 
 #include "generator/ostei/OSTEI_Types.hpp"
-#include "generator/Options.hpp"
+#include "generator/ostei/OSTEI_GeneratorInfo.hpp"
 
 
 typedef std::vector<HRRDoubletStep> HRRDoubletStepList;
@@ -12,7 +12,7 @@ typedef std::map<DAM, DAMSet> HRR_AMReqMap;
 class OSTEI_HRR_Algorithm_Base
 {
     public:
-        OSTEI_HRR_Algorithm_Base(const OptionMap & options);
+        OSTEI_HRR_Algorithm_Base(const OSTEI_GeneratorInfo & info);
 
         void Create(QAM am);
         void Create(std::set<QAM> am);
@@ -22,6 +22,7 @@ class OSTEI_HRR_Algorithm_Base
         QAMSet TopAM(void) const;
         QuartetSet TopQuartets(void) const;
         QAMList GetAMOrder(void) const;
+        QAMSet GetIntermediates(void) const;
 
         RRStepType GetBraRRStep(DAM am) const;
         RRStepType GetKetRRStep(DAM am) const;
@@ -43,11 +44,9 @@ class OSTEI_HRR_Algorithm_Base
         virtual ~OSTEI_HRR_Algorithm_Base() = default;
 
     protected:
-       int GetOption(Option opt) const; 
+        OSTEI_GeneratorInfo info_;
 
     private:
-        // Options
-        OptionMap options_;
 
         DAMSet allbraam_, allketam_;
 

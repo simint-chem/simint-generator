@@ -51,7 +51,7 @@ public:
     virtual void WriteFile(void) const;
 
 private:
-    void DeclareContwork(void) const;
+    void PartitionWorkspace(void) const;
     void WriteShellOffsets(void) const;
     void WriteAccumulation(void) const;
 

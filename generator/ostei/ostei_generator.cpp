@@ -85,8 +85,8 @@ int main(int argc, char ** argv)
     //////////////////////////////////////////////////////////////
     
     // algorithms used
-    Makowski_HRR hrralgo(options);
-    Makowski_VRR vrralgo(options);
+    Makowski_HRR hrralgo(info);
+    Makowski_VRR vrralgo(info);
 
     // Working backwards, I need:
     // 1.) HRR Steps
@@ -104,17 +104,11 @@ int main(int argc, char ** argv)
                                 options[Option::GeneralVRR]);
 
 
-    // set the contracted quartets
-    info.SetContQ(hrralgo.TopAM());
-    info.SetPrimNElements(vrralgo.GetPrimNElements());
-
     // Create the OSTEI_Writer and write the file
     OSTEI_Writer ostei_writer(of, ofh, info, vrr_writer, hrr_writer);
     ostei_writer.WriteFile();
 
 
-    // For information
-    std::cout << "\nWORK SIZE: " << info.ContNElements() << "  " << info.PrimNElements() << "\n";
 
     }
     catch(std::exception & ex)

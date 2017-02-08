@@ -17,8 +17,8 @@
 class Makowski_HRR : public OSTEI_HRR_Algorithm_Base
 {
     public:
-        Makowski_HRR(const OptionMap & options)
-            : OSTEI_HRR_Algorithm_Base(options)
+        Makowski_HRR(const OSTEI_GeneratorInfo & info)
+            : OSTEI_HRR_Algorithm_Base(info)
         { }
 
 
@@ -87,8 +87,8 @@ class Makowski_HRR : public OSTEI_HRR_Algorithm_Base
 class Makowski_VRR : public OSTEI_VRR_Algorithm_Base
 {
     public:
-        Makowski_VRR(const OptionMap & options)
-            : OSTEI_VRR_Algorithm_Base(options)
+        Makowski_VRR(const OSTEI_GeneratorInfo & info)
+            : OSTEI_VRR_Algorithm_Base(info)
         { }
 
 

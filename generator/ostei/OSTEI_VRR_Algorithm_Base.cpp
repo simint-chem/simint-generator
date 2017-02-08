@@ -7,17 +7,12 @@
 #include <iostream>
 #include <algorithm>
 #include "generator/Printing.hpp"
-#include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp"
 #include "generator/Ncart.hpp"
+#include "generator/ostei/OSTEI_VRR_Algorithm_Base.hpp"
 
-OSTEI_VRR_Algorithm_Base::OSTEI_VRR_Algorithm_Base(const OptionMap & options)
-    : options_(options)
+OSTEI_VRR_Algorithm_Base::OSTEI_VRR_Algorithm_Base(const OSTEI_GeneratorInfo & info)
+    : info_(info)
 {
-}
-
-int OSTEI_VRR_Algorithm_Base::GetOption(Option opt) const
-{
-    return options_.at(opt);
 }
 
 QAMList OSTEI_VRR_Algorithm_Base::GetAMOrder(void) const
@@ -124,14 +119,6 @@ StringSet OSTEI_VRR_Algorithm_Base::GetVarReq(QAM am) const
 int OSTEI_VRR_Algorithm_Base::GetMaxInt(void) const
 {
     return maxint_;
-}
-
-size_t OSTEI_VRR_Algorithm_Base::GetPrimNElements(void) const
-{
-    size_t mem = 0;
-    for(const auto & am : GetAllAM()) 
-        mem += NCART(am) * (GetMReq(am)+1);
-    return mem;
 }
 
 void OSTEI_VRR_Algorithm_Base::PruneQuartets_(QuartetSet & q) const

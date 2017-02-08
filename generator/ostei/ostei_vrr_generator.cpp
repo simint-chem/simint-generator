@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
     of << "\n#include \"simint/ostei/gen/ostei_generated.h\"\n";
 
     // create the algorithm and write the file
-    Makowski_VRR vrralgo(options);
+    Makowski_VRR vrralgo(info);
     vrralgo.Create_WithOrder(finalam, order);
     OSTEI_VRR_Writer vrr_writer(vrralgo, info);
     vrr_writer.WriteVRRFile(of, ofh);

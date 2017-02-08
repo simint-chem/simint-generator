@@ -9,7 +9,7 @@ add_library(ostei_generator_common OBJECT
 
                          OSTEI_Writer_Base.cpp
                          OSTEI_Writer.cpp
-                         OSTEIDeriv1_Writer.cpp
+#                         OSTEIDeriv1_Writer.cpp
            )
 
 
@@ -21,9 +21,9 @@ add_executable(ostei_generator ostei_generator.cpp $<TARGET_OBJECTS:generator_co
 target_include_directories(ostei_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
 target_compile_options(ostei_generator PRIVATE ${GENERATOR_CXX_FLAGS})
 
-add_executable(ostei_deriv1_generator ostei_deriv1_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:ostei_generator_common>)
-target_include_directories(ostei_deriv1_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
-target_compile_options(ostei_deriv1_generator PRIVATE ${GENERATOR_CXX_FLAGS})
+#add_executable(ostei_deriv1_generator ostei_deriv1_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:ostei_generator_common>)
+#target_include_directories(ostei_deriv1_generator PRIVATE ${GENERATOR_CXX_INCLUDES})
+#target_compile_options(ostei_deriv1_generator PRIVATE ${GENERATOR_CXX_FLAGS})
 
 add_executable(ostei_vrr_generator ostei_vrr_generator.cpp $<TARGET_OBJECTS:generator_common> $<TARGET_OBJECTS:ostei_generator_common>)
 target_include_directories(ostei_vrr_generator PRIVATE ${GENERATOR_CXX_INCLUDES})

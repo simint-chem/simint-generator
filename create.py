@@ -161,9 +161,10 @@ print()
 headerbase = "ostei_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
 
-# Maximum required contwork and primwork
-maxworksize_cont = 0  # number of elements
-maxworksize_prim = 0  # number of elements
+# Maximum required work
+maxworksize_bcont = 0
+maxworksize_cont = 0
+maxworksize_prim = 0
 
 # Required external HRR and VRR
 reqext_hrr = []
@@ -227,11 +228,12 @@ for q in valid:
       quit(5)
 
 
-  # reopen the logfile, find contwork and requirements
+  # reopen the logfile, find work and requirements
   for line in open(logfile, 'r').readlines():
     if line.startswith("WORK SIZE"):
-      maxworksize_cont = max(maxworksize_cont, int(line.split()[2]))
+      maxworksize_bcont = max(maxworksize_bcont, int(line.split()[2]))
       maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
+      maxworksize_cont = max(maxworksize_cont, int(line.split()[4]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
       reqext_hrr.append(tuple(line.split()[3:]))
     elif line.startswith("SIMINT EXTERNAL VRR"):
@@ -347,11 +349,12 @@ for q in valid:
       quit(5)
 
 
-  # reopen the logfile, find contwork and requirements
+  # reopen the logfile, find work and requirements
   for line in open(logfile, 'r').readlines():
     if line.startswith("WORK SIZE"):
-      maxworksize_cont = max(maxworksize_cont, int(line.split()[2]))
+      maxworksize_bcont = max(maxworksize_bcont, int(line.split()[2]))
       maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
+      maxworksize_cont = max(maxworksize_cont, int(line.split()[4]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
       reqext_hrr.append(tuple(line.split()[3:]))
     elif line.startswith("SIMINT EXTERNAL VRR"):
@@ -383,10 +386,11 @@ with open(headerfile, 'w') as hfile:
   hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
   hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(maxam1))
 
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_CONT  (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*{}))\n".format(maxworksize_cont))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_PRIM  (SIMINT_SIMD_LEN*{})\n".format(maxworksize_prim))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE       (SIMINT_OSTEI_MAX_WORKSIZE_CONT + SIMINT_OSTEI_MAX_WORKSIZE_PRIM)\n")
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM        (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_BCONT  (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*{}))\n".format(maxworksize_bcont))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_CONT   (SIMINT_SIMD_ROUND({}))\n".format(maxworksize_cont))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_PRIM   (SIMINT_SIMD_LEN*{})\n".format(maxworksize_prim))
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE        (SIMINT_OSTEI_MAX_WORKSIZE_BCONT + SIMINT_OSTEI_MAX_WORKSIZE_PRIM + SIMINT_OSTEI_MAX_WORKSIZE_CONT)\n")
+  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM         (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
   hfile.write("\n")
 
 

@@ -9,20 +9,14 @@
 // foward declare
 class OSTEI_GeneratorInfo;
 
-
-
 class OSTEI_HRR_Writer
 {   
     public:
         OSTEI_HRR_Writer(const OSTEI_HRR_Algorithm_Base & hrr_algo, const OSTEI_GeneratorInfo & info,
                          int start_external = 0, int start_general = 0);
 
-        bool HasHRR(void) const;
-        bool HasBraHRR(void) const;
-        bool HasKetHRR(void) const;
+        const OSTEI_HRR_Algorithm_Base & Algo(void) const;
 
-
-        virtual ConstantMap GetConstants(void) const;
         virtual void WriteHRR(std::ostream & os) const;
         virtual void WriteHRRFile(std::ostream & of, std::ostream & ofh) const;
 

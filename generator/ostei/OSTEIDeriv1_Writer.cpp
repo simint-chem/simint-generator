@@ -17,7 +17,7 @@ void OSTEIDeriv1_Writer::DeclareContwork(void) const
     os_ << indent1 << "// partition workspace\n";
     size_t ptidx = 0;
 
-    for(const auto & it : info_.GetContQ())
+    for(const auto & it : info_.GetBatchContQ())
     {
         if(!info_.IsFinalAM(it))
         {
@@ -49,7 +49,7 @@ void OSTEIDeriv1_Writer::WriteShellOffsets(void) const
     os_ << indent6 << "{\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
 
-    for(const auto it : info_.GetContQ())
+    for(const auto it : info_.GetBatchContQ())
         os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
 
     os_ << indent6 << "}\n";
@@ -83,7 +83,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
     os_ << indent5 << "if(lastoffset == 0)\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : info_.GetContQ())
+    for(const auto it : info_.GetBatchContQ())
     {
         int ncart = NCART(it);
         if(it.tag.size())
@@ -97,7 +97,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
     os_ << indent5 << "else\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : info_.GetContQ())
+    for(const auto it : info_.GetBatchContQ())
     {
         int ncart = NCART(it);
         if(it.tag.size())
@@ -108,7 +108,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
                            << ", " << PrimPtrName(it) << ");\n";
     }
 
-    for(const auto it : info_.GetContQ())
+    for(const auto it : info_.GetBatchContQ())
         os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
 
     os_ << indent5 << "}\n";
@@ -636,7 +636,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
     if(hashrr)
     {
-        size_t contmem = info_.ContMemoryReq();
+        size_t contmem = info_.BatchContMemory();
         if(contmem > 0)
             os_ << indent3 << "memset(contwork, 0, SIMINT_NSHELL_SIMD * " << contmem << ");\n";
 
@@ -695,7 +695,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
     os_ << indent6 << "if(vmax > screen_tol)\n";
     os_ << indent6 << "{\n";
-    for(const auto it : info_.GetContQ())
+    for(const auto it : info_.GetBatchContQ())
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
     os_ << indent7 << "continue;\n";
     os_ << indent6 << "}\n";

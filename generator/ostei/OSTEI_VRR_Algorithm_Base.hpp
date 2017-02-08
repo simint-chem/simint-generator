@@ -2,7 +2,7 @@
 
 
 #include "generator/ostei/OSTEI_Types.hpp"
-#include "generator/Options.hpp"
+#include "generator/ostei/OSTEI_GeneratorInfo.hpp"
 
 typedef std::set<VRRStep> VRR_StepSet;
 
@@ -27,7 +27,7 @@ typedef std::array<int, 4> IdxOrder;
 class OSTEI_VRR_Algorithm_Base
 {
     public:
-        OSTEI_VRR_Algorithm_Base(const OptionMap & options);
+        OSTEI_VRR_Algorithm_Base(const OSTEI_GeneratorInfo & info);
 
         void Create(const QuartetSet & q);
         void Create(QAM q);
@@ -54,8 +54,6 @@ class OSTEI_VRR_Algorithm_Base
         StringSet GetAllVarReq(void) const;
         StringSet GetVarReq(QAM am) const;
 
-        size_t GetPrimNElements(void) const;
-
         QAMList GenerateAMReq(QAM am, RRStepType rrstep, bool all = false) const;
         StringSet GenerateVarReq(RRStepType rrstep) const;
         StringSet GenerateVarReq(QAM am, RRStepType rrstep) const;
@@ -75,7 +73,7 @@ class OSTEI_VRR_Algorithm_Base
         virtual ~OSTEI_VRR_Algorithm_Base() = default; 
 
     protected:
-       int GetOption(Option opt) const;
+       OSTEI_GeneratorInfo info_;
 
     private:
         // Options
