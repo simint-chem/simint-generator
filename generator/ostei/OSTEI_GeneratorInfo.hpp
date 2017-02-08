@@ -65,6 +65,9 @@ public:
 
     bool PrimUseStack(void) const
     {
+        // I have found heap to be slightly faster, possibly
+        // due to better cache behavior. Feel free to test
+        // in the future
         return false;
     }
 

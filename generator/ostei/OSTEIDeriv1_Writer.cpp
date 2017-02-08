@@ -180,6 +180,7 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         P_var = "P_tmp";
         os_ << indent1 << "double P_AB[3*P.nshell12];\n";
     	os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
+        os_ << indent1 << "P_tmp.alpha2 = P.beta2;  P_tmp.beta2 = P.alpha2;\n";
         os_ << indent1 << "P_tmp.PA_x = P.PB_x;  P_tmp.PA_y = P.PB_y;  P_tmp.PA_z = P.PB_z;\n";
         os_ << indent1 << "P_tmp.PB_x = P.PA_x;  P_tmp.PB_y = P.PA_y;  P_tmp.PB_z = P.PA_z;\n";
         os_ << indent1 << "P_tmp.AB_x = P_AB;\n";
@@ -199,6 +200,7 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
 	    Q_var = "Q_tmp";
         os_ << indent1 << "double Q_AB[3*Q.nshell12];\n";
     	os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
+        os_ << indent1 << "Q_tmp.alpha2 = Q.beta2;  Q_tmp.beta2 = Q.alpha2;\n";
 		os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
         os_ << indent1 << "Q_tmp.PB_x = Q.PA_x;  Q_tmp.PB_y = Q.PA_y;  Q_tmp.PB_z = Q.PA_z;\n";
         os_ << indent1 << "Q_tmp.AB_x = Q_AB;\n";
@@ -219,7 +221,7 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         << "contwork, " << ArrVarName(permuted) << ");\n"; 
 
 
-    if(!IsSpecialPermutation_(permuted))
+    //if(!IsSpecialPermutation_(permuted))
     {
         size_t ncart_abcd = NCART(am);
         //size_t ncart_a  = NCART(am[0]);
@@ -244,12 +246,12 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         if(swap34)
             std::swap(vc, vd);
 
-        std::string idx = StringBuilder("q*12", ncart_abcd,
+        std::string idx = StringBuilder("12*(q*", ncart_abcd,
                                         "+", va, "*", ncart_bcd,
                                         "+", vb, "*", ncart_cd,
-                                        "+", vc, "*", ncart_d, "+", vd);
+                                        "+", vc, "*", ncart_d, "+", vd, ")");
 
-        os_ << indent1 << "double buffer[" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n"; 
+        os_ << indent1 << "double buffer[12*" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n"; 
 
 
         os_ << indent1 << "for(int q = 0; q < ret; q++)\n";
@@ -260,12 +262,27 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         os_ << indent2 << "for(int c = 0; c < " << ncart_c2 << "; ++c)\n";
         os_ << indent2 << "for(int d = 0; d < " << ncart_d2 << "; ++d)\n";
         os_ << indent2 << "{\n";
-        os_ << indent3 << "memcpy(buffer, &" << ArrVarName(permuted) << "[" << idx << "], 12*sizeof(double));\n";
+        if(swap12)
+        {
+            os_ << indent3 << "memcpy(buffer + idx + 0, " << ArrVarName(permuted) << " + " << idx << " + 3, 3*sizeof(double));\n";
+            os_ << indent3 << "memcpy(buffer + idx + 3, " << ArrVarName(permuted) << " + " << idx << " + 0, 3*sizeof(double));\n";
+        }
+        else
+            os_ << indent3 << "memcpy(buffer + idx + 0, " << ArrVarName(permuted) << " + " << idx << " + 0, 6*sizeof(double));\n";
+
+        if(swap34)
+        {
+            os_ << indent3 << "memcpy(buffer + idx + 6, " << ArrVarName(permuted) << " + " << idx << " + 9, 3*sizeof(double));\n";
+            os_ << indent3 << "memcpy(buffer + idx + 9, " << ArrVarName(permuted) << " + " << idx << " + 6, 3*sizeof(double));\n";
+        }
+        else
+            os_ << indent3 << "memcpy(buffer + idx + 6, " << ArrVarName(permuted) << " + " << idx << " + 6, 6*sizeof(double));\n";
+
         os_ << indent3 << "idx += 12;\n";
         os_ << indent2 << "}\n";
         os_ << "\n";
-        os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd << "*12"
-                       << ", buffer, " << ncart_abcd << "*12*sizeof(double));\n";
+            os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*12*" << ncart_abcd 
+                           << ", buffer, 12*" << ncart_abcd << "*sizeof(double));\n";
         os_ << indent1 << "}\n";
     }
 
