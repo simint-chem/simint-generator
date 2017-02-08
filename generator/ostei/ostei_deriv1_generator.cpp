@@ -93,9 +93,25 @@ int main(int argc, char ** argv)
     std::set<QAM> needed_am;
 
     // We only need to do three centers. The fourth is free
+    // Find which one to skip
+    int max = *(std::max_element(finalam.begin(), finalam.end()));
+    
+    int missing_center;
+    if(finalam[0] == max)
+        missing_center = 0;
+    else if(finalam[1] == max)
+        missing_center = 1;
+    else if(finalam[2] == max)
+        missing_center = 2;
+    else
+        missing_center = 3;
+    
     const char * dir[4] = {"2a", "2b", "2c", "2d"};
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
+        if(i == missing_center)
+            continue;
+
         QAM amtmp_p(finalam.qam, dir[i]);
         QAM amtmp_m(finalam);
         amtmp_p.qam[i]++;
@@ -106,6 +122,7 @@ int main(int argc, char ** argv)
             needed_am.insert(amtmp_m);
     }
 
+    info.SetDeriv1_MissingCenter(missing_center);
 
     hrralgo.Create(needed_am);
     OSTEI_HRR_Writer hrr_writer(hrralgo, info,

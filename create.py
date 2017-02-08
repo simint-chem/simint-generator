@@ -485,7 +485,30 @@ print("Generating VRR")
 print("-------------------------------")
 
 # What do we need
-reqext_vrr = set(reqext_vrr)
+reqext_vrr_tmp = set(reqext_vrr)
+
+# Add the permutations that will actually compute stuff
+# These are of the form (X s | X s)
+reqext_vrr = set()
+
+for v in reqext_vrr_tmp:
+  reqext_vrr.add(v)
+  if v[1] == "0" and v[3] == "0":
+    if v[0] == "J":
+      reqext_vrr.add(("I", v[2], v[1], v[4], v[3]))
+    else:
+      reqext_vrr.add(("K", v[2], v[1], v[4], v[3]))
+  elif v[1] == "0":
+    if v[0] == "J":
+      reqext_vrr.add(("I", v[2], v[1], v[3], v[4]))
+    else:
+      reqext_vrr.add(("K", v[2], v[1], v[3], v[4]))
+  elif v[3] == "0":
+    if v[0] == "L":
+      reqext_vrr.add(("K", v[1], v[2], v[4], v[3]))
+    else:
+      reqext_vrr.add(("I", v[1], v[2], v[4], v[3]))
+
 
 print()
 print("==========================================================================================")

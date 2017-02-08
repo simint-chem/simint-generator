@@ -83,7 +83,6 @@ private:
     std::string FunctionName_(QAM am) const;
     std::string FunctionPrototype_(QAM am) const;
 
-    bool IsSpecialPermutation_(QAM am) const;
     void Write_Full_(void) const;
     void Write_Permutations_(void) const;
     void Write_Permute_(QAM am, bool swap12, bool swap34) const;
