@@ -9,29 +9,6 @@
 #include "generator/ostei/OSTEI_Writer.hpp"
 
 
-/////////////////////////////
-// Basic OSTEI Writer
-/////////////////////////////
-void OSTEIDeriv1_Writer::DeclareContwork(void) const
-{
-    os_ << indent1 << "// partition workspace\n";
-    size_t ptidx = 0;
-
-    for(const auto & it : info_.GetBatchContQ())
-    {
-        if(!info_.IsFinalAM(it))
-        {
-            os_ << indent1 << "double * const " << ArrVarName(it) << " = contwork + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
-            ptidx += NCART(it);
-        }
-    }
-
-    if(info_.PrimUseHeap())
-        os_ << indent1 << "SIMINT_DBLTYPE * const restrict primwork = (SIMINT_DBLTYPE *)(contwork + (SIMINT_NSHELL_SIMD * " << ptidx << "));\n";
-
-    os_ << "\n";
-}
-
 void OSTEIDeriv1_Writer::WriteShellOffsets(void) const
 {
     os_ << indent5 << "// calculate the shell offsets\n";
@@ -49,7 +26,7 @@ void OSTEIDeriv1_Writer::WriteShellOffsets(void) const
     os_ << indent6 << "{\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
 
-    for(const auto it : info_.GetBatchContQ())
+    for(const auto it : hrr_writer_.Algo().TopAM())
         os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
 
     os_ << indent6 << "}\n";
@@ -75,6 +52,8 @@ void OSTEIDeriv1_Writer::WriteShellOffsets(void) const
 
 void OSTEIDeriv1_Writer::WriteAccumulation(void) const
 {
+    const auto topq = hrr_writer_.Algo().TopAM();
+
     os_ << "\n\n";
     os_ << indent5 << "////////////////////////////////////\n";
     os_ << indent5 << "// Accumulate contracted integrals\n";
@@ -83,7 +62,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
     os_ << indent5 << "if(lastoffset == 0)\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : info_.GetBatchContQ())
+    for(const auto it : topq)
     {
         int ncart = NCART(it);
         if(it.tag.size())
@@ -97,7 +76,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
     os_ << indent5 << "else\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : info_.GetBatchContQ())
+    for(const auto it : topq)
     {
         int ncart = NCART(it);
         if(it.tag.size())
@@ -108,7 +87,7 @@ void OSTEIDeriv1_Writer::WriteAccumulation(void) const
                            << ", " << PrimPtrName(it) << ");\n";
     }
 
-    for(const auto it : info_.GetBatchContQ())
+    for(const auto it : topq)
         os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
 
     os_ << indent5 << "}\n";
@@ -133,7 +112,7 @@ std::string OSTEIDeriv1_Writer::FunctionPrototype_(QAM am) const
     ss << "struct simint_multi_shellpair const P,\n";
     ss << indent << "struct simint_multi_shellpair const Q,\n";
     ss << indent << "double screen_tol,\n";
-    ss << indent << "double * const restrict contwork,\n";
+    ss << indent << "double * const restrict work,\n";
     ss << indent << "double * const restrict " << ArrVarName(am) << ")";
     return ss.str();
 }
@@ -204,7 +183,7 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     std::string fname = FunctionName_(am);
     os_ << indent1 << "int ret = " << fname
         << "(" << P_var << ", " << Q_var << ", screen_tol, "
-        << "contwork, " << ArrVarName(permuted) << ");\n";
+        << "work, " << ArrVarName(permuted) << ");\n";
 
 
     size_t ncart_abcd = NCART(am);
@@ -277,6 +256,81 @@ void OSTEIDeriv1_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     osh_ << FunctionPrototype_(permuted) << ";\n\n";
 }
 
+
+void OSTEIDeriv1_Writer::PartitionWorkspace(void) const
+{
+    os_ << indent1 << "// partition workspace\n";
+    size_t ptidx = 0;
+
+    ////////////////////////////////////////
+    // For HRR batched quartets
+    ////////////////////////////////////////
+    for(const auto & it : hrr_writer_.Algo().TopAM())
+    {
+        if(!info_.IsFinalAM(it))
+        {
+            os_ << indent1 << "double * const " << ArrVarName(it) << " = work + (SIMINT_NSHELL_SIMD * " << ptidx << ");\n";
+            ptidx += NCART(it);
+        }
+    }
+
+
+    ////////////////////////////////////////
+    // For VRR
+    ////////////////////////////////////////
+    // Note: vrr_writer handles the prim arrays for s_s_s_s
+    //       so we always want to run this
+
+    if(info_.UseStack())
+    {
+        for(const auto & am : vrr_writer_.Algo().GetAllAM())
+        {
+            os_ << indent1 << "SIMINT_DBLTYPE " << PrimVarName(am)
+                << "[" << (vrr_writer_.Algo().GetMReq(am)+1) << " * "
+                << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
+        }
+    }
+    else
+    {
+        os_ << indent1 << "SIMINT_DBLTYPE * const primwork = (SIMINT_DBLTYPE *)(work + SIMINT_NSHELL_SIMD*" << ptidx << ");\n";
+        ptidx = 0;
+
+        for(const auto & am : vrr_writer_.Algo().GetAllAM())
+        {
+            // add +1 fromm required m values to account for 0
+            os_ << indent1 << "SIMINT_DBLTYPE * const restrict " << PrimVarName(am)
+                << " = primwork + " << ptidx << ";\n";
+
+            ptidx += (vrr_writer_.Algo().GetMReq(am)+1) * NCART(am);
+        }
+    }
+
+    /////////////////////
+    // HRR Intermediates
+
+    // A temporary is needed even for the "final am" if we are doing derivatives, since
+    // it will actually be an intermediate
+    if(info_.UseStack())
+    {
+        for(auto am : hrr_writer_.Algo().GetIntermediates())
+            os_ << indent1 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
+    }
+    else
+    {
+        os_ << indent1 << "double * const hrrwork = (double *)(primwork + " << ptidx << ");\n";
+        ptidx = 0;
+        for(auto am : hrr_writer_.Algo().GetIntermediates())
+        {
+            os_ << indent1 << "double * const " << HRRVarName(am) << " = hrrwork + " << ptidx << ";\n";
+            ptidx += NCART(am);
+        }
+    }
+
+    os_ << "\n\n";
+}
+
+
+
 void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
 {
     QAM am = info_.FinalAM();
@@ -309,8 +363,8 @@ void OSTEIDeriv1_Writer::WriteFormDeriv(void) const
     os_ << "\n";
 
     std::string full_idx_x, full_idx_y, full_idx_z;
-    os_ << indent4 << "double * restrict " << outvar << " = " << ArrVarName(am)
-                   << " + real_abcd * " << ncart1*ncart2*ncart3*ncart4 << " * 12;\n\n";
+    //os_ << indent4 << "double * restrict " << outvar << " = " << ArrVarName(am)
+    //               << " + real_abcd * " << ncart1*ncart2*ncart3*ncart4 << " * 12;\n\n";
     os_ << indent4 << "int idx_x, idx_y, idx_z;\n";
     os_ << indent4 << "int startidx = 0;\n";
     os_ << indent4 << "for(int n1 = 0; n1 < " << ncart1 << "; n1++)\n";
@@ -488,12 +542,12 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     const int ncart = NCART(am);
 
     // some helper bools
-    const bool hashrr = hrr_writer_.HasHRR();
-    const bool hasbrahrr = hrr_writer_.HasBraHRR();
-    const bool haskethrr = hrr_writer_.HasKetHRR();
+    const bool hashrr = hrr_writer_.Algo().HasHRR();
+    const bool hasbrahrr = hrr_writer_.Algo().HasBraHRR();
+    const bool haskethrr = hrr_writer_.Algo().HasKetHRR();
 
-    const bool hasbravrr = vrr_writer_.HasBraVRR();
-    const bool hasketvrr = vrr_writer_.HasKetVRR();
+    const bool hasbravrr = vrr_writer_.Algo().HasBraVRR();
+    const bool hasketvrr = vrr_writer_.Algo().HasKetVRR();
     //const bool hasvrr = (hasbravrr || hasketvrr);
 
     //const bool hasoneoverp = hasbravrr;
@@ -506,6 +560,30 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     const bool hasoneover2p = true;
     const bool hasoneover2q = true;
     const bool hasoneover2pq = true;
+
+    // these are the batches of quartets that we are contracting into
+    QAMSet batchcontq = hrr_writer_.Algo().TopAM();
+
+    // how many elements is that
+    size_t bcont_nelements = 0;
+    for(const auto & it : batchcontq)
+        bcont_nelements += NCART(it);
+
+    // these are the non-batched quartets we need
+    QAMSet contam = hrr_writer_.Algo().GetIntermediates();
+
+    // how many elements is that
+    size_t cont_nelements = 0;
+    for(const auto & it : contam)
+        cont_nelements += NCART(it);
+
+    // these are the primitives we need
+    QAMSet primam = vrr_writer_.Algo().GetAllAM();
+
+    // how many elements is that
+    size_t prim_nelements = 0;
+    for(const auto & it : primam)
+        prim_nelements += NCART(it) * (vrr_writer_.Algo().GetMReq(it)+1);
 
 
     // add includes
@@ -524,11 +602,6 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     //       so we always want to run this
     for(const auto & it : vrr_writer_.GetConstants())
         cm.insert(it);
-
-    if(hrr_writer_.HasHRR())
-        for(const auto & it : hrr_writer_.GetConstants())
-            cm.insert(it);
-
 
     // need these factors sometimes
     if(hasoneover2p || hasoneover2q || hasoneover2pq)
@@ -552,7 +625,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << "{\n";
     os_ << "\n";
 
-    os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(contwork);\n";
+    os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(work);\n";
     os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
 
     ///////////////////////////////////
@@ -590,13 +663,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
     os_ << "\n";
 
-
-    // Declare the temporary space
-    DeclareContwork();
-
-    // Note: vrr_writer handles the prim arrays for s_s_s_s
-    //       so we always want to run this
-    vrr_writer_.DeclarePrimArrays(os_);
+    PartitionWorkspace();
 
     os_ << indent1 << "// Create constants\n";
     for(const auto & it : cm)
@@ -636,10 +703,8 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
     if(hashrr)
     {
-        size_t contmem = info_.BatchContMemory();
-        if(contmem > 0)
-            os_ << indent3 << "memset(contwork, 0, SIMINT_NSHELL_SIMD * " << contmem << ");\n";
-
+        os_ << indent3 << "// Clear the beginning of the workspace (where we are accumulating integrals)\n";
+        os_ << indent3 << "memset(work, 0, SIMINT_NSHELL_SIMD * " << bcont_nelements << " * sizeof(double));\n";
         os_ << indent3 << "abcd = 0;\n";
         os_ << "\n";
     }
@@ -673,7 +738,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
     if(hasbravrr)
     {
-        if(vrr_writer_.HasVRR_I())
+        if(vrr_writer_.Algo().HasVRR_I())
             os_ << indent4 << "const SIMINT_DBLTYPE P_PA[3] = { SIMINT_DBLSET1(P.PA_x[i]), SIMINT_DBLSET1(P.PA_y[i]), SIMINT_DBLSET1(P.PA_z[i]) };\n";
         else
             os_ << indent4 << "const SIMINT_DBLTYPE P_PB[3] = { SIMINT_DBLSET1(P.PB_x[i]), SIMINT_DBLSET1(P.PB_y[i]), SIMINT_DBLSET1(P.PB_z[i]) };\n";
@@ -695,7 +760,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
     os_ << indent6 << "if(vmax > screen_tol)\n";
     os_ << indent6 << "{\n";
-    for(const auto it : info_.GetBatchContQ())
+    for(const auto it : batchcontq)
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
     os_ << indent7 << "continue;\n";
     os_ << indent6 << "}\n";
@@ -741,7 +806,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
 
     if(hasketvrr)
     {
-        if(vrr_writer_.HasVRR_K())
+        if(vrr_writer_.Algo().HasVRR_K())
             os_ << indent5 << "const SIMINT_DBLTYPE Q_PA[3] = { SIMINT_DBLLOAD(Q.PA_x, j), SIMINT_DBLLOAD(Q.PA_y, j), SIMINT_DBLLOAD(Q.PA_z, j) };\n";
         else
             os_ << indent5 << "const SIMINT_DBLTYPE Q_PB[3] = { SIMINT_DBLLOAD(Q.PB_x, j), SIMINT_DBLLOAD(Q.PB_y, j), SIMINT_DBLLOAD(Q.PB_z, j) };\n";
@@ -800,7 +865,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
         << indent6 << name0000n << " = SIMINT_MUL(" << name0000n << ", prefac);\n";
 
 
-    if(vrr_writer_.HasVRR())
+    if(vrr_writer_.Algo().HasVRR())
         vrr_writer_.WriteVRR(os_);
 
     WriteAccumulation();
@@ -834,6 +899,10 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
     os_ << "\n";
+
+
+    // Write out memory requirement to the log file
+    std::cout << "\nWORK SIZE: " << bcont_nelements << "  " << prim_nelements << " " << cont_nelements << "\n";
 }
 
 

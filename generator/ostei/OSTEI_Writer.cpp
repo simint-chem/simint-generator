@@ -9,9 +9,6 @@
 #include "generator/ostei/OSTEI_Writer.hpp"
 
 
-/////////////////////////////
-// Basic OSTEI Writer
-/////////////////////////////
 bool OSTEI_Writer::IsSpecialPermutation_(QAM am) const
 {
     // is this a special permutation? Handle it that way if it is
@@ -42,7 +39,7 @@ void OSTEI_Writer::WriteShellOffsets(void) const
     os_ << indent6 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
     os_ << indent6 << "{\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
-    
+
     for(const auto it : hrr_writer_.Algo().TopAM())
         os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
 
@@ -186,10 +183,10 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         os_ << indent1 << "}\n\n";
     }
 
-    std::string fname = FunctionName_(am); 
+    std::string fname = FunctionName_(am);
     os_ << indent1 << "int ret = " << fname
         << "(" << P_var << ", " << Q_var << ", screen_tol, "
-        << "work, " << ArrVarName(permuted) << ");\n"; 
+        << "work, " << ArrVarName(permuted) << ");\n";
 
 
     if(!IsSpecialPermutation_(permuted))
@@ -205,7 +202,7 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         size_t ncart_d2 = NCART(permuted[3]);
 
         size_t ncart_bcd = ncart_b * ncart_c * ncart_d;
-        size_t ncart_cd = ncart_c * ncart_d; 
+        size_t ncart_cd = ncart_c * ncart_d;
 
         char va = 'a';
         char vb = 'b';
@@ -222,7 +219,7 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
                                         "+", vb, "*", ncart_cd,
                                         "+", vc, "*", ncart_d, "+", vd);
 
-        os_ << indent1 << "double buffer[" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n"; 
+        os_ << indent1 << "double buffer[" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
 
         os_ << indent1 << "for(int q = 0; q < ret; q++)\n";
@@ -247,13 +244,14 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     osh_ << FunctionPrototype_(permuted) << ";\n\n";
 }
 
+
 void OSTEI_Writer::PartitionWorkspace(void) const
 {
     os_ << indent1 << "// partition workspace\n";
     size_t ptidx = 0;
 
     ////////////////////////////////////////
-    // For HRR batched quartets 
+    // For HRR batched quartets
     ////////////////////////////////////////
     for(const auto & it : hrr_writer_.Algo().TopAM())
     {
@@ -271,21 +269,21 @@ void OSTEI_Writer::PartitionWorkspace(void) const
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
 
-    if(info_.PrimUseStack())
+    if(info_.UseStack())
     {
-        for(const auto & am : vrr_writer_.Algo().GetAllAM()) 
+        for(const auto & am : vrr_writer_.Algo().GetAllAM())
         {
             os_ << indent1 << "SIMINT_DBLTYPE " << PrimVarName(am)
-                << "[" << (vrr_writer_.Algo().GetMReq(am)+1) << " * " 
+                << "[" << (vrr_writer_.Algo().GetMReq(am)+1) << " * "
                 << NCART(am) << "] SIMINT_ALIGN_ARRAY_DBL;\n";
         }
     }
     else
     {
-        os_ << indent1 << "SIMINT_DBLTYPE * const restrict primwork = (SIMINT_DBLTYPE *)(work + SIMINT_NSHELL_SIMD*" << ptidx << ");\n";
+        os_ << indent1 << "SIMINT_DBLTYPE * const primwork = (SIMINT_DBLTYPE *)(work + SIMINT_NSHELL_SIMD*" << ptidx << ");\n";
         ptidx = 0;
 
-        for(const auto & am : vrr_writer_.Algo().GetAllAM()) 
+        for(const auto & am : vrr_writer_.Algo().GetAllAM())
         {
             // add +1 fromm required m values to account for 0
             os_ << indent1 << "SIMINT_DBLTYPE * const restrict " << PrimVarName(am)
@@ -300,13 +298,21 @@ void OSTEI_Writer::PartitionWorkspace(void) const
 
     // A temporary is needed even for the "final am" if we are doing derivatives, since
     // it will actually be an intermediate
-    for(auto am : hrr_writer_.Algo().GetIntermediates())
-        os_ << indent1 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
-
-    os_ << "\n\n";
-
-
-
+    if(info_.UseStack())
+    {
+        for(auto am : hrr_writer_.Algo().GetIntermediates())
+            os_ << indent1 << "double " << HRRVarName(am) << "[" << NCART(am) << "];\n";
+    }
+    else
+    {
+        os_ << indent1 << "double * const hrrwork = (double *)(primwork + " << ptidx << ");\n";
+        ptidx = 0;
+        for(auto am : hrr_writer_.Algo().GetIntermediates())
+        {
+            os_ << indent1 << "double * const " << HRRVarName(am) << " = hrrwork + " << ptidx << ";\n";
+            ptidx += NCART(am);
+        }
+    }
 
     os_ << "\n\n";
 }
@@ -328,8 +334,8 @@ void OSTEI_Writer::Write_Full_(void) const
 
     //const bool hasoneoverp = hasbravrr;
     //const bool hasoneoverq = hasketvrr;
-    //const bool hasoneover2p = (hasbravrr && (am[0]+am[1]) > 1); 
-    //const bool hasoneover2q = (hasketvrr && (am[2]+am[3]) > 1); 
+    //const bool hasoneover2p = (hasbravrr && (am[0]+am[1]) > 1);
+    //const bool hasoneover2q = (hasketvrr && (am[2]+am[3]) > 1);
     //const bool hasoneover2pq = (hasketvrr && (am[0]+am[1]) > 0);
     const bool hasoneoverp = true;
     const bool hasoneoverq = true;
@@ -345,15 +351,15 @@ void OSTEI_Writer::Write_Full_(void) const
     for(const auto & it : batchcontq)
         bcont_nelements += NCART(it);
 
-    // these are the non-batched quartets we need 
+    // these are the non-batched quartets we need
     QAMSet contam = hrr_writer_.Algo().GetIntermediates();
 
     // how many elements is that
     size_t cont_nelements = 0;
     for(const auto & it : contam)
         cont_nelements += NCART(it);
-   
-    // these are the primitives we need 
+
+    // these are the primitives we need
     QAMSet primam = vrr_writer_.Algo().GetAllAM();
 
     // how many elements is that
@@ -372,7 +378,6 @@ void OSTEI_Writer::Write_Full_(void) const
     // Constants
     ConstantMap cm;
     cm.emplace("const_1", "1");  // for 1/x
-
 
     // Note: vrr_writer handles the prim arrays for s_s_s_s
     //       so we always want to run this
@@ -416,7 +421,7 @@ void OSTEI_Writer::Write_Full_(void) const
                        << ncart << " * sizeof(double));\n\n";
 
 
-    // abcd = index within simd loop, 
+    // abcd = index within simd loop,
     os_ << indent1 << "int ab, cd, abcd;\n";
     os_ << indent1 << "int istart, jstart;\n";
     os_ << indent1 << "int iprimcd, nprim_icd, icd;\n";
@@ -424,7 +429,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent1 << "int i, j;\n";
     os_ << indent1 << "int n;\n";
     os_ << indent1 << "int not_screened;\n";
-    
+
 
     // real_abcd is the absolute actual abcd in terms of all the shells that we are doing
     // (only needed if we do HRR)
@@ -436,7 +441,7 @@ void OSTEI_Writer::Write_Full_(void) const
         os_ << indent1 << "int iket;\n";
     if(haskethrr)
         os_ << indent1 << "int ibra;\n";
-    
+
     os_ << "\n";
 
     PartitionWorkspace();
@@ -505,7 +510,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "const SIMINT_DBLTYPE P_alpha = SIMINT_DBLSET1(P.alpha[i]);\n";
     os_ << indent4 << "const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);\n";
     os_ << indent4 << "const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };\n";
-                             
+
     os_ << indent4 << "const SIMINT_DBLTYPE bra_screen_max = SIMINT_DBLSET1(P.screen[i]);\n";
     os_ << "\n";
 
@@ -565,10 +570,10 @@ void OSTEI_Writer::Write_Full_(void) const
     if(hasoneoverq)
         os_ << indent5 << "const SIMINT_DBLTYPE one_over_q = SIMINT_DIV(const_1, Q_alpha);\n";
 
-    if(hasoneover2p)    
+    if(hasoneover2p)
         os_ << indent5 << "const SIMINT_DBLTYPE one_over_2p = SIMINT_MUL(one_half, one_over_p);\n";
 
-    if(hasoneover2q)    
+    if(hasoneover2q)
         os_ << indent5 << "const SIMINT_DBLTYPE one_over_2q = SIMINT_MUL(one_half, one_over_q);\n";
 
     if(hasoneover2pq)
@@ -577,9 +582,9 @@ void OSTEI_Writer::Write_Full_(void) const
     if(hasketvrr)
     {
         if(vrr_writer_.Algo().HasVRR_K())
-            os_ << indent5 << "const SIMINT_DBLTYPE Q_PA[3] = { SIMINT_DBLLOAD(Q.PA_x, j), SIMINT_DBLLOAD(Q.PA_y, j), SIMINT_DBLLOAD(Q.PA_z, j) };\n"; 
+            os_ << indent5 << "const SIMINT_DBLTYPE Q_PA[3] = { SIMINT_DBLLOAD(Q.PA_x, j), SIMINT_DBLLOAD(Q.PA_y, j), SIMINT_DBLLOAD(Q.PA_z, j) };\n";
         else
-            os_ << indent5 << "const SIMINT_DBLTYPE Q_PB[3] = { SIMINT_DBLLOAD(Q.PB_x, j), SIMINT_DBLLOAD(Q.PB_y, j), SIMINT_DBLLOAD(Q.PB_z, j) };\n"; 
+            os_ << indent5 << "const SIMINT_DBLTYPE Q_PB[3] = { SIMINT_DBLLOAD(Q.PB_x, j), SIMINT_DBLLOAD(Q.PB_y, j), SIMINT_DBLLOAD(Q.PB_z, j) };\n";
     }
 
     if(hasbravrr)
@@ -619,7 +624,7 @@ void OSTEI_Writer::Write_Full_(void) const
 
     // we need to zero out any that are beyond the end of the batch (that's been clipped)
     os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = mask_load(nlane, Q.prefac + j);\n";
-    os_ << "\n\n"; 
+    os_ << "\n\n";
     os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
                    << ", F_x, " << info_.L() << ");\n";
 
@@ -640,7 +645,7 @@ void OSTEI_Writer::Write_Full_(void) const
 
     WriteAccumulation();
 
-        
+
     os_ << "\n";
     os_ << indent4 << "}  // close loop over j\n";
     os_ << indent3 << "}  // close loop over i\n";

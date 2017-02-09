@@ -138,17 +138,11 @@ int main(int argc, char ** argv)
                                 options[Option::GeneralVRR]);
 
 
-    // set the contracted quartets
-    info.SetBatchContQ(hrralgo.TopAM());
-    info.SetPrimNElements(vrralgo.GetPrimNElements());
-
     // Create the OSTEI_Writer and write the file
     OSTEIDeriv1_Writer ostei_deriv1_writer(of, ofh, info, vrr_writer, hrr_writer);
     ostei_deriv1_writer.WriteFile();
 
 
-    // For information
-    std::cout << "\nWORK SIZE: " << info.BatchContNElements() << "  " << info.PrimNElements() << "\n";
 
     }
     catch(std::exception & ex)

@@ -10,7 +10,7 @@ public:
 
     using GeneratorInfoBase::GeneratorInfoBase;
 
-    bool PrimUseStack(void) const
+    bool UseStack(void) const
     {
         // I have found heap to be slightly faster, possibly
         // due to better cache behavior. Feel free to test
@@ -18,9 +18,9 @@ public:
         return false;
     }
 
-    bool PrimUseHeap(void) const
+    bool UseHeap(void) const
     {
-        return !(PrimUseStack());
+        return !(UseStack());
     }
 
     void SetDeriv1_MissingCenter(int center)
