@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-#######################################
-# Generates the chebyschev polynomials
-# if the boys function for a given interval
-# to arbitrary precision
-#######################################
-
 import mpmath as mp  # arbitrary-precision math
+
+# Generates a reference value for the boys function via
+# arbitrary precision
+
+# You should set the dps and eps values in mpmath before calling
 
 def BoysValue(n, x):
     F = []
@@ -21,6 +20,8 @@ def BoysValue(n, x):
 
     return F
 
+
+# Calculates the value of the boys function via the asymptotic function
 
 def BoysValue_Asymptotic(n, x):
     F = []
