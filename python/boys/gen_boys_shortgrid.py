@@ -18,7 +18,6 @@ parser.add_argument("--max-n",    type=int, required=True,               help="M
 parser.add_argument("--max-x",    type=str, required=True,               help="Cutoff for the x value")
 parser.add_argument("--spacing",  type=str, required=True,               help="Space between pre-computed points")
 parser.add_argument("--dps",      type=int, required=False, default=256, help="Decimal precision/sig figs to use/calculate")
-parser.add_argument("--eps",      type=int, required=False, default=32,  help="Overall precision / accuracy")
 args = parser.parse_args()
 
 # Set the dps option
@@ -27,7 +26,6 @@ mp.dps = args.dps
 # Convert stuff to mpmath
 inc = mp.mpf(args.spacing)
 maxx = mp.mpf(args.max_x)
-eps = mp.power(10, -args.eps)
 maxn = args.max_n
 npoints = int(maxx / inc) + 1
 
@@ -55,8 +53,6 @@ with open(args.filename + ".c", 'w') as f:
   f.write("  Spacing: {}\n".format(inc))
   f.write("  npoints: {}\n".format(npoints))
   f.write("      DPS: {}\n".format(args.dps))
-  f.write("      EPS: 10^({})\n".format(-args.eps))
-  f.write("         = {}\n".format(eps))
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
