@@ -56,7 +56,7 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
                     SWAP_D(P->prefac)
                     SWAP_D(P->screen)
 
-                    #if SIMINT_OSTEI_MAXDER >= 0
+                    #if SIMINT_OSTEI_MAXDER > 0
                     SWAP_D(P->alpha2);
                     SWAP_D(P->beta2);
                     #endif
@@ -77,19 +77,22 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
 
 
 static void simint_allocate_multi_shellpair_base(int npair, int nprim,
-                                                 struct simint_multi_shellpair * P)
+                                                 struct simint_multi_shellpair * P,
+                                                 int screen_method)
 {
     const size_t dprim_size = nprim * sizeof(double);
     const size_t ishell12_size = npair * sizeof(int);
     const size_t dshell12_size = npair * sizeof(double);
 
-
-    #if SIMINT_OSTEI_MAXDER >= 0
-    const size_t memsize = dprim_size*14 + dshell12_size*3 + ishell12_size;
-    #else
-    const size_t memsize = dprim_size*12 + dshell12_size*3 + ishell12_size;
+    int nprim_arr = 11;
+    if(screen_method)
+        nprim_arr++;
+        
+    #if SIMINT_OSTEI_MAXDER > 0
+    nprim_arr += 2;
     #endif
 
+    const size_t memsize = dprim_size*nprim_arr + dshell12_size*3 + ishell12_size;
 
     // Allocate one large space.
     // Only allocate if the currently allocated memory is too small
@@ -112,9 +115,13 @@ static void simint_allocate_multi_shellpair_base(int npair, int nprim,
     P->PB_z       = P->ptr + dprim_size*(dcount++);
     P->alpha      = P->ptr + dprim_size*(dcount++);
     P->prefac     = P->ptr + dprim_size*(dcount++);
-    P->screen     = P->ptr + dprim_size*(dcount++);
 
-    #if SIMINT_OSTEI_MAXDER >= 0
+    if(screen_method)
+        P->screen = P->ptr + dprim_size*(dcount++);
+    else
+        P->screen = NULL;
+
+    #if SIMINT_OSTEI_MAXDER > 0
     P->alpha2     = P->ptr + dprim_size*(dcount++);
     P->beta2      = P->ptr + dprim_size*(dcount++);
     #endif
@@ -230,11 +237,10 @@ void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P)
 }
 
 
-
-
 void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
                                      int nb, struct simint_shell const * B,
-                                     struct simint_multi_shellpair * P)
+                                     struct simint_multi_shellpair * P,
+                                     int screen_method)
 {
     struct simint_shell AB[2*na*nb];
 
@@ -247,17 +253,18 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
         ij += 2;
     }
 
-    simint_allocate_multi_shellpair2(na*nb, AB, P);
+    simint_allocate_multi_shellpair2(na*nb, AB, P, screen_method);
 }
 
 
 void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
-                                      struct simint_multi_shellpair * P)
+                                      struct simint_multi_shellpair * P,
+                                      int screen_method)
 {
     int nprim = 0;
-
     int batchprim = 0;
     int ij = 0;
+
     for(int i = 0; i < npair; i++)
     {
         if(compare_shell(&AB[ij], &AB[ij+1]))
@@ -275,7 +282,7 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
         ij += 2;
     }
 
-    simint_allocate_multi_shellpair_base(npair, nprim, P);
+    simint_allocate_multi_shellpair_base(npair, nprim, P, screen_method);
 }
 
 
@@ -319,7 +326,11 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
     P->nprim = 0;
 
     // zero out
-    memset(P->ptr, 0, P->memsize);
+    // This is not really needed, and can be expensive in
+    // direct code
+    // It's not needed since everything will be taken care of
+    // with a prefactor of 0.0
+    //memset(P->ptr, 0, P->memsize);
 
     sasb = 0;
     idx = 0;
@@ -392,7 +403,7 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 
                 P->alpha[idx] = ab_sum;
 
-                #if SIMINT_OSTEI_MAXDER >= 0
+                #if SIMINT_OSTEI_MAXDER > 0
                 if(same_shell && (i != j))
                 {
                     // there is already a factor of 2.0 in the prefac,
@@ -422,12 +433,22 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 
         if((sasbp1 % SIMINT_NSHELL_SIMD) == 0 || sasbp1 >= npair)
         {
-            // fill in alpha = 1 until next boundary
+            // fill in some members until next boundary
             while(idx < SIMINT_SIMD_ROUND(idx))
             {
                 P->alpha[idx] = 1.0;
+                P->prefac[idx] = 0.0;
+                P->x[idx] = 0.0;
+                P->y[idx] = 0.0;
+                P->z[idx] = 0.0;
+                P->PA_x[idx] = 0.0;
+                P->PA_y[idx] = 0.0;
+                P->PA_z[idx] = 0.0;
+                P->PB_x[idx] = 0.0;
+                P->PB_y[idx] = 0.0;
+                P->PB_z[idx] = 0.0;
 
-                #if SIMINT_OSTEI_MAXDER >= 0
+                #if SIMINT_OSTEI_MAXDER > 0
                 P->alpha2[idx] = 1.0;
                 P->beta2[idx] = 1.0;
                 #endif
@@ -454,19 +475,147 @@ void simint_create_multi_shellpair(int na, struct simint_shell const * A,
                                    struct simint_multi_shellpair * P,
                                    int screen_method)
 {
-    simint_allocate_multi_shellpair(na, A, nb, B, P);
+    simint_allocate_multi_shellpair(na, A, nb, B, P, screen_method);
     simint_fill_multi_shellpair(na, A, nb, B, P, screen_method);
 }
 
 
-void simint_create_multi_shellpair2(int npair,
+void simint_create_multi_shellpair2(int nshell12,
                                     struct simint_shell const * AB,
                                     struct simint_multi_shellpair * P,
                                     int screen_method)
 {
-    simint_allocate_multi_shellpair2(npair, AB, P);
-    simint_fill_multi_shellpair2(npair, AB, P, screen_method);
+    simint_allocate_multi_shellpair2(nshell12, AB, P, screen_method);
+    simint_fill_multi_shellpair2(nshell12, AB, P, screen_method);
 }
+
+
+void simint_cat_multi_shellpair(int nmpair,
+                                struct simint_multi_shellpair const ** Pin,
+                                struct simint_multi_shellpair * Pout,
+                                int screen_method)
+{
+    if(nmpair <= 0)
+        return; //??
+
+    // Total number of shell pair
+    int nshell12 = 0;
+    for(int i = 0; i < nmpair; i++)
+        nshell12 += Pin[i]->nshell12;
+
+    // How many primitives
+    int nprim = 0;
+    int batchprim = 0;
+
+    int ipair = 0;
+    for(int i = 0; i < nmpair; i++)
+    for(int j = 0; j < Pin[i]->nshell12; j++)
+    {
+        batchprim += Pin[i]->nprim12[j];
+
+        int ip1 = ipair+1;
+        if((ip1 % SIMINT_NSHELL_SIMD) == 0 || ip1 >= nshell12)
+        {
+            nprim += SIMINT_SIMD_ROUND(batchprim);
+            batchprim = 0;
+        }
+
+        ipair++;
+    }
+
+    // (re)allocate Pout
+    simint_allocate_multi_shellpair_base(nshell12, nprim, Pout, screen_method);
+
+    // these should all have the same AM
+    Pout->am1 = Pin[0]->am1;
+    Pout->am2 = Pin[0]->am2;
+    Pout->screen_max = 0.0;
+
+    // now copy data
+    int idx = 0;
+    int sasb = 0;
+    for(int i = 0; i < nmpair; i++)
+    {
+        for(int j = 0; j < Pin[i]->nshell12; j++)
+        {
+            for(int p = 0; p < Pin[i]->nprim12[j]; p++)
+            {
+                Pout->x[idx] = Pin[i]->x[p];
+                Pout->y[idx] = Pin[i]->y[p];
+                Pout->z[idx] = Pin[i]->z[p];
+                Pout->PA_x[idx] = Pin[i]->PA_x[p];
+                Pout->PA_y[idx] = Pin[i]->PA_y[p];
+                Pout->PA_z[idx] = Pin[i]->PA_z[p];
+                Pout->PB_x[idx] = Pin[i]->PB_x[p];
+                Pout->PB_y[idx] = Pin[i]->PB_y[p];
+                Pout->PB_z[idx] = Pin[i]->PB_z[p];
+                Pout->x[idx] = Pin[i]->x[p];
+                Pout->y[idx] = Pin[i]->y[p];
+                Pout->z[idx] = Pin[i]->z[p];
+
+                Pout->alpha[idx] = Pin[i]->alpha[p];
+                Pout->prefac[idx] = Pin[i]->prefac[p];
+
+                #if SIMINT_OSTEI_MAXDER > 0
+                Pout->alpha2[idx] = Pin[i]->alpha2[p];
+                Pout->beta2[idx] = Pin[i]->beta2[p];
+                #endif
+
+                if(screen_method)
+                    Pout->screen[idx] = Pin[i]->screen[p];
+
+                if(Pin[i]->screen_max > Pout->screen_max)
+                    Pout->screen_max = Pin[i]->screen_max;
+
+                idx++;
+            }
+
+            
+            Pout->AB_x[sasb] = Pin[i]->AB_x[j];
+            Pout->AB_y[sasb] = Pin[i]->AB_y[j];
+            Pout->AB_z[sasb] = Pin[i]->AB_z[j];
+            Pout->nprim12[sasb] = Pin[i]->nprim12[j];
+
+            int sasbp1 = sasb + 1;
+
+            if((sasbp1 % SIMINT_NSHELL_SIMD) == 0 || sasbp1 >= nshell12)
+            {
+                // fill in some members until next boundary
+                while(idx < SIMINT_SIMD_ROUND(idx))
+                {
+                    Pout->alpha[idx] = 1.0;
+                    Pout->prefac[idx] = 0.0;
+                    Pout->x[idx] = 0.0;
+                    Pout->y[idx] = 0.0;
+                    Pout->z[idx] = 0.0;
+                    Pout->PA_x[idx] = 0.0;
+                    Pout->PA_y[idx] = 0.0;
+                    Pout->PA_z[idx] = 0.0;
+                    Pout->PB_x[idx] = 0.0;
+                    Pout->PB_y[idx] = 0.0;
+                    Pout->PB_z[idx] = 0.0;
+
+                    #if SIMINT_OSTEI_MAXDER > 0
+                    Pout->alpha2[idx] = 1.0;
+                    Pout->beta2[idx] = 1.0;
+                    #endif
+
+                    idx++;
+                }
+            }
+
+            sasb++;
+        }
+
+        Pout->nprim += Pin[i]->nprim; 
+
+    }
+
+    Pout->nshell12 = nshell12;
+    Pout->nshell12_clip = nshell12;
+
+}
+
 
 
 /*

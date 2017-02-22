@@ -70,9 +70,9 @@ struct simint_multi_shellpair
 
     double * alpha;     //!< New coefficients (from GPT)
 
-    #if SIMINT_OSTEI_MAXDER >= 0
+    #if SIMINT_OSTEI_MAXDER > 0
     double * alpha2;    //!< 2*exponent on the first center
-    double * beta2;     //!< 2*exponent on the first center
+    double * beta2;     //!< 2*exponent on the second center
     #endif
 
     double * prefac;    //!< Prefactors for each primitive pair, including coefficients and other factors
@@ -164,8 +164,6 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
                          struct simint_shell * G);
 
 
-
-
 /*! \brief Initialize a shell pair structure
  *
  * This sets certain values to zero so that they can be used with
@@ -188,7 +186,8 @@ void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P);
  */
 void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
                                      int nb, struct simint_shell const * B,
-                                     struct simint_multi_shellpair * P);
+                                     struct simint_multi_shellpair * P,
+                                     int screen_method);
 
 
 /*! \brief Allocate space in a multi shellpair structure
@@ -200,7 +199,8 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
  * \param [inout] P The structure in which to allocate the memory
  */
 void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
-                                      struct simint_multi_shellpair * P);
+                                      struct simint_multi_shellpair * P,
+                                      int screen_method);
 
 
 /*! \brief Frees memory associated with a multi shellpair structure
@@ -229,7 +229,6 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  int screen_method);
 
 
-
 /*! \brief Computes and fills in values for a multi shellpair
  *
  * This calculates the values for all the members of a simint_multishellpair structure by
@@ -242,14 +241,13 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
  * \param [in] npair Number of shell pairs in the array
  * \param [in] AB Pairs of shells to place in the shell pair
  * \param [inout] P The structure that will hold the shell pair data
+ * \param [in] screen_method Screening method for primitives
  *
  * \warning \p P must already be allocated (via simint_allocate_multi_shellpair)
  */
 void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                                   struct simint_multi_shellpair * P,
                                   int screen_method);
-
-
 
 
 /*! \brief Allocates and fills a multi shellpair structure
@@ -262,12 +260,14 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
  * \param [in] nb Number of shells in the second position
  * \param [in] B Shells in the second position of this multi_shellpair
  * \param [inout] P The structure that will hold the shell pair data
+ * \param [in] screen_method Screening method for primitives
  */
 void
 simint_create_multi_shellpair(int na, struct simint_shell const * A,
                               int nb, struct simint_shell const * B,
                               struct simint_multi_shellpair * P,
                               int screen_method);
+
 
 /*! \brief Allocates and fills a multi shellpair structure
  *
@@ -277,6 +277,7 @@ simint_create_multi_shellpair(int na, struct simint_shell const * A,
  * \param [in] npair Number of shell pairs in the array
  * \param [in] AB Pairs of shells to place in the shell pair
  * \param [inout] P The structure that will hold the shell pair data
+ * \param [in] screen_method Screening method for primitives
  */
 void
 simint_create_multi_shellpair2(int npair,
@@ -284,6 +285,20 @@ simint_create_multi_shellpair2(int npair,
                                struct simint_multi_shellpair * P,
                                int screen_method);
 
+
+/*! \brief Combine existing multi shellpair structures into a new one
+ *
+ * Existing information in \Pout will be erased
+ *
+ * \param [in] nmpair Number of multi shellpair pointers in \p Pin
+ * \param [in] Pin Array of pointers to multi shellpair to combine
+ * \param [inout] Pout The structure that will hold the new shell pair data
+ * \param [in] screen_method Screening method for primitives
+ */
+void simint_cat_multi_shellpair(int nmpair,
+                                struct simint_multi_shellpair const ** Pin,
+                                struct simint_multi_shellpair * Pout,
+                                int screen_method);
 
 
 /*! \brief Remove all insignificant primitive pairs

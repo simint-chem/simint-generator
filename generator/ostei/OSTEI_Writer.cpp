@@ -493,11 +493,16 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << "\n";
     os_ << indent3 << "for(i = istart; i < iend; ++i)\n";
     os_ << indent3 << "{\n";
-    os_ << "\n";
+    os_ << indent4 << "SIMINT_DBLTYPE bra_screen_max;  // only used if check_screen\n\n";
 
-    os_ << indent4 << "// Skip this whole thing if always insignificant\n";
-    os_ << indent4 << "if(check_screen && (P.screen[i] * Q.screen_max) < screen_tol)\n";
-    os_ << indent5 << "continue;\n\n";
+    os_ << indent4 << "if(check_screen)\n";
+    os_ << indent4 << "{\n";
+    os_ << indent5 << "// Skip this whole thing if always insignificant\n";
+    os_ << indent5 << "if((P.screen[i] * Q.screen_max) < screen_tol)\n";
+    os_ << indent6 << "continue;\n";
+
+    os_ << indent5 << "bra_screen_max = SIMINT_DBLSET1(P.screen[i]);\n";
+    os_ << indent4 << "}\n\n";
 
     os_ << indent4 << "icd = 0;\n";
     os_ << indent4 << "iprimcd = 0;\n";
@@ -511,7 +516,6 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);\n";
     os_ << indent4 << "const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };\n";
 
-    os_ << indent4 << "const SIMINT_DBLTYPE bra_screen_max = SIMINT_DBLSET1(P.screen[i]);\n";
     os_ << "\n";
 
     if(hasbravrr)
@@ -536,7 +540,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent5 << "if(check_screen)\n";
     os_ << indent5 << "{\n";
     os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
-    os_ << indent6 << "if(vmax > screen_tol)\n";
+    os_ << indent6 << "if(vmax < screen_tol)\n";
     os_ << indent6 << "{\n";
     for(const auto it : batchcontq)
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";

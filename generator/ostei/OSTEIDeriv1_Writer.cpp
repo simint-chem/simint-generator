@@ -758,7 +758,7 @@ void OSTEIDeriv1_Writer::Write_Full_(void) const
     os_ << indent5 << "if(check_screen)\n";
     os_ << indent5 << "{\n";
     os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
-    os_ << indent6 << "if(vmax > screen_tol)\n";
+    os_ << indent6 << "if(vmax < screen_tol)\n";
     os_ << indent6 << "{\n";
     for(const auto it : batchcontq)
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
