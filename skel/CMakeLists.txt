@@ -5,7 +5,7 @@ enable_language(CXX)
 ##################################################
 # Flags passed in
 ##################################################
-set(SIMINT_VECTOR  "" CACHE BOOL "Type of vectorization to use")
+set(SIMINT_VECTOR  "" CACHE STRING "Type of vectorization to use")
 
 
 ##################################################
