@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import mpmath as mp  # arbitrary-precision math
+from mpmath import mp  # arbitrary-precision math
 
 # Generates a reference value for the boys function via
 # arbitrary precision
