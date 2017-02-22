@@ -4,7 +4,6 @@
 // This is the actual storage for this array
 #define AMSIZE   SIMINT_OSTEI_MAXAM+1
 #define DERSIZE  SIMINT_OSTEI_MAXDER+1
-
 simint_osteifunc simint_osteifunc_array[DERSIZE][AMSIZE][AMSIZE][AMSIZE][AMSIZE];
 
 

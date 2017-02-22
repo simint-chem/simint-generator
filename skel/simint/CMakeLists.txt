@@ -14,6 +14,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
                          boys/boys_shortgrid.c
 
                          ostei/ostei_init.c
+                         ostei/ostei_deriv1_init.c
 
                          ostei/ostei_general_vrr.c
                          ostei/ostei_general_hrr.c
