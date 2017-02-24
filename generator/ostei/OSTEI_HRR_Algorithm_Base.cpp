@@ -210,6 +210,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
     }
     
 
+    /*
     std::cout << "\n\n";
     std::cout << "--------------------------------------------------------------------------------\n";
     std::cout << "KET HRR step done.\n";
@@ -217,6 +218,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
     for(const auto & it : ketsteps_)
     for(const auto & it2 : it.second)
         std::cout << it2 << "\n";
+    */
 
 
     // we need the bras from the original targets
@@ -251,6 +253,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
     }
 
 
+    /*
     std::cout << "\n\n";
     std::cout << "--------------------------------------------------------------------------------\n";
     std::cout << "BRA HRR step done.\n";
@@ -258,7 +261,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
     for(const auto & it : brasteps_)
     for(const auto & it2 : it.second)
         std::cout << it2 << "\n";
-    
+    */
 
     // solved info
     for(const auto & it : solvedbras)
@@ -276,7 +279,7 @@ void OSTEI_HRR_Algorithm_Base::Create(std::set<QAM> am,
         topquartets_.insert(amquartets.begin(), amquartets.end());
     }
 
-    PrintQuartetSet(topquartets_, "HRR top quartets");
+    //PrintQuartetSet(topquartets_, "HRR top quartets");
 }
 
 QAMSet OSTEI_HRR_Algorithm_Base::TopAM(void) const
