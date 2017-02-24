@@ -1,7 +1,7 @@
-for I in Al2Cl6.xyz  Anthracene.xyz  Benzene.xyz  C4H4Cl2F2.xyz  Ethane.xyz  R-camphor.xyz  Water.xyz
+for I in Al2Cl6  anthracene  benzene  C4H4Cl2F2  ethane  R-camphor  water
 do
-  for J in 6-31gss.gbs  aug-cc-pvqz.gbs  aug-cc-pvtz.gbs  dzp.gbs  roos-ano-tz.gbs  sto-3g.gbs
+  for J in 6-31gss  aug-cc-pvqz  aug-cc-pvtz  dzp  roos-ano-tz  sto-3g
   do
-    ./gen_mol.py xyz/$I bas/$J ../$I.$J.mol
+    ./gen_mol.py xyz/$I.xyz bas/$J.gbs ../$I.$J.mol
   done
 done
