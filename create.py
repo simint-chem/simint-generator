@@ -120,7 +120,6 @@ shutil.copy(os.path.join(skeldir, "CMakeLists.txt"),        args.outdir)
 shutil.copy(os.path.join(skeldir, "README"),                args.outdir)
 shutil.copy(os.path.join(skeldir, "LICENSE"),               args.outdir)
 shutil.copy(os.path.join(skeldir, "CHANGELOG"),             args.outdir)
-shutil.copy(os.path.join(skeldir, "simintConfig.cmake.in"), args.outdir)
 
 
 

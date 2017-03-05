@@ -1,0 +1,73 @@
+# simintConfig.cmake
+# ------------------
+#
+# SIMINT cmake module.
+# This module sets the following variables in your project::
+#
+#   simint_FOUND - true if simint and all required components found on the system
+#   simint_VERSION - simint version in format Major.Minor.Release
+#   simint_INCLUDE_DIRS - Directory where simint headers are located.
+#   simint_INCLUDE_DIR - same as DIRS
+#   simint_LIBRARIES - simint library to link against.
+#   simint_LIBRARY - same as LIBRARIES
+#   simint_VECTOR - vectorization level of library.
+#
+#
+# Available components: shared static ::
+#
+#   shared - search for only shared library
+#   static - search for only static library
+#
+#
+# Exported targets::
+#
+# If simint is found, this module defines the following :prop_tgt:`IMPORTED`
+# target. Target is shared _or_ static, so, for both, use separate, not
+# overlapping, installations. ::
+#
+#   simint::simint - the main simint library with header & defs attached.
+#
+#
+# Suggested usage::
+#
+#   find_package(simint)
+#   find_package(simint 0.7 EXACT CONFIG REQUIRED COMPONENTS shared)
+#
+#
+# The following variables can be set to guide the search for this package::
+#
+#   simint_DIR - CMake variable, set to directory containing this Config file
+#   CMAKE_PREFIX_PATH - CMake variable, set to root directory of this package
+#   PATH - environment variable, set to bin directory of this package
+#   CMAKE_DISABLE_FIND_PACKAGE_simint - CMake variable, disables
+#     find_package(simint) when not REQUIRED, perhaps to force internal build
+
+@PACKAGE_INIT@
+
+# find includes: simint/simint.h
+set(simint_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set(simint_INCLUDE_DIRS ${simint_INCLUDE_DIR})
+
+# find library: shared, static, or whichever
+set(simint_LIBRARY_BASE "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
+if(@BUILD_SHARED_LIBS@)
+    set(simint_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}simint${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(simint_shared_FOUND 1)
+else()
+    set(simint_LIBRARY_NAME ${CMAKE_STATIC_LIBRARY_PREFIX}simint${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(simint_static_FOUND 1)
+endif()
+set(simint_LIBRARY "${simint_LIBRARY_BASE}/${simint_LIBRARY_NAME}")
+set(simint_LIBRARIES ${simint_LIBRARY})
+set(simint_VECTOR @SIMINT_VECTOR_LOWER@)
+
+check_required_components(simint)
+
+#-----------------------------------------------------------------------------
+# Don't include targets if this file is being picked up by another
+# project which has already built this as a subproject
+#-----------------------------------------------------------------------------
+if(NOT TARGET simint::simint)
+    include("${CMAKE_CURRENT_LIST_DIR}/simintTargets.cmake")
+endif()
+
