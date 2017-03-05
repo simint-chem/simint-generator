@@ -19,6 +19,7 @@ struct simint_shell
 {
     int am;          //!< Angular momentum (0 = s, etc)
     int nprim;       //!< Number of primitives in this shell
+    int sph;         //!< 0 = this shell is cartesian, otherwise it is spherical
 
     double x;        //!< X coordinate (in bohr)
     double y;        //!< Y coordinate (in bohr)
@@ -49,6 +50,7 @@ struct simint_multi_shellpair
     int am1;            //!< Angular momentum of the first position
     int am2;            //!< Angular momentum of the second position
     int nprim;          //!< Total number of primitive combinations stored (not including padding)
+    int sph;            //!< 0 = these pairs are cartesian, otherwise they are cartesian
 
     int nshell12;       //!< Total number of shell pair (nshell1 * nshell2)
     int nshell12_clip;  //!< Total number of shell pair to actual calculate (should be <= nshell12)

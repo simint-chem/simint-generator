@@ -146,6 +146,7 @@ ShellMap ReadBasis(const std::string & file)
                 simint_initialize_shell(&it);
                 simint_allocate_shell(nprim, &it);
                 it.am = ammap[*itg];
+                it.sph = 0;
                 it.nprim = nprim;
                 it.x = x;
                 it.y = y;

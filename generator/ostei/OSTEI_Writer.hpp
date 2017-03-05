@@ -54,6 +54,7 @@ private:
     void PartitionWorkspace(void) const;
     void WriteShellOffsets(void) const;
     void WriteAccumulation(void) const;
+    void WriteSphericalTransform(void) const;
 
     std::string FunctionName_(QAM am) const;
     std::string FunctionPrototype_(QAM am) const;

@@ -321,6 +321,11 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
 {
     int i, j, ij, sasb, idx;
 
+    // will be cartesian unless ALL shells are spherical (or s shells)
+    // so start with spherical, and if a cartesian is found, switch
+    // to 0
+    P->sph = 1;
+
     P->nshell12 = npair;
     P->nshell12_clip = npair; // by default, it's the same
     P->nprim = 0;
@@ -340,6 +345,13 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
     {
         struct simint_shell const * A = &AB[ij];
         struct simint_shell const * B = &AB[ij+1];
+
+        // if any cartesian shells are detected, everything
+        // is cartesian
+        if(A->am > 0 && A->sph == 0)
+            P->sph = 0;
+        if(B->am > 0 && B->sph == 0)
+            P->sph = 0;
 
         // compute the screening information
         if(screen_method)
@@ -531,11 +543,18 @@ void simint_cat_multi_shellpair(int nmpair,
     Pout->am2 = Pin[0]->am2;
     Pout->screen_max = 0.0;
 
+    // Start by assuming it's spherical, and then if a cartesian
+    // is found, for it to cartesian
+    Pout->sph = 1;
+
     // now copy data
     int idx = 0;
     int sasb = 0;
     for(int i = 0; i < nmpair; i++)
     {
+        if(Pin[i]->sph == 0 && (Pin[i]->am1 > 0 || Pin[i]->am2 > 0))
+            Pout->sph = 0;
+
         for(int j = 0; j < Pin[i]->nshell12; j++)
         {
             for(int p = 0; p < Pin[i]->nprim12[j]; p++)

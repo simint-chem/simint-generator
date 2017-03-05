@@ -98,6 +98,129 @@ void OSTEI_Writer::WriteAccumulation(void) const
     os_ << indent5 << "}\n";
 }
 
+void OSTEI_Writer::WriteSphericalTransform(void) const
+{
+    const auto am = info_.FinalAM();
+
+    // nothing to do for an s shell
+    if(am == QAM{0,0,0,0})
+        return; 
+
+    const int nsph1 = NSPH(am[0]);
+    const int nsph2 = NSPH(am[1]);
+    const int nsph3 = NSPH(am[2]);
+    const int nsph4 = NSPH(am[3]);
+    const int ncart1 = NCART(am[0]);
+    const int ncart2 = NCART(am[1]);
+    const int ncart3 = NCART(am[2]);
+    const int ncart4 = NCART(am[3]);
+
+    std::string sphidx = "[";
+    std::string cartidx = "[";
+    std::string coef;
+
+    bool started = false;
+
+    os_ << indent1 << "// Spherical transformation\n";
+    os_ << indent1 << "if(P.sph && Q.sph)\n";
+    os_ << indent1 << "{\n";
+    os_ << indent2 << "double * const restrict sphwork = work;\n";
+    os_ << indent2 << "for(abcd = 0; abcd < P.nshell12*Q.nshell12; abcd++)\n"; 
+    os_ << indent2 << "{\n";
+    os_ << indent3 << "double * const src = " << ArrVarName(am) << " + abcd * " << ncart1*ncart2*ncart3*ncart4 << ";\n";
+    os_ << indent3 << "double * const dest = " << ArrVarName(am) << " + abcd * " << nsph1*nsph2*nsph3*nsph4 << ";\n";
+    os_ << indent3 << "memset(sphwork, 0, " << nsph1*nsph2*nsph3*nsph4 << " * sizeof(double));\n";
+    os_ << "\n";
+
+    if(am[0] > 0)
+    {
+        os_ << indent3 << "for(int t1 = 0; t1 < spherical_transform_count_" << am[0] << "; t1++)\n";
+        os_ << indent3 << "{\n";
+        os_ << indent4 << "const struct spherical_transform_info * s1 = &sinfo_" << am[0] << "[t1];\n";
+        sphidx += StringBuilder("s1->sphidx*", nsph2*nsph3*nsph4);
+        cartidx += StringBuilder("s1->cartidx*", ncart2*ncart3*ncart4);
+        coef += "s1->coef";
+        started = true;
+    }
+
+    if(am[1] > 0)
+    {
+        os_ << indent4 << "for(int t2 = 0; t2 < spherical_transform_count_" << am[1] << "; t2++)\n";
+        os_ << indent4 << "{\n";
+        os_ << indent5 << "const struct spherical_transform_info * s2 = &sinfo_" << am[1] << "[t2];\n";
+
+        if(started)
+        {
+            sphidx += " + ";
+            cartidx += " + ";
+            coef += " * ";
+        }
+
+        sphidx += StringBuilder("s2->sphidx*", nsph3*nsph4);
+        cartidx += StringBuilder("s2->cartidx*", ncart3*ncart4);
+        coef += "s2->coef";
+        started = true;
+    }
+
+    if(am[2] > 0)
+    {
+        os_ << indent5 << "for(int t3 = 0; t3 < spherical_transform_count_" << am[2] << "; t3++)\n";
+        os_ << indent5 << "{\n";
+        os_ << indent6 << "const struct spherical_transform_info * s3 = &sinfo_" << am[2] << "[t3];\n";
+
+        if(started)
+        {
+            sphidx += " + ";
+            cartidx += " + ";
+            coef += " * ";
+        }
+
+        sphidx += StringBuilder("s3->sphidx*", nsph4);
+        cartidx += StringBuilder("s3->cartidx*", ncart4);
+        coef += "s3->coef";
+        started = true;
+    }
+
+    if(am[3] > 0)
+    {
+        os_ << indent6 << "for(int t4 = 0; t4 < spherical_transform_count_" << am[3] << "; t4++)\n";
+        os_ << indent6 << "{\n";
+        os_ << indent7 << "const struct spherical_transform_info * s4 = &sinfo_" << am[3] << "[t4];\n";
+
+        if(started)
+        {
+            sphidx += " + ";
+            cartidx += " + ";
+            coef += " * ";
+        }
+
+        sphidx += StringBuilder("s4->sphidx");
+        cartidx += StringBuilder("s4->cartidx");
+        coef += "s4->coef";
+    }
+
+    sphidx += "]";
+    cartidx += "]";
+
+    os_ << "\n";
+    os_ << indent7 << "sphwork" << sphidx << " += " << coef << " * src " << cartidx << ";\n";
+
+    if(am[3] > 0) os_ << indent6 << "}\n";
+    if(am[2] > 0) os_ << indent5 << "}\n";
+    if(am[1] > 0) os_ << indent4 << "}\n";
+    if(am[0] > 0) os_ << indent3 << "}\n";
+
+    os_ << "\n";
+    os_ << indent3 << "memcpy(dest, sphwork, " << nsph1*nsph2*nsph3*nsph4 << " * sizeof(double));\n";
+
+    os_ << indent2 << "}  // close loop over abcd\n";
+
+    os_ << "\n";
+
+    os_ << indent1 << "} // close if(spherical)\n";
+    os_ << "\n\n";
+}
+
 std::string OSTEI_Writer::FunctionName_(QAM am) const
 {
     return StringBuilder("ostei_",
@@ -191,6 +314,7 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
 
     if(!IsSpecialPermutation_(permuted))
     {
+        // cartesian
         size_t ncart_abcd = NCART(am);
         //size_t ncart_a  = NCART(am[0]);
         size_t ncart_b  = NCART(am[1]);
@@ -204,6 +328,20 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         size_t ncart_bcd = ncart_b * ncart_c * ncart_d;
         size_t ncart_cd = ncart_c * ncart_d;
 
+        // spherical
+        size_t nsph_abcd = NSPH(am);
+        //size_t nsph_a  = NSPH(am[0]);
+        size_t nsph_b  = NSPH(am[1]);
+        size_t nsph_c  = NSPH(am[2]);
+        size_t nsph_d  = NSPH(am[3]);
+        size_t nsph_a2 = NSPH(permuted[0]);
+        size_t nsph_b2 = NSPH(permuted[1]);
+        size_t nsph_c2 = NSPH(permuted[2]);
+        size_t nsph_d2 = NSPH(permuted[3]);
+
+        size_t nsph_bcd = nsph_b * nsph_c * nsph_d;
+        size_t nsph_cd = nsph_c * nsph_d;
+
         char va = 'a';
         char vb = 'b';
         char vc = 'c';
@@ -214,25 +352,48 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
         if(swap34)
             std::swap(vc, vd);
 
-        std::string idx = StringBuilder("q*", ncart_abcd,
-                                        "+", va, "*", ncart_bcd,
-                                        "+", vb, "*", ncart_cd,
-                                        "+", vc, "*", ncart_d, "+", vd);
+        std::string idx_cart = StringBuilder("q*", ncart_abcd,
+                                             "+", va, "*", ncart_bcd,
+                                             "+", vb, "*", ncart_cd,
+                                             "+", vc, "*", ncart_d, "+", vd);
+
+        std::string idx_sph = StringBuilder("q*", nsph_abcd,
+                                            "+", va, "*", nsph_bcd,
+                                            "+", vb, "*", nsph_cd,
+                                            "+", vc, "*", nsph_d, "+", vd);
 
         os_ << indent1 << "double buffer[" << ncart_abcd << "] SIMINT_ALIGN_ARRAY_DBL;\n\n";
 
 
-        os_ << indent1 << "for(int q = 0; q < ret; q++)\n";
+        os_ << indent1 << "if(P.sph && Q.sph)\n";
         os_ << indent1 << "{\n";
-        os_ << indent2 << "int idx = 0;\n";
-        os_ << indent2 << "for(int a = 0; a < " << ncart_a2 << "; ++a)\n";
-        os_ << indent2 << "for(int b = 0; b < " << ncart_b2 << "; ++b)\n";
-        os_ << indent2 << "for(int c = 0; c < " << ncart_c2 << "; ++c)\n";
-        os_ << indent2 << "for(int d = 0; d < " << ncart_d2 << "; ++d)\n";
-        os_ << indent3 << "buffer[idx++] = " << ArrVarName(permuted) << "[" << idx << "];\n";
+        os_ << indent2 << "for(int q = 0; q < ret; q++)\n";
+        os_ << indent2 << "{\n";
+        os_ << indent3 << "int idx = 0;\n";
+        os_ << indent3 << "for(int a = 0; a < " << ncart_a2 << "; ++a)\n";
+        os_ << indent3 << "for(int b = 0; b < " << ncart_b2 << "; ++b)\n";
+        os_ << indent3 << "for(int c = 0; c < " << ncart_c2 << "; ++c)\n";
+        os_ << indent3 << "for(int d = 0; d < " << ncart_d2 << "; ++d)\n";
+        os_ << indent4 << "buffer[idx++] = " << ArrVarName(permuted) << "[" << idx_cart << "];\n";
         os_ << "\n";
-        os_ << indent2 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd
+        os_ << indent3 << "memcpy(" << ArrVarName(permuted) << "+q*" << ncart_abcd
                        << ", buffer, " << ncart_abcd << "*sizeof(double));\n";
+        os_ << indent2 << "}\n";
+        os_ << indent1 << "}\n";
+        os_ << indent1 << "else\n";
+        os_ << indent1 << "{\n";
+        os_ << indent2 << "for(int q = 0; q < ret; q++)\n";
+        os_ << indent2 << "{\n";
+        os_ << indent3 << "int idx = 0;\n";
+        os_ << indent3 << "for(int a = 0; a < " << nsph_a2 << "; ++a)\n";
+        os_ << indent3 << "for(int b = 0; b < " << nsph_b2 << "; ++b)\n";
+        os_ << indent3 << "for(int c = 0; c < " << nsph_c2 << "; ++c)\n";
+        os_ << indent3 << "for(int d = 0; d < " << nsph_d2 << "; ++d)\n";
+        os_ << indent4 << "buffer[idx++] = " << ArrVarName(permuted) << "[" << idx_sph << "];\n";
+        os_ << "\n";
+        os_ << indent3 << "memcpy(" << ArrVarName(permuted) << "+q*" << nsph_abcd
+                       << ", buffer, " << nsph_abcd << "*sizeof(double));\n";
+        os_ << indent2 << "}\n";
         os_ << indent1 << "}\n";
     }
 
@@ -373,6 +534,7 @@ void OSTEI_Writer::Write_Full_(void) const
                         "<math.h>",
                         "\"simint/ostei/gen/ostei_generated.h\"",
                         "\"simint/vectorization/vectorization.h\"",
+                        "\"simint/transform/spherical_transform.h\"",
                         "\"simint/boys/boys.h\""};
 
     // Constants
@@ -669,7 +831,6 @@ void OSTEI_Writer::Write_Full_(void) const
         os_ << "\n\n";
     }
 
-
     os_ << indent2 << "}   // close loop cdbatch\n";
 
     os_ << "\n";
@@ -677,6 +838,9 @@ void OSTEI_Writer::Write_Full_(void) const
 
     os_ << indent1 << "}  // close loop over ab\n";
     os_ << "\n";
+
+    WriteSphericalTransform();
+
     os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
     os_ << "\n";
