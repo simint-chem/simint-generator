@@ -11,6 +11,7 @@
 #   simint_LIBRARIES - simint library to link against.
 #   simint_LIBRARY - same as LIBRARIES
 #   simint_VECTOR - vectorization level of library.
+#   simint_MAXAM - maximum angular momentum supported by the library
 #
 #
 # Available components: shared static ::
@@ -44,11 +45,20 @@
 
 @PACKAGE_INIT@
 
-# find includes: simint/simint.h
+set(_valid_components
+    shared
+    static
+)
+
+set(simint_VECTOR @SIMINT_VECTOR_LOWER@)
+set(simint_MAXAM @SIMINT_MAXAM@)
+set(simint_MAXDER @SIMINT_MAXDER@)
+
+# set the include files
 set(simint_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
 set(simint_INCLUDE_DIRS ${simint_INCLUDE_DIR})
 
-# find library: shared, static, or whichever
+# set the libraries to use
 set(simint_LIBRARY_BASE "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
 if(@BUILD_SHARED_LIBS@)
     set(simint_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}simint${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -57,9 +67,47 @@ else()
     set(simint_LIBRARY_NAME ${CMAKE_STATIC_LIBRARY_PREFIX}simint${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(simint_static_FOUND 1)
 endif()
+
 set(simint_LIBRARY "${simint_LIBRARY_BASE}/${simint_LIBRARY_NAME}")
 set(simint_LIBRARIES ${simint_LIBRARY})
-set(simint_VECTOR @SIMINT_VECTOR_LOWER@)
+
+# Check for the max am and for invalid components
+foreach(_comp IN LISTS simint_FIND_COMPONENTS)
+    string(REGEX MATCH "^am[0-9]+$" _is_am_comp ${_comp})
+    string(REGEX MATCH "^der[0-9]+$" _is_der_comp ${_comp})
+    if(_is_am_comp)
+        string(SUBSTRING ${_comp} 2 -1 _comp_reqam)
+
+        # _comp_reqam = requested AM
+        # can we satisfy that?
+        if(NOT ${simint_MAXAM} LESS ${_comp_reqam})
+            set(simint_${_comp}_FOUND 1)
+        else()
+            if(NOT CMAKE_REQUIRED_QUIET)
+                message(STATUS "simintConfig missing component: requested AM ${_comp_reqam} is greater than ${simint_MAXAM} in ${simint_LIBRARY}")
+            endif()
+        endif()
+    elseif(_is_der_comp)
+        string(SUBSTRING ${_comp} 3 -1 _comp_reqder)
+
+        # _comp_reqder = requested derivative
+        # can we satisfy that?
+        if(NOT ${simint_MAXDER} LESS ${_comp_reqder})
+            set(simint_${_comp}_FOUND 1)
+        else()
+            if(NOT CMAKE_REQUIRED_QUIET)
+                message(STATUS "simintConfig missing component: requested derivative ${_comp_reqder} is greater than ${simint_MAXDER} in ${simint_LIBRARY}")
+            endif()
+        endif()
+    else()
+      # Is this an otherwise valid component?
+      list(FIND _valid_components ${_comp} _is_valid_comp)
+      if(${_is_valid_comp} LESS 0)
+          message(STATUS "simintConfig: requested invalid component: ${_comp}")
+      endif()
+    endif()
+endforeach()
+
 
 check_required_components(simint)
 

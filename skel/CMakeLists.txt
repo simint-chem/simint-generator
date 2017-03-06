@@ -31,6 +31,10 @@ endif()
 ##################################################
 include(cmake/DefaultFlags.cmake)
 
+message(STATUS "           Maximum AM: ${SIMINT_MAXAM}")
+message(STATUS "   Maximum Derivative: ${SIMINT_MAXDER}")
+message(STATUS "        CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "      CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
 message(STATUS "       SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
 message(STATUS "  SIMINT_C_LINK_FLAGS: ${SIMINT_C_LINK_FLAGS}")
