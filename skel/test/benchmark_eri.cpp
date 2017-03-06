@@ -57,7 +57,7 @@ int main(int argc, char ** argv)
     double * all_res_ints = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
 
     /* contracted workspace */
-    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * SIMINT_OSTEI_MAX_WORKMEM);
+    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * simint_ostei_workmem(0, maxam));
 
 
     // initialize stuff
@@ -180,7 +180,7 @@ int main(int argc, char ** argv)
             #endif
 
             double * res_ints = all_res_ints + ithread * maxsize;
-            double * const simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
+            double * const simint_work = all_simint_work + ithread * simint_ostei_worksize(0, maxam);
 
             // actually calculate
             CLOCK(ticks_0, time_0);

@@ -161,13 +161,20 @@ headerbase = "ostei_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
 
 # Maximum required work
-maxworksize_bcont = 0
-maxworksize_cont = 0
-maxworksize_prim = 0
+worksize_bcont = [[0]*(maxam+1)]*(derorder+1)
+worksize_cont  = [[0]*(maxam+1)]*(derorder+1)
+worksize_prim  = [[0]*(maxam+1)]*(derorder+1)
 
 # Required external HRR and VRR
 reqext_hrr = []
 reqext_vrr = []
+
+# This keeps track of which L values require what
+# files (ERI, VRR, HRR)
+filelists = [{ k: [] for k in range(0, maxam+1) }]*(derorder+1)
+
+# This keeps track of the buffer sizes (also by derivative)
+memreq = [{}]*(derorder+1)
 
 print()
 print("Header file: {}".format(headerfile))
@@ -193,6 +200,7 @@ for q in valid:
   filebase = "ostei_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_osteigen, filebase + ".c")
   logfile = os.path.join(outdir_osteigen, filebase + ".log")
+  filelists[0][max(q)].append(filebase + ".c")
   print("Creating: {}".format(filebase))
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
@@ -229,14 +237,25 @@ for q in valid:
 
   # reopen the logfile, find work and requirements
   for line in open(logfile, 'r').readlines():
+    mq = max(q)
     if line.startswith("WORK SIZE"):
-      maxworksize_bcont = max(maxworksize_bcont, int(line.split()[2]))
-      maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
-      maxworksize_cont = max(maxworksize_cont, int(line.split()[4]))
+      worksize_bcont[0][mq] = max(worksize_bcont[0][mq], int(line.split()[2]))
+      worksize_prim[0][mq] = max(worksize_prim[0][mq], int(line.split()[3]))
+      worksize_cont[0][mq] = max(worksize_cont[0][mq], int(line.split()[4]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
-      reqext_hrr.append(tuple(line.split()[3:]))
+      reqam = tuple(line.split()[3:])
+      reqext_hrr.append(reqam)
+      filelists[0][mq].append( "hrr_{}_{}_{}.c".format(reqam[0],
+                                                       amchar[int(reqam[1])],
+                                                       amchar[int(reqam[2])]) )
     elif line.startswith("SIMINT EXTERNAL VRR"):
-      reqext_vrr.append(tuple(line.split()[3:]))
+      reqam = tuple(line.split()[3:])
+      reqext_vrr.append(reqam)
+      filelists[0][mq].append( "vrr_{}_{}_{}_{}_{}.c".format(reqam[0],
+                                                             amchar[int(reqam[1])],
+                                                             amchar[int(reqam[2])],
+                                                             amchar[int(reqam[3])],
+                                                             amchar[int(reqam[4])]) )
 
   print()
 
@@ -314,6 +333,7 @@ for q in valid:
   filebase = "ostei_deriv1_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_osteigen, filebase + ".c")
   logfile = os.path.join(outdir_osteigen, filebase + ".log")
+  filelists[1][max(q)].append(filebase + ".c")
   print("Creating: {}".format(filebase))
   print("      Output: {}".format(outfile))
   print("     Logfile: {}".format(logfile))
@@ -351,13 +371,23 @@ for q in valid:
   # reopen the logfile, find work and requirements
   for line in open(logfile, 'r').readlines():
     if line.startswith("WORK SIZE"):
-      maxworksize_bcont = max(maxworksize_bcont, int(line.split()[2]))
-      maxworksize_prim = max(maxworksize_prim, int(line.split()[3]))
-      maxworksize_cont = max(maxworksize_cont, int(line.split()[4]))
+      worksize_bcont[1][mq] = max(worksize_bcont[1][mq], int(line.split()[2]))
+      worksize_prim[1][mq] = max(worksize_prim[1][mq], int(line.split()[3]))
+      worksize_cont[1][mq] = max(worksize_cont[1][mq], int(line.split()[4]))
     elif line.startswith("SIMINT EXTERNAL HRR"):
-      reqext_hrr.append(tuple(line.split()[3:]))
+      reqam = tuple(line.split()[3:])
+      reqext_hrr.append(reqam)
+      filelists[1][max(q)].append( "hrr_{}_{}_{}.c".format(reqam[0],
+                                                         amchar[int(reqam[1])],
+                                                         amchar[int(reqam[2])]) )
     elif line.startswith("SIMINT EXTERNAL VRR"):
-      reqext_vrr.append(tuple(line.split()[3:]))
+      reqam = tuple(line.split()[3:])
+      reqext_vrr.append(reqam)
+      filelists[1][max(q)].append( "vrr_{}_{}_{}_{}_{}.c".format(reqam[0],
+                                                          amchar[int(reqam[1])],
+                                                          amchar[int(reqam[2])],
+                                                          amchar[int(reqam[3])],
+                                                          amchar[int(reqam[4])]) )
 
   print()
 
@@ -375,21 +405,41 @@ with open(headerfile, 'a') as hfile:
 ######################
 # OSTEI config file
 ######################
-headerbase = "ostei_config.h"
+headerbase = "ostei_config.h.in"
 headerfile = os.path.join(outdir_ostei, headerbase)
 with open(headerfile, 'w') as hfile:
   hfile.write("#pragma once\n\n")
   hfile.write("#include \"simint/vectorization/vectorization.h\"\n")
   hfile.write("\n")
-  hfile.write("#define SIMINT_OSTEI_MAXAM {}\n".format(maxam))
-  hfile.write("#define SIMINT_OSTEI_MAXDER {}\n".format(1))
-  hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM {}\n".format(maxam1))
+  # These are filled in by cmake
+  hfile.write("#define SIMINT_OSTEI_MAXAM @SIMINT_MAXAM@\n")
+  hfile.write("#define SIMINT_OSTEI_MAXDER @SIMINT_MAXDER@\n")
+  hfile.write("#define SIMINT_OSTEI_DERIV1_MAXAM (SIMINT_OSTEI_MAXDER > 0 ? @SIMINT_MAXAM@ : -1)\n")
+  hfile.write("\n\n")
 
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_BCONT  (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*{}))\n".format(maxworksize_bcont))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_CONT   (SIMINT_SIMD_ROUND({}))\n".format(maxworksize_cont))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE_PRIM   (SIMINT_SIMD_LEN*{})\n".format(maxworksize_prim))
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKSIZE        (SIMINT_OSTEI_MAX_WORKSIZE_BCONT + SIMINT_OSTEI_MAX_WORKSIZE_PRIM + SIMINT_OSTEI_MAX_WORKSIZE_CONT)\n")
-  hfile.write("#define SIMINT_OSTEI_MAX_WORKMEM         (SIMINT_OSTEI_MAX_WORKSIZE * sizeof(double))\n")
+  # A function for determining the max work size
+  hfile.write("static inline size_t simint_ostei_worksize(int derorder, int maxam)\n")
+  hfile.write("{\n")
+  hfile.write("    static const size_t nelements[{}][{}] = {{\n".format(derorder+1, maxam+1))
+
+  for d in range(0, derorder+1):
+    hfile.write("      {\n")
+    for l in range(0, maxam+1):
+      max_bcont = max(worksize_bcont[d][:l+1])
+      max_cont = max(worksize_cont[d][:l+1])
+      max_prim = max(worksize_prim[d][:l+1])
+      hfile.write("        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*{}) + SIMINT_SIMD_ROUND({}) + SIMINT_SIMD_LEN*{}),\n".format(max_bcont, max_cont, max_prim))
+    hfile.write("      },\n")  
+
+  hfile.write("    };\n") # close static array 
+
+  hfile.write("    return nelements[derorder][maxam];\n") 
+  hfile.write("}\n\n") # close simint_max_worksize function
+
+  hfile.write("static inline size_t simint_ostei_workmem(int derorder, int maxam)\n")
+  hfile.write("{\n")
+  hfile.write("    return simint_ostei_worksize(derorder, maxam)*sizeof(double);\n")
+  hfile.write("}\n\n")
   hfile.write("\n")
 
 
@@ -589,11 +639,20 @@ with open(headerfile, 'a') as hfile:
 
 
 ####################################################
-# Overall config header
+# Create the separate cmake files for all AM up
+# to the max
 ####################################################
-#sinfofile = os.path.join(outdir, "simint_config.h.in")
-#with open(sinfofile, 'w_') as sf:
-#  sf.write("#pragma once\n\n")
-#  sf.write("// If nothing is here, that is ok.\n")
-#  sf.write("// Consider this reserved for future use\n");
+
+for d in range(0, derorder+1):
+    for l,r in filelists[d].items():
+      # Make a list of all requirements up to this one
+      allr = []
+      for l2 in range(0, l+1):
+        allr.extend(filelists[d][l2])
+
+      # Write out to file
+      fpath = os.path.join(outdir_osteigen, "filelist_d{}_{}".format(d, l))
+      with open(fpath, "w") as f:
+        for line in allr:
+          f.write("ostei/gen/" + line + "\n")
 

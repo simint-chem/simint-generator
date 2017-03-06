@@ -10,6 +10,8 @@ project(simint
 # Flags passed in
 ##################################################
 set(SIMINT_VECTOR  "" CACHE STRING "Type of vectorization to use")
+set(SIMINT_MAXAM  "4" CACHE STRING "Maximum AM to use")
+set(SIMINT_MAXDER  "0" CACHE STRING "Maximum derivative level")
 
 option(ENABLE_TESTS "Enable simint unit tests" ON)
 
@@ -44,12 +46,13 @@ foreach(def ${SIMINT_CONFIG_DEFINES})
 endforeach()
 
 
-# Export iconfiguration files
+# Export configuration files
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-install(FILES ${CMAKE_BINARY_DIR}/stage/simint/vectorization/vector_config.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/simint/vectorization)
+# Install config headers
+install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/)
 
 
 set(PN ${PROJECT_NAME})

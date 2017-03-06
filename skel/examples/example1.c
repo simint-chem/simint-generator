@@ -114,7 +114,8 @@ int main(int argc, char ** argv)
     // since we are exploiting some symmetry)
 
     // Allocate some required workspace
-    double * work = SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    // Arguments to simint_ostei_workmem: Derivative order, max am
+    double * work = SIMINT_ALLOC(simint_ostei_workmem(0, 1));
 
     // Argument is the number of doubles
     double * targets = SIMINT_ALLOC(7*7*7*7 * sizeof(double));

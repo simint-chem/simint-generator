@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
     #endif
 
     /* contracted workspace */
-    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * SIMINT_OSTEI_MAX_WORKMEM);
+    double * all_simint_work = (double *)SIMINT_ALLOC(nthread * simint_ostei_workmem(1, maxam));
 
     /* Storage of integrals */
     double * all_res_simint = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
@@ -130,7 +130,7 @@ int main(int argc, char ** argv)
             #endif
 
             double * res_simint = all_res_simint + ithread * maxsize;
-            double * simint_work = all_simint_work + ithread * SIMINT_OSTEI_MAX_WORKSIZE;
+            double * simint_work = all_simint_work + ithread * simint_ostei_worksize(1, maxam);
             double * res_valeev = all_res_valeev + ithread * maxsize;
 
             const int nshell1 = 1;

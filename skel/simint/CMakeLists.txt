@@ -2,8 +2,24 @@
 # and its header files
 
 
-# Find all the generated files
-file(GLOB SIMINT_OSTEI_FILES ostei/gen/*.c)
+# Find which files we need to build
+if("${SIMINT_MAXAM}" STREQUAL "")
+  message(FATAL_ERROR "Maximum AM not specified! Set ${SIMINT_MAXAM}")
+endif()
+
+# Read the file list and convert to a cmake list
+file(READ "ostei/gen/filelist_d0_${SIMINT_MAXAM}" SIMINT_OSTEI_FILES)
+string(REGEX REPLACE "\n" ";" SIMINT_OSTEI_FILES "${SIMINT_OSTEI_FILES}")
+
+if(${SIMINT_MAXDER} GREATER 0)
+  file(READ "ostei/gen/filelist_d1_${SIMINT_MAXAM}" SIMINT_OSTEI_DER1_FILES)
+  string(REGEX REPLACE "\n" ";" SIMINT_OSTEI_FILES "${SIMINT_OSTEI_DER1_FILES}")
+endif()
+
+# Configure the ostei_config.h file
+configure_file("ostei/ostei_config.h.in"
+               "${CMAKE_BINARY_DIR}/stage/simint/ostei/ostei_config.h"
+               @ONLY)
 
 # All the files needed for the build
 set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}

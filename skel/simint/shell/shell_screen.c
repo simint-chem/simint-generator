@@ -49,7 +49,8 @@ simint_shellscreen_schwarz(struct simint_shell const * A,
                            struct simint_shell const * B)
 {
     // workspace
-    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    const size_t workmem = simint_ostei_workmem(0, SIMINT_OSTEI_MAXAM);
+    double * work = (double *)SIMINT_ALLOC(workmem);
 
     const int ncart1 = ((A->am+1) * (A->am+2))/2;
     const int ncart2 = ((B->am+1) * (B->am+2))/2;
@@ -144,7 +145,8 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     simint_initialize_multi_shellpair(&P);
 
     // workspace
-    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    const size_t workmem = simint_ostei_workmem(0, SIMINT_OSTEI_MAXAM);
+    double * work = (double *)SIMINT_ALLOC(workmem);
 
     double total_max = 0.0;
 
@@ -223,7 +225,8 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
                               double * restrict out)
 {
     // workspace
-    double * work = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    const size_t workmem = simint_ostei_workmem(0, SIMINT_OSTEI_MAXAM);
+    double * work = (double *)SIMINT_ALLOC(workmem);
 
     const int same_shell = compare_shell(A, B);
     double total_max = 0.0;

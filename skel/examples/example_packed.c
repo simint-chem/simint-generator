@@ -112,10 +112,12 @@ int main(int argc, char ** argv)
     // for each call
     //
     // No need to multiply by sizeof(double) here. It is included
-    // in SIMINT_OSTEI_MAX_WORKMEM
+    // in the return value from simint_ostei_workmem
+    //
+    // Arguments to simint_ostei_workmem: Derivative order, max am
     //
     // (for your information, OSTEI = Obara-Saika Two-Electron Integral)
-    double * work = SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    double * work = SIMINT_ALLOC(simint_ostei_workmem(0, 1));
 
 
     ////////////////////////////////////////
