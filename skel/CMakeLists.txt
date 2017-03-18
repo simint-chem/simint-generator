@@ -13,6 +13,7 @@ set(SIMINT_VECTOR  "" CACHE STRING "Type of vectorization to use")
 set(SIMINT_MAXAM  "4" CACHE STRING "Maximum AM to use")
 set(SIMINT_MAXDER  "0" CACHE STRING "Maximum derivative level")
 
+option(SIMINT_STANDALONE "Create as much of a standalone library as possible")
 option(ENABLE_TESTS "Enable simint unit tests" ON)
 
 ##################################################
@@ -37,7 +38,7 @@ message(STATUS "        CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 message(STATUS "      CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
 message(STATUS "       SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
-message(STATUS "  SIMINT_C_LINK_FLAGS: ${SIMINT_C_LINK_FLAGS}")
+message(STATUS "    SIMINT_LINK_FLAGS: ${SIMINT_LINK_FLAGS}")
 
 # Configure & install the vector_config header
 configure_file("simint/vectorization/vector_config.h.in"
