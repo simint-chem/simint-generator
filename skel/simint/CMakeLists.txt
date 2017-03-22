@@ -47,7 +47,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
 add_library(simint ${SIMINT_LIBRARY_TYPE} ${SIMINT_LIBRARY_FILES})
 target_include_directories(simint PRIVATE ${SIMINT_C_INCLUDES})
 target_compile_options(simint PRIVATE ${SIMINT_C_FLAGS})
-target_link_libraries(simint PRIVATE ${SIMINT_C_LINK_FLAGS})
+target_link_libraries(simint PRIVATE ${SIMINT_LINK_FLAGS})
 
 if(${BUILD_SHARED_LIBS})
     target_link_libraries(simint PRIVATE ${LIBC_INTERJECT})
