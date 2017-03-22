@@ -18,6 +18,8 @@
 #
 #   shared - search for only shared library
 #   static - search for only static library
+#   am{integer} - search for library with angular momentum >= this integer
+#   der{integer} - search for library with derivatives >= this integer
 #
 #
 # Exported targets::
@@ -32,7 +34,7 @@
 # Suggested usage::
 #
 #   find_package(simint)
-#   find_package(simint 0.7 EXACT CONFIG REQUIRED COMPONENTS shared)
+#   find_package(simint 0.7 EXACT CONFIG REQUIRED COMPONENTS shared am3 der0)
 #
 #
 # The following variables can be set to guide the search for this package::
