@@ -1,0 +1,4 @@
+Generator for simint two-electron integral library
+
+Basically, for advanced users. Most users should use the generated code
+found at http://www.bennyp.org/research/simint
