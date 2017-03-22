@@ -14,7 +14,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd177")  # Remove wd177 (unused variable) at some point
   list(APPEND SIMINT_LINK_FLAGS "-qopenmp")
 
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11;-restrict")
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-qopenmp")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-qopt-report=5;-w3")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-wd10397;-wd981;-wd383")
@@ -33,7 +33,6 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-parameter")
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-variable")
 
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-Drestrict=__restrict__")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wall;-Wextra;-pedantic")
   list(APPEND SIMINT_TESTS_CXX_FLAGS "-Wno-unused-parameter")

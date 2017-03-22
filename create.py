@@ -45,21 +45,13 @@ parser.add_argument("-ve", required=False, type=int, default=0, help="External V
 parser.add_argument("-vg", required=False, type=int, default=0, help="General VRR for this L value and above")
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
 parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
-parser.add_argument("-d1", action="store_true",  help="Generate code for 1st derivatives")
+parser.add_argument("-d", required=False, type=int, default=0, help="Maximum derivative to generate code for")
 parser.add_argument("outdir", type=str, help="Output directory")
 
 args = parser.parse_args()
 
-
-
 maxam = args.l
-if args.d1:
-  maxam1 = maxam
-  derorder = 1
-else:
-  maxam1 = -1
-  derorder = 0
-
+derorder = args.d
 
 
 ###################################
@@ -272,6 +264,10 @@ with open(headerfile, 'a') as hfile:
 ####################################################
 # Generate the ERI 1st derivative sources and headers
 ####################################################
+maxam1 = -1
+if derorder > 0:
+  maxam1 = maxam
+
 print("-------------------------------")
 print("Generating ERI 1st Derivatives")
 print("Maximum AM: {}".format(maxam1))
@@ -655,4 +651,11 @@ for d in range(0, derorder+1):
       with open(fpath, "w") as f:
         for line in allr:
           f.write("ostei/gen/" + line + "\n")
+
+
+# Make the default AM, highest derivative the same as the max
+with open(os.path.join(outdir_cmake, "MaxAvailable.cmake"), 'w') as f:
+    f.write("set(SIMINT_MAXDER_AVAILABLE {})\n".format(derorder))
+    f.write("set(SIMINT_MAXAM_AVAILABLE {})\n".format(maxam))
+
 

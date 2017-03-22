@@ -7,6 +7,7 @@
 #include "simint/boys/boys_long.h"
 
 #ifdef __cplusplus
+#include "simint/cpp_restrict.hpp"
 extern "C" {
 #endif
 

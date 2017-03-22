@@ -6,12 +6,15 @@ project(simint
         VERSION 0.7
         LANGUAGES C CXX)
 
+# Maximum AM and derivative level I have available
+include(cmake/MaxAvailable.cmake)
+
 ##################################################
 # Flags passed in
 ##################################################
 set(SIMINT_VECTOR  "" CACHE STRING "Type of vectorization to use")
-set(SIMINT_MAXAM  "4" CACHE STRING "Maximum AM to use")
-set(SIMINT_MAXDER  "0" CACHE STRING "Maximum derivative level")
+set(SIMINT_MAXAM  "${SIMINT_MAXAM_AVAILABLE}" CACHE STRING "Maximum AM to use")
+set(SIMINT_MAXDER  "${SIMINT_MAXDER_AVAILABLE}" CACHE STRING "Maximum derivative level")
 
 option(SIMINT_STANDALONE "Create as much of a standalone library as possible")
 option(ENABLE_TESTS "Enable simint unit tests" ON)

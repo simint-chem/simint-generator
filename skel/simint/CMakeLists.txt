@@ -3,18 +3,18 @@
 
 
 # Find which files we need to build
-if("${SIMINT_MAXAM}" STREQUAL "")
-  message(FATAL_ERROR "Maximum AM not specified! Set ${SIMINT_MAXAM}")
+if(${SIMINT_MAXAM} GREATER ${SIMINT_MAXAM_AVAILABLE})
+  message(FATAL_ERROR "Maximum angular momentum set is greater than I have available (${SIMINT_MAXAM_AVAILABLE})")
 endif()
+
+if(${SIMINT_MAXDER} GREATER ${SIMINT_MAXDER_AVAILABLE})
+  message(FATAL_ERROR "Maximum derivative set is greater than I have available (${SIMINT_MAXDER_AVAILABLE})")
+endif()
+
 
 # Read the file list and convert to a cmake list
-file(READ "ostei/gen/filelist_d0_${SIMINT_MAXAM}" SIMINT_OSTEI_FILES)
+file(READ "ostei/gen/filelist_d${SIMINT_MAXDER}_${SIMINT_MAXAM}" SIMINT_OSTEI_FILES)
 string(REGEX REPLACE "\n" ";" SIMINT_OSTEI_FILES "${SIMINT_OSTEI_FILES}")
-
-if(${SIMINT_MAXDER} GREATER 0)
-  file(READ "ostei/gen/filelist_d1_${SIMINT_MAXAM}" SIMINT_OSTEI_DER1_FILES)
-  string(REGEX REPLACE "\n" ";" SIMINT_OSTEI_FILES "${SIMINT_OSTEI_DER1_FILES}")
-endif()
 
 # Configure the ostei_config.h file
 configure_file("ostei/ostei_config.h.in"

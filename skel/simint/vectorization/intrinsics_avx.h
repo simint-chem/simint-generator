@@ -6,8 +6,8 @@
 
 #include "simint/vectorization/intrinsics_sse.h"
 
-
 #ifdef __cplusplus
+#include "simint/cpp_restrict.hpp"
 extern "C" {
 #endif
 
@@ -37,7 +37,6 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
         res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
 }
-
 
 #if defined SIMINT_AVX || defined SIMINT_AVXFMA
 
