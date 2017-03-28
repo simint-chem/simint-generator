@@ -1,3 +1,15 @@
+v0.7
+Released 2017-03-28
+---------------------
+* Tarball supports higher AM (7)
+  * Compilation to lower AM is supported (SIMINT_MAXAM variable)
+* Fix bad logic in primitive screening code
+* Some cmake tweaks
+  * SIMINT_STANDALONE - as self-contained library as possible
+  * Standardized install paths
+  * More proper simintConfig.cmake file
+* Better handling of restrict keyword
+
 v0.6
 Released 2017-01-24
 ---------------------
