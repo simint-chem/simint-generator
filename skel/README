@@ -13,7 +13,7 @@ the API may change in the future.
 ----------
 WARNING 2
 ----------
-This currently supports only up to (g g | g g) integrals.
+This currently supports only up to (7 7 | 7 7) integrals.
 Any permutation of angular momentum *is* supported
 
 
@@ -62,19 +62,31 @@ This is done with the SIMINT_VECTOR variable
     -DSIMINT_VECTOR=micavx512
          Intel KNL (experimental)
 
+Scalar (unvectorized) versions of the code can be compiled that still
+use a particular instruction set. This is done by prepending "scalar-"
+to the given type. For example, "scalar-avxfma" will enable AVX+FMA, but
+still disable vectorization.
+
 Other options: 
 
-    -DSIMINT_BUILD_SHARED:Bool=True
+    -DENABLE_TESTS:Bool=Off
+         Disable building tests
+
+    -DSIMINT_MAXAM=[integer]
+         Only compile angular momentum up to [integer]
+
+    -DBUILD_SHARED_LIBS:Bool=True
          Build shared library, rather than a static library (default is static library)
+
+    -DSIMINT_STANDALONE:Bool=True
+         Create a standalone dynamic library (make as self-contained as possible
+         by linking in external libraries).
 
 
     -DSIMINT_C_FLAGS="flag1;flag2"
     -DSIMINT_TESTS_CXX_FLAGS="flag1;flag2"
 
          Additional flags to pass to Simint and the testing features, respectively.
-         The flags are separated by semicolon. For example,
-            -DSIMINT_C_FLAGS="-no-vec;-no-simd"           disable compiler-generated vectorization
-            -DSIMINT_TESTS_CXX_FLAGS="-no-vec;-no-simd"   disable compiler-generated vectorization
    
 
 ---------------------------
@@ -100,9 +112,9 @@ it will use all available threads/cores.
 
 Examples (run from the build directory):
 
-    OMP_NUM_THREADS=4 test/test_eri ../test/dat/H2O.STO-3G.mol
-    OMP_NUM_THREADS=4 test/test_eri ../test/dat/ETHANE.AUG-CC-PVTZ.mol
-    OMP_NUM_THREADS=4 test/benchmark_eri ../test/dat/C6H6.ANO.mol
+    OMP_NUM_THREADS=4 test/test_eri ../test/dat/water.sto-3g.mol
+    OMP_NUM_THREADS=4 test/test_eri ../test/dat/ethane.aug-cc-pvtz.mol
+    OMP_NUM_THREADS=4 test/benchmark_eri ../test/dat/benzene.roos-ano-tz.mol
 
 
 
