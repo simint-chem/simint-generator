@@ -125,7 +125,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     {
         //TODO efficient algorithm for this
         int offsets[2] = {0, 0};
-        contract(ncart, offsets, src, dest);
+        contract_fac(ncart, factor, offsets, src, dest);
     }
 
 
