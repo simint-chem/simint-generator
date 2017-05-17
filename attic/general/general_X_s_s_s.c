@@ -176,7 +176,7 @@ int eri_sharedwork_X_s_s_s(struct simint_multi_shellpair const P,
                     __m256d * result_ptr = prim_ptr[L];
                     for(np = 0; np < ncart1234; ++np)
                     {
-                        const union double4 tmp = (union double4)result_ptr[np];
+                        const union simint_double4 tmp = (union simint_double4)result_ptr[np];
                         PRIM_PTR_INT__X_s_s_s[np] += tmp.d[0];   // first offset is always zero
                         for(n = 1; n < SIMINT_SIMD_LEN; ++n)
                             PRIM_PTR_INT__X_s_s_s[shelloffsets[n]*ncart1234+np] += tmp.d[n];

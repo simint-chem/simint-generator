@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-union double2
+union simint_double2
 {
     __m128d v;
     double d[2];
@@ -18,8 +18,8 @@ union double2
 // Missing GCC vectorized exp and pow
 static inline __m128d simint_exp_vec2(__m128d x)
 {
-    union double2 u = { x };
-    union double2 res;
+    union simint_double2 u = { x };
+    union simint_double2 res;
     for(int i = 0; i < 2; i++)
         res.d[i] = exp(u.d[i]);
     return res.v;
@@ -27,9 +27,9 @@ static inline __m128d simint_exp_vec2(__m128d x)
 
 static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
 {
-    union double2 ua = { a };
-    union double2 up = { p };
-    union double2 res;
+    union simint_double2 ua = { a };
+    union simint_double2 up = { p };
+    union simint_double2 res;
     for(int i = 0; i < 2; i++)
         res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
@@ -109,7 +109,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     {
         for(int np = 0; np < ncart; ++np)
         {
-            union double2 vtmp = { SIMINT_MUL(src[np], factor) };
+            union simint_double2 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
                 dest[offsets[n]*ncart+np] += vtmp.d[n]; 
@@ -132,7 +132,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     double vector_min(__m128d v)
     {
-        union double2 m = { v };
+        union simint_double2 m = { v };
         double min = m.d[0];
         for(int n = 1; n < SIMINT_SIMD_LEN; n++)
             min = (m.d[n] < min ? m.d[n] : min);
@@ -143,7 +143,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     double vector_max(__m128d v)
     {
-        union double2 m = { v };
+        union simint_double2 m = { v };
         double max = 0.0;
         for(int n = 0; n < SIMINT_SIMD_LEN; n++)
             max = (m.d[n] > max ? m.d[n] : max);
@@ -154,7 +154,7 @@ static inline __m128d simint_pow_vec2(__m128d a, __m128d p)
     static inline
     __m128d mask_load(int nlane, double * memaddr)
     {
-        union double2 u = { _mm_load_pd(memaddr) };
+        union simint_double2 u = { _mm_load_pd(memaddr) };
         for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
             u.d[n] = 0.0;
         return u.v;

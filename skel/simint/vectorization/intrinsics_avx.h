@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-union double4
+union simint_double4
 {
     __m256d v;
     double d[4];
@@ -21,8 +21,8 @@ union double4
 // Missing GCC vectorized exp and pow
 static inline __m256d simint_exp_vec4(__m256d x)
 {
-    union double4 u = { x };
-    union double4 res;
+    union simint_double4 u = { x };
+    union simint_double4 res;
     for(int i = 0; i < 4; i++)
         res.d[i] = exp(u.d[i]);
     return res.v;
@@ -30,9 +30,9 @@ static inline __m256d simint_exp_vec4(__m256d x)
 
 static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
 {
-    union double4 ua = { a };
-    union double4 up = { p };
-    union double4 res;
+    union simint_double4 ua = { a };
+    union simint_double4 up = { p };
+    union simint_double4 res;
     for(int i = 0; i < 4; i++)
         res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
@@ -116,7 +116,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
         const int done = ncart - left;
         for(n = done; n < ncart; n++)
         {
-            union double4 tmp = { src[n] };
+            union simint_double4 tmp = { src[n] };
             dest[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
         }
 
@@ -139,7 +139,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     {
         for(int np = 0; np < ncart; ++np)
         {
-            union double4 vtmp = { SIMINT_MUL(src[np], factor) };
+            union simint_double4 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
                 dest[offsets[n]*ncart+np] += vtmp.d[n]; 
@@ -172,7 +172,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
         for(n = done; n < ncart; n++)
         {
             __m256d vtmp = SIMINT_MUL(factor, src[n]);
-            union double4 tmp = { vtmp };
+            union simint_double4 tmp = { vtmp };
             dest[n] += tmp.d[0] + tmp.d[1] + tmp.d[2] + tmp.d[3];
         }
 
@@ -189,7 +189,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     static inline
     double vector_min(__m256d v)
     {
-        union double4 m = { v };
+        union simint_double4 m = { v };
         double min = m.d[0];
         for(int n = 1; n < SIMINT_SIMD_LEN; n++)
             min = (m.d[n] < min ? m.d[n] : min);
@@ -200,7 +200,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     static inline
     double vector_max(__m256d v)
     {
-        union double4 m = { v };
+        union simint_double4 m = { v };
         double max = m.d[0];
         for(int n = 1; n < SIMINT_SIMD_LEN; n++)
             max = (m.d[n] > max ? m.d[n] : max);
@@ -210,7 +210,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     static inline
     __m256d mask_load(int nlane, double * memaddr)
     {
-        union double4 u = { _mm256_load_pd(memaddr) };
+        union simint_double4 u = { _mm256_load_pd(memaddr) };
         for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
             u.d[n] = 0.0;
         return u.v;

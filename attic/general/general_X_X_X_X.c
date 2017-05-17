@@ -295,9 +295,9 @@ int eri_sharedwork_X_X_X_X(struct simint_multi_shellpair const P,
 
 
                     // loading this is ugly
-                    union double4 tmp_CD_x;
-                    union double4 tmp_CD_y;
-                    union double4 tmp_CD_z;
+                    union simint_double4 tmp_CD_x;
+                    union simint_double4 tmp_CD_y;
+                    union simint_double4 tmp_CD_z;
 
                     tmp_CD_x.d[0] = Q.AB_x[cd+cd_off];
                     tmp_CD_y.d[0] = Q.AB_y[cd+cd_off];
@@ -344,7 +344,7 @@ int eri_sharedwork_X_X_X_X(struct simint_multi_shellpair const P,
                     __m256d * result_ptr = prim_ptr4[P.am1][P.am2][Q.am1][Q.am2];
                     for(np = 0; np < ncart1234; ++np)
                     {
-                        const union double4 tmp = (union double4)result_ptr[np];
+                        const union simint_double4 tmp = (union simint_double4)result_ptr[np];
                         PRIM_PTR_INT__X_X_X_X[np] += tmp.d[0];   // first offset is always zero
                         for(n = 1; n < SIMINT_SIMD_LEN; ++n)
                             PRIM_PTR_INT__X_X_X_X[shelloffsets[n]*ncart1234+np] += tmp.d[n];

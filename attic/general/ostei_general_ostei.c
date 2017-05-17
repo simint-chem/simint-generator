@@ -156,7 +156,7 @@ int ostei_general_sharedwork(struct simint_multi_shellpair const P,
                     // (not_screened != 0 means we have to do this vector)
                     if(check_screen)
                     {
-                        union double4 screen_max = (union double4)(bra_screen_max * _mm256_load_pd(Q.screen + j));
+                        union simint_double4 screen_max = (union simint_double4)(bra_screen_max * _mm256_load_pd(Q.screen + j));
                         not_screened = 0;
                         for(n = 0; n < SIMINT_SIMD_LEN; n++)
                             not_screened = ( screen_max.d[n] >= screen_tol ? 1 : not_screened );
@@ -193,7 +193,7 @@ int ostei_general_sharedwork(struct simint_multi_shellpair const P,
                     const __m256d F_x = R2 * alpha;
 
 
-                    union double4 Q_prefac_u = (union double4)_mm256_load_pd(Q.prefac + j);
+                    union simint_double4 Q_prefac_u = (union simint_double4)_mm256_load_pd(Q.prefac + j);
                     for(n = nlane; n < SIMINT_SIMD_LEN; n++)
                         Q_prefac_u.d[n] = 0.0;
                     const __m256d Q_prefac = Q_prefac_u.d_256;

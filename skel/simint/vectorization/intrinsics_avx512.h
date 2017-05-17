@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-union double8
+union simint_double8
 {
     __m512d v;
     double d[8];
@@ -21,8 +21,8 @@ union double8
 // Missing GCC vectorized exp and pow
 static inline __m512d simint_exp_vec8(__m512d x)
 {
-    union double8 u = { x };
-    union double8 res;
+    union simint_double8 u = { x };
+    union simint_double8 res;
     for(int i = 0; i < 8; i++)
         res.d[i] = exp(u.d[i]);
     return res.v;
@@ -30,9 +30,9 @@ static inline __m512d simint_exp_vec8(__m512d x)
 
 static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
 {
-    union double8 ua = { a };
-    union double8 up = { p };
-    union double8 res;
+    union simint_double8 ua = { a };
+    union simint_double8 up = { p };
+    union simint_double8 res;
     for(int i = 0; i < 8; i++)
         res.d[i] = pow(ua.d[i], up.d[i]);
     return res.v;
@@ -116,7 +116,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     {
         for(int np = 0; np < ncart; ++np)
         {
-            union double8 vtmp = { SIMINT_MUL(src[np], factor) };
+            union simint_double8 vtmp = { SIMINT_MUL(src[np], factor) };
 
             for(int n = 0; n < SIMINT_SIMD_LEN; ++n)
                 dest[offsets[n]*ncart+np] += vtmp.d[n]; 
@@ -150,7 +150,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
         #if defined __clang__ || defined __INTEL_COMPILER
             return _mm512_reduce_min_pd(v);
         #else
-            union double8 u = { v };
+            union simint_double8 u = { v };
             double min = u.d[0];
             for(int i = 1; i < 8; i++)
                 min = (u.d[i] < min ? u.d[i] : min);
@@ -165,7 +165,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
         #if defined __clang__ || defined __INTEL_COMPILER
             return _mm512_reduce_max_pd(v);
         #else
-            union double8 u = { v };
+            union simint_double8 u = { v };
             double max = u.d[0];
             for(int i = 1; i < 8; i++)
                 max = (u.d[i] > max ? u.d[i] : max);
@@ -176,7 +176,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     __m512d mask_load(int nlane, double * memaddr)
     {
-        union double8 u = { _mm512_load_pd(memaddr) };
+        union simint_double8 u = { _mm512_load_pd(memaddr) };
         for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
             u.d[n] = 0.0;
         return u.v;

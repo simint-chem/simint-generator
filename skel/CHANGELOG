@@ -1,3 +1,10 @@
+v0.8
+Released ****-**-**
+--------------------
+* Rename double[2,4,8] to simint_double[2,4,8] to prevent name
+  collisions with CUDA
+
+
 v0.7
 Released 2017-03-28
 ---------------------
@@ -9,6 +16,7 @@ Released 2017-03-28
   * Standardized install paths
   * More proper simintConfig.cmake file
 * Better handling of restrict keyword
+
 
 v0.6
 Released 2017-01-24
