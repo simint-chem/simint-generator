@@ -38,7 +38,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     return res.v;
 }
 
-#if defined SIMINT_AVX || defined SIMINT_AVXFMA
+#if defined SIMINT_AVX || defined SIMINT_AVX2
 
     #define SIMINT_SIMD_LEN 4
 
@@ -52,7 +52,7 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
     #define SIMINT_DIV(a,b)        _mm256_div_pd((a), (b))
     #define SIMINT_SQRT(a)         _mm256_sqrt_pd((a))
 
-    #ifdef SIMINT_AVXFMA
+    #ifdef SIMINT_AVX2
       #define SIMINT_FMADD(a,b,c)  _mm256_fmadd_pd((a), (b), (c))
       #define SIMINT_FMSUB(a,b,c)  _mm256_fmsub_pd((a), (b), (c))
     #else

@@ -55,7 +55,7 @@ This is done with the SIMINT_VECTOR variable
            * Ivy Bridge
            * Haswell (if you want)
 
-    -DSIMINT_VECTOR=avxfma
+    -DSIMINT_VECTOR=avx2
          Intel CPUs with AVX and FMA support
            * Haswell
 
@@ -64,7 +64,7 @@ This is done with the SIMINT_VECTOR variable
 
 Scalar (unvectorized) versions of the code can be compiled that still
 use a particular instruction set. This is done by prepending "scalar-"
-to the given type. For example, "scalar-avxfma" will enable AVX+FMA, but
+to the given type. For example, "scalar-avx2" will enable AVX2, but
 still disable vectorization.
 
 Other options: 

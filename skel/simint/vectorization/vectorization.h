@@ -7,7 +7,7 @@
 
 #if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
   #include "simint/vectorization/intrinsics_avx512.h"
-#elif defined SIMINT_AVX || defined SIMINT_AVXFMA
+#elif defined SIMINT_AVX || defined SIMINT_AVX2
   #include "simint/vectorization/intrinsics_avx.h"
 #elif defined SIMINT_SSE
   #include "simint/vectorization/intrinsics_sse.h"
