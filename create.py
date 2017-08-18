@@ -113,6 +113,11 @@ shutil.copy(os.path.join(skeldir, "README"),                args.outdir)
 shutil.copy(os.path.join(skeldir, "LICENSE"),               args.outdir)
 shutil.copy(os.path.join(skeldir, "CHANGELOG"),             args.outdir)
 
+# We need to create the ostei/gen directory, which
+# is empty and therefore not included in the git
+# repo (under skel)
+if not os.path.exists(outdir_osteigen):
+    os.makedirs(outdir_osteigen)
 
 
 ####################################################
