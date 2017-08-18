@@ -129,12 +129,12 @@ int main(int argc, char ** argv)
         std::atomic<size_t> nshell1234_am(0);
         std::atomic<size_t> ncont1234_am(0);
 
-	    const auto & shellmap_i = shellmap[i];
-	    const auto & shellmap_j = shellmap[j];
+        const auto & shellmap_i = shellmap[i];
+        const auto & shellmap_j = shellmap[j];
 
         const size_t i_size = shellmap_i.size();
         const size_t j_size = shellmap_j.size();
-	    const size_t brasize = i_size * j_size;
+        const size_t brasize = i_size * j_size;
 
         // do one shell pair at a time on the bra side
         TimerType fullticks_0, fullticks_1;
@@ -149,8 +149,8 @@ int main(int argc, char ** argv)
             TimerType ticks_0, ticks_1;
             TimerType time_0, time_1;
 
-	        size_t a = ab / j_size;
-    	    size_t b = ab % j_size;
+            size_t a = ab / j_size;
+            size_t b = ab % j_size;
 
             const size_t nshell1 = 1;
             const size_t nshell2 = 1;
@@ -230,12 +230,12 @@ int main(int argc, char ** argv)
 
         simint_free_multi_shellpair(&Q);
 
-		// add primitive and shell count to overall running totals
-		// threadsafe since these are std::atomic
-		ncont1234_total += ncont1234_am;
-		nprim1234_total += nprim1234_am;
-		nshell1234_total += nshell1234_am;
-		time_total += time_am;
+        // add primitive and shell count to overall running totals
+        // threadsafe since these are std::atomic
+        ncont1234_total += ncont1234_am;
+        nprim1234_total += nprim1234_am;
+        nshell1234_total += nshell1234_am;
+        time_total += time_am;
 
         PrintAMTimingInfo(i, j, k, l, nshell1234_am, nprim1234_am, time_am);
 
