@@ -1,4 +1,15 @@
-Generator for simint two-electron integral library
+Generator for Simint two-electron integral library
 
-Basically, for advanced users. Most users should use the generated code
-found at http://www.bennyp.org/research/simint
+This code is intended for advanced users. Most users should instead 
+use the generated code found at http://www.bennyp.org/research/simint
+
+--------------
+Usage
+--------------
+
+    mkdir build; cd build
+    CC=icc CXX=icpc cmake ../
+    make
+    cd ..
+    # change params below as needed
+    ./create.py -g build/generator/ostei -l 3 -p 3 outdir 
