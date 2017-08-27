@@ -6,8 +6,8 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
        "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
-  list(APPEND SIMINT_C_FLAGS "-mavx2")
-  list(APPEND SIMINT_TESTS_CXX_FLAGS "-mavx2")
+  list(APPEND SIMINT_C_FLAGS "-mavx2;-mfma")
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-mavx2;-mfma")
 
 else()
 
