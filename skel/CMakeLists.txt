@@ -3,7 +3,7 @@ cmake_policy(SET CMP0048 NEW)  # project_VERSION* variables populated from proje
 
 
 project(simint
-        VERSION 0.7
+        VERSION 0.8
         LANGUAGES C CXX)
 
 # Maximum AM and derivative level I have available

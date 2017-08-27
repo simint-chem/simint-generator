@@ -3,6 +3,7 @@ Released ****-**-**
 --------------------
 * Rename double[2,4,8] to simint_double[2,4,8] to prevent name
   collisions with CUDA
+* Better CPU feature flags for Intel and GCC compilers
 
 
 v0.7
