@@ -42,9 +42,6 @@ Generally, from within the extracted directory:
 Most importantly, you need to select which feature set to compile with.
 This is done with the SIMINT_VECTOR variable
 
-    -DSIMINT_VECTOR=scalar
-         ONLY FOR USE WITH simint-scalar (and only useful for benchmarks)
-
     -DSIMINT_VECTOR=sse
          Intel CPUs with SSSE3 support
            * Basically any CPU make in the last 10 years
