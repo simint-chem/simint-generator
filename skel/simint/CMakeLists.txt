@@ -42,11 +42,17 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
                          shell/shell_constants.c
     )
 
+if(ENABLE_FORTRAN)
+    set(SIMINT_LIBRARY_FILES ${SIMINT_LIBRARY_FILES} simint.f90)
+    list(APPEND SIMINT_Fortran_FLAGS "-DSIMINT_OSTEI_MADXER=${SIMINT_MAXDER}")
+endif()
+
 
 # Create the main library
 add_library(simint ${SIMINT_LIBRARY_TYPE} ${SIMINT_LIBRARY_FILES})
 target_include_directories(simint PRIVATE ${SIMINT_C_INCLUDES})
-target_compile_options(simint PRIVATE ${SIMINT_C_FLAGS})
+target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:C>:${SIMINT_C_FLAGS}>
+                                      $<$<COMPILE_LANGUAGE:Fortran>:${SIMINT_Fortran_FLAGS}>)
 target_link_libraries(simint PRIVATE ${SIMINT_LINK_FLAGS})
 
 if(${BUILD_SHARED_LIBS})

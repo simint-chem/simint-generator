@@ -18,6 +18,7 @@ set(SIMINT_MAXDER  "${SIMINT_MAXDER_AVAILABLE}" CACHE STRING "Maximum derivative
 
 option(SIMINT_STANDALONE "Create as much of a standalone library as possible")
 option(ENABLE_TESTS "Enable simint unit tests" ON)
+option(ENABLE_FORTRAN "Enable fortran interface" OFF)
 
 ##################################################
 # Basic options for simint
@@ -30,18 +31,29 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# Compile the fortran interface?
+if(ENABLE_FORTRAN)
+  message(STATUS "Enabling Fortran 2003 interface")
+  enable_language(Fortran)
+endif()
+
 ##################################################
 # Read the default flags and generated flags file
 ##################################################
 include(cmake/DefaultFlags.cmake)
 
-message(STATUS "           Maximum AM: ${SIMINT_MAXAM}")
-message(STATUS "   Maximum Derivative: ${SIMINT_MAXDER}")
-message(STATUS "        CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
-message(STATUS "      CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-message(STATUS "    SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
-message(STATUS "       SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
-message(STATUS "    SIMINT_LINK_FLAGS: ${SIMINT_LINK_FLAGS}")
+message(STATUS "                  Maximum AM: ${SIMINT_MAXAM}")
+message(STATUS "          Maximum Derivative: ${SIMINT_MAXDER}")
+message(STATUS "               CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "             CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "           SIMINT_C_INCLUDES: ${SIMINT_C_INCLUDES}")
+message(STATUS "              SIMINT_C_FLAGS: ${SIMINT_C_FLAGS}")
+
+if(ENABLE_FORTRAN)
+    message(STATUS "        SIMINT_Fortran_FLAGS: ${SIMINT_Fortran_FLAGS}")
+endif()
+
+message(STATUS "           SIMINT_LINK_FLAGS: ${SIMINT_LINK_FLAGS}")
 
 # Configure & install the vector_config header
 configure_file("simint/vectorization/vector_config.h.in"
