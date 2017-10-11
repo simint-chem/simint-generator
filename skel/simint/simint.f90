@@ -22,18 +22,18 @@ module SimintFortran
       integer(C_INT) :: nshell12
       integer(C_INT) :: nshell12_clip
       type(C_PTR) :: nprim12
-      type(C_PTR) :: AB_x 
-      type(C_PTR) :: AB_y 
-      type(C_PTR) :: AB_z 
+      type(C_PTR) :: AB_x
+      type(C_PTR) :: AB_y
+      type(C_PTR) :: AB_z
       type(C_PTR) :: x
       type(C_PTR) :: y
       type(C_PTR) :: z
-      type(C_PTR) :: PA_x 
-      type(C_PTR) :: PA_y 
-      type(C_PTR) :: PA_z 
-      type(C_PTR) :: PB_x 
-      type(C_PTR) :: PB_y 
-      type(C_PTR) :: PB_z 
+      type(C_PTR) :: PA_x
+      type(C_PTR) :: PA_y
+      type(C_PTR) :: PA_z
+      type(C_PTR) :: PB_x
+      type(C_PTR) :: PB_y
+      type(C_PTR) :: PB_z
       type(C_PTR) :: alpha
 
 #if SIMINT_OSTEI_MAXDER > 0
@@ -46,7 +46,7 @@ module SimintFortran
       real(C_DOUBLE) :: screen_max
       integer(C_SIZE_T) :: memsize
       type(C_PTR) :: ptr
-    end type  
+    end type
 
   interface
 
@@ -131,6 +131,22 @@ module SimintFortran
       integer(C_INT) :: res
     end function
 
+    function c_simint_eri_worksize(derorder, maxam) &
+             result(res) bind(C, name="simint_eri_worksize")
+      use iso_c_binding
+      implicit none
+      integer(C_INT), intent(in), value :: derorder, maxam
+      integer(C_SIZE_T) :: res
+    end function
+
+    function c_simint_eri_workmem(derorder, maxam) &
+             result(res) bind(C, name="simint_eri_workmem")
+      use iso_c_binding
+      implicit none
+      integer(C_INT), intent(in), value :: derorder, maxam
+      integer(C_SIZE_T) :: res
+    end function
+
   end interface
 
   contains
@@ -169,7 +185,7 @@ module SimintFortran
       implicit none
       type(c_simint_shell), intent(in), target :: src
       type(c_simint_shell), intent(out), target :: dest
- 
+
       call c_simint_copy_shell(C_LOC(src), C_LOC(dest))
     end subroutine
 
@@ -189,7 +205,7 @@ module SimintFortran
                                  C_LOC(alpha), &
                                  C_LOC(coef), &
                                  C_LOC(G))
-      
+
     end subroutine
 
     subroutine simint_initialize_multi_shellpair(P)
@@ -219,23 +235,44 @@ module SimintFortran
                                            C_LOC(B), &
                                            C_LOC(P), &
                                            INT(screen_method, C_INT))
-                                           
+
 
     end subroutine
 
     function simint_compute_eri(P, Q, screen_tol, work, integrals) &
              result(res)
-      use iso_c_binding
       implicit none
 
       type(c_simint_multi_shellpair), intent(in), target :: P, Q
       double precision, intent(inout), target :: work(*), integrals(*)
       real(C_DOUBLE), intent(in) :: screen_tol
-      integer(C_INT) :: res
+      integer :: res
+      integer(C_INT) :: res2
 
-      res = c_simint_compute_eri(C_LOC(P), C_LOC(Q), &
-                                 REAL(screen_tol, C_DOUBLE), &
-                                 C_LOC(work), C_LOC(integrals))
+      res2 = c_simint_compute_eri(C_LOC(P), C_LOC(Q), &
+                                  REAL(screen_tol, C_DOUBLE), &
+                                  C_LOC(work), C_LOC(integrals))
+      res = INT(res2)
+    end function
+
+    function simint_eri_worksize(derorder, maxam) result(res)
+      implicit none
+      integer, intent(in) :: derorder, maxam
+      integer :: res
+      integer(C_INT) :: res2
+
+      res2 = c_simint_eri_worksize(INT(derorder, C_INT), INT(maxam, C_INT))
+      res = INT(res2)
+    end function
+
+    function simint_eri_workmem(derorder, maxam) result(res)
+      implicit none
+      integer, intent(in) :: derorder, maxam
+      integer :: res
+      integer(C_INT) :: res2
+
+      res2 = c_simint_eri_workmem(INT(derorder, C_INT), INT(maxam, C_INT))
+      res = INT(res2)
     end function
 
 end module

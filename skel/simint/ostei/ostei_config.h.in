@@ -1,0 +1,32 @@
+#pragma once
+
+#include "simint/vectorization/vectorization.h"
+
+#define SIMINT_OSTEI_MAXAM @SIMINT_MAXAM@
+#define SIMINT_OSTEI_MAXDER @SIMINT_MAXDER@
+#define SIMINT_OSTEI_DERIV1_MAXAM (SIMINT_OSTEI_MAXDER > 0 ? @SIMINT_MAXAM@ : -1)
+
+
+static inline size_t simint_ostei_worksize(int derorder, int maxam)
+{
+    static const size_t nelements[1][8] = {
+      {
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*1) + SIMINT_SIMD_ROUND(0) + SIMINT_SIMD_LEN*1),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*81) + SIMINT_SIMD_ROUND(81) + SIMINT_SIMD_LEN*149),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*961) + SIMINT_SIMD_ROUND(4332) + SIMINT_SIMD_LEN*2405),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*5476) + SIMINT_SIMD_ROUND(57512) + SIMINT_SIMD_LEN*17273),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*21025) + SIMINT_SIMD_ROUND(418905) + SIMINT_SIMD_LEN*79965),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*63001) + SIMINT_SIMD_ROUND(2131331) + SIMINT_SIMD_LEN*280425),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*159201) + SIMINT_SIMD_ROUND(8502725) + SIMINT_SIMD_LEN*811633),
+        (SIMINT_SIMD_ROUND(SIMINT_NSHELL_SIMD*355216) + SIMINT_SIMD_ROUND(28410752) + SIMINT_SIMD_LEN*2040610),
+      },
+    };
+    return nelements[derorder][maxam];
+}
+
+static inline size_t simint_ostei_workmem(int derorder, int maxam)
+{
+    return simint_ostei_worksize(derorder, maxam)*sizeof(double);
+}
+
+

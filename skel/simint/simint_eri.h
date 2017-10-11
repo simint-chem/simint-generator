@@ -1,6 +1,7 @@
 #pragma once
 
 #include "simint/shell/shell.h"
+#include "simint/ostei/ostei_config.h"
 
 #ifdef __cplusplus
 #include "simint/cpp_restrict.hpp"
@@ -42,6 +43,23 @@ int simint_compute_eri_deriv(int deriv,
                              double * restrict work,
                              double * restrict integrals);
 
+
+/*! \brief Get the required size of the workspace required (number of elements)
+ *
+ * \param [in] derorder Order of the derivative (0 = no derivative, 1 = first derivative)
+ * \param [in] maxam Maximum angular momentum to be used in an ERI calculation
+ * \return Minimum size of the workspace required (as number of double-precision elements)
+ */
+size_t simint_eri_worksize(int derorder, int maxam);
+
+
+/*! \brief Get the required size of the workspace required (in bytes)
+ *
+ * \param [in] derorder Order of the derivative (0 = no derivative, 1 = first derivative)
+ * \param [in] maxam Maximum angular momentum to be used in an ERI calculation
+ * \return Minimum size of the workspace required (in bytes)
+ */
+size_t simint_eri_workmem(int derorder, int maxam);
 
 
 #ifdef __cplusplus

@@ -20,3 +20,14 @@ int simint_compute_eri_deriv(int deriv,
     return simint_compute_ostei_deriv(deriv, P, Q, screen_tol, work, integrals);
 }
 
+
+size_t simint_eri_worksize(int derorder, int maxam)
+{
+    return simint_ostei_worksize(derorder, maxam);
+}
+
+
+size_t simint_eri_workmem(int derorder, int maxam)
+{
+    return simint_ostei_workmem(derorder, maxam);
+}
