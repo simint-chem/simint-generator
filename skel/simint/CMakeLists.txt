@@ -85,3 +85,8 @@ install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.hpp")
 
+if(ENABLE_FORTRAN)
+    install(FILES "${CMAKE_BINARY_DIR}/simint/simintfortran.mod"
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/simint)
+endif()
+
