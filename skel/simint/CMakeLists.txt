@@ -51,8 +51,12 @@ endif()
 # Create the main library
 add_library(simint ${SIMINT_LIBRARY_TYPE} ${SIMINT_LIBRARY_FILES})
 target_include_directories(simint PRIVATE ${SIMINT_C_INCLUDES})
-target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:C>:${SIMINT_C_FLAGS}>
-                                      $<$<COMPILE_LANGUAGE:Fortran>:${SIMINT_Fortran_FLAGS}>)
+target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:C>:${SIMINT_C_FLAGS}>)
+
+if(ENABLE_FORTRAN)
+    target_compile_options(simint PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:${SIMINT_Fortran_FLAGS}>)
+endif()
+
 target_link_libraries(simint PRIVATE ${SIMINT_LINK_FLAGS})
 
 if(${BUILD_SHARED_LIBS})
