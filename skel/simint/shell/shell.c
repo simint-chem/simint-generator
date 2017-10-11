@@ -140,6 +140,12 @@ void simint_initialize_shell(struct simint_shell * G)
     G->memsize = 0;
 }
 
+void simint_initialize_shells(int n, struct simint_shell * G)
+{
+    for(int i = 0; i < n; i++)
+        simint_initialize_shell(G+i);
+}
+
 
 // Allocate a gaussian shell with correct alignment
 void simint_allocate_shell(int nprim, struct simint_shell * G)
@@ -164,6 +170,12 @@ void simint_free_shell(struct simint_shell * G)
         free(G->ptr);
 
     simint_initialize_shell(G);
+}
+
+void simint_free_shells(int n, struct simint_shell * G)
+{
+    for(int i = 0; i < n; i++)
+        simint_free_shell(G+i);
 }
 
 void simint_copy_shell(struct simint_shell const * src,
@@ -230,10 +242,31 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
 }
 
 
+void simint_create_zero_shell(struct simint_shell * G)
+{
+    const double alpha[1] = {0.0};
+    const double coef[1] = {0.0};
+    simint_create_shell(1, 0, 0.0, 0.0, 0.0, alpha, coef, G);
+}
+
+
 void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P)
 {
     P->ptr = NULL;
     P->memsize = 0;
+}
+
+
+void simint_initialize_multi_shellpairs(int n, struct simint_multi_shellpair * P)
+{
+    for(int i = 0; i < n; i++)
+        simint_initialize_multi_shellpair(P+i);
+}
+
+void simint_free_multi_shellpairs(int n, struct simint_multi_shellpair * P)
+{
+    for(int i = 0; i < n; i++)
+        simint_free_multi_shellpair(P+i);
 }
 
 

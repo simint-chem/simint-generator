@@ -62,6 +62,13 @@ module SimintFortran
       type(C_PTR), intent(in), value :: G
     end subroutine
 
+    subroutine c_simint_initialize_shells(n, G) bind(C, name="simint_initialize_shells")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: G
+      integer(C_INT), intent(in), value :: n
+    end subroutine
+
     subroutine c_simint_allocate_shell(nprim, G) bind(C, name="simint_allocate_shell")
       use iso_c_binding
       implicit none
@@ -73,6 +80,13 @@ module SimintFortran
       use iso_c_binding
       implicit none
       type(C_PTR), intent(in), value :: G
+    end subroutine
+
+    subroutine c_simint_free_shells(n, G) bind(C, name="simint_free_shells")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: G
+      integer(C_INT), intent(in), value :: n
     end subroutine
 
     subroutine c_simint_normalize_shells(n, G) bind(C, name="simint_normalize_shells")
@@ -95,7 +109,12 @@ module SimintFortran
       integer(C_INT), intent(in), value :: nprim, am
       real(C_DOUBLE), intent(in), value :: x, y, z
       type(C_PTR), intent(in), value :: alpha, coef, G
+    end subroutine
 
+    subroutine c_simint_create_zero_shell(G) bind(C, name="simint_create_zero_shell")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: G
     end subroutine
 
     subroutine c_simint_initialize_multi_shellpair(P) &
@@ -105,11 +124,25 @@ module SimintFortran
       type(C_PTR), intent(in), value :: P
     end subroutine
 
+    subroutine c_simint_initialize_multi_shellpairs(n, P) bind(C, name="simint_initialize_multi_shellpairs")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: P
+      integer(C_INT), intent(in), value :: n
+    end subroutine
+
     subroutine c_simint_free_multi_shellpair(P) &
                bind(C, name="simint_free_multi_shellpair")
       use iso_c_binding
       implicit none
       type(C_PTR), intent(in), value :: P
+    end subroutine
+
+    subroutine c_simint_free_multi_shellpairs(n, P) bind(C, name="simint_free_multi_shellpairs")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: P
+      integer(C_INT), intent(in), value :: n
     end subroutine
 
     subroutine c_simint_create_multi_shellpair( &
@@ -120,6 +153,16 @@ module SimintFortran
       type(C_PTR), intent(in), value :: A, B
       type(C_PTR), intent(in), value :: P
       integer(C_INT), intent(in), value :: na, nb, screen_method
+    end subroutine
+
+    subroutine c_simint_create_multi_shellpair2( &
+               npair, AB, P, screen_method) &
+               bind(C, name="simint_create_multi_shellpair2")
+
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: AB, P
+      integer(C_INT), intent(in), value :: npair, screen_method
     end subroutine
 
     function c_simint_compute_eri(P, Q, screen_tol, work, integrals) &
@@ -158,6 +201,14 @@ module SimintFortran
       call c_simint_initialize_shell(C_LOC(G))
     end subroutine
 
+    subroutine simint_initialize_shells(n, G)
+      implicit none
+      integer, intent(in) :: n
+      type(c_simint_shell), intent(inout), target :: G(n)
+
+      call c_simint_initialize_shells(INT(n, C_INT), C_LOC(G))
+    end subroutine
+
     subroutine simint_allocate_shell(nprim, G)
       implicit none
       integer :: nprim
@@ -173,12 +224,20 @@ module SimintFortran
       call c_simint_free_shell(C_LOC(G))
     end subroutine
 
+    subroutine simint_free_shells(n, G)
+      implicit none
+      integer, intent(in) :: n
+      type(c_simint_shell), intent(inout), target :: G(n)
+
+      call c_simint_free_shells(INT(n, C_INT), C_LOC(G))
+    end subroutine
+
     subroutine simint_normalize_shells(n, G)
       implicit none
       integer, intent(in) :: n
       type(c_simint_shell), intent(inout), target :: G(n)
 
-      call c_simint_normalize_shells(n, C_LOC(G))
+      call c_simint_normalize_shells(INT(n, C_INT), C_LOC(G))
     end subroutine
 
     subroutine simint_copy_shell(src, dest)
@@ -208,6 +267,13 @@ module SimintFortran
 
     end subroutine
 
+    subroutine simine_create_zero_shell(G)
+      implicit none
+      type(c_simint_shell), intent(inout), target :: G
+
+      call c_simint_create_zero_shell(C_LOC(G))
+    end subroutine
+
     subroutine simint_initialize_multi_shellpair(P)
       implicit none
       type(c_simint_multi_shellpair), intent(inout), target :: P
@@ -215,11 +281,27 @@ module SimintFortran
       call c_simint_initialize_multi_shellpair(C_LOC(P))
     end subroutine
 
+    subroutine simint_initialize_multi_shellpairs(n, P)
+      implicit none
+      integer, intent(in) :: n
+      type(c_simint_multi_shellpair), intent(inout), target :: P(n)
+
+      call c_simint_initialize_multi_shellpairs(INT(n, C_INT), C_LOC(P))
+    end subroutine
+
     subroutine simint_free_multi_shellpair(P)
       implicit none
       type(c_simint_multi_shellpair), intent(inout), target :: P
 
       call c_simint_free_multi_shellpair(C_LOC(P))
+    end subroutine
+
+    subroutine simint_free_multi_shellpairs(n, P)
+      implicit none
+      integer, intent(in) :: n
+      type(c_simint_multi_shellpair), intent(inout), target :: P(n)
+
+      call c_simint_free_multi_shellpairs(INT(n, C_INT), C_LOC(P))
     end subroutine
 
     subroutine simint_create_multi_shellpair( &
@@ -237,6 +319,18 @@ module SimintFortran
                                            INT(screen_method, C_INT))
 
 
+    end subroutine
+
+    subroutine simint_create_multi_shellpair2( &
+               npair, AB, P, screen_method)
+      implicit none
+      integer, intent(in) :: npair, screen_method
+      type(c_simint_shell), intent(in), target :: AB(npair)
+      type(c_simint_multi_shellpair), intent(inout), target :: P
+
+      call c_simint_create_multi_shellpair2(INT(npair, C_INT), &
+                                            C_LOC(AB), C_LOC(P), &
+                                            INT(screen_method, C_INT))
     end subroutine
 
     function simint_compute_eri(P, Q, screen_tol, work, integrals) &

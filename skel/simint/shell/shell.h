@@ -104,6 +104,17 @@ int compare_shell(struct simint_shell const * A,
 void simint_initialize_shell(struct simint_shell * G);
 
 
+/*! \brief Initialize an array of shell structures
+ *
+ * This sets certain values to zero so that they can be used with
+ * simint_allocate_shell, etc.
+ *
+ * \param [in] n Number of shell structures to initialize
+ * \param [inout] G An array of shell structures to initialize
+ */
+void simint_initialize_shells(int n, struct simint_shell * G);
+
+
 /*! \brief Allocate memory in a shell
  *
  * Allocate enough memory for the exponents and coefficients, and sets up
@@ -118,6 +129,16 @@ void simint_allocate_shell(int nprim, struct simint_shell * G);
  * The \p ptr member will be set to NULL and the memsize will be set to zero.
  */
 void simint_free_shell(struct simint_shell * G);
+
+
+/*! \brief Frees memory associated with shell structures
+ *
+ * The \p ptr member will be set to NULL and the memsize will be set to zero.
+ *
+ * \param [in] n Number of shell structures to free
+ * \param [inout] G An array of shell structures to free
+ */
+void simint_free_shells(int n, struct simint_shell * G);
 
 
 /*! \brief Copies a shell structure
@@ -144,6 +165,9 @@ void simint_normalize_shells(int n, struct simint_shell * G);
  * Just for convenience. You may also allocate and then
  * manually fill in the data members yourself.
  *
+ * \p G must be initialized, but does not need to be
+ * allocated.
+ *
  * Data will be copied from the \p alpha and \p coef
  * pointers.
  *
@@ -164,6 +188,20 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
                          struct simint_shell * G);
 
 
+
+/*! \brief Create a dummy simint_shell
+ *
+ * This can be used to represent non-existent shells (for example,
+ * for 3-center and 2-center integrals
+ *
+ * \p G must be initialized, but does not need to be allocated or filled.
+ * If it is already filled, any existing data in \p G is overwritten.
+ *
+ * \param [inout] The gaussian shell to create 
+ */
+void simint_create_zero_shell(struct simint_shell * G);
+
+
 /*! \brief Initialize a shell pair structure
  *
  * This sets certain values to zero so that they can be used with
@@ -172,6 +210,17 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
  * \param [inout] P The structure to initialize
  */
 void simint_initialize_multi_shellpair(struct simint_multi_shellpair * P);
+
+
+/*! \brief Initialize an array of shell pair structure
+ *
+ * This sets certain values to zero so that they can be used with
+ * simint_allocate_multi_shellpair, etc.
+ *
+ * \param [in] n Number of shell pair structures to initialize
+ * \param [inout] P An array of shell pair structures to initialize
+ */
+void simint_initialize_multi_shellpairs(int n, struct simint_multi_shellpair * P);
 
 
 /*! \brief Allocate space in a multi shellpair structure
@@ -208,6 +257,16 @@ void simint_allocate_multi_shellpair2(int npair, struct simint_shell const * AB,
  * The \p ptr member will be set to NULL and the memsize will be set to zero.
  */
 void simint_free_multi_shellpair(struct simint_multi_shellpair * P);
+
+
+/*! \brief Frees memory associated with an array of multi shellpair structure
+ *
+ * The \p ptr member will be set to NULL and the memsize will be set to zero.
+ *
+ * \param [in] n Number of shell pair structures to free
+ * \param [inout] P An array of shell pair structures to free
+ */
+void simint_free_multi_shellpairs(int n, struct simint_multi_shellpair * P);
 
 
 /*! \brief Computes and fills in values for a multi shellpair
