@@ -267,7 +267,7 @@ module SimintFortran
 
     end subroutine
 
-    subroutine simine_create_zero_shell(G)
+    subroutine simint_create_zero_shell(G)
       implicit none
       type(c_simint_shell), intent(inout), target :: G
 
