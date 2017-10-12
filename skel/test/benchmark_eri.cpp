@@ -77,18 +77,8 @@ int main(int argc, char ** argv)
     size_t skipped_total = 0;
     TimeContrib time_total;
 
-    std::vector<std::array<int, 4>> qam_to_test;
-    for(int i = 0; i <= maxam; i++)
-    for(int j = 0; j <= maxam; j++)
-    for(int k = 0; k <= maxam; k++)
-    for(int l = 0; l <= maxam; l++)
-    {
-        if(UniqueQuartet(i, j, k, l))
-            qam_to_test.push_back({i,j,k,l});
-    }
-
+    std::vector<std::array<int, 4>> qam_to_test {{0, 0, 0, 0}, {2,2,2,2}, {3, 1, 3, 0}, {2, 2, 3, 0}};
     const size_t n_to_test = qam_to_test.size();
-
 
     for(size_t q = 0; q < n_to_test; q++)
     {

@@ -48,7 +48,7 @@ int simint_compute_osoei_overlap(struct simint_shell const * sh1,
             for(int m = 0; m < ncart2; m++)
             {
                 const int8_t * ijk1 = aminfo1[n].ijk;
-                const int8_t * ijk2 = aminfo2[n].ijk;
+                const int8_t * ijk2 = aminfo2[m].ijk;
                 const int xidx = ijk1[0]*nam2 + ijk2[0];
                 const int yidx = ijk1[1]*nam2 + ijk2[1];
                 const int zidx = ijk1[2]*nam2 + ijk2[2];

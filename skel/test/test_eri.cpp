@@ -52,21 +52,7 @@ int main(int argc, char ** argv)
 
     // normalize the original
     for(auto & it : shellmap)
-    {
         simint_normalize_shells(it.second.size(), it.second.data());
-        for(const auto & it2 : it.second)
-        {
-            std::cout << it2.am << "\n";
-            for(int i = 0; i < it2.nprim; i++)
-                printf("%24.16e  %24.16e\n", it2.alpha[i], it2.coef[i]);
-        }
-        std::cout << "\n";
-    }
-
-
-
-
-
 
     // find the max dimensions
     std::pair<int, int> maxparams = FindMaxParams(shellmap);
