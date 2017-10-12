@@ -1,5 +1,5 @@
 #include "simint/ostei/ostei_general.h"
-#include "simint/ostei/recur_lookup.h"
+#include "simint/recur_lookup.h"
 
 
 /**********************************************************/

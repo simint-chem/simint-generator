@@ -49,7 +49,7 @@ with open(args.filename + ".c", 'w') as f:
   f.write("------------------------------------\n")
   f.write("*/\n\n")
 
-  f.write("#include \"simint/ostei/recur_lookup.h\"\n\n")
+  f.write("#include \"simint/recur_lookup.h\"\n\n")
 
   f.write("extern struct RecurInfo const recurinfo_array[{}] = {{\n".format(numel))
 

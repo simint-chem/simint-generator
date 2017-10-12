@@ -25,7 +25,10 @@ configure_file("ostei/ostei_config.h.in"
 set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
 
                          simint_init.c
+                         recur_lookup.c
+
                          simint_eri.c
+                         simint_oneelectron.c
 
                          boys/boys_shortgrid.c
 
@@ -35,7 +38,9 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
                          ostei/ostei_general_vrr.c
                          ostei/ostei_general_hrr.c
                          ostei/ostei.c
-                         ostei/recur_lookup.c
+
+                         osoei/osoei_terms.c
+                         osoei/osoei_overlap.c
 
                          shell/shell.c
                          shell/shell_screen.c

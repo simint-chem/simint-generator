@@ -59,3 +59,4 @@ endif()
 
 ADDTEST(benchmark_eri benchmark_eri.cpp)
 ADDTEST(screentest screentest.cpp)
+ADDTEST(test_overlap test_overlap.cpp)
