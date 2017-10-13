@@ -23,8 +23,8 @@ int simint_compute_osoei_ke(struct simint_shell const * sh1,
     const double xyz1[3] = { sh1->x, sh1->y, sh1->z };
     const double xyz2[3] = { sh2->x, sh2->y, sh2->z };
 
-    const int ncart1 = ((am1+1)*(am1+2))/2;
-    const int ncart2 = ((am2+1)*(am2+2))/2;
+    const int ncart1 = NCART(am1);
+    const int ncart2 = NCART(am2);
 
     // Mostly needed just for the ordering
     const int arrstart1 = am_recur_map[sh1->am];
