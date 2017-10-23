@@ -245,7 +245,7 @@ void simint_create_shell(int nprim, int am, double x, double y, double z,
 void simint_create_zero_shell(struct simint_shell * G)
 {
     const double alpha[1] = {0.0};
-    const double coef[1] = {0.0};
+    const double coef[1] = {1.0};
     simint_create_shell(1, 0, 0.0, 0.0, 0.0, alpha, coef, G);
 }
 
