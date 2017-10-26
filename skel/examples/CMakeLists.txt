@@ -21,3 +21,8 @@ target_compile_options(example_water_spsp_f90 PRIVATE ${SIMINT_Fortran_FLAGS})
 target_include_directories(example_water_spsp_f90 PRIVATE ${SIMINT_Fortran_INCLUDES})
 target_link_libraries(example_water_spsp_f90 PRIVATE simint m ${SIMINT_LINK_FLAGS})
 
+add_executable(example_water_ppps_deriv example_water_ppps_deriv.c)
+target_compile_options(example_water_ppps_deriv PRIVATE ${SIMINT_C_FLAGS})
+target_include_directories(example_water_ppps_deriv PRIVATE ${SIMINT_C_INCLUDES})
+target_link_libraries(example_water_ppps_deriv PRIVATE simint m ${SIMINT_LINK_FLAGS})
+
