@@ -158,9 +158,9 @@ headerbase = "ostei_generated.h"
 headerfile = os.path.join(outdir_osteigen, headerbase)
 
 # Maximum required work
-worksize_bcont = [[0]*(maxam+1)]*(derorder+1)
-worksize_cont  = [[0]*(maxam+1)]*(derorder+1)
-worksize_prim  = [[0]*(maxam+1)]*(derorder+1)
+worksize_bcont = [[0]*(maxam+1) for _ in range(derorder+1)]
+worksize_cont  = [[0]*(maxam+1) for _ in range(derorder+1)]
+worksize_prim  = [[0]*(maxam+1) for _ in range(derorder+1)]
 
 # Required external HRR and VRR
 reqext_hrr = []
@@ -371,6 +371,7 @@ for q in valid:
 
   # reopen the logfile, find work and requirements
   for line in open(logfile, 'r').readlines():
+    mq = max(q)
     if line.startswith("WORK SIZE"):
       worksize_bcont[1][mq] = max(worksize_bcont[1][mq], int(line.split()[2]))
       worksize_prim[1][mq] = max(worksize_prim[1][mq], int(line.split()[3]))
@@ -378,17 +379,17 @@ for q in valid:
     elif line.startswith("SIMINT EXTERNAL HRR"):
       reqam = tuple(line.split()[3:])
       reqext_hrr.append(reqam)
-      filelists[1][max(q)].append( "hrr_{}_{}_{}.c".format(reqam[0],
-                                                         amchar[int(reqam[1])],
-                                                         amchar[int(reqam[2])]) )
+      filelists[1][mq].append( "hrr_{}_{}_{}.c".format(reqam[0],
+                                                       amchar[int(reqam[1])],
+                                                       amchar[int(reqam[2])]) )
     elif line.startswith("SIMINT EXTERNAL VRR"):
       reqam = tuple(line.split()[3:])
       reqext_vrr.append(reqam)
-      filelists[1][max(q)].append( "vrr_{}_{}_{}_{}_{}.c".format(reqam[0],
-                                                          amchar[int(reqam[1])],
-                                                          amchar[int(reqam[2])],
-                                                          amchar[int(reqam[3])],
-                                                          amchar[int(reqam[4])]) )
+      filelists[1][mq].append( "vrr_{}_{}_{}_{}_{}.c".format(reqam[0],
+                                                             amchar[int(reqam[1])],
+                                                             amchar[int(reqam[2])],
+                                                             amchar[int(reqam[3])],
+                                                             amchar[int(reqam[4])]) )
 
   print()
 
