@@ -90,7 +90,7 @@ int main(int argc, char ** argv)
     //       2 - Fast Schwarz screening
     //    simint_create_multi_shellpair(1, &s_shells[0], 1, &s_shells[1], &pp_pair, 0);
     //    simint_create_multi_shellpair(1, &s_shells[2], 1, &s_shells[3], &ps2_pair, 0);
-    simint_create_multi_shellpair(1, &p_shells, 1, p_shells, &pp_pair, 0);
+    simint_create_multi_shellpair(1, p_shells, 1, p_shells, &pp_pair, 0);
     simint_create_multi_shellpair(1, &s_shells[3], 1, p_shells, &ps2_pair, 0);
 
 
