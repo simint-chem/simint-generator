@@ -104,4 +104,4 @@ else()
     endif()
 endif()
 
-
+list(APPEND SIMINT_Fortran_FLAGS "-I${CMAKE_CURRENT_BINARY_DIR}/simint")

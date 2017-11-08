@@ -174,6 +174,16 @@ module SimintFortran
       integer(C_INT) :: res
     end function
 
+    function c_simint_compute_eri_deriv(deriv, P, Q, screen_tol, work, integrals) &
+             result(res) bind(C, name="simint_compute_eri_deriv")
+      use iso_c_binding
+      implicit none
+      integer(C_INT), intent(in), value :: deriv
+      type(C_PTR), intent(in), value :: P, Q, work, integrals
+      real(C_DOUBLE), intent(in), value :: screen_tol
+      integer(C_INT) :: res
+    end function
+
     function c_simint_eri_worksize(derorder, maxam) &
              result(res) bind(C, name="simint_eri_worksize")
       use iso_c_binding
@@ -344,6 +354,23 @@ module SimintFortran
       integer(C_INT) :: res2
 
       res2 = c_simint_compute_eri(C_LOC(P), C_LOC(Q), &
+                                  REAL(screen_tol, C_DOUBLE), &
+                                  C_LOC(work), C_LOC(integrals))
+      res = INT(res2)
+    end function
+
+    function simint_compute_eri_deriv(deriv, P, Q, screen_tol, work, integrals) &
+             result(res)
+      implicit none
+
+      integer(C_INT), intent(in), value :: deriv
+      type(c_simint_multi_shellpair), intent(in), target :: P, Q
+      double precision, intent(inout), target :: work(*), integrals(*)
+      real(C_DOUBLE), intent(in) :: screen_tol
+      integer :: res
+      integer(C_INT) :: res2
+
+      res2 = c_simint_compute_eri_deriv(INT(deriv, C_INT), C_LOC(P), C_LOC(Q), &
                                   REAL(screen_tol, C_DOUBLE), &
                                   C_LOC(work), C_LOC(integrals))
       res = INT(res2)

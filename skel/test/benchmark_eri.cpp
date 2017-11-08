@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
                                 B, nshell2,
                                 C, nshell3,
                                 D, nshell4,
-                                res_ref, false);
+                                res_ref, 0, false);
             std::pair<double, double> err2 = CalcError(res_ints, res_ref, ncont1234);
 
             #ifdef _OPENMP
