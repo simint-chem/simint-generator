@@ -53,8 +53,8 @@ target_compile_options(test_common PRIVATE ${SIMINT_TESTS_CXX_FLAGS})
 # Various testing and benchmarking
 ADDTEST(test_eri test_eri.cpp)
 
-if(${SIMINT_MAXAM} GREATER 0)
-ADDTEST(test_eri_deriv1 test_eri_deriv1.cpp)
+if(${SIMINT_MAXDER} GREATER 0)
+    ADDTEST(test_eri_deriv1 test_eri_deriv1.cpp)
 endif()
 
 ADDTEST(benchmark_eri benchmark_eri.cpp)
