@@ -6,6 +6,7 @@
 #include <map>
 #include <fstream>
 #include <atomic>
+#include <utility>
 
 #include "test/Timer.h" 
 #include "simint/shell/shell.h"
@@ -75,6 +76,19 @@ typedef std::vector<simint_shell> GaussianVec;
 //! Maps a vector of gaussians to their am
 typedef std::map<int, GaussianVec> ShellMap;
 
+//! Nucleus/center in a molecule
+struct AtomicCenter
+{
+    int Z;
+    double x;
+    double y;
+    double z;
+};
+
+
+//! All the atomic centers
+typedef std::vector<AtomicCenter> Molecule;
+
 
 /*! \brief Check if the integer exponents of a gaussian are valid
  *
@@ -109,9 +123,9 @@ ShellMap CopyShellMap(const ShellMap & m);
 void FreeShellMap(ShellMap & m);
 
 
-/*! \brief Reads a basis set from a file into a ShellMap
+/*! \brief Reads a basis set from a file into a ShellMap and Molecule
  */
-ShellMap ReadBasis(const std::string & file);
+std::pair<ShellMap, Molecule> ReadBasis(const std::string & file);
 
 
 /*! \brief Find some maximum parameters from a basis set (shell map)

@@ -3,6 +3,7 @@
 #include "simint/recur_lookup.h"
 #include "simint/osoei/osoei.h"
 
+#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 #define S_IJ(i,j) (s_ij[((i)*(nam2) + j)])
 
 int simint_compute_osoei_overlap(struct simint_shell const * sh1,

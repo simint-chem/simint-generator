@@ -78,36 +78,28 @@ void FreeShellMap(ShellMap & m)
 
 
 
-ShellMap ReadBasis(const std::string & file)
+
+
+std::pair<ShellMap, Molecule> ReadBasis(const std::string & file)
 {
     std::map<char, int> ammap = {
-                                         { 'S',     0 },
-                                         { 'P',     1 },
-                                         { 'D',     2 },
-                                         { 'F',     3 },
-                                         { 'G',     4 },
-                                         { 'H',     5 },
-                                         { 'I',     6 },
-                                         { 'J',     7 },
-                                         { 'K',     8 },
-                                         { 'L',     9 },
-                                         { 'M',    10 },
-                                         { 'N',    11 },
-                                         { 'O',    12 },
-                                         { 'Q',    13 },
-                                         { 'R',    14 },
-                                         { 'T',    15 },
-                                         { 'U',    16 },
-                                         { 'V',    17 },
-                                         { 'W',    18 },
-                                         { 'X',    19 },
-                                         { 'Y',    20 },
-                                         { 'Z',    21 },
-                                         { 'A',    22 },
-                                         { 'B',    23 },
-                                         { 'C',    24 },
-                                         { 'E',    25 }
+                                         { 'S',     0 }, { 'P',     1 }, { 'D',     2 },
+                                         { 'F',     3 }, { 'G',     4 }, { 'H',     5 },
+                                         { 'I',     6 }, { 'J',     7 }, { 'K',     8 },
+                                         { 'L',     9 }, { 'M',    10 }, { 'N',    11 },
+                                         { 'O',    12 }, { 'Q',    13 }, { 'R',    14 },
+                                         { 'T',    15 }, { 'U',    16 }, { 'V',    17 },
+                                         { 'W',    18 }, { 'X',    19 }, { 'Y',    20 },
+                                         { 'Z',    21 }, { 'A',    22 }, { 'B',    23 },
+                                         { 'C',    24 }, { 'E',    25 }
                                  };
+
+
+    std::map<std::string, int> symbol_map = {
+                                                {"H",   1}, {"He",  2}, {"C",   6},
+                                                {"N",   7}, {"O",   8}, {"F",   9},
+                                                {"Al", 13}, {"Cl", 17}
+                                            };
 
     std::ifstream f(file.c_str());
     if(!f.is_open())
@@ -116,6 +108,7 @@ ShellMap ReadBasis(const std::string & file)
     f.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
 
     ShellMap shellmap;
+    Molecule mol;
 
     int natom;
     f >> natom;
@@ -128,6 +121,7 @@ ShellMap ReadBasis(const std::string & file)
         double x, y, z;
 
         f >> sym >> nshell >> nallprim >> nallprimg >> x >> y >> z;
+        mol.push_back(AtomicCenter{symbol_map.at(sym), x, y, z});
 
         for(int j = 0; j < nshell; j++)
         {
@@ -176,7 +170,7 @@ ShellMap ReadBasis(const std::string & file)
         }
     }
 
-    return shellmap;
+    return std::pair<ShellMap, Molecule>(shellmap, mol);
 }
 
 

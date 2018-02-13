@@ -6,6 +6,7 @@
 #include "simint/recur_lookup.h"
 #include "simint/osoei/osoei.h"
 
+#define NCART(am) ((am>=0)?((((am)+2)*((am)+1))>>1):0)
 
 int simint_compute_osoei_potential(int ncenter,
                                    double * Z, double * x, double * y, double * z,
@@ -36,6 +37,9 @@ int simint_compute_osoei_potential(int ncenter,
 
     //TODO - too big
     double amwork[nam1][nam2][NCART(am1+1)*NCART(am2+1)*(nam1+nam2+1)];
+
+    // Zero the output array
+    memset(integrals, 0, ncart12*sizeof(double));
 
     for(int n = 0; n < ncenter; n++)
     {
@@ -82,7 +86,7 @@ int simint_compute_osoei_potential(int ncenter,
                 // we skip (0,0) since that is the boys function
                 for(int i = 0; i <= am1; i++)
                 {
-                    const int arrstart1 = am_recur_map[sh1->am];
+                    const int arrstart1 = am_recur_map[i];
                     struct RecurInfo const * aminfo1 =  &recurinfo_array[arrstart1];
 
                     // number of cartesians in the previous two shells
@@ -134,7 +138,7 @@ int simint_compute_osoei_potential(int ncenter,
                     // now (i,j) via second vertical recurrence
                     for(int j = 1; j <= am2; j++)
                     {
-                        const int arrstart2 = am_recur_map[sh2->am];
+                        const int arrstart2 = am_recur_map[j];
                         struct RecurInfo const * aminfo2 =  &recurinfo_array[arrstart2];
 
                         // number of cartesians in the previous two shells
