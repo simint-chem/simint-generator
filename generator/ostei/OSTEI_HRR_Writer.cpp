@@ -313,7 +313,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
         for (int ival = 0; ival < 15; ival++)
         {
             std::stringstream prototype_ncartket;
-            prototype_ncartket << "void HRR_" << steptypestr << "_";
+            prototype_ncartket << "static void HRR_" << steptypestr << "_";
             prototype_ncartket << amchar[braam[0]] << "_" << amchar[braam[1]] << "_" << ncart_ket_vals[ival] << "(";
 
             // pointer to result buffer
