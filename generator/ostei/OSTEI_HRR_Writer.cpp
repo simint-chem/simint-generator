@@ -294,6 +294,7 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
         of << "\n";
 
         std::stringstream prototype;
+        
 
         prototype << "void HRR_" << steptypestr << "_";
         prototype << amchar[braam[0]] << "_" << amchar[braam[1]] << "(";
@@ -307,14 +308,74 @@ void OSTEI_HRR_Writer::WriteHRRFile(std::ostream & of, std::ostream & ofh) const
 
         prototype << indent5 << "const double hAB[3], const int ncart_ket)";
 
+        // Create different functions for different ncart_ket values
+        const int ncart_ket_vals[15] = {1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105, 120};
+        for (int ival = 0; ival < 15; ival++)
+        {
+            std::stringstream prototype_ncartket;
+            prototype_ncartket << "static void HRR_" << steptypestr << "_";
+            prototype_ncartket << amchar[braam[0]] << "_" << amchar[braam[1]] << "_" << ncart_ket_vals[ival] << "(";
 
+            // pointer to result buffer
+            prototype_ncartket << "double * const restrict " << HRRVarName(finalam[0], finalam[1], "X_X") << ",\n";
 
-        of << prototype.str() << "\n";
-        of << "{\n";
-        of << indent1 << "int iket;\n";
+            // pointer to requirements
+            for(const auto & it : hrr_algo_.GetBraAMReq(braam))
+                prototype_ncartket << indent5 << "double const * const restrict " << HRRVarName(it[0], it[1], "X_X") << ",\n";
+
+            prototype_ncartket << indent5 << "const double hAB[3])";
+            
+            of << prototype_ncartket.str() << "\n";
+            of << "{\n";
+            of << indent1 << "int iket;\n";
+            of << "\n";
+            
+            WriteBraSteps_(of, brasteps, "", std::to_string(ncart_ket_vals[ival]), "X_X"); 
+            
+            of << "\n";
+            of << "}\n";
+            of << "\n";
+            of << "\n";
+        }
+        
+        
+        of << prototype.str() << "\n{\n";  // Original function header
+        
+        // Wrapper for different ncart_ket value functions
+        of << indent1 << "int done_brastep = 0;\n";
+        for (int ival = 0; ival < 15; ival++)
+        {
+            of << indent1 << "if (ncart_ket == " << ncart_ket_vals[ival] << ")\n";
+            of << indent1 << "{\n";
+            
+            // function name
+            of << indent1 << indent1 << "HRR_" << steptypestr << "_" << amchar[braam[0]] << "_";
+            of << amchar[braam[1]] << "_" << ncart_ket_vals[ival] << "(";
+            
+            // pointer to result buffer
+            of << HRRVarName(finalam[0], finalam[1], "X_X") << ", ";
+            
+            // pointer to requirements
+            for(const auto & it : hrr_algo_.GetBraAMReq(braam))
+                of << HRRVarName(it[0], it[1], "X_X") << ", ";
+            of << "hAB);\n";
+            
+            of << indent1 << indent1 << "done_brastep = 1;\n";
+            
+            of << indent1 << "}\n\n";
+        }
+        
+        
+        // General situtaion
+        of << indent1 << "if (done_brastep == 0) \n";
+        of << indent1 << "{\n";
+        
+        of << indent1 << indent1 << "int iket;\n";
         of << "\n";
-
+        
         WriteBraSteps_(of, brasteps, "", "ncart_ket", "X_X"); 
+        
+        of << indent1 << "}\n";
 
         of << "\n";
         of << "}\n";
