@@ -25,42 +25,59 @@ bool OSTEI_Writer::IsSpecialPermutation_(QAM am) const
 
 void OSTEI_Writer::WriteShellOffsets(void) const
 {
-    os_ << indent5 << "// calculate the shell offsets\n";
-    os_ << indent5 << "// these are the offset from the shell pointed to by cd\n";
-    os_ << indent5 << "// for each element\n";
-    os_ << indent5 << "int shelloffsets[SIMINT_SIMD_LEN] = {0};\n";
-    os_ << indent5 << "int lastoffset = 0;\n";
-    os_ << indent5 << "const int nlane = ( ((j + SIMINT_SIMD_LEN) < jend) ? SIMINT_SIMD_LEN : (jend - j));\n";
+    os_ << indent3 << "// Calculate all the shell offsets in the j-loop\n";
+    os_ << indent3 << "// These are the offset from the shell pointed to by cd for each element\n";
+    os_ << indent3 << "ivec = 0;\n";
+    os_ << indent3 << "iprimcd = 0;\n";
+    os_ << indent3 << "nprim_icd = Q.nprim12[cd];\n";
+    os_ << indent3 << "icd = 0;\n";
+    os_ << indent3 << "for (j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
+    os_ << indent3 << "{\n";
+    
+    os_ << indent4 << "int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;\n";
+    os_ << indent4 << "shelloffsets[0] = 0;\n";
+    os_ << indent4 << "shelloffsets[SIMINT_SIMD_LEN] = 0;  // for lastoffset \n";
+    for (size_t i = 0; i < hrr_writer_.Algo().TopAM().size(); i++)
+        os_ << indent4 << "shelloffsets[SIMINT_SIMD_LEN + 1 + " << i << "] = 0;\n";
+    os_ << indent4 << "ivec++;\n";
+    
     os_ << "\n";
-    os_ << indent5 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
-    os_ << indent5 << "{\n";
+    os_ << indent4 << "if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)\n";
+    os_ << indent4 << "{\n";
 
-    os_ << indent6 << "// Handle if the first element of the vector is a new shell\n";
+    os_ << indent5 << "// Handle if the first element of the vector is a new shell\n";
+    os_ << indent5 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
+    os_ << indent5 << "{\n";
+    os_ << indent6 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
+
+    int cnt = 0;
+    for(const auto it : hrr_writer_.Algo().TopAM())
+    {
+        //os_ << indent6 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
+        os_ << indent6 << "shelloffsets[SIMINT_SIMD_LEN + 1 + " << cnt << "] += " << NCART(it) << ";\t";
+        os_ << "// for " << PrimPtrName(it) << "\n";
+        cnt++;
+    }
+
+    os_ << indent5 << "}\n";
+    os_ << indent5 << "iprimcd++;\n";
+
+    os_ << indent5 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
+    os_ << indent5 << "{\n";
     os_ << indent6 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
     os_ << indent6 << "{\n";
+    os_ << indent7 << "shelloffsets[n] = shelloffsets[n-1] + 1;\n";
+    os_ << indent7 << "shelloffsets[SIMINT_SIMD_LEN]++;\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
-
-    for(const auto it : hrr_writer_.Algo().TopAM())
-        os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
-
     os_ << indent6 << "}\n";
+    os_ << indent6 << "else\n";
+    os_ << indent7 << "shelloffsets[n] = shelloffsets[n-1];\n";
     os_ << indent6 << "iprimcd++;\n";
-
-    os_ << indent6 << "for(n = 1; n < SIMINT_SIMD_LEN; ++n)\n";
-    os_ << indent6 << "{\n";
-    os_ << indent7 << "if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))\n";
-    os_ << indent7 << "{\n";
-    os_ << indent8 << "shelloffsets[n] = shelloffsets[n-1] + 1;\n";
-    os_ << indent8 << "lastoffset++;\n";
-    os_ << indent8 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
-    os_ << indent7 << "}\n";
-    os_ << indent7 << "else\n";
-    os_ << indent8 << "shelloffsets[n] = shelloffsets[n-1];\n";
-    os_ << indent7 << "iprimcd++;\n";
-    os_ << indent6 << "}\n";
     os_ << indent5 << "}\n";
-    os_ << indent5 << "else\n";
-    os_ << indent6 << "iprimcd += SIMINT_SIMD_LEN;\n\n";
+    os_ << indent4 << "}\n";
+    os_ << indent4 << "else iprimcd += SIMINT_SIMD_LEN; \n\n";
+    
+    os_ << indent3 << "}\n";
 }
 
 
@@ -149,7 +166,7 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     {
         P_var = "P_tmp";
         os_ << indent1 << "double P_AB[3*P.nshell12];\n";
-    	os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
+        os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
         os_ << indent1 << "P_tmp.PA_x = P.PB_x;  P_tmp.PA_y = P.PB_y;  P_tmp.PA_z = P.PB_z;\n";
         os_ << indent1 << "P_tmp.PB_x = P.PA_x;  P_tmp.PB_y = P.PA_y;  P_tmp.PB_z = P.PA_z;\n";
         os_ << indent1 << "P_tmp.AB_x = P_AB;\n";
@@ -166,10 +183,10 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
 
     if(swap34)
     {
-	    Q_var = "Q_tmp";
+        Q_var = "Q_tmp";
         os_ << indent1 << "double Q_AB[3*Q.nshell12];\n";
-    	os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
-		os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
+        os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
+        os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
         os_ << indent1 << "Q_tmp.PB_x = Q.PA_x;  Q_tmp.PB_y = Q.PA_y;  Q_tmp.PB_z = Q.PA_z;\n";
         os_ << indent1 << "Q_tmp.AB_x = Q_AB;\n";
         os_ << indent1 << "Q_tmp.AB_y = Q_AB + Q.nshell12;\n";
@@ -405,7 +422,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << FunctionPrototype_(am) << "\n";
     os_ << "{\n";
     os_ << "\n";
-
+    
     os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(work);\n";
     os_ << indent1 << "SIMINT_ASSUME_ALIGN_DBL(" << ArrVarName(am) << ");\n";
 
@@ -449,6 +466,13 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent1 << "// Create constants\n";
     for(const auto & it : cm)
         os_ << indent1 << "const SIMINT_DBLTYPE " << it.first << " = SIMINT_DBLSET1(" << it.second << ");\n";
+    
+    os_ << indent1 << "\n";
+    os_ << indent1 << "// Create offset buffer\n";
+    os_ << indent1 << "int ivec;\n";
+    os_ << indent1 << "const int TopAM_size = " << hrr_writer_.Algo().TopAM().size() << ";\n";
+    os_ << indent1 << "int n_info_vector = SIMINT_NSHELL_SIMD * 4;\n";
+    os_ << indent1 << "int *offset_info  = (int*) SIMINT_ALLOC(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);\n\n";
 
     os_ << "\n\n";
     os_ << indent1 << "////////////////////////////////////////\n";
@@ -475,12 +499,21 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent2 << "for(cd = 0; cd < Q.nshell12_clip; cd += SIMINT_NSHELL_SIMD)\n";
     os_ << indent2 << "{\n";
     os_ << indent3 << "const int nshellbatch = ((cd + SIMINT_NSHELL_SIMD) > Q.nshell12_clip) ? Q.nshell12_clip - cd : SIMINT_NSHELL_SIMD;\n";
-
     os_ << indent3 << "int jend = jstart;\n";
     os_ << indent3 << "for(i = 0; i < nshellbatch; i++)\n";
     os_ << indent4 << "jend += Q.nprim12[cd+i];\n";
     os_ << "\n";
-
+    
+    os_ << indent3 << "// Check if the offset buffer is large enough\n";
+    os_ << indent3 << "int j_vec = (jend - jstart + SIMINT_SIMD_LEN - 1) / SIMINT_SIMD_LEN;\n";
+    os_ << indent3 << "if (j_vec > n_info_vector)\n";
+    os_ << indent3 << "{\n";
+    os_ << indent4 << "n_info_vector = j_vec;\n";
+    os_ << indent4 << "if (!offset_info) SIMINT_FREE(offset_info);\n";
+    os_ << indent4 << "offset_info  = (int*) SIMINT_ALLOC(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);\n";
+    os_ << indent3 << "}\n";
+    WriteShellOffsets();
+    os_ << indent3 << "\n";
 
     if(hashrr)
     {
@@ -528,12 +561,23 @@ void OSTEI_Writer::Write_Full_(void) const
 
     os_ << "\n";
 
-
+    os_ << indent4 << "ivec = 0;\n";
     os_ << indent4 << "for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)\n";
     os_ << indent4 << "{\n";
 
-    WriteShellOffsets();
-
+    //WriteShellOffsets();
+    os_ << indent5 << "int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;\n";
+    os_ << indent5 << "int lastoffset = shelloffsets[SIMINT_SIMD_LEN];\n";
+    // I'm not so familiar with "modern C++", hope that the for loop here has the same 
+    // visiting order as that in WriteShellOffsets() function :)
+    // huangh223, 02/25/18
+    int cnt = 0;
+    for(const auto it : hrr_writer_.Algo().TopAM())
+    {
+        os_ << indent5 << PrimPtrName(it) << " += " << "shelloffsets[SIMINT_SIMD_LEN + 1 + " << cnt << "];\n";
+        cnt++;
+    }
+    os_ << indent5 << "ivec++;\n\n";
 
     os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
     os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
@@ -627,6 +671,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << "\n";
 
     // we need to zero out any that are beyond the end of the batch (that's been clipped)
+    os_ << indent5 << "const int nlane = ( ((j + SIMINT_SIMD_LEN) < jend) ? SIMINT_SIMD_LEN : (jend - j));\n";
     os_ << indent5 << "const SIMINT_DBLTYPE Q_prefac = mask_load(nlane, Q.prefac + j);\n";
     os_ << "\n\n";
     os_ << indent5 << "boys_F_split(" << PrimVarName({0,0,0,0})
@@ -676,6 +721,8 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent2 << "istart = iend;\n";
 
     os_ << indent1 << "}  // close loop over ab\n";
+    os_ << "\n";
+    os_ << indent1 << "if (!offset_info) SIMINT_FREE(offset_info);\n";
     os_ << "\n";
     os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
