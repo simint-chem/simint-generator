@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
     #endif
 
     // read in the shell info
-    ShellMap shellmap = ReadBasis(basfile);
+    ShellMap shellmap = ReadBasis(basfile).first;
 
     // normalize
     for(auto & it : shellmap)

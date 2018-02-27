@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
     std::string basfile(argv[1]);
 
     // read in the shell info
-    ShellMap shellmap = ReadBasis(basfile);
+    ShellMap shellmap = ReadBasis(basfile).first;
 
 
     // normalize the original
