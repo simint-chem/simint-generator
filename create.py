@@ -265,6 +265,9 @@ with open(headerfile, 'a') as hfile:
   hfile.write("#endif\n")
   hfile.write("\n")
 
+# Overwrite the manually optimized file
+shutil.copy(os.path.join(skeldir, "ostei_s_s_s_s.c"), outdir_osteigen)
+print("***** Overwrite <OUTDIR>\simint\ostei\gen\ostei_s_s_s_s.c with skel\ostei_s_s_s_s.c *****")
 
 ####################################################
 # Generate the ERI 1st derivative sources and headers
