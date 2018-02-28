@@ -1,6 +1,8 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include "simint/constants.h"
 #include "simint/shell/shell.h"
@@ -275,7 +277,16 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
                                      struct simint_multi_shellpair * P,
                                      int screen_method)
 {
-    struct simint_shell AB[2*na*nb];
+    // huangh223, 02/28/18
+    // The following statement will allocate space on stack,
+    // it's dangerous when 2 * na * nb is large and may crash.
+	// struct simint_shell AB[2*na*nb];
+    struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
+    if (AB == NULL)
+    {
+        printf("[ERROR] simint_allocate_multi_shellpair: cannot allocate 2 * %d * %d simint_shell space\n", na, nb);
+        assert(AB != NULL);
+    }
 
     int ij = 0;
     for(int i = 0; i < na; ++i)
@@ -287,6 +298,8 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
     }
 
     simint_allocate_multi_shellpair2(na*nb, AB, P, screen_method);
+
+    if (AB != NULL) free(AB);
 }
 
 
@@ -333,7 +346,16 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  struct simint_multi_shellpair * P,
                                  int screen_method)
 {
-    struct simint_shell AB[2*na*nb];
+    // huangh223, 02/28/18
+    // The following statement will allocate space on stack,
+    // it's dangerous when 2 * na * nb is large and may crash.
+	// struct simint_shell AB[2*na*nb];
+    struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
+    if (AB == NULL)
+    {
+        printf("[ERROR] simint_fill_multi_shellpair: cannot allocate 2 * %d * %d simint_shell space\n", na, nb);
+        assert(AB != NULL);
+    }
 
     int ij = 0;
     for(int i = 0; i < na; ++i)
@@ -345,6 +367,8 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
     }
 
     simint_fill_multi_shellpair2(na*nb, AB, P, screen_method);
+
+    if (AB != NULL) free(AB);
 }
 
 
