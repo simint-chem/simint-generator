@@ -32,7 +32,9 @@ int main(int argc, char ** argv)
     std::string basfile(argv[1]);
 
     // read in the shell info
-    ShellMap shellmap = ReadBasis(basfile).first;
+    std::pair<ShellMap, Molecule> molinfo = ReadBasis(basfile);
+    ShellMap shellmap = molinfo.first;
+    Molecule mol = molinfo.second;
 
     // normalize the original
     for(auto & it : shellmap)
@@ -64,6 +66,16 @@ int main(int argc, char ** argv)
     double * all_res_simint = (double *)SIMINT_ALLOC(nthread * maxsize * sizeof(double));
 
 
+    // Form SOA from molecule AOS
+    std::vector<double> mol_Z, mol_x, mol_y, mol_z;
+    for(const auto & atom : mol)
+    {
+        mol_Z.push_back(atom.Z);
+        mol_x.push_back(atom.x);
+        mol_y.push_back(atom.y);
+        mol_z.push_back(atom.z);
+    }
+
     // loop over all AM quartets, choosing only valid ones
     #ifdef _OPENMP
     #pragma omp parallel for
@@ -82,12 +94,16 @@ int main(int argc, char ** argv)
                 const int ithread = 0;
             #endif
 
+            // Loop over all centers
             double * res_simint = all_res_simint + ithread * maxsize;
 
             ////////////////////////////
             // Calculate the integrals
             ////////////////////////////
-            int simint_ret = simint_compute_overlap(&shellmap[i][a], &shellmap[j][b], res_simint);
+            int ncenter = static_cast<int>(mol.size());
+            int simint_ret = simint_compute_potential(ncenter, mol_Z.data(),
+                                                      mol_x.data(), mol_y.data(), mol_z.data(),
+                                                      &shellmap[i][a], &shellmap[j][b], res_simint);
 
             // if the return is < 0, it didn't calculate anything
             // (everything was screened)

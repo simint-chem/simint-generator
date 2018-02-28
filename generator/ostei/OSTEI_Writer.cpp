@@ -721,4 +721,3 @@ void OSTEI_Writer::WriteFile(void) const
         Write_Permutations_();
 }
 
-

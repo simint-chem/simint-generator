@@ -41,6 +41,7 @@ set(SIMINT_LIBRARY_FILES ${SIMINT_OSTEI_FILES}
 
                          osoei/osoei_terms.c
                          osoei/osoei_overlap.c
+                         osoei/osoei_potential.c
                          osoei/osoei_ke.c
 
                          shell/shell.c
