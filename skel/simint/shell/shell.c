@@ -25,6 +25,54 @@ extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 #define SWAP_D(a) tmp_d = ((a)[idxi]); ((a)[idxi]) = ((a)[idxi+1]); ((a)[idxi+1]) = tmp_d;
 
+
+// huangh223, 03/02/18
+// Note: simint_sort_multi_shellpair() is using bubble sort, 
+// sometimes it takes a lot of time when it is called from 
+// GTFock commit 69884fe and libcint commit de13c0f. 
+// Use a quick sort to replace it. 
+
+#define SWAP_DOUBLE(a, b) tmp_dbl = (a); (a) = (b); (b) = tmp_dbl;
+
+static void 
+simint_shellpair_screenval_quicksort(
+    struct simint_multi_shellpair *P,
+    int left, int right
+)
+{
+    int i = left, j = right;
+    double mid = P->screen[(i + j) / 2], tmp_dbl;
+    while (i <= j)
+    {
+        while (P->screen[i] > mid) i++;
+        while (P->screen[j] < mid) j--;
+        if (i <= j)
+        {
+            SWAP_DOUBLE(P->x[i], P->x[j]);
+            SWAP_DOUBLE(P->y[i], P->y[j]);
+            SWAP_DOUBLE(P->z[i], P->z[j]);
+            SWAP_DOUBLE(P->PA_x[i], P->PA_x[j]);
+            SWAP_DOUBLE(P->PA_y[i], P->PA_y[j]);
+            SWAP_DOUBLE(P->PA_z[i], P->PA_z[j]);
+            SWAP_DOUBLE(P->PB_x[i], P->PB_x[j]);
+            SWAP_DOUBLE(P->PB_y[i], P->PB_y[j]);
+            SWAP_DOUBLE(P->PB_z[i], P->PB_z[j]);
+            SWAP_DOUBLE(P->alpha[i], P->alpha[j]);
+            SWAP_DOUBLE(P->prefac[i], P->prefac[j]);
+            SWAP_DOUBLE(P->screen[i], P->screen[j]);
+            
+            #if SIMINT_OSTEI_MAXDER > 0
+            SWAP_DOUBLE(P->alpha2[i], P->alpha2[j]);
+            SWAP_DOUBLE(P->beta2[i], P->beta2[j]);
+            #endif
+            
+            i++; j--;
+        }
+    }
+    if (i < right) simint_shellpair_screenval_quicksort(P, i, right);
+    if (j > left)  simint_shellpair_screenval_quicksort(P, left, j);
+}
+
 static void
 simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
 {
@@ -36,8 +84,8 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
 
     for(int ab = 0; ab < P->nshell12; ab++)
     {
+        /*
         int swapped;
-
         do {
             swapped = 0;
             for(int i = 0; i < (P->nprim12[ab]-1); i++)
@@ -67,6 +115,8 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
                 }
             }
         } while(swapped);
+        */
+        simint_shellpair_screenval_quicksort(P, idx, idx + P->nprim12[ab] - 1);
 
         idx += P->nprim12[ab];
 
@@ -280,7 +330,7 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
     // huangh223, 02/28/18
     // The following statement will allocate space on stack,
     // it's dangerous when 2 * na * nb is large and may crash.
-	// struct simint_shell AB[2*na*nb];
+    // struct simint_shell AB[2*na*nb];
     struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
     if (AB == NULL)
     {
@@ -349,7 +399,7 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
     // huangh223, 02/28/18
     // The following statement will allocate space on stack,
     // it's dangerous when 2 * na * nb is large and may crash.
-	// struct simint_shell AB[2*na*nb];
+    // struct simint_shell AB[2*na*nb];
     struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
     if (AB == NULL)
     {
