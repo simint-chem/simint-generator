@@ -3,6 +3,8 @@
 #include "simint/vectorization/vectorization.h"
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 
 int ostei_s_s_s_s(struct simint_multi_shellpair const P,
@@ -41,6 +43,13 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
     int ca_res_idx[8];
     int ca_cnt = 0;
     #endif
+	
+	// Create offset buffer
+    int ivec;
+    const int TopAM_size = 1;
+    int n_info_vector = SIMINT_NSHELL_SIMD * 4;
+    int *offset_info  = (int*) malloc(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);
+	assert(offset_info != NULL);
 
 
     ////////////////////////////////////////
@@ -62,6 +71,53 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
             int jend = jstart;
             for(i = 0; i < nshellbatch; i++)
                 jend += Q.nprim12[cd+i];
+			
+			// Check if the offset buffer is large enough
+            int j_vec = (jend - jstart + SIMINT_SIMD_LEN - 1) / SIMINT_SIMD_LEN;
+            if (j_vec > n_info_vector)
+            {
+                n_info_vector = j_vec;
+                if (!offset_info) free(offset_info);
+                offset_info  = (int*) malloc(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);
+            }
+            // Calculate all the shell offsets in the j-loop
+            // These are the offset from the shell pointed to by cd for each element
+            ivec = 0;
+            iprimcd = 0;
+            nprim_icd = Q.nprim12[cd];
+            icd = 0;
+            for (j = jstart; j < jend; j += SIMINT_SIMD_LEN)
+            {
+                int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;
+                shelloffsets[0] = 0;
+                shelloffsets[SIMINT_SIMD_LEN] = 0;  // for lastoffset 
+                shelloffsets[SIMINT_SIMD_LEN + 1 + 0] = 0;
+                ivec++;
+
+                if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)
+                {
+                    // Handle if the first element of the vector is a new shell
+                    if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))
+                    {
+                        nprim_icd += Q.nprim12[cd + (++icd)];
+                        shelloffsets[SIMINT_SIMD_LEN + 1 + 0] += 1;    // for PRIM_PTR_INT__s_s_s_s
+                    }
+                    iprimcd++;
+                    for(n = 1; n < SIMINT_SIMD_LEN; ++n)
+                    {
+                        if(iprimcd >= nprim_icd && ((icd+1) < nshellbatch))
+                        {
+                            shelloffsets[n] = shelloffsets[n-1] + 1;
+                            shelloffsets[SIMINT_SIMD_LEN]++;
+                            nprim_icd += Q.nprim12[cd + (++icd)];
+                        }
+                        else
+                            shelloffsets[n] = shelloffsets[n-1];
+                        iprimcd++;
+                    }
+                }
+                else iprimcd += SIMINT_SIMD_LEN; 
+            }
 
 
             for(i = istart; i < iend; ++i)
@@ -88,16 +144,17 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                 const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);
                 const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };
 
-
+				ivec = 0;
                 for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)
                 {
                     // calculate the shell offsets
                     // these are the offset from the shell pointed to by cd
                     // for each element
-                    int shelloffsets[SIMINT_SIMD_LEN] = {0};
-                    int lastoffset = 0;
+                    //int shelloffsets[SIMINT_SIMD_LEN] = {0};
+                    //int lastoffset = 0;
                     const int nlane = ( ((j + SIMINT_SIMD_LEN) < jend) ? SIMINT_SIMD_LEN : (jend - j));
 
+					/*
                     if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)
                     {
                         // Handle if the first element of the vector is a new shell
@@ -120,8 +177,13 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                             iprimcd++;
                         }
                     }
-                    else
-                        iprimcd += SIMINT_SIMD_LEN;
+                    else iprimcd += SIMINT_SIMD_LEN;
+					*/
+					
+					int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;
+					int lastoffset = shelloffsets[SIMINT_SIMD_LEN];
+					if (shelloffsets[SIMINT_SIMD_LEN + 1]) PRIM_PTR_INT__s_s_s_s += 1;
+					ivec++;
 
                     // Do we have to compute this vector (or has it been screened out)?
                     // (not_screened != 0 means we have to do this vector)
@@ -228,6 +290,8 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
 	for (int jj = 0; jj < ca_cnt; jj++)
 		INT__s_s_s_s[ca_res_idx[jj]] += _mm512_reduce_add_pd(ca_buf[jj]);
 	#endif 
+	
+	if (offset_info != NULL) free(offset_info);
 
     return P.nshell12_clip * Q.nshell12_clip;
 }
