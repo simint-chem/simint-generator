@@ -102,7 +102,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
         __m512d dst[8];
         
         // Transpose-Add part
-		double *src_ptr = (double*)src;
+        double *src_ptr = (double*)src;
         for (int it = 0; it < ntrans; it++)
         {
             for (int i = 0; i < 8; i++)
@@ -111,7 +111,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
                     tmp[i * 8 + j] = src_ptr[j * 8 + i];
                 dst[i] = _mm512_load_pd(tmp + i * 8);
             }
-			src_ptr += 64;
+            src_ptr += 64;
             
             __m512d res = _mm512_loadu_pd(dest + it * 8);
             for (int i = 0; i < 8; i++)
@@ -205,6 +205,17 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
         for(int n = nlane; n < SIMINT_SIMD_LEN; n++)
             u.d[n] = 0.0;
         return u.v;
+    }
+    
+    #define SIMINT_PRIM_SCREEN_STAT
+    static inline
+    int count_prim_screen_survival(__m512d screen_val, const double screen_tol)
+    {
+        union simint_double8 u = {screen_val};
+        int res = 0;
+        for (int i = 0; i < SIMINT_SIMD_LEN; i++)
+            if (u.d[i] >= screen_tol) res++;
+        return res;
     }
 
 #endif // defined SIMINT_AVX512 || defined SIMINT_MICAVX512

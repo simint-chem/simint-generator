@@ -35,23 +35,25 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
     // Create constants
     const SIMINT_DBLTYPE const_1 = SIMINT_DBLSET1(1);
     const SIMINT_DBLTYPE one_half = SIMINT_DBLSET1(0.5);
-	
-	#if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
+    
+    #if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
     // Buffer for contract_all()
     SIMINT_DBLTYPE ca_buf[8];
     double ca_res[8];
     int ca_res_idx[8];
     int ca_cnt = 0;
     #endif
-	
-	// Create offset buffer
+    
+    // Create offset buffer
     int ivec;
     const int TopAM_size = 1;
     int n_info_vector = SIMINT_NSHELL_SIMD * 4;
     int *offset_info  = (int*) malloc(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);
-	assert(offset_info != NULL);
+    assert(offset_info != NULL);
 
-
+    #ifdef SIMINT_PRIM_SCREEN_STAT
+    int calc_nprim = 0, skip_nprim = 0, calc_nvec = 0, skip_nvec = 0;
+    #endif
     ////////////////////////////////////////
     // Loop over shells and primitives
     ////////////////////////////////////////
@@ -71,8 +73,8 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
             int jend = jstart;
             for(i = 0; i < nshellbatch; i++)
                 jend += Q.nprim12[cd+i];
-			
-			// Check if the offset buffer is large enough
+            
+            // Check if the offset buffer is large enough
             int j_vec = (jend - jstart + SIMINT_SIMD_LEN - 1) / SIMINT_SIMD_LEN;
             if (j_vec > n_info_vector)
             {
@@ -128,7 +130,14 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                 {
                     // Skip this whole thing if always insignificant
                     if((P.screen[i] * Q.screen_max) < screen_tol)
+                    {
+                        #ifdef SIMINT_PRIM_SCREEN_STAT
+                        int j_len = jend - jstart;
+                        skip_nprim += j_len;
+                        skip_nvec  += (j_len + SIMINT_SIMD_LEN - 1) / SIMINT_SIMD_LEN;
+                        #endif
                         continue;
+                    }
                     bra_screen_max = SIMINT_DBLSET1(P.screen[i]);
                 }
 
@@ -144,7 +153,7 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                 const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);
                 const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };
 
-				ivec = 0;
+                ivec = 0;
                 for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)
                 {
                     // calculate the shell offsets
@@ -154,7 +163,7 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                     //int lastoffset = 0;
                     const int nlane = ( ((j + SIMINT_SIMD_LEN) < jend) ? SIMINT_SIMD_LEN : (jend - j));
 
-					/*
+                    /*
                     if((iprimcd + SIMINT_SIMD_LEN) >= nprim_icd)
                     {
                         // Handle if the first element of the vector is a new shell
@@ -178,24 +187,35 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                         }
                     }
                     else iprimcd += SIMINT_SIMD_LEN;
-					*/
-					
-					int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;
-					int lastoffset = shelloffsets[SIMINT_SIMD_LEN];
-					if (shelloffsets[SIMINT_SIMD_LEN + 1]) PRIM_PTR_INT__s_s_s_s += 1;
-					ivec++;
+                    */
+                    
+                    int *shelloffsets = offset_info + (SIMINT_SIMD_LEN + 1 + TopAM_size) * ivec;
+                    int lastoffset = shelloffsets[SIMINT_SIMD_LEN];
+                    if (shelloffsets[SIMINT_SIMD_LEN + 1]) PRIM_PTR_INT__s_s_s_s += 1;
+                    ivec++;
 
                     // Do we have to compute this vector (or has it been screened out)?
                     // (not_screened != 0 means we have to do this vector)
+                    SIMINT_DBLTYPE prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
                     if(check_screen)
                     {
-                        const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));
+                        const double vmax = vector_max(prim_screen_res);
                         if(vmax < screen_tol)
                         {
-                            PRIM_PTR_INT__s_s_s_s += lastoffset*1;
+                            #ifdef SIMINT_PRIM_SCREEN_STAT
+                            skip_nvec++;
+                            skip_nprim += SIMINT_SIMD_LEN;
+                            #endif
+                            PRIM_PTR_INT__s_s_s_s += lastoffset*1;    
                             continue;
                         }
                     }
+                    #ifdef SIMINT_PRIM_SCREEN_STAT
+                    calc_nvec++;
+                    int calc_nprim_in_vec = count_prim_screen_survival(prim_screen_res, screen_tol);
+                    calc_nprim += calc_nprim_in_vec;
+                    skip_nprim += (SIMINT_SIMD_LEN - calc_nprim_in_vec);
+                    #endif
 
                     const SIMINT_DBLTYPE Q_alpha = SIMINT_DBLLOAD(Q.alpha, j);
                     const SIMINT_DBLTYPE PQalpha_mul = SIMINT_MUL(P_alpha, Q_alpha);
@@ -285,13 +305,21 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
 
         istart = iend;
     }  // close loop over ab
-	
-	#if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
-	for (int jj = 0; jj < ca_cnt; jj++)
-		INT__s_s_s_s[ca_res_idx[jj]] += _mm512_reduce_add_pd(ca_buf[jj]);
-	#endif 
-	
-	if (offset_info != NULL) free(offset_info);
+    
+    #if defined SIMINT_AVX512 || defined SIMINT_MICAVX512
+    for (int jj = 0; jj < ca_cnt; jj++)
+        INT__s_s_s_s[ca_res_idx[jj]] += _mm512_reduce_add_pd(ca_buf[jj]);
+    #endif 
+    
+    if (offset_info != NULL) free(offset_info);
+    
+    #ifdef SIMINT_PRIM_SCREEN_STAT
+    double *eri_res_end_pos = INT__s_s_s_s + 1 * P.nshell12_clip * Q.nshell12_clip;
+    eri_res_end_pos[0] = (double) calc_nprim;
+    eri_res_end_pos[1] = (double) skip_nprim;
+    eri_res_end_pos[2] = (double) calc_nvec;
+    eri_res_end_pos[3] = (double) skip_nvec;
+    #endif
 
     return P.nshell12_clip * Q.nshell12_clip;
 }
