@@ -359,6 +359,20 @@ void simint_cat_multi_shellpair(int nmpair,
                                 struct simint_multi_shellpair * Pout,
                                 int screen_method);
 
+/*! \brief Combine existing multi shellpair structures into a new one
+ *  All input multi_shellpairs have only 1 shell pair
+ *
+ * Existing information in \Pout will be erased
+ *
+ * \param [in] nmpair Number of multi shellpair pointers in \p Pin
+ * \param [in] Pin Array of pointers to multi shellpair to combine
+ * \param [inout] Pout The structure that will hold the new shell pair data
+ * \param [in] screen_method Screening method for primitives
+ */
+void simint_cat_shellpairs(
+    int nmpair, struct simint_multi_shellpair const ** Pin,
+	struct simint_multi_shellpair * Pout, int screen_method
+);
 
 /*! \brief Remove all insignificant primitive pairs
  *
