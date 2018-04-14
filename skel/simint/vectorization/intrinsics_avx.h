@@ -215,6 +215,17 @@ static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
             u.d[n] = 0.0;
         return u.v;
     }
+    
+    #define SIMINT_PRIM_SCREEN_STAT
+    static inline
+    int count_prim_screen_survival(__m256d screen_val, const double screen_tol)
+    {
+        union simint_double4 u = {screen_val};
+        int res = 0;
+        for (int i = 0; i < SIMINT_SIMD_LEN; i++)
+            if (u.d[i] >= screen_tol) res++;
+        return res;
+    }
 
 #endif // defined SIMINT_AVX
 

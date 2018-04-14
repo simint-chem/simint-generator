@@ -149,7 +149,7 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
     {
         P_var = "P_tmp";
         os_ << indent1 << "double P_AB[3*P.nshell12];\n";
-    	os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
+        os_ << indent1 << "struct simint_multi_shellpair P_tmp = P;\n";
         os_ << indent1 << "P_tmp.PA_x = P.PB_x;  P_tmp.PA_y = P.PB_y;  P_tmp.PA_z = P.PB_z;\n";
         os_ << indent1 << "P_tmp.PB_x = P.PA_x;  P_tmp.PB_y = P.PA_y;  P_tmp.PB_z = P.PA_z;\n";
         os_ << indent1 << "P_tmp.AB_x = P_AB;\n";
@@ -166,10 +166,10 @@ void OSTEI_Writer::Write_Permute_(QAM am, bool swap12, bool swap34) const
 
     if(swap34)
     {
-	    Q_var = "Q_tmp";
+        Q_var = "Q_tmp";
         os_ << indent1 << "double Q_AB[3*Q.nshell12];\n";
-    	os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
-		os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
+        os_ << indent1 << "struct simint_multi_shellpair Q_tmp = Q;\n";
+        os_ << indent1 << "Q_tmp.PA_x = Q.PB_x;  Q_tmp.PA_y = Q.PB_y;  Q_tmp.PA_z = Q.PB_z;\n";
         os_ << indent1 << "Q_tmp.PB_x = Q.PA_x;  Q_tmp.PB_y = Q.PA_y;  Q_tmp.PB_z = Q.PA_z;\n";
         os_ << indent1 << "Q_tmp.AB_x = Q_AB;\n";
         os_ << indent1 << "Q_tmp.AB_y = Q_AB + Q.nshell12;\n";
@@ -450,6 +450,11 @@ void OSTEI_Writer::Write_Full_(void) const
     for(const auto & it : cm)
         os_ << indent1 << "const SIMINT_DBLTYPE " << it.first << " = SIMINT_DBLSET1(" << it.second << ");\n";
 
+    os_ << "\n";
+    os_ << indent1 << "#ifdef SIMINT_PRIM_SCREEN_STAT  // Statistic info for primitive screening \n";
+    os_ << indent1 << "int calc_nprim = 0, skip_nprim = 0, calc_nvec = 0, skip_nvec = 0;\n";
+    os_ << indent1 << "#endif\n";
+    
     os_ << "\n\n";
     os_ << indent1 << "////////////////////////////////////////\n";
     os_ << indent1 << "// Loop over shells and primitives\n";
@@ -499,7 +504,14 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "{\n";
     os_ << indent5 << "// Skip this whole thing if always insignificant\n";
     os_ << indent5 << "if((P.screen[i] * Q.screen_max) < screen_tol)\n";
+    os_ << indent5 << "{\n";
+    os_ << indent6 << "#ifdef SIMINT_PRIM_SCREEN_STAT \n";
+    os_ << indent6 << "int j_len = jend - jstart; \n";
+    os_ << indent6 << "skip_nprim += j_len; \n";
+    os_ << indent6 << "skip_nvec  += (j_len + SIMINT_SIMD_LEN - 1) / SIMINT_SIMD_LEN; \n";
+    os_ << indent6 << "#endif \n";
     os_ << indent6 << "continue;\n";
+    os_ << indent5 << "}\n";
 
     os_ << indent5 << "bra_screen_max = SIMINT_DBLSET1(P.screen[i]);\n";
     os_ << indent4 << "}\n\n";
@@ -537,17 +549,27 @@ void OSTEI_Writer::Write_Full_(void) const
 
     os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
     os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
+    os_ << indent5 << "SIMINT_DBLTYPE prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));\n";
     os_ << indent5 << "if(check_screen)\n";
     os_ << indent5 << "{\n";
-    os_ << indent6 << "const double vmax = vector_max(SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j)));\n";
+    os_ << indent6 << "const double vmax = vector_max(prim_screen_res);\n";
     os_ << indent6 << "if(vmax < screen_tol)\n";
     os_ << indent6 << "{\n";
+    os_ << indent7 << "#ifdef SIMINT_PRIM_SCREEN_STAT \n";
+    os_ << indent7 << "skip_nvec++; \n";
+    os_ << indent7 << "skip_nprim += SIMINT_SIMD_LEN; \n";
+    os_ << indent7 << "#endif \n";
     for(const auto it : batchcontq)
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
     os_ << indent7 << "continue;\n";
     os_ << indent6 << "}\n";
-    os_ << indent5 << "}\n\n";
-
+    os_ << indent5 << "}\n";
+    os_ << indent5 << "#ifdef SIMINT_PRIM_SCREEN_STAT \n";
+    os_ << indent5 << "calc_nvec++; \n";
+    os_ << indent5 << "int calc_nprim_in_vec = count_prim_screen_survival(prim_screen_res, screen_tol); \n";
+    os_ << indent5 << "calc_nprim += calc_nprim_in_vec; \n";
+    os_ << indent5 << "skip_nprim += (SIMINT_SIMD_LEN - calc_nprim_in_vec); \n";
+    os_ << indent5 << "#endif \n\n";
 
     os_ << indent5 << "const SIMINT_DBLTYPE Q_alpha = SIMINT_DBLLOAD(Q.alpha, j);\n";
     os_ << indent5 << "const SIMINT_DBLTYPE PQalpha_mul = SIMINT_MUL(P_alpha, Q_alpha);\n";
@@ -677,6 +699,15 @@ void OSTEI_Writer::Write_Full_(void) const
 
     os_ << indent1 << "}  // close loop over ab\n";
     os_ << "\n";
+    
+    os_ << indent1 << "#ifdef SIMINT_PRIM_SCREEN_STAT \n";
+    os_ << indent1 << "double *eri_res_end_pos = " << ArrVarName(am) << " + " << ncart << " * P.nshell12_clip * Q.nshell12_clip; \n";
+    os_ << indent1 << "eri_res_end_pos[0] = (double) calc_nprim; \n";
+    os_ << indent1 << "eri_res_end_pos[1] = (double) skip_nprim; \n";
+    os_ << indent1 << "eri_res_end_pos[2] = (double) calc_nvec; \n";
+    os_ << indent1 << "eri_res_end_pos[3] = (double) skip_nvec; \n";
+    os_ << indent1 << "#endif \n";
+    
     os_ << indent1 << "return P.nshell12_clip * Q.nshell12_clip;\n";
     os_ << "}\n";
     os_ << "\n";
