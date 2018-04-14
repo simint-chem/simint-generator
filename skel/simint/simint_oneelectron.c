@@ -15,3 +15,13 @@ int simint_compute_ke(struct simint_shell * a,
 {
     return simint_compute_osoei_ke(a, b, integrals);
 }
+
+
+int simint_compute_potential(int ncenter,
+                             double * Z, double * x, double * y, double * z,
+                             struct simint_shell const * sh1,
+                             struct simint_shell const * sh2,
+                             double * restrict integrals)
+{
+    return simint_compute_osoei_potential(ncenter, Z, x, y, z, sh1, sh2, integrals);
+}

@@ -1,6 +1,8 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include "simint/constants.h"
 #include "simint/shell/shell.h"
@@ -23,6 +25,54 @@ extern double const norm_fac[SHELL_PRIM_NORMFAC_MAXL+1];
 
 #define SWAP_D(a) tmp_d = ((a)[idxi]); ((a)[idxi]) = ((a)[idxi+1]); ((a)[idxi+1]) = tmp_d;
 
+
+// huangh223, 03/02/18
+// Note: simint_sort_multi_shellpair() is using bubble sort, 
+// sometimes it takes a lot of time when it is called from 
+// GTFock commit 69884fe and libcint commit de13c0f. 
+// Use a quick sort to replace it.
+
+#define SWAP_DOUBLE(a, b) tmp_dbl = (a); (a) = (b); (b) = tmp_dbl;
+
+static void 
+simint_shellpair_screenval_quicksort(
+    struct simint_multi_shellpair *P,
+    int left, int right
+)
+{
+    int i = left, j = right;
+    double mid = P->screen[(i + j) / 2], tmp_dbl;
+    while (i <= j)
+    {
+        while (P->screen[i] > mid) i++;
+        while (P->screen[j] < mid) j--;
+        if (i <= j)
+        {
+            SWAP_DOUBLE(P->x[i], P->x[j]);
+            SWAP_DOUBLE(P->y[i], P->y[j]);
+            SWAP_DOUBLE(P->z[i], P->z[j]);
+            SWAP_DOUBLE(P->PA_x[i], P->PA_x[j]);
+            SWAP_DOUBLE(P->PA_y[i], P->PA_y[j]);
+            SWAP_DOUBLE(P->PA_z[i], P->PA_z[j]);
+            SWAP_DOUBLE(P->PB_x[i], P->PB_x[j]);
+            SWAP_DOUBLE(P->PB_y[i], P->PB_y[j]);
+            SWAP_DOUBLE(P->PB_z[i], P->PB_z[j]);
+            SWAP_DOUBLE(P->alpha[i], P->alpha[j]);
+            SWAP_DOUBLE(P->prefac[i], P->prefac[j]);
+            SWAP_DOUBLE(P->screen[i], P->screen[j]);
+            
+            #if SIMINT_OSTEI_MAXDER > 0
+            SWAP_DOUBLE(P->alpha2[i], P->alpha2[j]);
+            SWAP_DOUBLE(P->beta2[i], P->beta2[j]);
+            #endif
+            
+            i++; j--;
+        }
+    }
+    if (i < right) simint_shellpair_screenval_quicksort(P, i, right);
+    if (j > left)  simint_shellpair_screenval_quicksort(P, left, j);
+}
+
 static void
 simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
 {
@@ -34,8 +84,8 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
 
     for(int ab = 0; ab < P->nshell12; ab++)
     {
+        /*
         int swapped;
-
         do {
             swapped = 0;
             for(int i = 0; i < (P->nprim12[ab]-1); i++)
@@ -65,6 +115,8 @@ simint_sort_multi_shellpair(struct simint_multi_shellpair * P)
                 }
             }
         } while(swapped);
+        */
+        simint_shellpair_screenval_quicksort(P, idx, idx + P->nprim12[ab] - 1);
 
         idx += P->nprim12[ab];
 
@@ -275,7 +327,16 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
                                      struct simint_multi_shellpair * P,
                                      int screen_method)
 {
-    struct simint_shell AB[2*na*nb];
+    // huangh223, 02/28/18
+    // The following statement will allocate space on stack,
+    // it's dangerous when 2 * na * nb is large and may crash.
+    // struct simint_shell AB[2*na*nb];
+    struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
+    if (AB == NULL)
+    {
+        printf("[ERROR] simint_allocate_multi_shellpair: cannot allocate 2 * %d * %d simint_shell space\n", na, nb);
+        assert(AB != NULL);
+    }
 
     int ij = 0;
     for(int i = 0; i < na; ++i)
@@ -287,6 +348,8 @@ void simint_allocate_multi_shellpair(int na, struct simint_shell const * A,
     }
 
     simint_allocate_multi_shellpair2(na*nb, AB, P, screen_method);
+
+    if (AB != NULL) free(AB);
 }
 
 
@@ -333,7 +396,16 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
                                  struct simint_multi_shellpair * P,
                                  int screen_method)
 {
-    struct simint_shell AB[2*na*nb];
+    // huangh223, 02/28/18
+    // The following statement will allocate space on stack,
+    // it's dangerous when 2 * na * nb is large and may crash.
+    // struct simint_shell AB[2*na*nb];
+    struct simint_shell *AB = (struct simint_shell*) malloc(sizeof(struct simint_shell) * 2 * na * nb);
+    if (AB == NULL)
+    {
+        printf("[ERROR] simint_fill_multi_shellpair: cannot allocate 2 * %d * %d simint_shell space\n", na, nb);
+        assert(AB != NULL);
+    }
 
     int ij = 0;
     for(int i = 0; i < na; ++i)
@@ -345,6 +417,8 @@ void simint_fill_multi_shellpair(int na, struct simint_shell const * A,
     }
 
     simint_fill_multi_shellpair2(na*nb, AB, P, screen_method);
+
+    if (AB != NULL) free(AB);
 }
 
 
@@ -649,7 +723,145 @@ void simint_cat_multi_shellpair(int nmpair,
 
 }
 
+// All multi_shellpairs in Pin have 1 shell pair
+// For batching shell quartets 
+void simint_cat_shellpairs(
+    int nmpair, struct simint_multi_shellpair const ** Pin,
+    struct simint_multi_shellpair * Pout, int screen_method
+)
+{
+    if (nmpair <= 0)  return; //??
 
+    // Total number of shell pair
+    int nshell12 = nmpair;
+
+    // How many primitives
+    int nprim = 0;
+    int batchprim = 0;
+    for (int istart = 0; istart < nmpair; istart += SIMINT_NSHELL_SIMD)
+    {
+        int iend = istart + SIMINT_NSHELL_SIMD;
+        if (iend > nmpair) iend = nmpair;
+        for (int i = istart; i < iend; i++) 
+            batchprim += Pin[i]->nprim12[0];
+        nprim += SIMINT_SIMD_ROUND(batchprim);
+        batchprim = 0;
+    }
+
+    // (re)allocate Pout
+    simint_allocate_multi_shellpair_base(nshell12, nprim, Pout, screen_method);
+
+    // these should all have the same AM
+    Pout->am1 = Pin[0]->am1;
+    Pout->am2 = Pin[0]->am2;
+    Pout->screen_max = 0.0;
+
+    // now copy data
+    int idx = 0, sasb = 0;
+    for (int i = 0; i < nmpair; i++)
+    {
+        /*
+        for (int p = 0; p < Pin[i]->nprim12[0]; p++)
+        {
+            Pout->x[idx] = Pin[i]->x[p];
+            Pout->y[idx] = Pin[i]->y[p];
+            Pout->z[idx] = Pin[i]->z[p];
+            Pout->PA_x[idx] = Pin[i]->PA_x[p];
+            Pout->PA_y[idx] = Pin[i]->PA_y[p];
+            Pout->PA_z[idx] = Pin[i]->PA_z[p];
+            Pout->PB_x[idx] = Pin[i]->PB_x[p];
+            Pout->PB_y[idx] = Pin[i]->PB_y[p];
+            Pout->PB_z[idx] = Pin[i]->PB_z[p];
+
+            Pout->alpha[idx] = Pin[i]->alpha[p];
+            Pout->prefac[idx] = Pin[i]->prefac[p];
+
+            #if SIMINT_OSTEI_MAXDER > 0
+            Pout->alpha2[idx] = Pin[i]->alpha2[p];
+            Pout->beta2[idx] = Pin[i]->beta2[p];
+            #endif
+
+            if(screen_method)
+                Pout->screen[idx] = Pin[i]->screen[p];
+
+            if(Pin[i]->screen_max > Pout->screen_max)
+                Pout->screen_max = Pin[i]->screen_max;
+
+            idx++;
+        }
+        */
+
+        int copy_size = sizeof(double) * Pin[i]->nprim12[0];
+        memcpy(&Pout->x[idx], Pin[i]->x, copy_size);
+        memcpy(&Pout->y[idx], Pin[i]->y, copy_size);
+        memcpy(&Pout->z[idx], Pin[i]->z, copy_size);
+        memcpy(&Pout->PA_x[idx], Pin[i]->PA_x, copy_size);
+        memcpy(&Pout->PA_y[idx], Pin[i]->PA_y, copy_size);
+        memcpy(&Pout->PA_z[idx], Pin[i]->PA_z, copy_size);
+        memcpy(&Pout->PB_x[idx], Pin[i]->PB_x, copy_size);
+        memcpy(&Pout->PB_y[idx], Pin[i]->PB_y, copy_size);
+        memcpy(&Pout->PB_z[idx], Pin[i]->PB_z, copy_size);
+        memcpy(&Pout->alpha[idx],  Pin[i]->alpha,  copy_size);
+        memcpy(&Pout->prefac[idx], Pin[i]->prefac, copy_size);
+
+        #if SIMINT_OSTEI_MAXDER > 0
+        memcpy(&Pout->alpha2[idx], Pin[i]->alpha2, copy_size);
+        memcpy(&Pout->beta2[idx],  Pin[i]->beta2,  copy_size);
+        #endif
+
+        if (screen_method)
+            for (int p = 0; p < Pin[i]->nprim12[0]; p++)
+            {
+                Pout->screen[idx] = Pin[i]->screen[p];
+                idx++;
+            }
+
+        if (Pin[i]->screen_max > Pout->screen_max)
+            Pout->screen_max = Pin[i]->screen_max;
+    
+        Pout->AB_x[sasb] = Pin[i]->AB_x[0];
+        Pout->AB_y[sasb] = Pin[i]->AB_y[0];
+        Pout->AB_z[sasb] = Pin[i]->AB_z[0];
+        Pout->nprim12[sasb] = Pin[i]->nprim12[0];
+
+        int sasbp1 = sasb + 1;
+
+        if((sasbp1 % SIMINT_NSHELL_SIMD) == 0 || sasbp1 >= nshell12)
+        {
+            // fill in some members until next boundary
+            while(idx < SIMINT_SIMD_ROUND(idx))
+            {
+                Pout->alpha[idx] = 1.0;
+                Pout->prefac[idx] = 0.0;
+                Pout->x[idx] = 0.0;
+                Pout->y[idx] = 0.0;
+                Pout->z[idx] = 0.0;
+                Pout->PA_x[idx] = 0.0;
+                Pout->PA_y[idx] = 0.0;
+                Pout->PA_z[idx] = 0.0;
+                Pout->PB_x[idx] = 0.0;
+                Pout->PB_y[idx] = 0.0;
+                Pout->PB_z[idx] = 0.0;
+
+                #if SIMINT_OSTEI_MAXDER > 0
+                Pout->alpha2[idx] = 1.0;
+                Pout->beta2[idx] = 1.0;
+                #endif
+
+                idx++;
+            }
+        }
+
+        sasb++;
+
+        Pout->nprim += Pin[i]->nprim; 
+
+    }
+
+    Pout->nshell12 = nshell12;
+    Pout->nshell12_clip = nshell12;
+
+}
 
 /*
 void
