@@ -200,6 +200,32 @@ module SimintFortran
       integer(C_SIZE_T) :: res
     end function
 
+    function c_simint_compute_overlap(P, Q, integrals) &
+             result(res) bind(C, name="simint_compute_overlap")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: P, Q, integrals
+      integer(C_INT) :: res
+    end function
+
+    function c_simint_compute_ke(P, Q, integrals) &
+             result(res) bind(C, name="simint_compute_ke")
+      use iso_c_binding
+      implicit none
+      type(C_PTR), intent(in), value :: P, Q, integrals
+      integer(C_INT) :: res
+    end function
+
+    function c_simint_compute_potential(n, nuc_charge, X, Y, Z, P, Q,&
+         integrals) &
+         result(res) bind(C, name="simint_compute_potential")
+      use iso_c_binding
+      implicit none
+      integer(C_INT), intent(in), value :: n
+      type(C_PTR), intent(in), value :: nuc_charge, X, Y, Z,P, Q, integrals
+      integer(C_INT) :: res
+    end function
+
   end interface
 
   contains
@@ -393,6 +419,52 @@ module SimintFortran
       integer(C_INT) :: res2
 
       res2 = c_simint_eri_workmem(INT(derorder, C_INT), INT(maxam, C_INT))
+      res = INT(res2)
+    end function
+
+    function simint_compute_overlap(P, Q, integrals) &
+             result(res)
+      implicit none
+
+      type(c_simint_shell), intent(in), target :: P, Q
+      double precision, intent(inout), target :: integrals(*)
+      integer :: res
+      integer(C_INT) :: res2
+
+      res2 = c_simint_compute_overlap(C_LOC(P), C_LOC(Q), &
+                                  C_LOC(integrals))
+      res = INT(res2)
+    end function
+
+    function simint_compute_ke(P, Q, integrals) &
+             result(res)
+      implicit none
+
+      type(c_simint_shell), intent(in), target :: P, Q
+      double precision, intent(inout), target :: integrals(*)
+      integer :: res
+      integer(C_INT) :: res2
+
+      res2 = c_simint_compute_ke(C_LOC(P), C_LOC(Q), &
+                                  C_LOC(integrals))
+      res = INT(res2)
+    end function
+
+    function simint_compute_potential(n, nuc_charge, X, Y, Z, P, Q,&
+         integrals) &
+         result(res)
+      implicit none
+
+      integer, intent(in) :: n
+      type(c_simint_shell), intent(in), target :: P, Q
+      double precision, intent(inout), target :: integrals(*)
+      double precision, intent(in), target :: X(n), &
+           Y(n), Z(n), nuc_charge(n)
+      integer :: res
+      integer(C_INT) :: res2
+      res2 = c_simint_compute_potential( INT(n, C_INT), &
+           C_LOC(nuc_charge), C_LOC(X), &
+           C_LOC(Y), C_LOC(Z), C_LOC(P), C_LOC(Q), C_LOC(integrals))
       res = INT(res2)
     end function
 
