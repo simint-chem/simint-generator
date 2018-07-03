@@ -196,9 +196,10 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
 
                     // Do we have to compute this vector (or has it been screened out)?
                     // (not_screened != 0 means we have to do this vector)
-                    SIMINT_DBLTYPE prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
+                    SIMINT_DBLTYPE prim_screen_res = SIMINT_DBLSET1(0.);
                     if(check_screen)
                     {
+		      prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
                         const double vmax = vector_max(prim_screen_res);
                         if(vmax < screen_tol)
                         {
