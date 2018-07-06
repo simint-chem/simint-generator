@@ -431,7 +431,7 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
     P->nshell12 = npair;
     P->nshell12_clip = npair; // by default, it's the same
     P->nprim = 0;
-    P->screen_max = 0.0;
+    P->screen_max = 1.e99;
 
     // zero out
     // This is not really needed, and can be expensive in
