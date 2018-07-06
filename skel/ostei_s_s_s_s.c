@@ -201,8 +201,8 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                     {
 		      if(jend -j < SIMINT_SIMD_LEN ){
 			//initialize remainders when vlen < SIMD_LEN			
-			for(int n = jend; n < j+SIMINT_SIMD_LEN; n++)
-			  Q.screen[n] = 0;
+			for(n = jend; n < j+SIMINT_SIMD_LEN; n++)
+			  Q.screen[n] = 0.;
 		      }
 		      prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
                         const double vmax = vector_max(prim_screen_res);
