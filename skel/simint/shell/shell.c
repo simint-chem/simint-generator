@@ -431,6 +431,7 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
     P->nshell12 = npair;
     P->nshell12_clip = npair; // by default, it's the same
     P->nprim = 0;
+    P->screen_max = 0.0;
 
     // zero out
     // This is not really needed, and can be expensive in
@@ -454,8 +455,6 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
             double m = simint_primscreen(A, B, P->screen + idx, screen_method);
             P->screen_max = (m > P->screen_max ? m : P->screen_max);
         }
-        else
-            P->screen_max = 0.0;
 
         // are these the same shells?
         const int same_shell = compare_shell(A, B);
