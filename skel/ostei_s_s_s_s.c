@@ -125,6 +125,7 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
             for(i = istart; i < iend; ++i)
             {
                 SIMINT_DBLTYPE bra_screen_max;  // only used if check_screen
+		bra_screen_max = SIMINT_DBLSET1(0.);
 
                 if(check_screen)
                 {
