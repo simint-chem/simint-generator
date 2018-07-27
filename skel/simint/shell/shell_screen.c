@@ -224,7 +224,6 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
                               struct simint_shell const * B,
                               double * restrict out)
 {
-    // workspace
     const int same_shell = compare_shell(A, B);
     double total_max = 0.0;
     int idx = 0;
