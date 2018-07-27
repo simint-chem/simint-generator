@@ -224,10 +224,6 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
                               struct simint_shell const * B,
                               double * restrict out)
 {
-    // workspace
-    const size_t workmem = simint_ostei_workmem(0, SIMINT_OSTEI_MAXAM);
-    double * work = (double *)SIMINT_ALLOC(workmem);
-
     const int same_shell = compare_shell(A, B);
     double total_max = 0.0;
     int idx = 0;
@@ -266,6 +262,5 @@ simint_primscreen_fastschwarz(struct simint_shell const * A,
         }
     }
 
-    SIMINT_FREE(work);
     return total_max;
 }
