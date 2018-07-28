@@ -125,6 +125,7 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
             for(i = istart; i < iend; ++i)
             {
                 SIMINT_DBLTYPE bra_screen_max;  // only used if check_screen
+		bra_screen_max = SIMINT_DBLSET1(0.);
 
                 if(check_screen)
                 {
@@ -196,9 +197,15 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
 
                     // Do we have to compute this vector (or has it been screened out)?
                     // (not_screened != 0 means we have to do this vector)
-                    SIMINT_DBLTYPE prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
+                    SIMINT_DBLTYPE prim_screen_res = SIMINT_DBLSET1(0.);
                     if(check_screen)
                     {
+		      if(jend -j < SIMINT_SIMD_LEN ){
+			//initialize remainders when vlen < SIMD_LEN			
+			for(n = jend; n < j+SIMINT_SIMD_LEN; n++)
+			  Q.screen[n] = 0.;
+		      }
+		      prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));
                         const double vmax = vector_max(prim_screen_res);
                         if(vmax < screen_tol)
                         {
