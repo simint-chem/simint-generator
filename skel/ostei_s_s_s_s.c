@@ -79,7 +79,7 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
             if (j_vec > n_info_vector)
             {
                 n_info_vector = j_vec;
-                if (offset_info != NULL) free(offset_info);
+                free(offset_info);
                 offset_info  = (int*) malloc(sizeof(int) * (SIMINT_SIMD_LEN + 1 + TopAM_size) * n_info_vector);
             }
             // Calculate all the shell offsets in the j-loop
