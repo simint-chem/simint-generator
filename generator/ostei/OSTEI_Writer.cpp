@@ -499,6 +499,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent3 << "for(i = istart; i < iend; ++i)\n";
     os_ << indent3 << "{\n";
     os_ << indent4 << "SIMINT_DBLTYPE bra_screen_max;  // only used if check_screen\n\n";
+    os_ << indent4 << "bra_screen_max = SIMINT_DBLSET1(0.);\n";
 
     os_ << indent4 << "if(check_screen)\n";
     os_ << indent4 << "{\n";
@@ -547,11 +548,12 @@ void OSTEI_Writer::Write_Full_(void) const
     WriteShellOffsets();
 
 
-    os_ << indent5 << "// Do we have to compute this vector (or has it been screened out)?\n";
-    os_ << indent5 << "// (not_screened != 0 means we have to do this vector)\n";
-    os_ << indent5 << "SIMINT_DBLTYPE prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));\n";
+    os_ << indent5 << "SIMINT_DBLTYPE prim_screen_res = SIMINT_DBLSET1(0.);\n";
     os_ << indent5 << "if(check_screen)\n";
     os_ << indent5 << "{\n";
+    os_ << indent6 << "// Do we have to compute this vector (or has it been screened out)?\n";
+    os_ << indent6 << "// (not_screened != 0 means we have to do this vector)\n";
+    os_ << indent6 << "prim_screen_res = SIMINT_MUL(bra_screen_max, SIMINT_DBLLOAD(Q.screen, j));\n";
     os_ << indent6 << "const double vmax = vector_max(prim_screen_res);\n";
     os_ << indent6 << "if(vmax < screen_tol)\n";
     os_ << indent6 << "{\n";
