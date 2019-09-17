@@ -93,7 +93,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
                       __m512d const * restrict src,
                       double * restrict dest)
     {
-        #if defined __clang__ || defined __INTEL_COMPILER
+        #if defined __clang__ || defined __INTEL_COMPILER  || defined __GNUC__
         
         int ntrans   = ncart  / 8;
         int np_start = ntrans * 8;
@@ -155,7 +155,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
                           __m512d const * restrict src,
                           double * restrict dest)
     {
-        #if defined __clang__ || defined __INTEL_COMPILER
+        #if defined __clang__ || defined __INTEL_COMPILER || defined __GNUC__
 
         for(int np = 0; np < ncart; np++)
             dest[np] += _mm512_reduce_add_pd(_mm512_mul_pd(factor, src[np]));
@@ -172,7 +172,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     double vector_min(__m512d v)
     {
-        #if defined __clang__ || defined __INTEL_COMPILER
+        #if defined __clang__ || defined __INTEL_COMPILER  || defined __GNUC__
             return _mm512_reduce_min_pd(v);
         #else
             union simint_double8 u = { v };
@@ -187,7 +187,7 @@ static inline __m512d simint_pow_vec8(__m512d a, __m512d p)
     static inline
     double vector_max(__m512d v)
     {
-        #if defined __clang__ || defined __INTEL_COMPILER
+        #if defined __clang__ || defined __INTEL_COMPILER  || defined __GNUC__
             return _mm512_reduce_max_pd(v);
         #else
             union simint_double8 u = { v };
