@@ -66,10 +66,12 @@ set(SIMINT_VALID_VECTOR
      scalar-sse
      scalar-avx
      scalar-avx2
+     scalar-avx512
      scalar-micavx512
      sse
      avx
      avx2
+     avx512
      micavx512
 )
 
