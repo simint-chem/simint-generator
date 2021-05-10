@@ -27,6 +27,23 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
     list(APPEND SIMINT_LINK_FLAGS "-static-libgcc;-static-intel;-wd10237")
   endif()
 
+elseif("${CMAKE_C_COMPILER_ID}" MATCHES "PGI")
+
+  list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-mp")
+
+  list(APPEND SIMINT_Fortran_FLAGS "-std03;-fpp")
+
+  list(APPEND SIMINT_LINK_FLAGS "-mp")
+
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-mp")
+  list(APPEND SIMINT_TESTS_LINK_FLAGS "-mp")
+
+  if(SIMINT_STANDALONE)
+    list(APPEND SIMINT_LINK_FLAGS "-static-libgcc")
+  endif()
+
 
 elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
        "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
