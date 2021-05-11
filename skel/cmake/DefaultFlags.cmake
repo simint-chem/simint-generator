@@ -32,7 +32,7 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "PGI")
   list(APPEND SIMINT_C_FLAGS "-std=c99")
   list(APPEND SIMINT_C_FLAGS "-mp")
 
-  #list(APPEND SIMINT_Fortran_FLAGS "-std03;-fpp")
+  list(APPEND SIMINT_Fortran_FLAGS "-Mpreprocess")
 
   list(APPEND SIMINT_LINK_FLAGS "-mp")
 
