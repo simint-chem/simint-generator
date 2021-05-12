@@ -35,7 +35,7 @@ thisfile = os.path.realpath(__file__)
 topdir = os.path.dirname(thisfile)
 
 # some helpers
-amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
+amchar = "spdfghiklmnoqrtuvwxyzabceSPDFGHIKLMNOQRTUVWXYZABCE0123456789"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-g", type=str, required=True, help="Path to directory with generator programs")
