@@ -18,25 +18,32 @@ union simint_double4
 };
 
 
-// Missing GCC vectorized exp and pow
-static inline __m256d simint_exp_vec4(__m256d x)
-{
-    union simint_double4 u = { x };
-    union simint_double4 res;
-    for(int i = 0; i < 4; i++)
-        res.d[i] = exp(u.d[i]);
-    return res.v;
-}
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 22
+    __m256d _ZGVdN4v_exp(__m256d x);
+    static inline __m256d simint_exp_vec4(__m256d x) { return _ZGVdN4v_exp(x); }
 
-static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
-{
-    union simint_double4 ua = { a };
-    union simint_double4 up = { p };
-    union simint_double4 res;
-    for(int i = 0; i < 4; i++)
-        res.d[i] = pow(ua.d[i], up.d[i]);
-    return res.v;
-}
+    __m256d _ZGVdN4vv_pow(__m256d a, __m256d p);
+    static inline __m256d simint_pow_vec4(__m256d a, __m256d p) { return _ZGVdN4vv_pow(a, p); }
+#else
+    static inline __m256d simint_exp_vec4(__m256d x)
+    {
+        union simint_double4 u = { x };
+        union simint_double4 res;
+        for(int i = 0; i < 4; i++)
+            res.d[i] = exp(u.d[i]);
+        return res.v;
+    }
+
+    static inline __m256d simint_pow_vec4(__m256d a, __m256d p)
+    {
+        union simint_double4 ua = { a };
+        union simint_double4 up = { p };
+        union simint_double4 res;
+        for(int i = 0; i < 4; i++)
+            res.d[i] = pow(ua.d[i], up.d[i]);
+        return res.v;
+    }
+#endif
 
 #if defined SIMINT_AVX || defined SIMINT_AVX2
 

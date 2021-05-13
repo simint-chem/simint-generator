@@ -71,6 +71,7 @@ set(SIMINT_VALID_VECTOR
      avx
      avx2
      micavx512
+     commonavx512
 )
 
 if("${SIMINT_VECTOR}" STREQUAL "")
