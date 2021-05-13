@@ -11,7 +11,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND SIMINT_C_FLAGS "-std=c99")
   list(APPEND SIMINT_C_FLAGS "-qopenmp")
   list(APPEND SIMINT_C_FLAGS "-qopt-report=5;-w3")
-  list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd177")  # Remove wd177 (unused variable) at some point
+  list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd1599;-wd177")  # Remove wd177 (unused variable) at some point
 
   list(APPEND SIMINT_Fortran_FLAGS "-std03;-fpp")
 
