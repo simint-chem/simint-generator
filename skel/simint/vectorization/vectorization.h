@@ -13,6 +13,10 @@
   #include "simint/vectorization/intrinsics_sse.h"
 #elif defined SIMINT_SCALAR
   #include "simint/vectorization/intrinsics_scalar.h"
+#elif defined SIMINT_ASIMD
+  #include "simint/vectorization/intrinsics_asimd.h"
+#elif defined SIMINT_SVE
+  #include "simint/vectorization/intrinsics_sve.h"
 #else
   #error Vector type is not set
 #endif
@@ -41,15 +45,25 @@
     #define SIMINT_ASSUME_ALIGN_INT(x)
 #endif
 
+static inline void *simint_malloc_aligned(size_t size, size_t alignment)
+{
+    void *ptr = NULL;
+    posix_memalign(&ptr, alignment, size);
+    return ptr;
+}
 
+static inline void simint_free_aligned(void *mem)
+{
+    free(mem);
+}
 
 // Aligned memory allocation
 #ifdef SIMINT_SCALAR
   #define SIMINT_ALLOC(x) malloc((x))
   #define SIMINT_FREE(x) free((x))
 #else
-  #define SIMINT_ALLOC(x) _mm_malloc((x), SIMINT_SIMD_ALIGN)
-  #define SIMINT_FREE(x) _mm_free((x))
+  #define SIMINT_ALLOC(x) simint_malloc_aligned((x), SIMINT_SIMD_ALIGN)
+  #define SIMINT_FREE(x) simint_free_aligned((x))
 #endif
 
 

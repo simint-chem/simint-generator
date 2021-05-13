@@ -214,7 +214,7 @@ union simint_double8
         return u.v;
     }
     
-    #define SIMINT_PRIM_SCREEN_STAT
+    //#define SIMINT_PRIM_SCREEN_STAT
     static inline
     int count_prim_screen_survival(__m512d screen_val, const double screen_tol)
     {
