@@ -809,11 +809,15 @@ void simint_cat_shellpairs(
         #endif
 
         if (screen_method)
+        {
             for (int p = 0; p < Pin[i]->nprim12[0]; p++)
             {
                 Pout->screen[idx] = Pin[i]->screen[p];
                 idx++;
             }
+        } else {
+            idx += Pin[i]->nprim12[0];
+        }
 
         if (Pin[i]->screen_max > Pout->screen_max)
             Pout->screen_max = Pin[i]->screen_max;

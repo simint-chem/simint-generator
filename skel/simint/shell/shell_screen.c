@@ -58,7 +58,8 @@ simint_shellscreen_schwarz(struct simint_shell const * A,
     const int ncart1234 = ncart12*ncart12;
 
     // holds the calculated integrals
-    double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+    //double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+    double *integrals = (double*) SIMINT_ALLOC(sizeof(double) * (ncart1234 + 8));
 
     struct simint_multi_shellpair P;
     simint_initialize_multi_shellpair(&P);
@@ -77,6 +78,7 @@ simint_shellscreen_schwarz(struct simint_shell const * A,
 
     simint_free_multi_shellpair(&P);
     SIMINT_FREE(work);
+    SIMINT_FREE(integrals);
     return max;
 }
 
@@ -132,7 +134,8 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     const int ncart1234 = ncart12*ncart12;
 
     // holds the calculated integrals
-    double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+    //double integrals[ncart1234] SIMINT_ALIGN_ARRAY_DBL;
+    double *integrals = (double*) SIMINT_ALLOC(sizeof(double) * (ncart1234 + 8));
 
     // here, we basically uncontract the shells
     struct simint_shell new_A, new_B;
@@ -214,6 +217,7 @@ simint_primscreen_schwarz(struct simint_shell const * A,
     simint_free_shell(&new_A);
     simint_free_shell(&new_B);
     SIMINT_FREE(work);
+    SIMINT_FREE(integrals);
 
     return total_max;
 }
