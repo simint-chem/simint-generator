@@ -7,7 +7,7 @@ import os
 import subprocess
 import re
 import shutil
-from multiprocessing import Pool
+from multiprocessing import Pool, set_start_method
 
 
 def UniqueQuartet(q):
@@ -243,8 +243,9 @@ base = "ostei"
 tot = len(valid)
 
 # Run generator in args.n processes
+set_start_method('fork')
 with Pool(processes=args.n) as pool:
-    pool.map(runostei, [(i,q) for i,q in enumerate(valid)], chunksize=1)
+  pool.map(runostei, [(i,q) for i,q in enumerate(valid)], chunksize=1)
 
 # Update arrays after multiprocess for simplicity
 for q in valid:
