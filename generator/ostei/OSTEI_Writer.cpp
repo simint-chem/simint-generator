@@ -527,16 +527,35 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent4 << "// Load these one per loop over i\n";
     os_ << indent4 << "const SIMINT_DBLTYPE P_alpha = SIMINT_DBLSET1(P.alpha[i]);\n";
     os_ << indent4 << "const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);\n";
-    os_ << indent4 << "const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };\n";
+    //os_ << indent4 << "const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };\n";
+    os_ << indent4 << " SIMINT_DBLTYPE Pxyz[3];\n";
+    os_ << indent4 << " Pxyz[0] = SIMINT_DBLSET1(P.x[i]);\n";
+    os_ << indent4 << " Pxyz[1] = SIMINT_DBLSET1(P.y[i]);\n";
+    os_ << indent4 << " Pxyz[2] = SIMINT_DBLSET1(P.z[i]);\n";
 
     os_ << "\n";
 
     if(hasbravrr)
     {
+        #if 0
         if(vrr_writer_.Algo().HasVRR_I())
             os_ << indent4 << "const SIMINT_DBLTYPE P_PA[3] = { SIMINT_DBLSET1(P.PA_x[i]), SIMINT_DBLSET1(P.PA_y[i]), SIMINT_DBLSET1(P.PA_z[i]) };\n";
         else
             os_ << indent4 << "const SIMINT_DBLTYPE P_PB[3] = { SIMINT_DBLSET1(P.PB_x[i]), SIMINT_DBLSET1(P.PB_y[i]), SIMINT_DBLSET1(P.PB_z[i]) };\n";
+        #else
+        if (vrr_writer_.Algo().HasVRR_I())
+        {
+            os_ << indent4 << "SIMINT_DBLTYPE P_PA[3];\n";
+            os_ << indent4 << "P_PA[0] = SIMINT_DBLSET1(P.PA_x[i]);\n";
+            os_ << indent4 << "P_PA[1] = SIMINT_DBLSET1(P.PA_y[i]);\n";
+            os_ << indent4 << "P_PA[2] = SIMINT_DBLSET1(P.PA_z[i]);\n";
+        } else {
+            os_ << indent4 << "SIMINT_DBLTYPE P_PB[3];\n";
+            os_ << indent4 << "P_PB[0] = SIMINT_DBLSET1(P.PB_x[i]);\n";
+            os_ << indent4 << "P_PB[1] = SIMINT_DBLSET1(P.PB_y[i]);\n";
+            os_ << indent4 << "P_PB[2] = SIMINT_DBLSET1(P.PB_z[i]);\n";
+        }
+        #endif
     }
 
     os_ << "\n";
@@ -609,10 +628,25 @@ void OSTEI_Writer::Write_Full_(void) const
 
     if(hasketvrr)
     {
+        #if 0
         if(vrr_writer_.Algo().HasVRR_K())
             os_ << indent5 << "const SIMINT_DBLTYPE Q_PA[3] = { SIMINT_DBLLOAD(Q.PA_x, j), SIMINT_DBLLOAD(Q.PA_y, j), SIMINT_DBLLOAD(Q.PA_z, j) };\n";
         else
             os_ << indent5 << "const SIMINT_DBLTYPE Q_PB[3] = { SIMINT_DBLLOAD(Q.PB_x, j), SIMINT_DBLLOAD(Q.PB_y, j), SIMINT_DBLLOAD(Q.PB_z, j) };\n";
+        #else
+        if (vrr_writer_.Algo().HasVRR_K())
+        {
+            os_ << indent5 << "SIMINT_DBLTYPE Q_PA[3];\n";
+            os_ << indent5 << "Q_PA[0] = SIMINT_DBLLOAD(Q.PA_x, j);\n";
+            os_ << indent5 << "Q_PA[1] = SIMINT_DBLLOAD(Q.PA_y, j);\n";
+            os_ << indent5 << "Q_PA[2] = SIMINT_DBLLOAD(Q.PA_z, j);\n";
+        } else {
+            os_ << indent5 << "SIMINT_DBLTYPE Q_PB[3];\n";
+            os_ << indent5 << "Q_PB[0] = SIMINT_DBLLOAD(Q.PB_x, j);\n";
+            os_ << indent5 << "Q_PB[1] = SIMINT_DBLLOAD(Q.PB_y, j);\n";
+            os_ << indent5 << "Q_PB[2] = SIMINT_DBLLOAD(Q.PB_z, j);\n";
+        }
+        #endif
     }
 
     if(hasbravrr)

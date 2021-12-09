@@ -27,7 +27,7 @@ Compiler:
 
 CMake 3.0.2 or above
 Intel CPU (may work on others, but not tested)
-
+ARM CPU (experimental)
 
 ---------------------------
 Configuring
@@ -43,29 +43,40 @@ Most importantly, you need to select which feature set to compile with.
 This is done with the SIMINT_VECTOR variable
 
     -DSIMINT_VECTOR=sse
-         Intel CPUs with SSSE3 support
-           * Basically any CPU make in the last 10 years
+        Intel CPUs with SSE3 support
+            * Basically any CPU make in the last 10 years
 
     -DSIMINT_VECTOR=avx
-         Intel CPUs with AVX support
-           * Sandy Bridge (not tested)
-           * Ivy Bridge
-           * Haswell (if you want)
+        Intel CPUs with AVX support
+            * Sandy Bridge
+            * Ivy Bridge
+            * Haswell (if you want)
 
     -DSIMINT_VECTOR=avx2
-         Intel CPUs with AVX and FMA support
-           * Haswell
+        Intel CPUs with AVX-2 and FMA support
+            * Haswell
 
     -DSIMINT_VECTOR=avx512
          Intel SkyLake
 
     -DSIMINT_VECTOR=micavx512
-         Intel KNL (experimental)
+        Intel KNL 
+
+    -DSIMINT_VECTOR=commonavx512
+        Intel KNL, Xeon, and Core processors that supports AVX-512
+
+    -DSIMINT_VECTOR=asimd
+        ARMv8 ASIMD instruction set (experimental, tested some functions on A64FX)
+
+    -DSIMINT_VECTOR=sve
+        ARMv8.2-a SVE-512 instruction set (experimental, tested some functions on A64FX)
 
 Scalar (unvectorized) versions of the code can be compiled that still
 use a particular instruction set. This is done by prepending "scalar-"
 to the given type. For example, "scalar-avx2" will enable AVX2, but
 still disable vectorization.
+
+"scalar-asimd" and "scalar-sve" have not been tested yet. 
 
 Other options: 
 
