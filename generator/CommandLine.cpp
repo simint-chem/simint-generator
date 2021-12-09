@@ -6,6 +6,7 @@
 
 
 #include "generator/CommandLine.hpp"
+#include "generator/Types.hpp"
 
 
 // For options parsing
