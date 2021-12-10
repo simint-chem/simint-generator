@@ -41,7 +41,9 @@ int simint_compute_osoei_potential(int ncenter,
     // Zero the output array
     memset(integrals, 0, ncart12*sizeof(double));
 
-    for(int n = 0; n < ncenter; n++)
+    // huangh223: n is being used again in lines 120 and 163, so I changed the outer loop index 
+    //for(int n = 0; n < ncenter; n++)
+    for (int icenter = 0; icenter < ncenter; icenter++)
     {
         for(int a = 0; a < sh1->nprim; a++)
         {
@@ -64,7 +66,7 @@ int simint_compute_osoei_potential(int ncenter,
 
                 const double PA[3] = { P[0] - xyz1[0], P[1] - xyz1[1], P[2] - xyz1[2] };
                 const double PB[3] = { P[0] - xyz2[0], P[1] - xyz2[1], P[2] - xyz2[2] };
-                const double PC[3] = { P[0] - x[n], P[1] - y[n], P[2] - z[n] };
+                const double PC[3] = { P[0] - x[icenter], P[1] - y[icenter], P[2] - z[icenter] };
                 const double PC2 = PC[0]*PC[0] + PC[1]*PC[1] + PC[2]*PC[2];
 
                 // boys function
@@ -207,7 +209,7 @@ int simint_compute_osoei_potential(int ncenter,
                 // apply the coefficients
                 double * amintegrals = amwork[sh1->am][sh2->am];
                 for(int i = 0; i < ncart12; i++)
-                    integrals[i] -= amintegrals[i] * Z[n] * sh1->coef[a] * sh2->coef[b];
+                    integrals[i] -= amintegrals[i] * Z[icenter] * sh1->coef[a] * sh2->coef[b];
 
             } // end loop over primitive a
         } // end loop over primitive b

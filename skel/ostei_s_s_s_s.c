@@ -152,7 +152,11 @@ int ostei_s_s_s_s(struct simint_multi_shellpair const P,
                 // Load these one per loop over i
                 const SIMINT_DBLTYPE P_alpha = SIMINT_DBLSET1(P.alpha[i]);
                 const SIMINT_DBLTYPE P_prefac = SIMINT_DBLSET1(P.prefac[i]);
-                const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };
+                //const SIMINT_DBLTYPE Pxyz[3] = { SIMINT_DBLSET1(P.x[i]), SIMINT_DBLSET1(P.y[i]), SIMINT_DBLSET1(P.z[i]) };
+                SIMINT_DBLTYPE Pxyz[3];
+                Pxyz[0] = SIMINT_DBLSET1(P.x[i]);
+                Pxyz[1] = SIMINT_DBLSET1(P.y[i]);
+                Pxyz[2] = SIMINT_DBLSET1(P.z[i]);
 
                 ivec = 0;
                 for(j = jstart; j < jend; j += SIMINT_SIMD_LEN)

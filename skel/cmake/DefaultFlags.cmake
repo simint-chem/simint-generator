@@ -8,7 +8,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   #   869 : parameter "xxx" was never referenced
   ##########################################################################################
 
-  list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-std=c11")
   list(APPEND SIMINT_C_FLAGS "-qopenmp")
   list(APPEND SIMINT_C_FLAGS "-qopt-report=5;-w3")
   list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd1599;-wd177")  # Remove wd177 (unused variable) at some point
@@ -48,7 +48,7 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "PGI")
 elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
        "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
-  list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-std=gnu11")
   list(APPEND SIMINT_C_FLAGS "-Wall;-Wextra;-pedantic")
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-parameter")
   list(APPEND SIMINT_C_FLAGS "-Wno-unused-variable")
@@ -90,6 +90,9 @@ set(SIMINT_VALID_VECTOR
      avx2
      avx512
      micavx512
+     commonavx512
+     asimd
+     sve
 )
 
 if("${SIMINT_VECTOR}" STREQUAL "")
