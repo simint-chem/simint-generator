@@ -9,6 +9,7 @@
 #define SIMINT_GUARD_GENERATOR__COMMANDLINE_HPP_
 
 #include <vector>
+#include <string>
 #include "generator/Options.hpp"
 
 
