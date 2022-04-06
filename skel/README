@@ -56,6 +56,9 @@ This is done with the SIMINT_VECTOR variable
         Intel CPUs with AVX-2 and FMA support
             * Haswell
 
+    -DSIMINT_VECTOR=avx512
+         Intel SkyLake
+
     -DSIMINT_VECTOR=micavx512
         Intel KNL 
 

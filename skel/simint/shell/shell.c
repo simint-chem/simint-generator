@@ -554,6 +554,12 @@ void simint_fill_multi_shellpair2(int npair, struct simint_shell const * AB,
                 P->PB_y[idx] = 0.0;
                 P->PB_z[idx] = 0.0;
 
+		// fastschwarz screening values were not padded
+		if(P->screen != NULL)
+		{
+		  P->screen[idx] = 0.0;
+		}
+
                 #if SIMINT_OSTEI_MAXDER > 0
                 P->alpha2[idx] = 1.0;
                 P->beta2[idx] = 1.0;

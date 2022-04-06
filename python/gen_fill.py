@@ -26,7 +26,7 @@ def UniqueQuartet(q):
 
 
 # some helpers
-amchar = "spdfghijklmnoqrtuvwxyzabceSPDFGHIJKLMNOQRTUVWXYZABCE0123456789"
+amchar = "spdfghiklmnoqrtuvwxyzabceSPDFGHIKLMNOQRTUVWXYZABCE0123456789"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", type=int, required=True, help="Maximum AM")

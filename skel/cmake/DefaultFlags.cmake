@@ -11,7 +11,7 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   list(APPEND SIMINT_C_FLAGS "-std=c11")
   list(APPEND SIMINT_C_FLAGS "-qopenmp")
   list(APPEND SIMINT_C_FLAGS "-qopt-report=5;-w3")
-  list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd177")  # Remove wd177 (unused variable) at some point
+  list(APPEND SIMINT_C_FLAGS "-wd10397;-wd2415;-wd981;-wd869;-wd1599;-wd177")  # Remove wd177 (unused variable) at some point
 
   list(APPEND SIMINT_Fortran_FLAGS "-std03;-fpp")
 
@@ -25,6 +25,23 @@ if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
 
   if(SIMINT_STANDALONE)
     list(APPEND SIMINT_LINK_FLAGS "-static-libgcc;-static-intel;-wd10237")
+  endif()
+
+elseif("${CMAKE_C_COMPILER_ID}" MATCHES "PGI")
+
+  list(APPEND SIMINT_C_FLAGS "-std=c99")
+  list(APPEND SIMINT_C_FLAGS "-mp")
+
+  list(APPEND SIMINT_Fortran_FLAGS "-Mpreprocess")
+
+  list(APPEND SIMINT_LINK_FLAGS "-mp")
+
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-std=c++11")
+  list(APPEND SIMINT_TESTS_CXX_FLAGS "-mp")
+  list(APPEND SIMINT_TESTS_LINK_FLAGS "-mp")
+
+  if(SIMINT_STANDALONE)
+    list(APPEND SIMINT_LINK_FLAGS "-static-libgcc")
   endif()
 
 
@@ -66,10 +83,12 @@ set(SIMINT_VALID_VECTOR
      scalar-sse
      scalar-avx
      scalar-avx2
+     scalar-avx512
      scalar-micavx512
      sse
      avx
      avx2
+     avx512
      micavx512
      commonavx512
      asimd
