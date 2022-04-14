@@ -12,6 +12,16 @@ set_property(CACHE SIMINT_ORDERING PROPERTY STRINGS Psi4 GAMESS)
 ###################
 # Generator flags
 ###################
+
+# Turn on compiler optimizations by default
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
+
 list(APPEND GENERATOR_CXX_INCLUDES "${CMAKE_SOURCE_DIR}")
 
 
