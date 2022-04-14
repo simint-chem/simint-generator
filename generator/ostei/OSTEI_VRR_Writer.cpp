@@ -235,7 +235,7 @@ void OSTEI_VRR_Writer::WriteVRR_General_(std::ostream & os, QAM am) const
 
     auto amreq = vrr_algo_.GenerateAMReq(am, rrstep, true);
     std::vector<std::string> amreq_str;
-    for(const auto it : amreq)
+    for(const auto &it : amreq)
     {
         if(!ValidQAM(it))
             amreq_str.push_back("NULL");
@@ -307,7 +307,7 @@ void OSTEI_VRR_Writer::WriteVRR_General_(std::ostream & os, QAM am) const
             os << "Q_PB,\n";
 
         os << indent7;
-        for(const auto it : amreq_str)
+        for(const auto &it : amreq_str)
             os << it << ", ";
 
         os << PrimVarName(am) << ");\n";

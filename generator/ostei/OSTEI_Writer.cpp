@@ -40,7 +40,7 @@ void OSTEI_Writer::WriteShellOffsets(void) const
     os_ << indent6 << "{\n";
     os_ << indent7 << "nprim_icd += Q.nprim12[cd + (++icd)];\n";
 
-    for(const auto it : hrr_writer_.Algo().TopAM())
+    for(const auto &it : hrr_writer_.Algo().TopAM())
         os_ << indent7 << PrimPtrName(it) << " += " << NCART(it) << ";\n";
 
     os_ << indent6 << "}\n";
@@ -76,7 +76,7 @@ void OSTEI_Writer::WriteAccumulation(void) const
     os_ << indent5 << "if(lastoffset == 0)\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : topq)
+    for(const auto &it : topq)
     {
         int ncart = NCART(it);
         os_ << indent6 << "contract_all(" << ncart << ", " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
@@ -86,13 +86,13 @@ void OSTEI_Writer::WriteAccumulation(void) const
     os_ << indent5 << "else\n";
     os_ << indent5 << "{\n";
 
-    for(const auto it : topq)
+    for(const auto &it : topq)
     {
         int ncart = NCART(it);
         os_ << indent6 << "contract(" << ncart << ", shelloffsets, " << PrimVarName(it) << ", " << PrimPtrName(it) << ");\n";
     }
 
-    for(const auto it : topq)
+    for(const auto &it : topq)
         os_ << indent6 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
 
     os_ << indent5 << "}\n";
@@ -580,7 +580,7 @@ void OSTEI_Writer::Write_Full_(void) const
     os_ << indent7 << "skip_nvec++; \n";
     os_ << indent7 << "skip_nprim += SIMINT_SIMD_LEN; \n";
     os_ << indent7 << "#endif \n";
-    for(const auto it : batchcontq)
+    for(const auto &it : batchcontq)
         os_ << indent7 << PrimPtrName(it) << " += lastoffset*" << NCART(it) << ";\n";
     os_ << indent7 << "continue;\n";
     os_ << indent6 << "}\n";
