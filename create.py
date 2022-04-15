@@ -7,8 +7,8 @@ import os
 import subprocess
 import re
 import shutil
-from multiprocessing import Pool, set_start_method
-
+import multiprocessing as mp
+from functools import partial
 
 def UniqueQuartet(q):
   if q[0] < q[1]:
@@ -31,8 +31,9 @@ def QStr(q):
 
 
 # The following function allows the use of multiprocess package
-def runostei(arg):
-  i,q = arg
+def runostei(lock, arg):
+  i, q = arg
+  lock.acquire()
   filebase = base+"_{}_{}_{}_{}".format(amchar[q[0]], amchar[q[1]], amchar[q[2]], amchar[q[3]])
   outfile = os.path.join(outdir_osteigen, filebase + ".c")
   logfile = os.path.join(outdir_osteigen, filebase + ".log")
@@ -55,19 +56,22 @@ def runostei(arg):
     print("Command line:")
     print(' '.join(cmdline))
     print()
+    lock.release()
 
     ret = subprocess.call(cmdline, stdout=lf, stderr=lf)
 
     if ret != 0:
+      lock.acquire()
       print("\n")
       print("*********************************")
       print("While generating "+base)
       print("Subprocess returned {} - aborting".format(ret))
       print("*********************************")
       print("\n")
-      quit(5)
+      lock.release()
+      # quit(5)
 
-    return
+    return ret
 
 
 
@@ -88,6 +92,7 @@ parser.add_argument("-vg", required=False, type=int, default=0, help="General VR
 parser.add_argument("-he", required=False, type=int, default=0, help="External HRR for this L value and above")
 parser.add_argument("-hg", required=False, type=int, default=0, help="General HRR for this L value and above")
 parser.add_argument("-d", required=False, type=int, default=0, help="Maximum derivative to generate code for")
+parser.add_argument("-printq", required=False, action="store_true", help="Print out the list of valid quartets")
 parser.add_argument("outdir", type=str, help="Output directory")
 
 args = parser.parse_args()
@@ -185,14 +190,15 @@ for i in range(0, maxam + 1):
         else:
           invalid.add(q)
 
-print()
-print("Valid: {}".format(len(valid)))
-for q in valid:
-  print("  {}".format(QStr(q)))
+if args.printq:
+  print()
+  print("Valid: {}".format(len(valid)))
+  for q in valid:
+    print("  {}".format(QStr(q)))
 
-print()
-print("==========================================================================================")
-print()
+  print()
+  print("==========================================================================================")
+  print()
 
 
 # Generate the ostei
@@ -243,9 +249,12 @@ base = "ostei"
 tot = len(valid)
 
 # Run generator in args.n processes
-set_start_method('fork')
-with Pool(processes=args.n) as pool:
-  pool.map(runostei, [(i,q) for i,q in enumerate(valid)], chunksize=1)
+mp.set_start_method('fork')
+with mp.Pool(processes=args.n) as pool:
+  m = mp.Manager()
+  l = m.Lock()
+  f = partial(runostei, l)
+  pool.map(f, enumerate(valid), chunksize=1)
 
 # Update arrays after multiprocess for simplicity
 for q in valid:
@@ -275,7 +284,7 @@ for q in valid:
                                                              amchar[int(reqam[3])],
                                                              amchar[int(reqam[4])]) )
 
-  print()
+print()
 
 
 # Close out the header file
@@ -359,8 +368,12 @@ base = "ostei_deriv1"
 tot = len(valid)
 
 # Run generator in args.n processes
-with Pool(processes=args.n) as pool:
-    pool.map(runostei, [(i,q) for i,q in enumerate(valid)], chunksize=1)
+with mp.Pool(processes=args.n) as pool:
+  m = mp.Manager()
+  l = m.Lock()
+  f = partial(runostei, l)
+  pool.map(f, enumerate(valid), chunksize=1)
+
 
 # Update lists after multiprocess for simplicity
 for q in valid:
