@@ -1,4 +1,3 @@
-
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
   ##########################################################################################
   # Globally-disabled diagnostics:
@@ -44,6 +43,16 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "PGI")
     list(APPEND SIMINT_LINK_FLAGS "-static-libgcc")
   endif()
 
+elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Fujitsu")
+
+  list(APPEND SIMINT_Fortran_FLAGS "-cpp")
+
+  list(APPEND SIMINT_LINK_FLAGS "-Kopenmp")
+  list(APPEND SIMINT_TESTS_LINK_FLAGS "-Kopemp")
+
+elseif("${CMAKE_C_COMPILER_ID}" MATCHES "Fujitsu")
+
+  message(FATAL_ERROR "Fujitsu is an Unsupported compiler")
 
 elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
        "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
@@ -73,7 +82,7 @@ elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU" OR
 
 else()
 
-  message(FATAL_ERROR "Unsupported compiler")
+  message(FATAL_ERROR "Unsupported compiler=${CMAKE_C_COMPILER_ID}")
 
 endif()
 
